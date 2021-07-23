@@ -77,6 +77,24 @@ ray_data=np.dtype([
 ray_t = from_dtype(ray_data) # Create a type that numba can recognize!
 # We can use that type in our device functions and later the kernel!
 
+scattering_point = np.dtype([
+    #position data
+    ('px', 'f4'), ('py', 'f4'), ('pz', 'f4'), 
+    #velocity
+    ('vx', 'f4'), ('vy', 'f4'), ('vz', 'f4'), 
+    #normal
+    ('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4'), 
+    #weights
+    ('ex','c8'),('ey','c8'),('ez','c8'),
+    # conductivity, permittivity and permiability
+    #free space values should be
+    #permittivity of free space 8.8541878176e-12F/m
+    #permeability of free space 1.25663706212e-6H/m
+    ('permittivity', 'c8'), ('permeability', 'c8'), 
+    #electric or magnetic current sources? E if True
+    ('Electric', '?'),
+    ], align=True) 
+scattering_t = from_dtype(scattering_point) # Create a type that numba can recognize!
 
 @njit
 def cart2pol(x, y):
@@ -235,6 +253,45 @@ def hit(ray,triangle):
     return False,math.inf
 
 @cuda.jit
+def integratedkernal(ray_index,point_information,environment):
+    cu_ray_num = cuda.grid(1) # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
+    
+    if (cu_ray_num<ray_index.shape[0]):
+        #there are rays to process but must create and launch on the spot, then if succesful go to the next one until the index has been traversed
+        i = 0 # emulate a C-style for-loop, exposing the idx increment logic
+        #print(ray_index[cu_ray_num,0],ray_index[cu_ray_num,1],ray_index[cu_ray_num,2])
+        #ray_components[cu_ray_num,:]=0.0
+        #print(scattering_matrix.shape[0],scattering_matrix.shape[1])
+        for i in range(ray_index.shape[1]-1):
+        #                
+            if (ray_index[cu_ray_num,i+1]!=0):
+                #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
+                #     #convert source point field to ray
+                ray=cuda.local.array(shape=(1),dtype=ray_t)
+                point1=point_information[ray_index[cu_ray_num,i]-1]
+                point2=point_information[ray_index[cu_ray_num,i+1]-1]
+                ray[0]['ox']=point1['px']
+                ray[0]['oy']=point1['py']
+                ray[0]['oz']=point1['pz']
+                normconst=((point2['px']-point1['px'])**2+(point2['py']-point1['py'])**2+(point2['pz']-point1['pz'])**2)**0.5
+                ray[0]['dx']=(point2['px']-point1['px'])/normconst
+                ray[0]['dy']=(point2['py']-point1['py'])/normconst
+                ray[0]['dz']=(point2['pz']-point1['pz'])/normconst
+                ray[0]['dist']=normconst
+                ray[0]['intersect']=False
+                #ray=rayprep(point1,point2,ray)
+                for tri_inc in range(len(environment)):
+                    hit_bool, dist_temp = hit(ray[0], environment[tri_inc])
+                    
+                    if hit_bool and (dist_temp<ray[0]['dist']):
+                        #hit something, so break out of loop and null index the first entry of the ray_index
+                        ray_index[cu_ray_num,:]=0
+                    
+            if ray_index[cu_ray_num,0]==0:
+                break
+
+
+@cuda.jit
 def kernel1D(rays,environment,ray_flag,distances):
 
     cu_ray_num = cuda.grid(1) # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
@@ -323,6 +380,43 @@ def kernel1Dv3(rays,environment):
 
         nb.cuda.syncthreads()
 
+def integratedRaycaster(ray_index,scattering_points,environment_local):
+    start=timer()
+    
+    prep_dt = timer() - start 
+    raystart=timer()
+    # Create a container for the pixel RGBA information of our image 
+    chunk_size=2**11
+    threads_in_block=1024
+    #for idx in range(len(triangle_chunk)-1):
+    d_environment = cuda.device_array(len(environment_local), dtype=triangle_t)
+    d_ray_index = cuda.device_array((ray_index.shape[0],ray_index.shape[1]),dtype=np.int32)
+    d_ray_index=cuda.to_device(ray_index)
+    cuda.to_device(environment_local,to=d_environment)   
+    d_point_information = cuda.device_array(scattering_points.shape[0], dtype=scattering_t)
+    d_point_information=cuda.to_device(scattering_points)
+    grids=(math.ceil(ray_index.shape[0]/threads_in_block))
+    threads = threads_in_block
+    # Execute the kernel
+    #cuda.profile_start()
+    #kernel1Dv2[grids, threads](d_chunk_payload,d_environment,d_ray_flag)
+    integratedkernal[grids, threads](d_ray_index,d_point_information,d_environment)
+    #cuda.profile_stop()
+    #distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
+    propagation_index=d_ray_index.copy_to_host()
+    kernel_dt = timer() - raystart  
+    start=timer()
+    
+    
+    
+    mem_dt = timer() - start
+    #deallocate memory on gpu
+    ctx = cuda.current_context()
+    deallocs = ctx.deallocations
+    deallocs.clear()
+    final_index=propagation_index[propagation_index[:,0]!=0]
+    
+    return final_index
 
 def visiblespace(source_coords,source_normals,environment,vertex_area=0,az_range=np.linspace(-180.0,180.0,19),elev_range=np.linspace(-90.0,90.0,19),shell_range=0.5):
     """
@@ -1880,92 +1974,64 @@ def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter):
     #print("Raycasting Duration:  {:3.1f} s, Total Rays: {:3.1f}".format(raycastingduration,RAYS_CAST) )
     return full_index,RAYS_CAST
 
-def workchunkingv3(sources,sinks,scattering_points,scattering_mask,environment):
+def create_scatter_index(source_index,sink_index,scattering_point_index,scattering_mask):
+    #create target index for given scattering depth
+    target_index=np.empty((0,np.max(scattering_mask)+2),dtype=np.int32)
+    for launch_round in range(np.max(scattering_mask)+1):
+        #create list of allowed points which always has all sinks.
+        if launch_round==0:
+            forward_launch_index=source_index.ravel()
+            #allowed_points=np.append(np.where(scattering_mask>=(launch_round+1))[0]+1,(np.where(scattering_mask==0)[0]+1))
+            allowed_points=copy.deepcopy(scattering_point_index.ravel())
+            temp_index=np.zeros((allowed_points.shape[0]*forward_launch_index.shape[0],np.max(scattering_mask)+2),dtype=np.int32)
+            for n in np.arange(forward_launch_index.shape[0]):
+                temp_index[0+(n*allowed_points.shape[0]):allowed_points.shape[0]+(n*allowed_points.shape[0]),launch_round]=forward_launch_index[n]
+                temp_index[0+(n*allowed_points.shape[0]):allowed_points.shape[0]+(n*allowed_points.shape[0]),launch_round+1]=allowed_points
+            target_index=np.append(target_index,temp_index,axis=0)    
+        else:
+            allowed_illuminators=np.where(scattering_mask>=(launch_round+1))[0]+1
+            #allowed_points=np.append(np.where(scattering_mask>=(launch_round+1))[0]+1,(np.where(scattering_mask==0)[0]+1))
+            allowed_points=copy.deepcopy(scattering_point_index.ravel())
+            propagate_index=np.where(target_index[:,launch_round]>np.max(sink_index))[0]
+            drain_trim=np.delete(propagate_index,np.isin(target_index[propagate_index,launch_round],allowed_illuminators))
+            drain_temp=create_model_index(target_index[drain_trim,0:launch_round+1],sink_index,np.empty((0)))
+            illuminator_index=propagate_index[np.isin(target_index[propagate_index,launch_round],allowed_illuminators)]
+            forward_temp=create_model_index(target_index[illuminator_index,0:launch_round+1],allowed_points,np.empty((0)))
+            trimmed_index=np.delete(target_index,propagate_index,axis=0)
+            target_index=np.append(trimmed_index,np.append(np.append(drain_temp,forward_temp,axis=0),np.zeros((drain_temp.shape[0]+forward_temp.shape[0],target_index.shape[1]-drain_temp.shape[1]),dtype=np.int32),axis=1),axis=0)
+               
+        #so far this 
+        
+    return target_index
+
+def integratedraycastersetup(sources,sinks,scattering_points,environment,scattering_mask):
     #temp function to chunk the number of rays to prevent creation of ray arrays to large for memory
-    #upper bound is around 470000000 rays at a time, there is already chunking to prevent overflow of the GPU memory and timeouts
-    #the scattering mask sets the maximum scatter for each point, thus for a sink it will always be 0 (never retransmit), but for sources it will be 1 (transmit on round 1)
-    #and scattering points will be from 2 to max scatter, and antenna scatter points will be 3, while general scatter points will be 2
     raycasting_timestamp=timer()
-    ray_estimate=(sources.shape[0]*(sinks.shape[0]+scattering_points.shape[0]))+(sources.shape[0]*(scattering_points.shape[0]*sinks.shape[0]*(max_scatter)))
+    max_scatter=np.max(scattering_mask)
+    if max_scatter==0:
+        ray_estimate=sources*sinks
+    elif max_scatter==1:
+        ray_estimate=sources*(sinks+scattering_points.shape[0])+sources*scattering_points.shape[0]*sinks
+    elif max_scatter==2:
+        ray_estimate=sources*(sinks+scattering_points.shape[0])+sources*scattering_points.shape[0]*sinks+sources*scattering_points.shape[0]*(scattering_points.shape[0])*sinks
     #print("Total of {:3.1f} rays required".format(ray_estimate))
     #establish index boundaries
-    source_index=np.arange(1,sources.shape[0]+1).reshape(sources.shape[0],1) # index starts at 1, leaving 0 as a null
-    sink_index=np.arange(sources.shape[0]+1,sources.shape[0]+1+sinks.shape[0]).reshape(sinks.shape[0],1)
-    scattering_point_index=np.arange(np.max(sink_index)+1,np.max(sink_index)+1+scattering_points.shape[0]).reshape(scattering_points.shape[0],1)
+    source_index=np.arange(1,sources+1).reshape(sources,1) # index starts at 1, leaving 0 as a null 
+    sink_index=np.arange(sources+1,sources+1+sinks).reshape(sinks,1)
+    scattering_point_index=np.arange(np.max(sink_index)+1,np.max(sink_index)+1+(scattering_points.shape[0]-sources-sinks)).reshape((scattering_points.shape[0]-sources-sinks),1)
     #implement chunking
-    if max_scatter==1:
-        full_index=np.empty((0,2),dtype=np.int32)
-        chunknum=np.minimum(sources.shape[0],np.int(np.ceil(ray_estimate/2e8)))
-        chunknum=np.maximum(2,chunknum)
-        source_chunking=np.linspace(0,sources.shape[0],chunknum,dtype=np.int32)
-        for chunkindex in range(source_chunking.size-1):
-            io_indexing=create_model_index(source_index[source_chunking[chunkindex]:source_chunking[chunkindex+1]],sink_index,scattering_point_index)
-            _,temp_index,first_wave_Rays=launchRaycaster1Dv3(sources,sinks,scattering_points,io_indexing,environment)
-            full_index=np.append(full_index,temp_index,axis=0)
-            RAYS_CAST=first_wave_Rays
-
-    elif max_scatter==2:
-        full_index=np.empty((0,3),dtype=np.int32)
-        chunknum=np.minimum(sources.shape[0],np.int(np.ceil(ray_estimate/2e8)))
-        chunknum=np.maximum(2,chunknum)
-        source_chunking=np.linspace(0,sources.shape[0],chunknum,dtype=np.int32)
-        for chunkindex in range(source_chunking.size-1):
-            io_indexing=create_model_index(source_index[source_chunking[chunkindex]:source_chunking[chunkindex+1]],sink_index,scattering_point_index)
-            filtered_index,final_index,first_wave_Rays=launchRaycaster1Dv3(sources,sinks,scattering_points,io_indexing,environment)
-            if (len(filtered_index)==0):
-                filtered_index2=np.empty((0,3),dtype=np.int32)
-                final_index2=np.empty((0,3),dtype=np.int32)
-                second_wave_rays=0
-            else:
-                filtered_index2,final_index2,second_wave_rays=chunkingRaycaster1Dv3(sources,sinks,scattering_points,filtered_index,environment,terminate_flag=True)
-            #cuda.profile_stop()
-            start=timer()
-            # filtered_network2,final_network2,filtered_index2,final_index2=rayHits(second_ray_payload,distmap2,io_index2,scatter_inc=2,origins_local=second_origin)
-            RAYS_CAST=first_wave_Rays+second_wave_rays
-            #create combined path network
-            host_size=np.shape(final_index)
-            host_padding=np.zeros((host_size[0],1),dtype=np.int32)
-            temp_full_index=np.append(np.append(final_index,host_padding,axis=1),final_index2,axis=0)
-            full_index=np.append(full_index,temp_full_index,axis=0)
-
-    elif max_scatter==3:
-        full_index=np.empty((0,4),dtype=np.int32)
-        chunknum=np.minimum(sources.shape[0],np.int(np.ceil(ray_estimate/2e8)))
-        chunknum=np.maximum(2,chunknum)
-        source_chunking=np.linspace(0,sources.shape[0],chunknum,dtype=np.int32)
-        for chunkindex in range(source_chunking.size-1):
-            io_indexing=create_model_index(source_index[source_chunking[chunkindex]:source_chunking[chunkindex+1]],sink_index,scattering_point_index)
-            filtered_index,final_index,first_wave_Rays=launchRaycaster1Dv3(sources,sinks,scattering_points,io_indexing,environment)
-            filtered_index2,final_index2,second_wave_rays=chunkingRaycaster1Dv3(sources,sinks,scattering_points,filtered_index,environment,False)
-            if (filtered_index2.shape[0]*sinks.shape[0]>2e8):
-                temp_chunks=np.int(np.ceil((filtered_index2.shape[0]*sinks.shape[0])/2e8))
-                temp_chunking=np.linspace(0,filtered_index2.shape[0],temp_chunks,dtype=np.int32)
-                temp_index=np.empty((0,4),dtype=np.int32)
-                for temp_chunkindex in range(temp_chunking.shape[0]-1):
-                    filtered_index3,final_index3_part,third_wave_rays=chunkingRaycaster1Dv3(sources,sinks,scattering_points,filtered_index2[temp_chunking[temp_chunkindex]:temp_chunking[temp_chunkindex+1],:],environment,True)
-                    temp_index=np.append(temp_index,final_index3_part,axis=0)
-
-                final_index3=temp_index
-            else:
-                filtered_index3,final_index3,third_wave_rays=chunkingRaycaster1Dv3(sources,sinks,scattering_points,filtered_index2,environment,True)
-
-            #cuda.profile_stop()
-            start=timer()
-            # filtered_network2,final_network2,filtered_index2,final_index2=rayHits(second_ray_payload,distmap2,io_index2,scatter_inc=2,origins_local=second_origin)
-            RAYS_CAST=first_wave_Rays+second_wave_rays+third_wave_rays
-            #create combined path network
-            host_size=np.shape(final_index)
-            host_nans=np.zeros((host_size[0],1),dtype=np.int32)
-            temp_total=np.append(np.append(final_index,host_nans,axis=1),final_index2,axis=0)
-            host_size2=np.shape(temp_total)
-            host_nans2=np.zeros((host_size2[0],1),dtype=np.int32)
-            full_index_temp=np.append(np.append(temp_total,host_nans2,axis=1),final_index3,axis=0)
-            full_index=np.append(full_index,full_index_temp,axis=0)
-            #process for scattering matrix
-
-    raycastingduration=raycasting_timestamp-timer()
-    #print("Raycasting Duration:  {:3.1f} s, Total Rays: {:3.1f}".format(raycastingduration,RAYS_CAST) )
-    return full_index,RAYS_CAST
+    full_index=np.empty((0,np.max(scattering_mask)+2),dtype=np.int32)
+    chunknum=np.minimum(sources,np.int(np.ceil(ray_estimate/2e8)))
+    chunknum=np.maximum(2,chunknum)
+    source_chunking=np.linspace(0,sources,chunknum,dtype=np.int32)
+    for chunkindex in range(source_chunking.size-1):
+        io_indexing=create_scatter_index(source_index[source_chunking[chunkindex]:source_chunking[chunkindex+1]],sink_index,scattering_point_index,scattering_mask)
+        full_index=np.append(full_index,integratedRaycaster(io_indexing,scattering_points,environment),axis=0)
+    
+    
+    raycastingduration=timer()-raycasting_timestamp
+    print("Raycasting Duration:  {:3.1f} s, Total Rays: {:3.1f}".format(raycastingduration,full_index.shape[0]) )
+    return full_index
 
 if __name__ == "__main__":
     print('this is a library')
