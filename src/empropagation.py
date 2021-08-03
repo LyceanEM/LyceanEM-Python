@@ -2888,14 +2888,14 @@ def MaximumDirectivityMap(Etheta,Ephi,source_coords,wavelength,az_res,elev_res,a
 
     return directivity_map
 
-@njit(parallel=True,cache=True, nogil=True)
+@njit(parallel=False,cache=True, nogil=True)
 def MaximumDirectivityMapDiscrete(Etheta,Ephi,source_coords,wavelength,az_res,elev_res,az_range=np.linspace(-180.0,180.0,19),elev_range=np.linspace(-180.0,180.0,19),forming='Total',total_solid_angle=(4*np.pi),phase_resolution=np.asarray([24])):
-    directivity_map=np.zeros((elev_res,az_res,3,len(phase_resolution)),dtype=np.float32)
+    directivity_map=np.zeros((elev_res,az_res,3,phase_resolution.shape[0]),dtype=np.float32)
     command_angles=np.zeros((2),dtype=np.float32)
     for az_inc in range(az_res):
         for elev_inc in range(elev_res):
             inc_res=0
-            for res_inc in range(len(phase_resolution)):
+            for res_inc in range(phase_resolution.shape[0]):
                 resolution=phase_resolution[res_inc]
                 command_angles[0]=az_range[az_inc]
                 command_angles[1]=elev_range[elev_inc]
