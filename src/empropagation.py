@@ -3128,63 +3128,6 @@ def WeightTruncation(weights,resolution):
     new_weights=np.abs(weights)*np.exp(1j*((levels*2*np.pi)-np.pi))
     return new_weights
 
-def PatternPlot(data,az,elev,pattern_min=-40,plot_max=0.0,logtype='amplitude',ticknum=6):
-    #plot the provided linear unnormalised 2d matrix as a 3D surface plot
-    #condition data
-    data=np.abs(data)
-    #calculate log profile
-    if logtype=='power':
-        logdata=10*np.log(data/np.max(data))
-        bar_label='Relative Power (dB)'
-    else:
-        logdata=20*np.log(data/np.max(data))
-        bar_label='Normalised Directivity (dBi)'
-
-    logdata[logdata<=pattern_min]=pattern_min
-    norm_log=(logdata-pattern_min)/np.abs(pattern_min)
-    sinks=np.zeros((len(np.ravel(az)),3),dtype=np.float32)
-    sinks[:,0],sinks[:,1],sinks[:,2]=RF.azeltocart(np.ravel(az),np.ravel(elev),np.ravel(norm_log))
-    dist = np.sqrt(sinks[:,0].reshape(az.shape)**2 + sinks[:,1].reshape(az.shape)**2 + sinks[:,2].reshape(az.shape)**2)
-    dist_max = np.max(dist)
-    my_col = cm.viridis(dist/dist_max)
-    fig=plt.figure()
-    ax=fig.add_subplot(111,projection='3d')
-    V = np.array([[1.1,0,0], [0,1.1,0], [0,0,1.1]],dtype=np.float32)
-    origin = np.zeros((3,3),dtype=np.float32) # origin point
-    offset=np.array([0.8,0.8,0.8],dtype=np.float32).reshape(1,3)
-    ax.quiver(origin[0,:]-offset,origin[0,:]-offset,origin[0,:]-offset, V[0,:], V[1,:],V[2,:], color=['red','blue','green'])
-    plot_handle=ax.plot_surface(sinks[:,0].reshape(az.shape),
-                    sinks[:,1].reshape(az.shape),
-                    sinks[:,2].reshape(az.shape),
-                    facecolors=my_col,
-                    linewidth=0,
-                    antialiased=False,
-                    clim=[0,1])
-
-    ax.set_xlim([-1,1])
-    ax.set_ylim([-1,1])
-    ax.set_zlim([-1,1])
-    plt.axis('off')
-    #plot_handle.set_clim([0,1])
-    cbar=fig.colorbar(plot_handle,ticks=np.linspace(0,1.0,ticknum),extend='both')
-    cbar.ax.set_ylabel(bar_label)
-    c_labels=np.linspace(pattern_min,plot_max,ticknum).astype('str')
-    cbar.set_ticklabels(c_labels.tolist())
-    p = Wedge((0, 0), 1.01, 0, 360, width=0.0001,color='gray')
-    ax.add_patch(p)
-    art3d.pathpatch_2d_to_3d(p, z=0, zdir="x")
-    p = Wedge((0, 0), 1.01, 0, 360, width=0.0001,color='gray')
-    ax.add_patch(p)
-    art3d.pathpatch_2d_to_3d(p, z=0, zdir="y")
-    p = Wedge((0, 0), 1.01, 0, 360, width=0.0001,color='gray')
-    ax.add_patch(p)
-    art3d.pathpatch_2d_to_3d(p, z=0, zdir="z")
-    ax.view_init(elev=45., azim=-45)
-
-
-
-
-
 @njit(cache=True, nogil=True)
 def pathloss(lengths,wavelength):
     #convert length to loss and phase terms

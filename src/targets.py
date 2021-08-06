@@ -85,7 +85,7 @@ def NasaAlmond(resolution='quarter'):
 #     scatter_cloud.normals=o3d.utility.Vector3dVector(np.copy(face_normals))
 #     return ogive_mesh,ogive_scattering_points
 
-def source_cloud_from_shape(o3dshape,offset):
+def source_cloud_from_shape(o3dshape,offset,area_per_point):
     #extracts and calculates the area, normal and centroid for each facet
     source_cloud=o3d.geometry.PointCloud()
     o3dshape.compute_triangle_normals()
@@ -101,8 +101,11 @@ def source_cloud_from_shape(o3dshape,offset):
                                           (vertex_points[area_triangles[tri_index,0],1]+vertex_points[area_triangles[tri_index,1],1]+vertex_points[area_triangles[tri_index,2],1])/3,
                                           (vertex_points[area_triangles[tri_index,0],2]+vertex_points[area_triangles[tri_index,1],2]+vertex_points[area_triangles[tri_index,2],2])/3])
 
-    source_cloud.points=o3d.utility.Vector3dVector(centroids+np.array(o3dshape.triangle_normals)*offset)
-    source_cloud.normals=o3dshape.triangle_normals
+    #source_cloud.points=o3d.utility.Vector3dVector(centroids+np.array(o3dshape.triangle_normals)*offset)
+    #source_cloud.normals=o3dshape.triangle_normals
+    num_points=np.ceil(np.sum(areas)/area_per_point).astype(int)
+    source_cloud=o3dshape.sample_points_poisson_disk(num_points)
+    source_cloud.estimate_normals()
     return source_cloud,areas
 
 def parabola(radius,focal_length,thickness,mesh_length,mesh='top'):
