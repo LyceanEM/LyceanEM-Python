@@ -161,7 +161,8 @@ def calculate_farfield(aperture_coords,
     full_index, rays = RF.workchunkingv2(np.asarray(aperture_coords.points).astype(np.float32),
                                          sinks,
                                          np.asarray(scatter_points.points).astype(np.float32),
-                                         RF.convertTriangles(antenna_solid), 1)
+                                         RF.convertTriangles(antenna_solid), 
+                                         scattering+1)
 
     if ~elements:
         # create efiles for model

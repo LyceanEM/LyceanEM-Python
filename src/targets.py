@@ -1344,3 +1344,7 @@ def parabolic_reflector(diameter,focal_length,thickness,grid_resolution,sides='f
     reflector=defineParabola(diameter,focal_length,thickness,grid_resolution)
 
     return reflector,mesh_points
+
+def parabolic_reflector_segment():
+
+    return reflector,mesh_points

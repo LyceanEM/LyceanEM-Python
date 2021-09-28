@@ -179,10 +179,10 @@ def sourcelaunchtransformGPU(ray_field,launch_point,outgoing_dir):
     This should be called for each `illumination' when the surface is `hit', and when the outgoing ray is calculated
     """
 
-    temp_E_vector= cuda.local.array(shape=(2), dtype=complex128)
+    temp_E_vector= cuda.local.array(shape=(2), dtype=ray_field.dtype)
     temp_E_vector[:]=0.0
-    ray_u= cuda.local.array(shape=(3), dtype=complex64)
-    ray_v= cuda.local.array(shape=(3), dtype=complex64)
+    ray_u= cuda.local.array(shape=(3), dtype=ray_field.dtype)
+    ray_v= cuda.local.array(shape=(3), dtype=ray_field.dtype)
     x_vec= cuda.local.array(shape=(3), dtype=float32)
     y_vec= cuda.local.array(shape=(3), dtype=float32)
     z_vec= cuda.local.array(shape=(3), dtype=float32)
@@ -886,16 +886,140 @@ def timedomainkernal(full_index,point_information,source_sink_index,wavelength,e
                         #           threadIdx.y + ( blockIdx.y * blockDim.y )
      #margin=1e-5
      if (cu_ray_num<full_index.shape[0]):
+        ray_component=cuda.local.array(shape=(3),dtype=np.float64)
+        i = 0 # emulate a C-style for-loop, exposing the idx increment logic
+        #ray_components[cu_ray_num,:]=0.0
+        #print(scattering_matrix.shape[0],scattering_matrix.shape[1])
+        while (i < (full_index.shape[1]-1)):
+            #print(i,full_index[cu_ray_num,i],full_index[cu_ray_num,i+1])
+            if i==0:
+                lengths=float(0)
+                time_delay=float(0)
+                lengths=calc_sep(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],lengths)
+                #print(cu_ray_num,'start ',full_index[cu_ray_num,i]-1,' end ',full_index[cu_ray_num,i+1]-1,lengths,'m')
+                time_delay+=(point_information[full_index[cu_ray_num,i]-1]['ex'].imag)
+                if point_information[full_index[cu_ray_num,i]-1]['Electric']:
+                    ray_component[0]=point_information[full_index[cu_ray_num,i]-1]['ex'].real
+                    ray_component[1]=point_information[full_index[cu_ray_num,i]-1]['ey'].real
+                    ray_component[2]=point_information[full_index[cu_ray_num,i]-1]['ez'].real
+
+                else:
+                    source_impedance=cmath.sqrt(point_information[full_index[cu_ray_num,i]-1]['permeability'].real/point_information[full_index[cu_ray_num,i]-1]['permittivity'].real).real
+                    outgoing_dir = cuda.local.array(shape=(3), dtype=np.float64)
+                    outgoing_dir=calc_dv(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],outgoing_dir)
+                    ray_component[0],ray_component[1],ray_component[2]=cross(point_information[full_index[cu_ray_num,i]-1]['ex'].real,point_information[full_index[cu_ray_num,i]-1]['ey'].real,point_information[full_index[cu_ray_num,i]-1]['ez'].real,outgoing_dir[0],outgoing_dir[1],outgoing_dir[2])
+                    ray_component[0]=ray_component[0]/source_impedance
+                    ray_component[1]=ray_component[1]/source_impedance
+                    ray_component[2]=ray_component[2]/source_impedance
+            elif i!=0:
+                normal = cuda.local.array(shape=(3), dtype=np.float64)
+                normal[0]=point_information[full_index[cu_ray_num,i]-1]['nx']
+                normal[1]=point_information[full_index[cu_ray_num,i]-1]['ny']
+                normal[2]=point_information[full_index[cu_ray_num,i]-1]['nz']
+                ray_component=sourcelaunchtransformGPU(ray_component,point_information[full_index[cu_ray_num,i]],normal)
+                lengths=calc_sep(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],lengths)
+                #print(cu_ray_num,lengths,'m')
+
+            if (full_index[cu_ray_num,i+1]!=0):
+            #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
+            #     #convert source point field to ray
+                  outgoing_dir = cuda.local.array(shape=(3), dtype=np.float64)
+                  outgoing_dir=calc_dv(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],outgoing_dir)
+                  ray_component=sourcelaunchtransformGPU(ray_component,point_information[full_index[cu_ray_num,i]-1],outgoing_dir)
+                  #in time domain, the real part is the magnitude, and the imaginary part is the time delay
+
+                  ray_component[0]=ray_component[0]*point_information[full_index[cu_ray_num,i+1]-1]['ex'].real
+                  ray_component[1]=ray_component[1]*point_information[full_index[cu_ray_num,i+1]-1]['ey'].real
+                  ray_component[2]=ray_component[2]*point_information[full_index[cu_ray_num,i+1]-1]['ez'].real
+                  time_delay+=(point_information[full_index[cu_ray_num,i+1]-1]['ex'].imag)
+                  scatter_index=i
+
+
+            i=i+1
+
+        # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
+        wave_vector=(2.0*cmath.pi)/wavelength[0]
+        #scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
+        loss=(wavelength[0]/(4*cmath.pi*lengths))
+
+        ray_component[0]*=loss
+        ray_component[1]*=loss
+        ray_component[2]*=loss
+        arrival_time[cu_ray_num]=(lengths/3e8)+time_delay
+        #print(arrival_time[cu_ray_num] * 1e9)
+
+        cuda.atomic.min(wake_time,0,arrival_time[cu_ray_num])
+        #pause here to sync threads to make sure wake_time is populated
+        cuda.syncthreads()
+
+        #wake_time=min(arrival_time) the obvious idea didnt work, so will need to think of a way to access the minimum value
+        #print(wake_time[0]*1e9)
+        #wake_time=0.0
+
+
+        #print(ray_component[0].real,ray_component[1].real,ray_component[2].real)
+        time_offset=arrival_time[cu_ray_num]-wake_time[0]
+        #calculate begin index, then add the excitation signal
+        time_index=int(0)
+        time_sep=(1.0/sampling_freq[0])
+        time_index=(time_offset//time_sep)
+        #print(cu_ray_num,time_index)
+        if (time_index+excitation.shape[0])<=time_map.shape[2]:
+            index=0
+            #print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
+            while index < excitation.shape[0]:
+                cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,0],time_index+index,excitation[index]*ray_component[0])
+                cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,1],time_index+index,excitation[index]*ray_component[1])
+                cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,2],time_index+index,excitation[index]*ray_component[2])
+                index+=1
+        else:
+            index=0
+            while index < (time_map.shape[2]-time_index):
+                cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,0],time_index+index,excitation[index]*ray_component[0])
+                cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,1],time_index+index,excitation[index]*ray_component[1])
+                cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,2],time_index+index,excitation[index]*ray_component[2])
+                print(index)
+                index+=1
+
+
+@cuda.jit(device=True)
+def xyztothetaphivectors(ray_component,point_information):
+    #assuming a prime vector along the z axis
+    thetaphi=cuda.local.array(shape=(2),dtype=np.complex128)
+    prime = cuda.local.array(shape=(3), dtype=np.complex128)
+    theta_vector = cuda.local.array(shape=(3), dtype=np.complex128)
+    phi_vector=cuda.local.array(shape=(3), dtype=np.complex128)
+    normal = cuda.local.array(shape=(3), dtype=np.complex128)
+    normal[0]=point_information['nx']
+    normal[1]=point_information['ny']
+    normal[2]=point_information['nz']
+    prime[:]=0.0
+    prime[2]=1.0
+    theta_vector=dot_vec(prime,normal)
+    phi_vector=cross_norm(theta_vector,normal,phi_vector)
+    thetaphi[0]=ray_component[0]*theta_vector[0]+ray_component[1]*theta_vector[1]+ray_component[2]*theta_vector[2]
+    thetaphi[1]=ray_component[0]*phi_vector[0]+ray_component[1]*phi_vector[1]+ray_component[2]*phi_vector[2]
+    return thetaphi
+
+@cuda.jit
+def timedomainthetaphi(full_index,point_information,source_sink_index,wavelength,excitation,sampling_freq,arrival_time,wake_time,time_map):
+    #this kernal is planned to calculate the time domain response for a given input signal
+    #for flexibility this should probably start out as smn port pairs
+     cu_ray_num = cuda.grid(1) # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
+                        #           threadIdx.y + ( blockIdx.y * blockDim.y )
+     #margin=1e-5
+     if (cu_ray_num<full_index.shape[0]):
         ray_component=cuda.local.array(shape=(3),dtype=np.complex128)
         i = 0 # emulate a C-style for-loop, exposing the idx increment logic
         #ray_components[cu_ray_num,:]=0.0
         #print(scattering_matrix.shape[0],scattering_matrix.shape[1])
         while (i < (full_index.shape[1]-1)):
-            #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
+            #print(i,full_index[cu_ray_num,i],full_index[cu_ray_num,i+1])
             if i==0:
                 lengths=float(0)
                 time_delay=float(0)
                 lengths=calc_sep(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],lengths)
+                #print(cu_ray_num,'start ',full_index[cu_ray_num,i]-1,' end ',full_index[cu_ray_num,i+1]-1,lengths,'m')
                 time_delay+=(point_information[full_index[cu_ray_num,i]-1]['ex'].imag)
                 if point_information[full_index[cu_ray_num,i]-1]['Electric']:
                     ray_component[0]=point_information[full_index[cu_ray_num,i]-1]['ex']
@@ -917,6 +1041,7 @@ def timedomainkernal(full_index,point_information,source_sink_index,wavelength,e
                 normal[2]=point_information[full_index[cu_ray_num,i]-1]['nz']
                 ray_component=sourcelaunchtransformGPU(ray_component,point_information[full_index[cu_ray_num,i]],normal)
                 lengths=calc_sep(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],lengths)
+                #print(cu_ray_num,lengths,'m')
 
             if (full_index[cu_ray_num,i+1]!=0):
             #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
@@ -944,29 +1069,31 @@ def timedomainkernal(full_index,point_information,source_sink_index,wavelength,e
         ray_component[1]*=loss
         ray_component[2]*=loss
         arrival_time[cu_ray_num]=(lengths/3e8)+time_delay
+        #print(arrival_time[cu_ray_num] * 1e9)
 
         cuda.atomic.min(wake_time,0,arrival_time[cu_ray_num])
         #pause here to sync threads to make sure wake_time is populated
         cuda.syncthreads()
 
         #wake_time=min(arrival_time) the obvious idea didnt work, so will need to think of a way to access the minimum value
-        #print(wake_time[0])
+        #print(wake_time[0]*1e9)
         #wake_time=0.0
-
+        thetaphi=xyztothetaphivectors(ray_component,point_information[full_index[cu_ray_num,i]-1])
 
         #print(ray_component[0].real,ray_component[1].real,ray_component[2].real)
-        time_offset=arrival_time[cu_ray_num]#-wake_time[0]
+        time_offset=arrival_time[cu_ray_num]-wake_time[0]
         #calculate begin index, then add the excitation signal
         time_index=int(0)
         time_sep=(1.0/sampling_freq[0])
         time_index=(time_offset//time_sep)
-
+        #print(cu_ray_num,time_index)
         if (time_index+excitation.shape[0])<=time_map.shape[2]:
             index=0
+            #print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
             while index < excitation.shape[0]:
                 cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,0],time_index+index,excitation[index]*abs(ray_component[0]))
                 cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,1],time_index+index,excitation[index]*abs(ray_component[1]))
-                cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,2],time_index+index,excitation[index]*abs(ray_component[2]))
+                #cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,2],time_index+index,excitation[index]*abs(ray_component[2]))
                 index+=1
         else:
             index=0
@@ -974,8 +1101,8 @@ def timedomainkernal(full_index,point_information,source_sink_index,wavelength,e
                 cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,0],time_index+index,excitation[index]*abs(ray_component[0]))
                 cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,1],time_index+index,excitation[index]*abs(ray_component[1]))
                 cuda.atomic.add(time_map[source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1],:,2],time_index+index,excitation[index]*abs(ray_component[2]))
+                print(index)
                 index+=1
-
 
 @cuda.jit
 def pathlength(network_index,point_information,distances):
@@ -1392,58 +1519,6 @@ def EMWrapperMerged(source_num,sink_num,point_informationv2,full_index,scatterin
     deallocs.clear()
     return scatter_map2
 
-#@njit(cache=True, nogil=True)
-def EMWrapper(source_num,sink_num,point_informationv2,full_index,scattering_coefficient,wavelength):
-    #diff_sources=np.size(np.unique(full_index[:,0]))
-    paths=EMGPUPathLengths(source_num,sink_num,full_index,point_informationv2)
-    polar_coefficients=EMGPUPolarMixing(source_num,sink_num,full_index,point_informationv2)
-    #ray_components=EM.EMGPUWrapper(num_sources,num_sinks,full_index,point_informationv2,wavelength)
-    depthslice,scatter_index=targettingindex(full_index)
-    loss=pathloss(paths,wavelength)*(np.abs(np.power(scattering_coefficient,scatter_index-1))*np.exp(-1j*np.pi))
-    full_rays=loss.reshape(loss.shape[0],1)*polar_coefficients
-    if full_index.shape[1]==2:
-        depth_slicelos=full_index
-        scatter_map2=RF.scatter_net_sortEM(source_num,sink_num,np.zeros((source_num,sink_num,3,2),dtype=np.complex64),depth_slicelos,full_rays,0)
-    elif full_index.shape[1]==3:
-        depth_slicelos=depthslice[scatter_index==1,:]
-        depth_slicebounce=depthslice[scatter_index==2,:]
-        scatter_map2=RF.scatter_net_sortEM(source_num,sink_num,np.zeros((source_num,sink_num,3,2),dtype=np.complex64),depth_slicelos,full_rays[scatter_index==1,:],0)
-        scatter_map2=RF.scatter_net_sortEM(source_num,sink_num,scatter_map2,depth_slicebounce,full_rays[scatter_index==2,:],1)
-    elif full_index.shape[1]==4:
-        depth_slicelos=depthslice[scatter_index==1,:]
-        depth_slicebounce1=depthslice[scatter_index==2,:]
-        depth_slicebounce2=depthslice[scatter_index==3,:]
-        scatter_map2=RF.scatter_net_sortEM(source_num,sink_num,np.zeros((source_num,sink_num,3,2),dtype=np.complex64),depth_slicelos,full_rays[scatter_index==1,:],0)
-        scatter_map2=RF.scatter_net_sortEM(source_num,sink_num,scatter_map2,depth_slicebounce1,full_rays[scatter_index==2,:],1)
-        scatter_map2=RF.scatter_net_sortEM(source_num,sink_num,scatter_map2,depth_slicebounce2,full_rays[scatter_index==3,:],1)
-
-    return scatter_map2
-
-def EMWrapperv2(source_num,sink_num,point_informationv2,full_index,scattering_coefficient,wavelength):
-    #diff_sources=np.size(np.unique(full_index[:,0]))
-    #paths=EMGPUPathLengths(source_num,sink_num,full_index,point_informationv2)
-    paths,polar_coefficients=EMGPUPathandPolarMixing(source_num,sink_num,full_index,point_informationv2)
-    #ray_components=EM.EMGPUWrapper(num_sources,num_sinks,full_index,point_informationv2,wavelength)
-    depthslice,scatter_index=targettingindex(full_index)
-    loss=pathloss(paths,wavelength)*(np.abs(np.power(scattering_coefficient,scatter_index-1))*np.exp(-1j*np.pi))
-    full_rays=loss.reshape(loss.shape[0],1)*polar_coefficients
-    if full_index.shape[1]==2:
-        depth_slicelos=full_index
-        scatter_map2=RF.scatter_net_sortEM(source_num,sink_num,np.zeros((source_num,sink_num,3,2),dtype=np.complex64),depth_slicelos,full_rays,0)
-    elif full_index.shape[1]==3:
-        depth_slicelos=depthslice[scatter_index==1,:]
-        depth_slicebounce=depthslice[scatter_index==2,:]
-        scatter_map2=RF.scatter_net_sortEM(source_num,sink_num,np.zeros((source_num,sink_num,3,2),dtype=np.complex64),depth_slicelos,full_rays[scatter_index==1,:],0)
-        scatter_map2=RF.scatter_net_sortEM(source_num,sink_num,scatter_map2,depth_slicebounce,full_rays[scatter_index==2,:],1)
-    elif full_index.shape[1]==4:
-        depth_slicelos=depthslice[scatter_index==1,:]
-        depth_slicebounce1=depthslice[scatter_index==2,:]
-        depth_slicebounce2=depthslice[scatter_index==3,:]
-        scatter_map2=RF.scatter_net_sortEM(source_num,sink_num,np.zeros((source_num,sink_num,3,2),dtype=np.complex64),depth_slicelos,full_rays[scatter_index==1,:],0)
-        scatter_map2=RF.scatter_net_sortEM(source_num,sink_num,scatter_map2,depth_slicebounce1,full_rays[scatter_index==2,:],1)
-        scatter_map2=RF.scatter_net_sortEM(source_num,sink_num,scatter_map2,depth_slicebounce2,full_rays[scatter_index==3,:],1)
-
-    return scatter_map2
 #@njit
 def time_indexing(arr, starting_num, arr_length,fill_value=0.0):
     if arr_length<arr.shape[0]:
@@ -1560,6 +1635,7 @@ def TimeDomainv2(source_num,
     maximum_chunk_size=2**8
     path_lengths=np.zeros((ray_num),dtype=np.float32)
     time_map=np.zeros((source_num,sink_num,num_samples,3),dtype=np.float64)
+    print(time_map.nbytes)
     d_time_map=cuda.device_array((time_map.shape[0],time_map.shape[1],time_map.shape[2],time_map.shape[3]),dtype=np.float64)
     d_time_map=cuda.to_device(time_map)
     d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=scattering_t)
@@ -1575,7 +1651,7 @@ def TimeDomainv2(source_num,
     d_arrival_times=cuda.device_array(full_index.shape[0],dtype=np.float64)
     d_arrival_times=cuda.to_device(np.zeros(full_index.shape[0],dtype=np.float64))
     #divide in terms of a block for each source, then
-    depthslice,_=targettingindex(full_index)
+    depthslice,_=targettingindex(copy.deepcopy(full_index))
     depthslice[:,0]-=1
     depthslice[:,1]-=(source_num+1)
     d_target_index = cuda.device_array((depthslice.shape[0],depthslice.shape[1]), dtype=np.int64)
@@ -1609,708 +1685,316 @@ def TimeDomainv2(source_num,
     wake_time=cp.asnumpy(d_wake_time)
     return time_map, wake_time
 
-#@njit
-def EMGPUCompressedScattering(source_num,sink_num,full_index,point_information,wavelength):
+def TimeDomainv3(source_num,
+                 sink_num,
+                 point_informationv2,
+                 full_index,
+                 scattering_coefficient,
+                 wavelength,
+                 excitation_signal,
+                 sampling_freq,
+                 num_samples):
     """
-    wrapper for the GPU EM processer, outputting the resultant ray components as complex values, allowing for the whole thing to be sorted again.
-    At present, the indexing only supports processing the rays for line of sight and single bounce, but that will be sorted quite quickly
+    New wrapper to run time domain propagation on the GPU, allowing for faster simulations.
+    This model is static, as the points do not currently allow for motion vectors
     Parameters
     ----------
+    source_num : int
+        DESCRIPTION.
+    sink_num : int
+        DESCRIPTION.
+    point_informationv2 : point data type
+        currently has position, normal vector, and electric weighting in each axis, to allow for polarised scattering.
     full_index : int array
-        index of all successful rays
-    point_information : TYPE
-        DESCRIPTION.
-    wavelength : TYPE
-        DESCRIPTION.
+        index of all sucesful ray paths from source (1 to source_num+1), to sink (source_num+1 to sink_num+source_num+1), with all intermediate steps
+    scattering_coefficient : float
+        allows for exploration of different spreading factors
+    wavelength : float
+        wavelength of the central frequency
+    excitation_signal : float array
+        the excitation signal, sampled at sampling_freq rate.
+    sampling_freq : float
+        the sampling frequency in Hz
+    num_samples : TYPE
+        the number of samples required from the first incoming wave
 
     Returns
     -------
-    resultant_rays : TYPE
-        DESCRIPTION.
+    time_map : array of floats
+        an array of floats of size source_num * sink_num * num_samples * 3 to contain the 3D polarised information in the time domain
 
+    wake_time : float
+        the time in seconds that the earliest return arrived at the sinks
     """
-    #cuda.select_device(0)
-    #network_index,point_information,ray_components
     ray_num=full_index.shape[0]
+    threads_in_block=256
+    max_blocks=65535
     maximum_chunk_size=2**8
-    threads_in_block=1024
-    maximum_sources=1
-    scattering_matrix=np.zeros((source_num,sink_num,3),dtype=np.complex64)
-    #source_chunks=np.linspace(0,source_num-1,math.ceil(source_num/maximum_sources)+1,dtype=np.int32)
-    #distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
-    #distance_temp[:]=math.inf
-    #dist_list=cuda.to_device(distance_temp)
-    d_problem_size=cuda.device_array((2),dtype=np.int32)
-    d_problem_size=cuda.to_device(np.asarray([source_num,sink_num],dtype=np.int32))
-    d_wavelength=cuda.device_array((1),dtype=np.complex64)
-    d_wavelength=cuda.to_device(np.csingle(np.ones((1),dtype=np.complex64)*wavelength))
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
-    d_point_information=cuda.to_device(point_information)
-    for source_index in range(source_num):
-        temp_matrix=np.zeros((sink_num,3),dtype=np.complex64)
-        d_scatter_matrix=cuda.device_array((temp_matrix.shape),dtype=np.complex64)
-        d_scatter_matrix=cuda.to_device(temp_matrix)
-        temp_payload=full_index[full_index[:,0]==(source_index+1),:]
-        ray_chunks=np.linspace(0,temp_payload.shape[0],math.ceil(temp_payload.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
-        for n in range(ray_chunks.shape[0]-1):
-            chunk_payload=temp_payload[ray_chunks[n]:ray_chunks[n+1],:]
-            d_full_index = cuda.device_array((chunk_payload.shape[0],chunk_payload.shape[1]), dtype=np.int64)
-            d_full_index = cuda.to_device(chunk_payload)
+    path_lengths=np.zeros((ray_num),dtype=np.float32)
+    time_map=np.zeros((source_num,sink_num,num_samples,3),dtype=np.float64)
+    flag=True
+    if np.ceil(time_map.nbytes/1e9)>1:
+        #setup time_map chunking
+        print('source chunking ',time_map.nbytes/1e9,'Gb')
+        num_chunks=np.ceil(time_map.nbytes/1e9).astype(np.int32)
+        source_chunking=np.linspace(0,source_num,num_chunks+1).astype(np.int32)
+        #setup wake time as a second
+        wake_time=np.ones((1),dtype=np.float64)
+        wake_times = np.full((len(source_chunking)-1), 1, dtype=np.float64)
+        for n in range(len(source_chunking) - 1):
+            #print(n,time_map[source_chunking[n]:source_chunking[n+1],:,:,:].shape)
+            d_temp_map=cuda.device_array((time_map[source_chunking[n]:source_chunking[n+1],:,:,:].shape[0],time_map.shape[1],time_map.shape[2],time_map.shape[3]),dtype=np.float64)
+            d_temp_map = cuda.to_device(time_map[source_chunking[n]:source_chunking[n+1],:,:,:])
+            d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=scattering_t)
+            d_point_information = cuda.to_device(point_informationv2)
+            d_excitation = cuda.device_array(excitation_signal.shape[0], dtype=np.float64)
+            d_excitation = cuda.to_device(excitation_signal)
+            d_wavelength = cuda.device_array((1), dtype=np.complex64)
+            d_wavelength = cuda.to_device(np.ones((1), dtype=np.float64) * wavelength)
+            d_sampling_freq = cuda.device_array((1), dtype=np.float64)
+            d_sampling_freq = cuda.to_device(np.ones((1), dtype=np.float64) * sampling_freq)
+            d_wake_time = cuda.device_array((1), dtype=np.float64)
+            d_wake_time = cuda.to_device(wake_times)
+            sources=np.linspace(source_chunking[n]+1,source_chunking[n+1],source_chunking[n+1]-source_chunking[n]).astype(np.int32)
+            temp_index=full_index[np.isin(full_index[:, 0], sources), :]
+            d_arrival_times = cuda.device_array(temp_index.shape[0], dtype=np.float64)
+            d_arrival_times = cuda.to_device(np.zeros(temp_index.shape[0], dtype=np.float64))
+            depthslice, _ = targettingindex(copy.deepcopy(temp_index))
+            depthslice[:, 0] -= (1+source_chunking[n])
+            depthslice[:, 1] -= (source_num + 1)
+            d_target_index = cuda.device_array((depthslice.shape[0], depthslice.shape[1]), dtype=np.int64)
+            d_target_index = cuda.to_device(depthslice)
+            d_full_index = cuda.device_array((temp_index.shape[0], full_index.shape[1]), dtype=np.int64)
+            # d_paths=cuda.device_array((path_lengths.shape[0]),dtype=np.float32)
+            # d_polar_c=cuda.device_array((polar_coefficients.shape),dtype=np.complex64)
+            # paths=cp.zeros((path_lengths.shape[0]),dtype=np.float32)
+            # polar_c=cp.zeros((polar_coefficients.shape),dtype=np.complex64)
+            d_full_index = cuda.to_device(temp_index)
             # Here, we choose the granularity of the threading on our device. We want
             # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
             # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
-            grids=(math.ceil(chunk_payload.shape[0]/threads_in_block))
-            threads = (min(chunk_payload.shape[0],threads_in_block))
+
+            grids = (math.ceil(temp_index.shape[0] / threads_in_block))
+            threads = threads_in_block
+            # print(grids,' blocks, ',threads,' threads')
             # Execute the kernel
-            #cuda.profile_start()
-            scatteringkernalv2[grids, threads](d_problem_size,d_full_index,d_point_information,d_scatter_matrix,d_wavelength)
-            #cuda.profile_stop()
-            #distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-            #first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
-            #resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
+            # cuda.profile_start()
+            timedomainkernal[grids, threads](d_full_index, d_point_information, d_target_index, d_wavelength,
+                                             d_excitation, d_sampling_freq, d_arrival_times, d_wake_time, d_temp_map)
+            #print(source_chunking[n],source_chunking[n+1])
+            
+            time_map[source_chunking[n]:source_chunking[n+1],:,:,:] = cp.asnumpy(d_temp_map)
+            wake_times[n] = cp.asnumpy(d_wake_time)[0]
+            wake_time=wake_times[n]
 
-        scattering_matrix[source_index,:,:]=d_scatter_matrix.copy_to_host()
-    #scattering_matrix=d_scatter_matrix.copy_to_host()
-    #cuda.close()
-    return scattering_matrix
-
-
-def EMGPUCompressedScatteringtest(source_num,sink_num,full_index,point_information,scattering_coefficient,wavelength):
-    """
-    wrapper for the GPU EM processer, outputting the resultant ray components as complex values, allowing for the whole thing to be sorted again.
-    At present, the indexing only supports processing the rays for line of sight and single bounce, but that will be sorted quite quickly
-    Parameters
-    ----------
-    full_index : int array
-        index of all successful rays
-    point_information : TYPE
-        DESCRIPTION.
-    wavelength : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    resultant_rays : TYPE
-        DESCRIPTION.
-
-    """
-    #cuda.select_device(0)
-    #network_index,point_information,ray_components
-    ray_num=full_index.shape[0]
-    maximum_chunk_size=2**7
-    threads_in_block=1024
-    maximum_sources=1
-    scattering_matrix=np.zeros((len(full_index)),dtype=np.complex64)
-    #source_chunks=np.linspace(0,source_num-1,math.ceil(source_num/maximum_sources)+1,dtype=np.int32)
-    #distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
-    #distance_temp[:]=math.inf
-    #dist_list=cuda.to_device(distance_temp)
-    d_problem_size=cuda.device_array((2),dtype=np.int32)
-    d_problem_size=cuda.to_device(np.asarray([source_num,sink_num],dtype=np.int32))
-    d_wavelength=cuda.device_array((1),dtype=np.complex128)
-    d_wavelength=cuda.to_device(np.csingle(np.ones((1),dtype=np.complex128)*wavelength))
-    d_scattering=cuda.device_array((1),dtype=np.complex128)
-    d_scattering=cuda.to_device(np.csingle(np.ones((1),dtype=np.complex128)*scattering_coefficient))
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
-    d_point_information=cuda.to_device(point_information)
-    #for source_index in range(source_num):
-    #temp_payload=full_index[full_index[:,0]==(source_index+1),:]
-    temp_payload=full_index
-    ray_chunks=np.linspace(0,temp_payload.shape[0],math.ceil(temp_payload.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
-    for n in range(ray_chunks.shape[0]-1):
-        chunk_payload=temp_payload[ray_chunks[n]:ray_chunks[n+1],:]
-        d_full_index = cuda.device_array((chunk_payload.shape[0],chunk_payload.shape[1]), dtype=np.int64)
-        d_full_index = cuda.to_device(chunk_payload)
-        temp_matrix=np.zeros((len(chunk_payload)),dtype=np.complex128)
-        d_scatter_matrix=cuda.device_array((temp_matrix.shape),dtype=np.complex64)
-        d_scatter_matrix=cuda.to_device(temp_matrix)
+        print(wake_times)
+    else:
+        d_time_map=cuda.device_array((time_map.shape[0],time_map.shape[1],time_map.shape[2],time_map.shape[3]),dtype=np.float64)
+        d_time_map=cuda.to_device(time_map)
+        d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=scattering_t)
+        d_point_information=cuda.to_device(point_informationv2)
+        d_excitation=cuda.device_array(excitation_signal.shape[0],dtype=np.float64)
+        d_excitation=cuda.to_device(excitation_signal)
+        d_wavelength=cuda.device_array((1),dtype=np.complex64)
+        d_wavelength=cuda.to_device(np.ones((1),dtype=np.float64)*wavelength)
+        d_sampling_freq=cuda.device_array((1),dtype=np.float64)
+        d_sampling_freq=cuda.to_device(np.ones((1),dtype=np.float64)*sampling_freq)
+        d_wake_time=cuda.device_array((1),dtype=np.float64)
+        d_wake_time=cuda.to_device(np.ones((1),dtype=np.float64))
+        d_arrival_times=cuda.device_array(full_index.shape[0],dtype=np.float64)
+        d_arrival_times=cuda.to_device(np.zeros(full_index.shape[0],dtype=np.float64))
+        #divide in terms of a block for each source, then
+        depthslice,_=targettingindex(copy.deepcopy(full_index))
+        depthslice[:,0]-=1
+        depthslice[:,1]-=(source_num+1)
+        d_target_index = cuda.device_array((depthslice.shape[0],depthslice.shape[1]), dtype=np.int64)
+        d_target_index=cuda.to_device(depthslice)
+        d_full_index = cuda.device_array((full_index.shape[0],full_index.shape[1]), dtype=np.int64)
+        #d_paths=cuda.device_array((path_lengths.shape[0]),dtype=np.float32)
+        #d_polar_c=cuda.device_array((polar_coefficients.shape),dtype=np.complex64)
+        #paths=cp.zeros((path_lengths.shape[0]),dtype=np.float32)
+        #polar_c=cp.zeros((polar_coefficients.shape),dtype=np.complex64)
+        d_full_index = cuda.to_device(full_index)
         # Here, we choose the granularity of the threading on our device. We want
         # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
         # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
-        grids=(math.ceil(chunk_payload.shape[0]/threads_in_block))
-        threads = (min(chunk_payload.shape[0],threads_in_block))
+
+        grids=(math.ceil(full_index.shape[0]/threads_in_block))
+        threads = threads_in_block
+        #print(grids,' blocks, ',threads,' threads')
         # Execute the kernel
         #cuda.profile_start()
-        scatteringkernaltest[grids, threads](d_problem_size,d_full_index,d_point_information,d_scatter_matrix,d_scattering,d_wavelength)
+        timedomainkernal[grids, threads](d_full_index,d_point_information,d_target_index,d_wavelength,d_excitation,d_sampling_freq,d_arrival_times,d_wake_time,d_time_map)
+        #polaranddistance(d_full_index,d_point_information,polar_c,paths)
         #cuda.profile_stop()
-        scattering_matrix[ray_chunks[n]:ray_chunks[n+1]]=d_scatter_matrix.copy_to_host()
+        #ray_components[ray_chunks[n]:ray_chunks[n+1],:]=d_scatter_matrix.copy_to_host()
         #distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
         #first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
         #resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
+        #chunks=np.linspace(0,path_lengths.shape[0],math.ceil(path_lengths.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
+        #for n in range(chunks.shape[0]-1):
+        #polar_coefficients=d_polar_c.copy_to_host()
+        time_map=cp.asnumpy(d_time_map)
+        wake_times=cp.asnumpy(d_wake_time)
+    return time_map, wake_times
 
-    #scattering_matrix[source_index,:,:]=d_scatter_matrix.copy_to_host()
 
-    #scattering_matrix=d_scatter_matrix.copy_to_host()
-    #cuda.close()
-    return scattering_matrix
-
-def EMGPUCompressedScatteringv2(source_num,sink_num,full_index,point_information,scattering_coefficient,wavelength):
+def TimeDomainThetaPhi(source_num,
+                 sink_num,
+                 point_informationv2,
+                 full_index,
+                 scattering_coefficient,
+                 wavelength,
+                 excitation_signal,
+                 sampling_freq,
+                 num_samples):
     """
-    wrapper for the GPU EM processer, outputting the resultant ray components as complex values, allowing for the whole thing to be sorted again.
-    At present, the indexing only supports processing the rays for line of sight and single bounce, but that will be sorted quite quickly
+    New wrapper to run time domain propagation on the GPU, allowing for faster simulations.
+    This model is static, as the points do not currently allow for motion vectors
     Parameters
     ----------
+    source_num : int
+        DESCRIPTION.
+    sink_num : int
+        DESCRIPTION.
+    point_informationv2 : point data type
+        currently has position, normal vector, and electric weighting in each axis, to allow for polarised scattering.
     full_index : int array
-        index of all successful rays
-    point_information : TYPE
-        DESCRIPTION.
-    wavelength : TYPE
-        DESCRIPTION.
+        index of all sucesful ray paths from source (1 to source_num+1), to sink (source_num+1 to sink_num+source_num+1), with all intermediate steps
+    scattering_coefficient : float
+        allows for exploration of different spreading factors
+    wavelength : float
+        wavelength of the central frequency
+    excitation_signal : float array
+        the excitation signal, sampled at sampling_freq rate.
+    sampling_freq : float
+        the sampling frequency in Hz
+    num_samples : TYPE
+        the number of samples required from the first incoming wave
 
     Returns
     -------
-    resultant_rays : TYPE
-        DESCRIPTION.
+    time_map : array of floats
+        an array of floats of size source_num * sink_num * num_samples * 2 to contain the 3D polarised information in the time domain
 
+    wake_time : float
+        the time in seconds that the earliest return arrived at the sinks
     """
-    #cuda.select_device(0)
-    #network_index,point_information,ray_components
-    ray_num=full_index.shape[0]
-    maximum_chunk_size=2**7
-    threads_in_block=1024
-    maximum_sources=1
-    scattering_matrix=np.zeros((source_num,sink_num,3),dtype=np.complex64)
-    #source_chunks=np.linspace(0,source_num-1,math.ceil(source_num/maximum_sources)+1,dtype=np.int32)
-    #distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
-    #distance_temp[:]=math.inf
-    #dist_list=cuda.to_device(distance_temp)
-    d_problem_size=cuda.device_array((2),dtype=np.int32)
-    d_problem_size=cuda.to_device(np.asarray([source_num,sink_num],dtype=np.int32))
-    d_wavelength=cuda.device_array((1),dtype=np.complex128)
-    d_wavelength=cuda.to_device(np.csingle(np.ones((1),dtype=np.complex128)*wavelength))
-    d_scattering=cuda.device_array((1),dtype=np.complex128)
-    d_scattering=cuda.to_device(np.csingle(np.ones((1),dtype=np.complex128)*scattering_coefficient))
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
-    d_point_information=cuda.to_device(point_information)
-    for source_index in range(source_num):
-        temp_matrix=np.zeros((sink_num,3),dtype=np.complex128)
-        d_scatter_matrix=cuda.device_array((temp_matrix.shape),dtype=np.complex64)
-        temp_payload=full_index[full_index[:,0]==(source_index+1),:]
-        ray_chunks=np.linspace(0,temp_payload.shape[0],math.ceil(temp_payload.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
-        for n in range(ray_chunks.shape[0]-1):
-            d_scatter_matrix=cuda.to_device(temp_matrix)
-            chunk_payload=temp_payload[ray_chunks[n]:ray_chunks[n+1],:]
-            d_full_index = cuda.device_array((chunk_payload.shape[0],chunk_payload.shape[1]), dtype=np.int64)
-            d_full_index = cuda.to_device(chunk_payload)
+    ray_num = full_index.shape[0]
+    threads_in_block = 256
+    max_blocks = 65535
+    maximum_chunk_size = 2 ** 8
+    path_lengths = np.zeros((ray_num), dtype=np.float32)
+    time_map = np.zeros((source_num, sink_num, num_samples, 2), dtype=np.float64)
+    flag = True
+    if np.ceil(time_map.nbytes / 1e9) > 1:
+        # setup time_map chunking
+        print('source chunking ', time_map.nbytes / 1e9, 'Gb')
+        num_chunks = np.ceil(time_map.nbytes / 1e9).astype(np.int32)
+        source_chunking = np.linspace(0, source_num, num_chunks + 1).astype(np.int32)
+        # setup wake time as a second
+        wake_time = np.ones((1), dtype=np.float64)
+        wake_times = np.full((len(source_chunking) - 1), 1, dtype=np.float64)
+        for n in range(len(source_chunking) - 1):
+            # print(n,time_map[source_chunking[n]:source_chunking[n+1],:,:,:].shape)
+            d_temp_map = cuda.device_array((time_map[source_chunking[n]:source_chunking[n + 1], :, :, :].shape[0],
+                                            time_map.shape[1], time_map.shape[2], time_map.shape[3]), dtype=np.float64)
+            d_temp_map = cuda.to_device(time_map[source_chunking[n]:source_chunking[n + 1], :, :, :])
+            d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=scattering_t)
+            d_point_information = cuda.to_device(point_informationv2)
+            d_excitation = cuda.device_array(excitation_signal.shape[0], dtype=np.float64)
+            d_excitation = cuda.to_device(excitation_signal)
+            d_wavelength = cuda.device_array((1), dtype=np.complex64)
+            d_wavelength = cuda.to_device(np.ones((1), dtype=np.float64) * wavelength)
+            d_sampling_freq = cuda.device_array((1), dtype=np.float64)
+            d_sampling_freq = cuda.to_device(np.ones((1), dtype=np.float64) * sampling_freq)
+            d_wake_time = cuda.device_array((1), dtype=np.float64)
+            d_wake_time = cuda.to_device(wake_times)
+            sources = np.linspace(source_chunking[n] + 1, source_chunking[n + 1],
+                                  source_chunking[n + 1] - source_chunking[n]).astype(np.int32)
+            temp_index = full_index[np.isin(full_index[:, 0], sources), :]
+            d_arrival_times = cuda.device_array(temp_index.shape[0], dtype=np.float64)
+            d_arrival_times = cuda.to_device(np.zeros(temp_index.shape[0], dtype=np.float64))
+            depthslice, _ = targettingindex(copy.deepcopy(temp_index))
+            depthslice[:, 0] -= (1 + source_chunking[n])
+            depthslice[:, 1] -= (source_num + 1)
+            d_target_index = cuda.device_array((depthslice.shape[0], depthslice.shape[1]), dtype=np.int64)
+            d_target_index = cuda.to_device(depthslice)
+            d_full_index = cuda.device_array((temp_index.shape[0], full_index.shape[1]), dtype=np.int64)
+            # d_paths=cuda.device_array((path_lengths.shape[0]),dtype=np.float32)
+            # d_polar_c=cuda.device_array((polar_coefficients.shape),dtype=np.complex64)
+            # paths=cp.zeros((path_lengths.shape[0]),dtype=np.float32)
+            # polar_c=cp.zeros((polar_coefficients.shape),dtype=np.complex64)
+            d_full_index = cuda.to_device(temp_index)
             # Here, we choose the granularity of the threading on our device. We want
             # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
             # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
-            grids=(math.ceil(chunk_payload.shape[0]/threads_in_block))
-            threads = (min(chunk_payload.shape[0],threads_in_block))
+
+            grids = (math.ceil(temp_index.shape[0] / threads_in_block))
+            threads = threads_in_block
+            # print(grids,' blocks, ',threads,' threads')
             # Execute the kernel
-            #cuda.profile_start()
-            scatteringkernalv3[grids, threads](d_problem_size,d_full_index,d_point_information,d_scatter_matrix,d_scattering,d_wavelength)
-            #cuda.profile_stop()
-            temp_matrix=d_scatter_matrix.copy_to_host()
-            #distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-            #first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
-            #resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
+            # cuda.profile_start()
+            timedomainthetaphi[grids, threads](d_full_index, d_point_information, d_target_index, d_wavelength,
+                                             d_excitation, d_sampling_freq, d_arrival_times, d_wake_time, d_temp_map)
+            # print(source_chunking[n],source_chunking[n+1])
 
-        #scattering_matrix[source_index,:,:]=d_scatter_matrix.copy_to_host()
-        scattering_matrix[source_index,:,:]=temp_matrix
-    #scattering_matrix=d_scatter_matrix.copy_to_host()
-    #cuda.close()
-    return scattering_matrix
+            time_map[source_chunking[n]:source_chunking[n + 1], :, :, :] = cp.asnumpy(d_temp_map)
+            wake_times[n] = cp.asnumpy(d_wake_time)[0]
+            wake_time = wake_times[n]
 
-def EMGPUCompressedScatteringv3(source_num,sink_num,full_index,point_information,scattering_coefficient,wavelength):
-    """
-    wrapper for the GPU EM processer, outputting the resultant ray components as complex values, allowing for the whole thing to be sorted again.
-    At present, the indexing only supports processing the rays for line of sight and single bounce, but that will be sorted quite quickly
-    Parameters
-    ----------
-    full_index : int array
-        index of all successful rays
-    point_information : TYPE
-        DESCRIPTION.
-    wavelength : TYPE
-        DESCRIPTION.
+        print(wake_times)
+    else:
+        d_time_map = cuda.device_array((time_map.shape[0], time_map.shape[1], time_map.shape[2], time_map.shape[3]),
+                                       dtype=np.float64)
+        d_time_map = cuda.to_device(time_map)
+        d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=scattering_t)
+        d_point_information = cuda.to_device(point_informationv2)
+        d_excitation = cuda.device_array(excitation_signal.shape[0], dtype=np.float64)
+        d_excitation = cuda.to_device(excitation_signal)
+        d_wavelength = cuda.device_array((1), dtype=np.complex64)
+        d_wavelength = cuda.to_device(np.ones((1), dtype=np.float64) * wavelength)
+        d_sampling_freq = cuda.device_array((1), dtype=np.float64)
+        d_sampling_freq = cuda.to_device(np.ones((1), dtype=np.float64) * sampling_freq)
+        d_wake_time = cuda.device_array((1), dtype=np.float64)
+        d_wake_time = cuda.to_device(np.ones((1), dtype=np.float64))
+        d_arrival_times = cuda.device_array(full_index.shape[0], dtype=np.float64)
+        d_arrival_times = cuda.to_device(np.zeros(full_index.shape[0], dtype=np.float64))
+        # divide in terms of a block for each source, then
+        depthslice, _ = targettingindex(copy.deepcopy(full_index))
+        depthslice[:, 0] -= 1
+        depthslice[:, 1] -= (source_num + 1)
+        d_target_index = cuda.device_array((depthslice.shape[0], depthslice.shape[1]), dtype=np.int64)
+        d_target_index = cuda.to_device(depthslice)
+        d_full_index = cuda.device_array((full_index.shape[0], full_index.shape[1]), dtype=np.int64)
+        # d_paths=cuda.device_array((path_lengths.shape[0]),dtype=np.float32)
+        # d_polar_c=cuda.device_array((polar_coefficients.shape),dtype=np.complex64)
+        # paths=cp.zeros((path_lengths.shape[0]),dtype=np.float32)
+        # polar_c=cp.zeros((polar_coefficients.shape),dtype=np.complex64)
+        d_full_index = cuda.to_device(full_index)
+        # Here, we choose the granularity of the threading on our device. We want
+        # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
+        # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
 
-    Returns
-    -------
-    resultant_rays : TYPE
-        DESCRIPTION.
-
-    """
-    #cuda.select_device(0)
-    #network_index,point_information,ray_components
-    ray_num=full_index.shape[0]
-    maximum_chunk_size=2**7
-    threads_in_block=1024
-    maximum_sources=1
-    scattering_matrix=np.zeros((source_num,sink_num,3),dtype=np.complex64)
-    #source_chunks=np.linspace(0,source_num-1,math.ceil(source_num/maximum_sources)+1,dtype=np.int32)
-    #distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
-    #distance_temp[:]=math.inf
-    #dist_list=cuda.to_device(distance_temp)
-    d_problem_size=cuda.device_array((2),dtype=np.int32)
-    d_problem_size=cuda.to_device(np.asarray([source_num,sink_num],dtype=np.int32))
-    d_wavelength=cuda.device_array((1),dtype=np.complex128)
-    d_wavelength=cuda.to_device(np.csingle(np.ones((1),dtype=np.complex128)*wavelength))
-    d_scattering=cuda.device_array((1),dtype=np.complex128)
-    d_scattering=cuda.to_device(np.csingle(np.ones((1),dtype=np.complex128)*scattering_coefficient))
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
-    d_point_information=cuda.to_device(point_information)
-    for source_index in range(source_num):
-        temp_matrix=np.zeros((sink_num,3),dtype=np.complex128)
-        d_scatter_matrix=cuda.device_array((temp_matrix.shape),dtype=np.complex64)
-        temp_payload=full_index[full_index[:,0]==(source_index+1),:]
-        ray_chunks=np.linspace(0,temp_payload.shape[0],math.ceil(temp_payload.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
-        for n in range(ray_chunks.shape[0]-1):
-            d_scatter_matrix=cuda.to_device(temp_matrix)
-            chunk_payload=temp_payload[ray_chunks[n]:ray_chunks[n+1],:]
-            d_full_index = cuda.device_array((chunk_payload.shape[0],chunk_payload.shape[1]), dtype=np.int64)
-            d_full_index = cuda.to_device(chunk_payload)
-            target_index=targettingindex(chunk_payload)
-            d_targets = cuda.device_array((target_index.shape), dtype=np.int64)
-            d_targets=cuda.to_device(target_index)
-            # Here, we choose the granularity of the threading on our device. We want
-            # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
-            # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
-            grids=(math.ceil(chunk_payload.shape[0]/threads_in_block))
-            threads = (min(chunk_payload.shape[0],threads_in_block))
-            # Execute the kernel
-            #cuda.profile_start()
-            scatteringkernalv4[grids, threads](d_problem_size,d_full_index,d_point_information,d_scatter_matrix,d_scattering,d_wavelength,d_targets)
-            #cuda.profile_stop()
-            temp_matrix=d_scatter_matrix.copy_to_host()
-            #distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-            #first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
-            #resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
-
-        #scattering_matrix[source_index,:,:]=d_scatter_matrix.copy_to_host()
-        scattering_matrix[source_index,:,:]=temp_matrix
-    #scattering_matrix=d_scatter_matrix.copy_to_host()
-
-    return scattering_matrix
-
-def EMGPUTimeDomainScattering(source_num,sink_num,full_index,point_information,wavelength,excitation=np.zeros((100),dtype=np.complex64),sample_f=10e9,sample_time=1e-7):
-    """
-    wrapper for the GPU EM processer, outputting the resultant ray components as a scattering matrix of size (source_num,sink_num,sample_f*sample_length)
-    This way the beamforming can be
-    Parameters
-    ----------
-    full_index : int array
-        index of all successful rays
-    point_information : TYPE
-        DESCRIPTION.
-    wavelength : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    resultant_rays : TYPE
-        DESCRIPTION.
-
-    """
-    #cuda.select_device(0)
-    #network_index,point_information,ray_components
-    ray_num=full_index.shape[0]
-    maximum_chunk_size=2**8
-    threads_in_block=1024
-    sample_start=1/3e8
-    #temp function using sine
-    freq=1e9
-    excitation_cycles=2
-    time_period=(1/freq)
-    excitation_time_steps=np.linspace(0,time_period*excitation_cycles,int((excitation_cycles*time_period)*sample_f))
-    excitation[0:excitation_time_steps.shape[0]]=np.sin(excitation_time_steps*2*np.pi*freq)
-    #create scattering matrix for appropriate sample time step
-    sample_length=int(sample_time*sample_f)
-    scattering_matrix=np.zeros((source_num,sink_num,sample_length,3),dtype=np.complex64)
-    #source_chunks=np.linspace(0,source_num-1,math.ceil(source_num/maximum_sources)+1,dtype=np.int32)
-    #distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
-    #distance_temp[:]=math.inf
-    #dist_list=cuda.to_device(distance_temp)
-    depth_slice=targettingindex(full_index)
-    d_wavelength=cuda.device_array((1),dtype=np.complex64)
-    d_wavelength=cuda.to_device(np.csingle(np.ones((1),dtype=np.complex64)*wavelength))
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
-    d_point_information=cuda.to_device(point_information)
-    d_sample_start=cuda.device_array((1),dtype=np.float32)
-    d_sample_start=cuda.to_device(np.single(np.ones((1),dtype=np.float32)*sample_start))
-    d_sample_end=cuda.device_array((1),dtype=np.float32)
-    d_sample_end=cuda.to_device(np.single(np.ones((1),dtype=np.float32)*(sample_start+sample_time)))
-    d_excitation=cuda.device_array((excitation.shape),dtype=np.complex64)
-    d_excitation=cuda.to_device(excitation)
-    for source_index in range(source_num):
-        for sink_index in range(sink_num):
-            temp_matrix=np.zeros((sample_length,3),dtype=np.complex64)
-            d_scatter_matrix=cuda.device_array((temp_matrix.shape),dtype=np.complex64)
-            temp_payload=full_index[(depth_slice[:,0]-1==source_index) & (depth_slice[:,1]-source_num-1==sink_index),:]
-            ray_chunks=np.linspace(0,temp_payload.shape[0],math.ceil(temp_payload.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
-            for n in range(ray_chunks.shape[0]-1):
-                d_scatter_matrix=cuda.to_device(temp_matrix)
-                chunk_payload=temp_payload[ray_chunks[n]:ray_chunks[n+1],:]
-                d_network_index = cuda.device_array((chunk_payload.shape[0],chunk_payload.shape[1]), dtype=np.int64)
-                d_network_index = cuda.to_device(chunk_payload)
-                # Here, we choose the granularity of the threading on our device. We want
-                # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
-                # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
-                grids=(math.ceil(chunk_payload.shape[0]/threads_in_block))
-                threads = (min(chunk_payload.shape[0],threads_in_block))
-                # Execute the kernel
-                #cuda.profile_start()
-                timedomainkernal[grids, threads](d_network_index,d_point_information,d_scatter_matrix,wavelength,d_excitation,d_sample_start,d_sample_end)
-                #scatteringkernalv3[grids, threads](d_problem_size,d_full_index,d_point_information,d_scatter_matrix,d_wavelength)
-                #cuda.profile_stop()
-                temp_matrix=d_scatter_matrix.copy_to_host()
-                #distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-                #first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
-                #resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
-
-            #scattering_matrix[source_index,:,:]=d_scatter_matrix.copy_to_host()
-            scattering_matrix[source_index,sink_index,:,:]=temp_matrix
-    #scattering_matrix=d_scatter_matrix.copy_to_host()
-    #cuda.close()
-    return scattering_matrix
-
-
-# def EMGPUPolarMixing(source_num,sink_num,full_index,point_information,wavelength):
-#     """
-#     wrapper for the GPU EM processer, outputting the resultant ray components as complex values, allowing for the whole thing to be sorted again.
-#     At present, the indexing only supports processing the rays for line of sight and single bounce, but that will be sorted quite quickly
-#     Parameters
-#     ----------
-#     full_index : int array
-#         index of all successful rays
-#     point_information : TYPE
-#         DESCRIPTION.
-#     wavelength : TYPE
-#         DESCRIPTION.
-
-#     Returns
-#     -------
-#     resultant_rays : TYPE
-#         DESCRIPTION.
-
-#     """
-#     ray_num=full_index.shape[0]
-#     maximum_chunk_size=2**7
-#     threads_in_block=1024
-#     maximum_sources=1
-#     scattering_matrix=np.zeros((source_num,sink_num,3),dtype=np.complex64)
-#     ray_components=np.zeros((full_index.shape[0],3),dtype=np.complex64)
-#     #source_chunks=np.linspace(0,source_num-1,math.ceil(source_num/maximum_sources)+1,dtype=np.int32)
-#     #distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
-#     #distance_temp[:]=math.inf
-#     #dist_list=cuda.to_device(distance_temp)
-#     d_problem_size=cuda.device_array((2),dtype=np.int32)
-#     d_problem_size=cuda.to_device(np.asarray([source_num,sink_num],dtype=np.int32))
-#     d_wavelength=cuda.device_array((1),dtype=np.float64)
-#     d_wavelength=cuda.to_device(np.ones((1),dtype=np.float32)*wavelength)
-#     d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
-#     d_point_information=cuda.to_device(point_information)
-#     for source_index in range(source_num):
-#         temp_payload=full_index[full_index[:,0]==(source_index+1),:]
-#         temp_rays=np.zeros((temp_payload.shape[0],3),dtype=np.complex64)
-#         ray_chunks=np.linspace(0,temp_payload.shape[0],math.ceil(temp_payload.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
-#         for n in range(ray_chunks.shape[0]-1):
-#             chunk_payload=temp_payload[ray_chunks[n]:ray_chunks[n+1],:]
-#             d_full_index = cuda.device_array((chunk_payload.shape[0],chunk_payload.shape[1]), dtype=np.int64)
-#             #temp_matrix=np.zeros((chunk_payload.shape[0],3),dtype=np.complex64)
-#             d_scatter_matrix=cuda.device_array((chunk_payload.shape[0],3),dtype=np.complex64)
-#             d_full_index = cuda.to_device(chunk_payload)
-#             # Here, we choose the granularity of the threading on our device. We want
-#             # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
-#             # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
-#             grids=(math.ceil(chunk_payload.shape[0]/threads_in_block))
-#             threads = (min(chunk_payload.shape[0],threads_in_block))
-#             # Execute the kernel
-#             #cuda.profile_start()
-#             polarmixing[grids, threads](d_problem_size,d_full_index,d_point_information,d_scatter_matrix,d_wavelength)
-#             #cuda.profile_stop()
-#             temp_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_scatter_matrix.copy_to_host()
-#             #ray_components[ray_chunks[n]:ray_chunks[n+1],:]=d_scatter_matrix.copy_to_host()
-#             #distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-#             #first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
-#             #resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
-
-#         ray_components[full_index[:,0]==(source_index+1),:]=temp_rays
-
-#     return ray_components
-#@njit(cache=True, nogil=True)
-def EMGPUPolarMixing(source_num,sink_num,full_index,point_information):
-    """
-    wrapper for the GPU EM processer, outputting the resultant ray components as lengths, allowing for the whole thing to be sorted again.
-    At present, the indexing only supports processing the rays for line of sight and single bounce, but that will be sorted quite quickly
-    Parameters
-    ----------
-    full_index : int array
-        index of all successful rays
-    point_information : TYPE
-        DESCRIPTION.
-    wavelength : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    resultant_rays : TYPE
-        DESCRIPTION.
-
-    """
-    #cuda.select_device(0)
-    #network_index,point_information,ray_components
-    ray_num=full_index.shape[0]
-    maximum_chunk_size=2**8
-    threads_in_block=1024
-    maximum_sources=10
-    polar_coefficients=np.zeros((ray_num,3),dtype=np.complex64)
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
-    d_point_information=cuda.to_device(point_information)
-    for source_index in range(source_num):
-        temp_payload=full_index[full_index[:,0]==(source_index+1),:]
-        polar_coefficients_temp=np.zeros((temp_payload.shape[0],3),dtype=np.complex64)
-        ray_chunks=np.linspace(0,temp_payload.shape[0],math.ceil(temp_payload.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
-        for n in range(ray_chunks.shape[0]-1):
-            chunk_payload=temp_payload[ray_chunks[n]:ray_chunks[n+1],:]
-            d_full_index = cuda.device_array((chunk_payload.shape[0],chunk_payload.shape[1]), dtype=np.int64)
-            temp_matrix=np.zeros((chunk_payload.shape[0],3),dtype=np.float32)
-            d_polar_c=cuda.device_array((temp_matrix.shape),dtype=np.complex64)
-            d_full_index = cuda.to_device(chunk_payload)
-            # Here, we choose the granularity of the threading on our device. We want
-            # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
-            # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
-            grids=(math.ceil(chunk_payload.shape[0]/threads_in_block))
-            threads = (min(chunk_payload.shape[0],threads_in_block))
-            # Execute the kernel
-            #cuda.profile_start()
-            polarmixing[grids, threads](d_full_index,d_point_information,d_polar_c)
-            #cuda.profile_stop()
-            polar_coefficients_temp[ray_chunks[n]:ray_chunks[n+1],:]=d_polar_c.copy_to_host()
-            #ray_components[ray_chunks[n]:ray_chunks[n+1],:]=d_scatter_matrix.copy_to_host()
-            #distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-            #first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
-            #resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
-
-        polar_coefficients[full_index[:,0]==(source_index+1),:]=polar_coefficients_temp
-        #print('Polar Mixing Progress {:3.0f}%'.format((source_index/source_num)*100))
-
-    return polar_coefficients
-
-def EMGPUPathandPolarMixing(source_num,sink_num,full_index,point_information):
-    """
-    wrapper for the GPU EM processer, outputting the resultant ray components as lengths, allowing for the whole thing to be sorted again.
-    At present, the indexing only supports processing the rays for line of sight and single bounce, but that will be sorted quite quickly
-    Parameters
-    ----------
-    full_index : int array
-        index of all successful rays
-    point_information : TYPE
-        DESCRIPTION.
-    wavelength : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    resultant_rays : TYPE
-        DESCRIPTION.
-
-    """
-    #cuda.select_device(0)
-    #network_index,point_information,ray_components
-    ray_num=full_index.shape[0]
-    maximum_chunk_size=2**8
-    threads_in_block=1024
-    maximum_sources=10
-    polar_coefficients=np.zeros((ray_num,3),dtype=np.complex64)
-    paths=np.zeros((ray_num),dtype=np.float32)
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
-    d_point_information=cuda.to_device(point_information)
-    for source_index in range(source_num):
-        temp_payload=full_index[full_index[:,0]==(source_index+1),:]
-        polar_coefficients_temp=np.zeros((temp_payload.shape[0],3),dtype=np.complex64)
-        paths_temp=np.zeros((temp_payload.shape[0]),dtype=np.float32)
-        ray_chunks=np.linspace(0,temp_payload.shape[0],math.ceil(temp_payload.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
-        for n in range(ray_chunks.shape[0]-1):
-            chunk_payload=temp_payload[ray_chunks[n]:ray_chunks[n+1],:]
-            d_full_index = cuda.device_array((chunk_payload.shape[0],chunk_payload.shape[1]), dtype=np.int64)
-            temp_matrix=np.zeros((chunk_payload.shape[0],3),dtype=np.float32)
-            d_polar_c=cuda.device_array((temp_matrix.shape),dtype=np.complex64)
-            d_paths_c=cuda.device_array((temp_matrix.shape[0]),dtype=np.float32)
-            d_full_index = cuda.to_device(chunk_payload)
-            # Here, we choose the granularity of the threading on our device. We want
-            # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
-            # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
-            grids=(math.ceil(chunk_payload.shape[0]/threads_in_block))
-            threads = (min(chunk_payload.shape[0],threads_in_block))
-            # Execute the kernel
-            #cuda.profile_start()
-            pp[grids, threads](d_full_index,d_point_information,d_polar_c,d_paths_c)
-            #cuda.profile_stop()
-            polar_coefficients_temp[ray_chunks[n]:ray_chunks[n+1],:]=d_polar_c.copy_to_host()
-            paths_temp[ray_chunks[n]:ray_chunks[n+1]]=d_paths_c.copy_to_host()
-            #ray_components[ray_chunks[n]:ray_chunks[n+1],:]=d_scatter_matrix.copy_to_host()
-            #distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-            #first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
-            #resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
-
-        polar_coefficients[full_index[:,0]==(source_index+1),:]=polar_coefficients_temp
-        paths[full_index[:,0]==(source_index+1)]=paths_temp
-        #print('Polar Mixing Progress {:3.0f}%'.format((source_index/source_num)*100))
-
-    return paths,polar_coefficients
-
-#@njit(cache=True, nogil=True)
-def EMGPUPathLengths(source_num,sink_num,full_index,point_information):
-    """
-    wrapper for the GPU EM processer, outputting the resultant ray components as lengths, allowing for the whole thing to be sorted again.
-    At present, the indexing only supports processing the rays for line of sight and single bounce, but that will be sorted quite quickly
-    Parameters
-    ----------
-    full_index : int array
-        index of all successful rays
-    point_information : TYPE
-        DESCRIPTION.
-    wavelength : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    resultant_rays : TYPE
-        DESCRIPTION.
-
-    """
-    #cuda.select_device(0)
-    #network_index,point_information,ray_components
-    ray_num=full_index.shape[0]
-    maximum_chunk_size=2**8
-    threads_in_block=1024
-    maximum_sources=10
-    path_lengths=np.zeros((ray_num),dtype=np.float32)
-    #source_chunks=np.linspace(0,source_num-1,math.ceil(source_num/maximum_sources)+1,dtype=np.int32)
-    #distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
-    #distance_temp[:]=math.inf
-    #dist_list=cuda.to_device(distance_temp)
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
-    d_point_information=cuda.to_device(point_information)
-    for source_index in range(source_num):
-        temp_payload=full_index[full_index[:,0]==(source_index+1),:]
-        path_lengths_temp=np.zeros((temp_payload.shape[0]),dtype=np.float32)
-        ray_chunks=np.linspace(0,temp_payload.shape[0],math.ceil(temp_payload.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
-        for n in range(ray_chunks.shape[0]-1):
-            chunk_payload=temp_payload[ray_chunks[n]:ray_chunks[n+1],:]
-            d_full_index = cuda.device_array((chunk_payload.shape[0],chunk_payload.shape[1]), dtype=np.int64)
-            temp_matrix=np.zeros((chunk_payload.shape[0]),dtype=np.float32)
-            d_paths=cuda.device_array((temp_matrix.shape),dtype=np.float32)
-            d_full_index = cuda.to_device(chunk_payload)
-            # Here, we choose the granularity of the threading on our device. We want
-            # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
-            # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
-            grids=(math.ceil(chunk_payload.shape[0]/threads_in_block))
-            threads = (min(chunk_payload.shape[0],threads_in_block))
-            # Execute the kernel
-            #cuda.profile_start()
-            pathlength[grids, threads](d_full_index,d_point_information,d_paths)
-            #cuda.profile_stop()
-            path_lengths_temp[ray_chunks[n]:ray_chunks[n+1]]=d_paths.copy_to_host()
-            #ray_components[ray_chunks[n]:ray_chunks[n+1],:]=d_scatter_matrix.copy_to_host()
-            #distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-            #first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
-            #resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
-
-        path_lengths[full_index[:,0]==(source_index+1)]=path_lengths_temp
-        #print('Path Calculation Progress {:3.0f}%'.format((source_index/source_num)*100))
-
-    return path_lengths
-
-def EMGPUSorter(source_num,sink_num,full_rays,depth_slice):
-    """
-    scattering_matrix,full_rays,depth_slice)
-
-    """
-    #cuda.select_device(0)
-    #network_index,point_information,ray_components
-    ray_num=full_rays.shape[0]
-    maximum_chunk_size=2**8
-    threads_in_block=1024
-    maximum_sources=1
-    control_variables=np.zeros((2),dtype=np.int32)
-    control_variables[1]=source_num
-    scattering_matrix=np.zeros((source_num,sink_num,3),dtype=np.complex64)
-    #source_chunks=np.linspace(0,source_num-1,math.ceil(source_num/maximum_sources)+1,dtype=np.int32)
-    #distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
-    #distance_temp[:]=math.inf
-    #dist_list=cuda.to_device(distance_temp)
-    for source_index in range(source_num):
-        d_scattering_matrix = cuda.device_array((scattering_matrix.shape[1],3), dtype=np.complex64)
-        d_scattering_matrix = cuda.to_device(scattering_matrix[source_index,:,:])
-        control_variables[0]=source_index
-        temp_payload=full_rays[depth_slice[:,0]==(source_index+1),:]
-        temp_slice=depth_slice[depth_slice[:,0]==(source_index+1),:]
-        d_source_index=cuda.device_array(control_variables.shape,dtype=np.int32)
-        d_source_index=cuda.to_device(control_variables)
-        ray_chunks=np.linspace(0,temp_payload.shape[0],math.ceil(temp_payload.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
-        for n in range(ray_chunks.shape[0]-1):
-            chunk_payload=temp_payload[ray_chunks[n]:ray_chunks[n+1],:]
-            d_rays = cuda.device_array((chunk_payload.shape[0],chunk_payload.shape[1]), dtype=np.complex64)
-            d_depth_slice=cuda.device_array((temp_slice.shape),dtype=np.int32)
-            d_rays = cuda.to_device(chunk_payload)
-            d_depth_slice = cuda.to_device(temp_slice)
-            # Here, we choose the granularity of the threading on our device. We want
-            # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
-            # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
-            grids=(math.ceil(chunk_payload.shape[0]/threads_in_block))
-            threads = (min(chunk_payload.shape[0],threads_in_block))
-            # Execute the kernel
-            #cuda.profile_start()
-            EMGPUSummation[grids, threads](d_scattering_matrix,d_rays,d_depth_slice,d_source_index)
-            #cuda.profile_stop()
-            #path_lengths_temp[ray_chunks[n]:ray_chunks[n+1]]=d_paths.copy_to_host()
-            #ray_components[ray_chunks[n]:ray_chunks[n+1],:]=d_scatter_matrix.copy_to_host()
-            #distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-            #first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
-            #resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
-
-        #path_lengths[full_index[:,0]==(source_index+1)]=path_lengths_temp
-        #print('Path Calculation Progress {:3.0f}%'.format((source_index/source_num)*100))
-        scattering_matrix[source_index,:,:]=d_scattering_matrix.copy_to_host()
-
-    return scattering_matrix
-
-def EMGPUCompressedScatteringtestv2(source_num,sink_num,full_index,point_information,wavelength):
-    """
-    wrapper for the GPU EM processer, outputting the resultant ray components as complex values, allowing for the whole thing to be sorted again.
-    Parameters
-    ----------
-    full_index : int array
-        index of all successful rays
-    point_information : TYPE
-        DESCRIPTION.
-    wavelength : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    resultant_rays : TYPE
-        DESCRIPTION.
-
-    """
-    #cuda.select_device(0)
-    #network_index,point_information,ray_components
-    scattering_matrix=np.zeros((source_num,sink_num,3,full_index.shape[1]),dtype=np.complex64)
-    ray_temps=EMGPUPolarMixing(source_num,sink_num,full_index,point_information,wavelength)
-    if (full_index.shape[1]==2):
-        depth_slice=full_index
-        scattering_matrix=RF.scatter_net_sortEM(source_num,sink_num,scattering_matrix,depth_slice,ray_temps,0)
-
-    if (full_index.shape[1]==3):
-        depth_slice=full_index[np.all(full_index[:,2:]==0,axis=1),:][:,[0,1]]
-        scattering_matrix=RF.scatter_net_sortEM(source_num,sink_num,scattering_matrix,depth_slice,ray_temps,0)
-        depth_slice=full_index[np.all(full_index[:,2:]!=0,axis=1),:][:,[0,2]]
-        scattering_matrix=RF.scatter_net_sortEM(source_num,sink_num,scattering_matrix,depth_slice,ray_temps,1)
-
-    if (full_index.shape[1]==4):
-        depth_slice=full_index[np.all(full_index[:,2:]==0,axis=1),:][:,[0,1]]
-        scattering_matrix=RF.scatter_net_sortEM(source_num,sink_num,scattering_matrix,depth_slice,ray_temps,0)
-        remainder=full_index[~np.all(full_index[:,2:]==0,axis=1),:]
-        depth_slice=remainder[np.all(remainder[:,3:]==0,axis=1),:][:,[0,2]]
-        scattering_matrix=RF.scatter_net_sortEM(source_num,sink_num,scattering_matrix,depth_slice,ray_temps,1)
-        remainder2=remainder[~np.all(remainder[:,3:]==0,axis=1),:]
-        depth_slice=remainder2[np.all(remainder2[:,3:]!=0,axis=1),:][:,[0,3]]
-        scattering_matrix=RF.scatter_net_sortEM(source_num,sink_num,scattering_matrix,depth_slice,ray_temps,1)
-
-    return scattering_matrix
-
+        grids = (math.ceil(full_index.shape[0] / threads_in_block))
+        threads = threads_in_block
+        # print(grids,' blocks, ',threads,' threads')
+        # Execute the kernel
+        # cuda.profile_start()
+        timedomainthetaphi[grids, threads](d_full_index, d_point_information, d_target_index, d_wavelength, d_excitation,
+                                         d_sampling_freq, d_arrival_times, d_wake_time, d_time_map)
+        # polaranddistance(d_full_index,d_point_information,polar_c,paths)
+        # cuda.profile_stop()
+        # ray_components[ray_chunks[n]:ray_chunks[n+1],:]=d_scatter_matrix.copy_to_host()
+        # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
+        # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
+        # resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
+        # chunks=np.linspace(0,path_lengths.shape[0],math.ceil(path_lengths.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
+        # for n in range(chunks.shape[0]-1):
+        # polar_coefficients=d_polar_c.copy_to_host()
+        time_map = cp.asnumpy(d_time_map)
+        wake_times = cp.asnumpy(d_wake_time)
+    return time_map, wake_times
 #@njit(cache=True, nogil=True)
 def targettingindex(full_index):
     #slice the full index to produce the source and sink index for each ray
@@ -2335,6 +2019,41 @@ def targettingindex(full_index):
 
     return depth_slice,scatter_index
 
+def TimeDomainEthetaEphiTransform(Ex,Ey,Ez,point_normals,prime_vector=np.array([[0,0,1]],dtype=np.float32)):
+    """
+    Convert the time domain electric field vectors from a cartesian basis (Ex,Ey,Ez) at each point into a Etheta,Ephi
+    polarisations.
+    Parameters
+    ----------
+    Ex: time domain electric field in the x plane
+        float array of shape num_points * num_samples
+    Ey: time domain electric field in the y plane
+        float array of shape num_points * num_samples
+    Ez: time domain electric field in the z plane
+        float array of shape num_points * num_samples
+    point_normals: the normal vectors of each point of interest (xyz)
+        float array of shape num_points * 3
+
+    Returns
+    ----------
+    Etheta : time domain electric field (Etheta polarisation)
+        float array of shape num_points * num_samples
+    Ephi : time domain electric field (Ephi polarisation)
+        float array of shape num_points * num_samples
+    """
+    if len(Ex.shape)==1:
+        num_points=Ex.shape[0]
+        num_samples=1
+    else:
+        num_points,num_samples=Ex.shape
+    Etheta = np.zeros((num_points, num_samples), dtype=np.float32)
+    Ephi = np.zeros((num_points, num_samples), dtype=np.float32)
+    Etheta_vectors=calculate_conformalVectors(prime_vector,point_normals)
+    Ephi_vectors=np.cross(Etheta_vectors,point_normals)
+    Etheta=Etheta_vectors[:,0].reshape(num_points,1)*Ex.reshape(num_points,num_samples)+Etheta_vectors[:,1].reshape(num_points,1)*Ey.reshape(num_points,num_samples)+Etheta_vectors[:,2].reshape(num_points,1)*Ez.reshape(num_points,num_samples)
+    Ephi = Ephi_vectors[:, 0].reshape(num_points,1) * Ex.reshape(num_points,num_samples) + Ephi_vectors[:, 1].reshape(num_points,1) * Ey.reshape(num_points,num_samples) + Ephi_vectors[:, 2].reshape(num_points,1) * Ez.reshape(num_points,num_samples)
+
+    return Etheta,Ephi
 # def EMGPUCompressedScatteringtest(source_num,sink_num,unified_model,unified_normals,unified_weights,full_index,point_information,wavelength):
 #     """
 #     wrapper for the GPU EM processer, outputting the resultant ray components as complex values, allowing for the whole thing to be sorted again.
