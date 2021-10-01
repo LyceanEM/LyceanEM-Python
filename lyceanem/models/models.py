@@ -6,9 +6,9 @@ from tqdm import tqdm
 from math import sqrt
 import cupy as cp
 import cmath
-import rayfunctions as RF
-import empropagation as EM
-import targets as TL
+from ..raycasting import rayfunctions as RF
+from ..electromagnetics import empropagation as EM
+from ..geometry import targets as TL
 import scipy.stats
 import math
 import copy
@@ -25,7 +25,9 @@ from numpy.linalg import norm
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from numpy.random import default_rng
-from utility import scattering_t
+from ..base import scattering_t
+
+
 from numba import cuda, int16, float32, float64, complex64, complex128, from_dtype, jit, njit, guvectorize, prange
 from timeit import default_timer as timer
 
@@ -350,7 +352,7 @@ def calculate_scattering(aperture_coords,
                                          np.asarray(scatter_points.points).astype(np.float32),
                                          RF.convertTriangles(antenna_solid), scattering+1)
 
-    if ~elements:
+    if (not elements):
         # create efiles for model
         if multiE:
             Ex = np.zeros((desired_E_axis.shape[1]), dtype=np.complex64)
@@ -368,18 +370,18 @@ def calculate_scattering(aperture_coords,
                                                  full_index,
                                                  point_informationv2,
                                                  wavelength)
-                Ex[e_inc] = np.dot(np.dot(np.ones((num_sources)), scatter_map[:, :, 0]), np.ones((num_sinks)))
-                Ey[e_inc] = np.dot(np.dot(np.ones((num_sources)), scatter_map[:, :, 1]), np.ones((num_sinks)))
-                Ez[e_inc] = np.dot(np.dot(np.ones((num_sources)), scatter_map[:, :, 2]), np.ones((num_sinks)))
+                Ex[e_inc,:] = np.dot(np.ones((num_sources)), scatter_map[:, :, 0])
+                Ey[e_inc,:] = np.dot(np.ones((num_sources)), scatter_map[:, :, 1])
+                Ez[e_inc,:] = np.dot(np.ones((num_sources)), scatter_map[:, :, 2])
         else:
             scatter_map = EM.EMGPUFreqDomain(num_sources,
                                              num_sinks,
                                              full_index,
                                              point_informationv2,
                                              wavelength)
-            Ex = np.dot(np.dot(np.ones((num_sources)), scatter_map[:, :, 0]), np.ones((num_sinks)))
-            Ey = np.dot(np.dot(np.ones((num_sources)), scatter_map[:, :, 1]), np.ones((num_sinks)))
-            Ez = np.dot(np.dot(np.ones((num_sources)), scatter_map[:, :, 2]), np.ones((num_sinks)))
+            Ex = np.dot(np.ones((num_sources)), scatter_map[:, :, 0])
+            Ey = np.dot(np.ones((num_sources)), scatter_map[:, :, 1])
+            Ez = np.dot(np.ones((num_sources)), scatter_map[:, :, 2])
 
         # convert to etheta,ephi
 

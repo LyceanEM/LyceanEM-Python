@@ -16,7 +16,7 @@ import math
 import copy
 import matplotlib.pyplot as plt
 import open3d as o3d
-import empropagation as EM
+from ..electromagnetics import empropagation as EM
 from scipy.spatial.transform import Rotation as R
 import solid as sd
 from subprocess import run

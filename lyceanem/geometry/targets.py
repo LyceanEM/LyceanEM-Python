@@ -9,7 +9,7 @@ In order to store in an accessable way the different RCS standard targets such a
 
 import numpy as np
 from math import sqrt
-import rayfunctions as RF
+from ..raycasting import rayfunctions as RF
 import scipy.stats
 import math
 import copy

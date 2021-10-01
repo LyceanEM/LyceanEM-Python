@@ -13,7 +13,7 @@ from tqdm import tqdm
 from math import sqrt
 import cupy as cp
 import cmath
-import rayfunctions as RF
+from ..raycasting import rayfunctions as RF
 import scipy.stats
 import math
 import copy
@@ -32,28 +32,7 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from numpy.random import default_rng
 
 from numba import cuda, int16, float32, float64, complex64, complex128, from_dtype, jit, njit, guvectorize, prange
-from timeit import default_timer as timer
-
-#from rayfunctionsv3 import point_data, point_t
-# A numpy record array (like a struct) to record triangle
-scattering_point = np.dtype([
-    #position data
-    ('px', 'f4'), ('py', 'f4'), ('pz', 'f4'),
-    #velocity
-    ('vx', 'f4'), ('vy', 'f4'), ('vz', 'f4'),
-    #normal
-    ('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4'),
-    #weights
-    ('ex','c8'),('ey','c8'),('ez','c8'),
-    # conductivity, permittivity and permiability
-    #free space values should be
-    #permittivity of free space 8.8541878176e-12F/m
-    #permeability of free space 1.25663706212e-6H/m
-    ('permittivity', 'c8'), ('permeability', 'c8'),
-    #electric or magnetic current sources? E if True
-    ('Electric', '?'),
-    ], align=True)
-scattering_t = from_dtype(scattering_point) # Create a type that numba can recognize!
+from ..base import scattering_t
 
 
 

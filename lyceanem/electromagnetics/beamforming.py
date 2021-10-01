@@ -6,7 +6,7 @@ from tqdm import tqdm
 from math import sqrt
 import cupy as cp
 import cmath
-import rayfunctions as RF
+from ..raycasting import rayfunctions as RF
 import scipy.stats
 import math
 import copy

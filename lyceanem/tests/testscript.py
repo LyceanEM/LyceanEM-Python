@@ -1,5 +1,4 @@
 import math
-import rayfunctions as RF
 
 
 class Solver:
