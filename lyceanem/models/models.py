@@ -9,6 +9,7 @@ import cmath
 from ..raycasting import rayfunctions as RF
 from ..electromagnetics import empropagation as EM
 from ..geometry import targets as TL
+from ..geometry import geometryfunctions as GF
 import scipy.stats
 import math
 import copy
@@ -31,6 +32,27 @@ from ..base import scattering_t
 from numba import cuda, int16, float32, float64, complex64, complex128, from_dtype, jit, njit, guvectorize, prange
 from timeit import default_timer as timer
 
+def aperture_projection(aperture,
+                        environment=None,
+                        wavelength=1.0,
+                        az_range=np.linspace(-180.0, 180.0, 19),
+                        elev_range=np.linspace(-90.0, 90.0, 19)):
+    """
+    Using the aperture provided and any blocking structures, predict the maximum directivity envelope of the aperture.
+    This will initially just cover all the triangles of a provided solid, but eventually I will include a filter list.
+    """
+    directivity_envelope=np.zeros((az_range.shape[0],elev_range.shape[0]),dtype=np.float32)
+    triangle_centroids=GF.tri_centroids(aperture)
+    triangle_areas=GF.tri_areas(aperture)
+    triangle_normals=np.asarray(aperture.triangle_normals)
+    visible_patterns,_=RF.visiblespace(triangle_centroids,
+                                       triangle_normals,
+                                       RF.convertTriangles(aperture),
+                                       vertex_area=triangle_areas,
+                                       az_range=az_range,
+                                       elev_range=elev_range)
+    directivity_envelope=(4*np.pi*visible_patterns)/(wavelength**2)
+    return directivity_envelope
 
 def calculate_farfield(aperture_coords,
                        antenna_solid,
@@ -116,7 +138,7 @@ def calculate_farfield(aperture_coords,
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
         unified_weights[0:num_sources,:] = conformal_E_vectors / num_sources  # set total amplitude to 1 for the aperture
         unified_weights[num_sources:num_sources + num_sinks,:] = 1 / num_sinks  # set total amplitude to 1 for the aperture
-        unified_weights[num_sources + num_sinks:,:] = 1 / len(np.asarray(scatter_points.points))  # set total amplitude to 1 for the aperture
+        unified_weights[num_sources + num_sinks:,:] = 1 #/ len(np.asarray(scatter_points.points))  # set total amplitude to 1 for the aperture
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
         # set all sources as magnetic current sources, and permittivity and permeability as free space
         point_informationv2[:]['Electric'] = True
