@@ -9,24 +9,15 @@ and will change bit by bit to try and work out where my implementation went wron
 """
 
 import numpy as np
-from math import sqrt
-import cupy as cp
 import scipy.stats
 import math
-import copy
-import matplotlib.pyplot as plt
 import open3d as o3d
 from ..electromagnetics import empropagation as EM
-from scipy.spatial.transform import Rotation as R
-import solid as sd
-from subprocess import run
 import numba as nb
 
 from scipy.spatial import distance
 from numpy.linalg import norm
 from matplotlib import cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-
 from numba import cuda, boolean, int32, int16, float32, complex64, from_dtype, jit, njit, guvectorize, prange
 from timeit import default_timer as timer
 
@@ -986,7 +977,7 @@ def CalculatePoyntingVectors(total_network,wavelength,scattering_index,ideal_vec
         ray_components=path_loss*(np.exp(paths*wave_vector*1j))
         phase_components=paths*wave_vector
         angular_dist=Angular_distance(ideal_vector,total_pointing_vectors)
-        travel_times=paths/3e8
+        travel_times=paths/scipy.constants.c
 
         for sink_index in range(sinknum):
                 sink_indexing=np.where((scattering_index[:,1]==sink_index))

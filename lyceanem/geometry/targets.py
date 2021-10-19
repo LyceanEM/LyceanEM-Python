@@ -9,23 +9,19 @@ In order to store in an accessable way the different RCS standard targets such a
 
 import numpy as np
 from math import sqrt
+
+import geometry.geometryfunctions
 from ..raycasting import rayfunctions as RF
 import scipy.stats
 import math
 import copy
-#import matplotlib.pyplot as plt
 import open3d as o3d
 from scipy.spatial.transform import Rotation as R
-#import matplotlib.pyplot as plt
-#from mpl_toolkits.mplot3d import Axes3D
 import solid as sd
 from subprocess import run
 
 from scipy.spatial import distance
 from numpy.linalg import norm
-#from matplotlib import cm
-#from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-
 from numba import cuda, int16, float32, complex64, from_dtype, jit, njit, guvectorize, prange
 from timeit import default_timer as timer
 
@@ -108,7 +104,7 @@ def source_cloud_from_shape(o3dshape,offset,area_per_point):
     source_cloud.estimate_normals()
     return source_cloud,areas
 
-def parabola(radius,focal_length,thickness,mesh_length,mesh='top'):
+def parabola(radius,focal_length,thickness,mesh_length,mesh='all'):
     """
     function to generate parabola of set focal length and radius using solids for more consistent meshing
 
@@ -133,7 +129,37 @@ def parabola(radius,focal_length,thickness,mesh_length,mesh='top'):
         DESCRIPTION.
 
     """
-    return parabola_mesh,parabola_scattering_points
+    parabolas = sd.import_scad('./parabolas.scad')
+    height = ((1/(4*focal_length))*radius**2)
+    height_external = ((1 / (4 * focal_length)) * (radius+thickness) ** 2)
+    #keep with a focal point with zero radius.
+    focal_radius=0
+    #keep internal for now, gemetry will always be centred with focus a (0,0)
+    geometry_centred=0
+    #better to be overmeshed than under, so based on circumference
+    detail_level=np.ceil((2*scipy.constants.pi*radius)/mesh_length).astype(int)
+    parabola_desired=parabolas.openscad_paraboloid(y=height,f=focal_length,rfa=focal_radius,fc=geometry_centred,detail=detail_level)
+    parabola_external=parabolas.openscad_paraboloid(y=height_external, f=focal_length, rfa=focal_radius, fc=geometry_centred,
+                                                     detail=detail_level)
+
+    final_parabola=sd.difference()(
+        sd.translate([0,0,-thickness])(parabola_external),
+        sd.union()(
+        parabola_desired,
+        sd.translate([0,0,height])(sd.cylinder(r=radius,h=height_external,segments=detail_level))
+        )
+    )
+
+    sd.scad_render_to_file(final_parabola, 'temp.scad')
+    # run openscad and export to stl
+    run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+
+    parabola_mesh = o3d.io.read_triangle_mesh("temp.stl")
+    parabola_mesh.compute_vertex_normals()
+    parabola_mesh.compute_triangle_normals()
+    parabola_scatter_cloud = RF.points2pointcloud(geometry.geometryfunctions.tri_centroids(parabola_mesh))
+    parabola_scatter_cloud.normals = o3d.utility.Vector3dVector(np.asarray(parabola_mesh.triangle_normals))
+    return parabola_mesh,parabola_scatter_cloud
 
 def meshed_pipe(eradius1,eradius2,iradius1,iradius2,height,mesh_length,mesh='centres'):
     """
@@ -1337,13 +1363,6 @@ def defineParabola(diameter,focal_length,thickness,grid_resolution):
 
     mesh.compute_triangle_normals()
     return mesh
-
-def parabolic_reflector(diameter,focal_length,thickness,grid_resolution,sides='front'):
-
-    mesh_points=gridedParabola(diameter,focal_length,thickness,grid_resolution,sides=sides)
-    reflector=defineParabola(diameter,focal_length,thickness,grid_resolution)
-
-    return reflector,mesh_points
 
 def parabolic_reflector_segment():
 

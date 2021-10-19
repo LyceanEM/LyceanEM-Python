@@ -5,31 +5,18 @@ Created on Wed Jul 29 16:21:06 2020
 
 @author: timtitan
 """
-
-
 import numpy as np
 import pathlib
-from tqdm import tqdm
-from math import sqrt
 import cupy as cp
 import cmath
 from ..raycasting import rayfunctions as RF
 import scipy.stats
 import math
 import copy
-import matplotlib.pyplot as plt
 import open3d as o3d
-from scipy.spatial.transform import Rotation as R
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.patches import Wedge
-import mpl_toolkits.mplot3d.art3d as art3d
-
 from scipy.spatial import distance
 from numpy.linalg import norm
 from matplotlib import cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-from numpy.random import default_rng
 
 from numba import cuda, int16, float32, float64, complex64, complex128, from_dtype, jit, njit, guvectorize, prange
 from ..base import scattering_t
@@ -98,7 +85,7 @@ def calc_dv(source,target,vector):
 def transmit(ray_component,starting_point,end_point,wavelength):
     loss1 = cuda.local.array(shape=(1), dtype=complex64)
     lengths = cuda.local.array(shape=(1), dtype=float32)
-    wave_vector=(2.0*3.1415926535)/wavelength[0]
+    wave_vector=(2.0*scipy.constants.pi)/wavelength[0]
     calc_sep(starting_point,end_point,lengths)
     outgoing_dir = cuda.local.array(shape=(3), dtype=complex64)
     local_E_vector = cuda.local.array(shape=(3), dtype=complex64)
@@ -106,7 +93,7 @@ def transmit(ray_component,starting_point,end_point,wavelength):
     if lengths==0:
         loss1=1.0
     else:
-        loss1=(cmath.exp(1j*wave_vector*lengths[0]))*(wavelength[0]/(4*(3.1415926535)*(lengths[0])))
+        loss1=(cmath.exp(1j*wave_vector*lengths[0]))*(wavelength[0]/(4*(scipy.constants.pi)*(lengths[0])))
         #loss1=(wavelength[0]/(4*(3.1415926535)*(lengths)))
 
     sourcelaunchtransformGPU(ray_component,starting_point,outgoing_dir)
@@ -312,12 +299,12 @@ def scatteringkernal(network_index,point_information,ray_components,wavelength):
         i+=1
 
     #print(cu_ray_num,lengths[0],abs(ray_components[cu_ray_num,2]))
-    wave_vector=(2.0*3.1415926535)/wavelength[0]
+    wave_vector=(2.0*scipy.constants.pi)/wavelength[0]
     #loss1=cuda.local.array(shape=(1),dtype=complex64)
     if lengths[0]==0.0:
         loss1=1.0
     else:
-        loss1=(cmath.exp(1j*wave_vector*lengths[0]))*(wavelength[0]/(4*(3.1415926535)*(lengths[0])))
+        loss1=(cmath.exp(1j*wave_vector*lengths[0]))*(wavelength[0]/(4*(scipy.constants.pi)*(lengths[0])))
 
     #print(cu_ray_num,lengths[0],abs(loss1[0]),abs(ray_components[cu_ray_num,2]))
     ray_components[cu_ray_num,0]=ray_components[cu_ray_num,0]*loss1
@@ -924,7 +911,7 @@ def timedomainkernal(full_index,point_information,source_sink_index,wavelength,e
         ray_component[0]*=loss
         ray_component[1]*=loss
         ray_component[2]*=loss
-        arrival_time[cu_ray_num]=(lengths/3e8)+time_delay
+        arrival_time[cu_ray_num]=(lengths/scipy.constants.c)+time_delay
         #print(arrival_time[cu_ray_num] * 1e9)
 
         cuda.atomic.min(wake_time,0,arrival_time[cu_ray_num])
@@ -1047,7 +1034,7 @@ def timedomainthetaphi(full_index,point_information,source_sink_index,wavelength
         ray_component[0]*=loss
         ray_component[1]*=loss
         ray_component[2]*=loss
-        arrival_time[cu_ray_num]=(lengths/3e8)+time_delay
+        arrival_time[cu_ray_num]=(lengths/scipy.constants.c)+time_delay
         #print(arrival_time[cu_ray_num] * 1e9)
 
         cuda.atomic.min(wake_time,0,arrival_time[cu_ray_num])
@@ -1548,9 +1535,9 @@ def TimeDomain(source_num,sink_num,point_informationv2,full_index,scattering_coe
     #polar_coefficients=np.abs(EMGPUPolarMixing(source_num,sink_num,full_index,point_informationv2))
     #paths,polar_coefficients=EMGPUPathandPolarMixing(source_num,sink_num,full_index,point_informationv2)
     paths,polar_coefficients=EMGPUJointPathLengthandPolar(source_num,sink_num,full_index,point_informationv2)
-    arrival_times=paths/3e8
+    arrival_times=paths/scipy.constants.c
     time_ref=np.min(arrival_times)
-    time_spread=(np.max(paths)-np.min(paths))/3e8
+    time_spread=(np.max(paths)-np.min(paths))/scipy.constants.c
     #print(time_spread,' seconds')
     #print((np.max(paths)-np.min(paths)/3e8),' seconds')
     #time_ref=0.0
@@ -2919,7 +2906,7 @@ def losChannelv2(source_point,source_normal,source_weight,source_information,sin
     ray_field=launchtransform(source_normal,outgoing_dir,source_weight,source_information)#*ray_phase
     channel=ray_field*sink_weight*loss1
 
-    return channel, lengths/3e8
+    return channel, lengths/scipy.constants.c
 
 @njit(cache=True, nogil=True)
 def losplus1Channel(source_point,source_normal,source_weight,source_information,scatter_point,scatter_normal,scatter_weight,scatter_information,sink_point,sink_normal,sink_weight,sink_information,scattering_coefficient,wavelength):
@@ -3003,7 +2990,7 @@ def losplus1Channelv2(source_point,source_normal,source_weight,source_informatio
 
     channel=launchtransform(scatter_normal,scatter_outgoing_dir,ray_field*sink_weight,scatter_information,source=False,arrival_vector=outgoing_dir*-1)*loss2
 
-    return channel, (lengths+lengths2)/3e8
+    return channel, (lengths+lengths2)/scipy.constants.c
 
 @njit(cache=True, nogil=True)
 def losplus2Channel(source_point,source_normal,source_weight,source_information,scatter_point,scatter_normal,scatter_weight,scatter_information,scatter_point2,scatter_normal2,scatter_weight2,scatter_information2,sink_point,sink_normal,sink_weight,sink_information,scattering_coefficient,wavelength):
@@ -3099,7 +3086,7 @@ def losplus2Channelv2(source_point,source_normal,source_weight,source_informatio
 
     channel=launchtransform(scatter_normal2,scatter_outgoing_dir,ray_field2*sink_weight,scatter_information2,source=False,arrival_vector=scatter_outgoing_dir*-1)*loss3
 
-    return channel,(lengths+lengths2+lengths3)/3e8
+    return channel,(lengths+lengths2+lengths3)/scipy.constants.c
 
 @njit(cache=True, nogil=True)
 def sourcedefinition(departure_vector,local_E_vector,local_information):

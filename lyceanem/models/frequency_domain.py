@@ -480,9 +480,3 @@ def calculate_scattering(aperture_coords,
 
     return Ex, Ey, Ez
 
-def project_farfield(aperture_coords,antenna_solid,etheta,ephi,az_range,el_range,scatter_points=None,wavelength=1.0,farfield_distance=2.0,scattering=0,mesh_resolution=0.5):
-    """
-    use the provided etheta and ephi files to project the required antenna pattern onto the avaliable sources via the scatter points.
-    """
-
-    return scatter_map
