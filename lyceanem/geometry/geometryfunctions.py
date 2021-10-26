@@ -27,4 +27,7 @@ def tri_centroids(solid):
     ob = triangle_vertices[triangleidx[:,1],:]
     oc = triangle_vertices[triangleidx[:,2],:]
     centroids=((1/3)*(oa+ob+oc))
-    return centroids
+    centroid_cloud=o3d.geometry.PointCloud()
+    centroid_cloud.points=o3d.utility.Vector3dVector(centroids)
+    centroid_cloud.normals = solid.triangle_normals
+    return centroids, centroid_cloud

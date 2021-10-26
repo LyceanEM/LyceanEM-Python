@@ -618,58 +618,7 @@ def scatteringkernaltest(problem_size,network_index,point_information,scattering
         print('error',cu_ray_num,sink_index)
 
     scattering_matrix[cu_ray_num]=complex(sink_index)
-          #  print(cu_ray_num,sink_index)
-    #else:
-    #    sink_index=network_index[cu_ray_num,-1]-1-problem_size[0]
-    #print(cu_ray_num,network_index[cu_ray_num,1]-1-problem_size[0],network_index[cu_ray_num,2]-1-problem_size[0],sink_index)
-    # while (i < (network_index.shape[1]-1)):
-    #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
-    #     if i==0:
-    #         lengths=float(0)
-    #         #lengths=calc_sep(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],lengths)
-    #         if point_information[network_index[cu_ray_num,i]-1]['Electric']:
-    #             ray_component[0]=point_information[network_index[cu_ray_num,i]-1]['ex']*scattering_coefficient[0]
-    #             ray_component[1]=point_information[network_index[cu_ray_num,i]-1]['ey']*scattering_coefficient[0]
-    #             ray_component[2]=point_information[network_index[cu_ray_num,i]-1]['ez']*scattering_coefficient[0]
 
-    #         else:
-    #             source_impedance=cmath.sqrt(point_information[network_index[cu_ray_num,i]-1]['permeability'].real/point_information[network_index[cu_ray_num,i]-1]['permittivity'].real).real
-    #             outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex128)
-    #             outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
-    #             ray_component[0],ray_component[1],ray_component[2]=cross(point_information[network_index[cu_ray_num,i]-1]['ex'],point_information[network_index[cu_ray_num,i]-1]['ey'],point_information[network_index[cu_ray_num,i]-1]['ez'],outgoing_dir[0],outgoing_dir[1],outgoing_dir[2])
-    #             ray_component[0]=(ray_component[0]/source_impedance)*scattering_coefficient[0]
-    #             ray_component[1]=(ray_component[1]/source_impedance)*scattering_coefficient[0]
-    #             ray_component[2]=(ray_component[2]/source_impedance)*scattering_coefficient[0]
-    #     elif i!=0:
-    #         normal = cuda.local.array(shape=(3), dtype=np.complex128)
-    #         normal[0]=point_information[network_index[cu_ray_num,i]-1]['nx']
-    #         normal[1]=point_information[network_index[cu_ray_num,i]-1]['ny']
-    #         normal[2]=point_information[network_index[cu_ray_num,i]-1]['nz']
-    #         ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],normal)
-
-    #     if (network_index[cu_ray_num,i+1]!=0):
-    #     #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
-    #     #     #convert source point field to ray
-    #           outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex128)
-    #           outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
-    #           ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],outgoing_dir)
-    #           ray_component[0]=(ray_component[0]*point_information[network_index[cu_ray_num,i+1]-1]['ex'])*scattering_coefficient[0]
-    #           ray_component[1]=(ray_component[1]*point_information[network_index[cu_ray_num,i+1]-1]['ey'])*scattering_coefficient[0]
-    #           ray_component[2]=(ray_component[2]*point_information[network_index[cu_ray_num,i+1]-1]['ez'])*scattering_coefficient[0]
-    #           lengths=calc_sep(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],lengths)
-
-    #     i=i+1
-
-    # wave_vector=(2.0*cmath.pi)/wavelength[0]
-    # #loss1=cuda.local.array(shape=(1),dtype=complex64)
-    # if (lengths!=0.0) or (lengths!=cmath.inf):
-    #     #print(cu_ray_num,lengths[0])
-    #     loss1=complex(0,0)
-    #     loss1=cmath.exp(1j*wave_vector*lengths)
-    #     loss1=loss1*(wavelength[0]/(4*(cmath.pi)*(lengths)))
-    #     scattering_matrix[sink_index,0]=scattering_matrix[sink_index,0]+(ray_component[0]*loss1)
-    #     scattering_matrix[sink_index,1]=scattering_matrix[sink_index,1]+(ray_component[1]*loss1)
-    #     scattering_matrix[sink_index,2]=scattering_matrix[sink_index,2]+(ray_component[2]*loss1)
 
 @cuda.jit
 def polaranddistance(network_index,point_information,polar_coefficients,distances):

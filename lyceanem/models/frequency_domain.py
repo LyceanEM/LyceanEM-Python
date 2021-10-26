@@ -17,17 +17,23 @@ def aperture_projection(aperture,
     Using the aperture provided and any blocking structures, predict the maximum directivity envelope of the aperture.
     This will initially just cover all the triangles of a provided solid, but eventually I will include a filter list.
     """
+    if environment is None:
+        blocking_triangles=RF.convertTriangles(aperture)
+    else:
+        blocking_triangles=np.append(RF.convertTriangles(aperture),RF.convertTriangles(environment),axis=0)
+
     directivity_envelope = np.zeros((az_range.shape[0], elev_range.shape[0]), dtype=np.float32)
     triangle_centroids = GF.tri_centroids(aperture)
     triangle_areas = GF.tri_areas(aperture)
     triangle_normals = np.asarray(aperture.triangle_normals)
     visible_patterns, _ = RF.visiblespace(triangle_centroids,
                                           triangle_normals,
-                                          RF.convertTriangles(aperture),
+                                          blocking_triangles,
                                           vertex_area=triangle_areas,
                                           az_range=az_range,
                                           elev_range=elev_range)
-    directivity_envelope = (4 * np.pi * visible_patterns) / (wavelength ** 2)
+    directivity_envelope[:,:] = (4 * np.pi * visible_patterns) / (wavelength ** 2)
+
     return directivity_envelope
 
 

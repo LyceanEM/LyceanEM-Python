@@ -8,22 +8,14 @@ In order to store in an accessable way the different RCS standard targets such a
 
 
 import numpy as np
-from math import sqrt
-
 import geometry.geometryfunctions
 from ..raycasting import rayfunctions as RF
 import scipy.stats
-import math
-import copy
 import open3d as o3d
 from scipy.spatial.transform import Rotation as R
 import solid as sd
 from subprocess import run
-
-from scipy.spatial import distance
 from numpy.linalg import norm
-from numba import cuda, int16, float32, complex64, from_dtype, jit, njit, guvectorize, prange
-from timeit import default_timer as timer
 
 EPSILON=1e-6 # how close to zero do we consider zero?
 
