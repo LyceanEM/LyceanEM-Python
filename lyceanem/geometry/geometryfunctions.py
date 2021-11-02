@@ -31,3 +31,14 @@ def tri_centroids(solid):
     centroid_cloud.points=o3d.utility.Vector3dVector(centroids)
     centroid_cloud.normals = solid.triangle_normals
     return centroids, centroid_cloud
+
+def decimate_mesh(solid,mesh_sep):
+    """
+    In order to calculate the scattering appropriately the triangle mesh should be decimated so that the vertices
+    are spaced mesh_sep apart.
+    inputs are the trianglemesh object solid, and the mesh_sep, and the output is a new solid. This is only required for
+    the discrete scattering model, using the centroids or vertices
+    """
+    new_solid=o3d.geometry.TriangleMesh()
+
+    return new_solid

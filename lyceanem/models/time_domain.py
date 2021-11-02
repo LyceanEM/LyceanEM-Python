@@ -18,7 +18,7 @@ def calculate_scattering(aperture_coords,
                          scattering=0,
                          elements=False,
                          sampling_freq=1e9,
-                         num_samples=((1e-3)*sampling_freq),
+                         num_samples=10000,
                          mesh_resolution=0.5):
     """
     Based upon the parameters giving, calculate the time domain scattering for the apertures and sinks
@@ -175,9 +175,9 @@ def calculate_scattering(aperture_coords,
     if not elements:
         # create efiles for model
         if multiE:
-            Ex = np.zeros((desired_E_axis.shape[1]), dtype=np.complex64)
-            Ey = np.zeros((desired_E_axis.shape[1]), dtype=np.complex64)
-            Ez = np.zeros((desired_E_axis.shape[1]), dtype=np.complex64)
+            Ex = np.zeros((desired_E_axis.shape[1],num_samples), dtype=np.float64)
+            Ey = np.zeros((desired_E_axis.shape[1],num_samples), dtype=np.float64)
+            Ez = np.zeros((desired_E_axis.shape[1],num_samples), dtype=np.float64)
             for e_inc in tqdm(range(desired_E_axis.shape[1])):
                 conformal_E_vectors = EM.calculate_conformalVectors(desired_E_axis[e_inc, :],
                                                                     np.asarray(aperture_coords.normals).astype(
@@ -196,9 +196,9 @@ def calculate_scattering(aperture_coords,
     else:
         # create efiles for model
         if multiE:
-            Ex = np.zeros((desired_E_axis.shape[1], num_sinks), dtype=np.complex64)
-            Ey = np.zeros((desired_E_axis.shape[1], num_sinks), dtype=np.complex64)
-            Ez = np.zeros((desired_E_axis.shape[1], num_sinks), dtype=np.complex64)
+            Ex = np.zeros((desired_E_axis.shape[1], num_sinks,num_samples), dtype=np.float64)
+            Ey = np.zeros((desired_E_axis.shape[1], num_sinks,num_samples), dtype=np.float64)
+            Ez = np.zeros((desired_E_axis.shape[1], num_sinks,num_samples), dtype=np.float64)
             for e_inc in tqdm(range(desired_E_axis.shape[1])):
                 conformal_E_vectors = EM.calculate_conformalVectors(desired_E_axis[e_inc, :],
                                                                     np.asarray(aperture_coords.normals).astype(
@@ -214,9 +214,9 @@ def calculate_scattering(aperture_coords,
                     unified_weights[element, :] = conformal_E_vectors[element, :] / num_sources
                     TimeMap,WakeTimes=EM.TimeDomainv3()
         else:
-            Ex = np.zeros((num_sources, num_sinks), dtype=np.complex64)
-            Ey = np.zeros((num_sources, num_sinks), dtype=np.complex64)
-            Ez = np.zeros((num_sources, num_sinks), dtype=np.complex64)
+            Ex = np.zeros((num_sources, num_sinks,num_samples), dtype=np.float64)
+            Ey = np.zeros((num_sources, num_sinks,num_samples), dtype=np.float64)
+            Ez = np.zeros((num_sources, num_sinks,num_samples), dtype=np.float64)
             for element in tqdm(range(num_sources)):
                 point_informationv2[0:num_sources]['ex'] = 0.0
                 point_informationv2[0:num_sources]['ey'] = 0.0
@@ -236,5 +236,8 @@ def calculate_scattering(aperture_coords,
                                                   excitation_function,
                                                   sampling_freq,
                                                   num_samples)
+                Ex[element, :, :] = np.dot(np.ones((num_sources)), np.dot(np.ones((num_sinks)),TimeMap[:, :, :,0]))
+                Ey[element, :, :] = np.dot(np.ones((num_sources)), np.dot(np.ones((num_sinks)),TimeMap[:, :, :,1]))
+                Ez[element, :, :] = np.dot(np.ones((num_sources)), np.dot(np.ones((num_sinks)),TimeMap[:, :, :,2]))
 
     return Ex, Ey, Ez

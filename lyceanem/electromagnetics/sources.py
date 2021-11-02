@@ -3,7 +3,7 @@ import numpy as np
 
 #provide idealised patterns to allow testing of the different models
 
-def electriccurrentsource(prime_vector,sinks):
+def electriccurrentsource(prime_vector,theta,phi):
     """
     create an idealised electric current source that can be used to test the outputs of the model
     Parameters
@@ -12,6 +12,6 @@ def electriccurrentsource(prime_vector,sinks):
     """
     etheta=np.zeros((1))
     ephi=np.zeros((1))
-    etheta = prime_vector[0]* np.cos(np.deg2rad(sinks[:,:,0])) * np.cos(np.deg2rad(sinks[:,:,1])) + prime_vector[1]*np.sin(np.deg2rad(sinks[:,:,0])) * np.cos(np.deg2rad(sinks[:,:,1])) - prime_vector[2]* np.sin(np.deg2rad(sinks[:,:,1]))
-    ephi= -prime_vector[0] * np.sin(np.deg2rad(sinks[:,:,0])) + prime_vector[1]*np.cos(np.deg2rad(sinks[:,:,0]))
+    etheta = prime_vector[0]* np.cos(np.deg2rad(phi)) * np.cos(np.deg2rad(theta)) + prime_vector[1]*np.sin(np.deg2rad(phi)) * np.cos(np.deg2rad(theta)) - prime_vector[2]* np.sin(np.deg2rad(theta))
+    ephi= -prime_vector[0] * np.sin(np.deg2rad(phi)) + prime_vector[1]*np.cos(np.deg2rad(phi))
     return etheta,ephi

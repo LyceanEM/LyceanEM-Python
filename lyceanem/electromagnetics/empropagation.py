@@ -136,7 +136,7 @@ def pointlink(ray_component,starting_point,end_point,lengths,wavelength):
 
 
 @cuda.jit(device=True)
-def sourcelaunchtransformGPU(ray_field,launch_point,outgoing_dir):
+def sourcelaunchtransformGPU(ray_field,outgoing_dir):
     """
     Field Transform to create either travelling ray fields or tangential surface currents,
     in each case no electric field can propagate parallel to the normal vector.
@@ -172,13 +172,12 @@ def sourcelaunchtransformGPU(ray_field,launch_point,outgoing_dir):
         #use x-axis to establish ray uv axes
         cross_vec_norm(x_vec,outgoing_dir,ray_u)
 
-        #ray_u[0]=ray_u/x_orth
     elif (abs(y_orth)>=abs(x_orth)) and (abs(y_orth)>abs(z_orth)):
-    #     #use y-axis to establish ray uv axes
+        #use y-axis to establish ray uv axes
         cross_vec_norm(y_vec,outgoing_dir,ray_u)
 
     elif (abs(z_orth)>=abs(x_orth)) and (abs(z_orth)>=abs(y_orth)):
-    #     #use z-axis
+        #use z-axis
         cross_vec_norm(z_vec,outgoing_dir,ray_u)
 
 
@@ -711,7 +710,7 @@ def freqdomainkernal(network_index,point_information,source_sink_index,wavelengt
                 normal[0]=point_information[network_index[cu_ray_num,i]-1]['nx']
                 normal[1]=point_information[network_index[cu_ray_num,i]-1]['ny']
                 normal[2]=point_information[network_index[cu_ray_num,i]-1]['nz']
-                ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],normal)
+                ray_component=sourcelaunchtransformGPU(ray_component,normal)
                 lengths=calc_sep(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],lengths)
 
             if (network_index[cu_ray_num,i+1]!=0):
@@ -719,7 +718,7 @@ def freqdomainkernal(network_index,point_information,source_sink_index,wavelengt
                 #     #convert source point field to ray
                 outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
                 outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
-                ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],outgoing_dir)
+                ray_component=sourcelaunchtransformGPU(ray_component,outgoing_dir)
 
                 ray_component[0]=ray_component[0]*point_information[network_index[cu_ray_num,i+1]-1]['ex']
                 ray_component[1]=ray_component[1]*point_information[network_index[cu_ray_num,i+1]-1]['ey']
@@ -831,7 +830,7 @@ def timedomainkernal(full_index,point_information,source_sink_index,wavelength,e
                 normal[0]=point_information[full_index[cu_ray_num,i]-1]['nx']
                 normal[1]=point_information[full_index[cu_ray_num,i]-1]['ny']
                 normal[2]=point_information[full_index[cu_ray_num,i]-1]['nz']
-                ray_component=sourcelaunchtransformGPU(ray_component,point_information[full_index[cu_ray_num,i]],normal)
+                ray_component=sourcelaunchtransformGPU(ray_component,normal)
                 lengths=calc_sep(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],lengths)
                 #print(cu_ray_num,lengths,'m')
 
@@ -840,7 +839,7 @@ def timedomainkernal(full_index,point_information,source_sink_index,wavelength,e
             #     #convert source point field to ray
                   outgoing_dir = cuda.local.array(shape=(3), dtype=np.float64)
                   outgoing_dir=calc_dv(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],outgoing_dir)
-                  ray_component=sourcelaunchtransformGPU(ray_component,point_information[full_index[cu_ray_num,i]-1],outgoing_dir)
+                  ray_component=sourcelaunchtransformGPU(ray_component,outgoing_dir)
                   #in time domain, the real part is the magnitude, and the imaginary part is the time delay
 
                   ray_component[0]=ray_component[0]*point_information[full_index[cu_ray_num,i+1]-1]['ex'].real
