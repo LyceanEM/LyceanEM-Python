@@ -18,7 +18,7 @@ import numba as nb
 from scipy.spatial import distance
 from numpy.linalg import norm
 from matplotlib import cm
-from numba import cuda, boolean, int32, int16, float32, complex64, from_dtype, jit, njit, guvectorize, prange
+from numba import cuda, float32, from_dtype, jit, njit, guvectorize, prange
 from timeit import default_timer as timer
 
 EPSILON=1e-6 # how close to zero do we consider zero? example used 1e-7
@@ -197,7 +197,7 @@ def hit(ray,triangle):
     #determinant is dot product of edge 1 and pvec
     A=dot(pvecx,pvecy,pvecz,e1x,e1y,e1z)
     #if A is near zero, then ray lies in the plane of the triangle
-    if (A > -EPSILON and A<EPSILON):
+    if (-EPSILON < A < EPSILON):
         #print('miss')
         return False,math.inf
 
@@ -439,7 +439,7 @@ def visiblespace(source_coords,source_normals,environment,vertex_area=0,az_range
     Returns
     -------
     visible_patterns : m by l by n matrix
-        3D antenna patterns♣
+        3D antenna patterns
     #
     resultant_pcd :pointcloud
         colour data to scale the points fractional visibility from the source aperture
@@ -475,10 +475,10 @@ def visiblespace(source_coords,source_normals,environment,vertex_area=0,az_range
             portion=np.zeros((len(angles),1),dtype=np.float32)
             portion[:]=1
         else:
-            portion=vertex_area*np.cos(angles)
+            portion=vertex_area*np.abs(np.cos(angles))
             portion[portion<0]=0
     else:
-        portion=np.ravel(vertex_area[hit_index[:,0].astype(int)-1])*np.ravel(np.cos(angles))
+        portion=np.ravel(vertex_area[hit_index[:,0].astype(int)-1])*np.abs(np.ravel(np.cos(angles)))
 
     visible_patterns=np.empty((len(az_range)*len(elev_range)),dtype=np.float32)
     visible_patterns[:]=0
@@ -1572,7 +1572,7 @@ def chunkingRaycaster1Dv2(sources,sinks,scattering_points,filtered_index,environ
     start=timer()
     sink_index=np.arange(sources.shape[0]+1,sources.shape[0]+1+sinks.shape[0]).reshape(sinks.shape[0],1)
     scattering_point_index=np.arange(np.max(sink_index)+1,np.max(sink_index)+1+scattering_points.shape[0]).reshape(scattering_points.shape[0],1)
-    if terminate_flag==False:
+    if not terminate_flag:
         target_indexing=create_model_index(filtered_index,sink_index,scattering_point_index)
     else:
         target_indexing=create_model_index(filtered_index,sink_index,np.empty((0,0),dtype=np.int32)) #only target rays at sinks
@@ -1631,7 +1631,7 @@ def chunkingRaycaster1Dv3(sources,sinks,scattering_points,filtered_index,environ
     start=timer()
     sink_index=np.arange(sources.shape[0]+1,sources.shape[0]+1+sinks.shape[0]).reshape(sinks.shape[0],1)
     scattering_point_index=np.arange(np.max(sink_index)+1,np.max(sink_index)+1+scattering_points.shape[0]).reshape(scattering_points.shape[0],1)
-    if terminate_flag==False:
+    if not terminate_flag:
         target_indexing=create_model_index(filtered_index,sink_index,scattering_point_index)
     else:
         target_indexing=create_model_index(filtered_index,sink_index,np.empty((0,0),dtype=np.int32)) #only target rays at sinks

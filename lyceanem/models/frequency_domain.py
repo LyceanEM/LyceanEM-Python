@@ -22,11 +22,11 @@ def aperture_projection(aperture,
     else:
         blocking_triangles=np.append(RF.convertTriangles(aperture),RF.convertTriangles(environment),axis=0)
 
-    directivity_envelope = np.zeros((az_range.shape[0], elev_range.shape[0]), dtype=np.float32)
-    triangle_centroids = GF.tri_centroids(aperture)
+    directivity_envelope = np.zeros((elev_range.shape[0], az_range.shape[0]), dtype=np.float32)
+    triangle_centroids,_ = GF.tri_centroids(aperture)
     triangle_areas = GF.tri_areas(aperture)
     triangle_normals = np.asarray(aperture.triangle_normals)
-    visible_patterns, _ = RF.visiblespace(triangle_centroids,
+    visible_patterns, pcd = RF.visiblespace(triangle_centroids,
                                           triangle_normals,
                                           blocking_triangles,
                                           vertex_area=triangle_areas,
@@ -34,7 +34,7 @@ def aperture_projection(aperture,
                                           elev_range=elev_range)
     directivity_envelope[:,:] = (4 * np.pi * visible_patterns) / (wavelength ** 2)
 
-    return directivity_envelope
+    return directivity_envelope,pcd
 
 
 def calculate_farfield(aperture_coords,
@@ -55,7 +55,8 @@ def calculate_farfield(aperture_coords,
 
     # create sink points for the model
     azaz, elel = np.meshgrid(az_range, el_range)
-    _, theta = np.meshgrid(np.linspace(-180.0, 180.0, az_range.shape[0]), np.linspace(180, 0.0, el_range.shape[0]))
+    #assuming the elevation range starts as a negative number and then increases to positive range (-90 to 90), calculate the theta range
+    _, theta = np.meshgrid(np.linspace(-180.0, 180.0, az_range.shape[0]), GF.elevationtotheta(el_range))
     sinks = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
     sinks[:, 0], sinks[:, 1], sinks[:, 2] = RF.azeltocart(np.ravel(azaz), np.ravel(elel), farfield_distance)
     sink_normals = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
@@ -70,7 +71,7 @@ def calculate_farfield(aperture_coords,
         conformal_E_vectors = EM.calculate_conformalVectors(desired_E_axis,
                                                             np.asarray(aperture_coords.normals).astype(np.float32))
     else:
-        conformal_E_vectors=np.repeat(desired_E_axis.astype(np.float32),num_sources)
+        conformal_E_vectors=np.repeat(desired_E_axis.reshape(1,3).astype(np.float32),num_sources,axis=0)
 
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
@@ -80,8 +81,7 @@ def calculate_farfield(aperture_coords,
         unified_normals = np.append(np.asarray(aperture_coords.normals).astype(np.float32),
                                     np.asarray(sink_cloud.normals).astype(np.float32), axis=0)
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
-        unified_weights[0:num_sources,
-        :] = conformal_E_vectors / num_sources  # set total amplitude to 1 for the aperture
+        unified_weights[0:num_sources,:] = conformal_E_vectors / num_sources  # set total amplitude to 1 for the aperture
         unified_weights[num_sources:num_sources + num_sinks,
         :] = 1 / num_sinks  # set total amplitude to 1 for the aperture
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
@@ -113,7 +113,7 @@ def calculate_farfield(aperture_coords,
 
     else:
         # create scatter points on antenna solids based upon a half wavelength square
-        if scatter_points == None:
+        if scatter_points is None:
             scatter_points, areas = TL.source_cloud_from_shape(antenna_solid, 1e-6,
                                                                (wavelength * mesh_resolution) ** 2 / 2.0)
 

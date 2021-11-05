@@ -12,7 +12,7 @@ import mpl_toolkits.mplot3d.art3d as art3d
 from scipy.spatial import distance
 from matplotlib import cm
 
-from numba import cuda, int16, float32, float64, complex64, complex128, from_dtype, jit, njit, guvectorize, prange
+from numba import cuda, float32, njit, prange
 
 
 def Steering_Efficiency(Dtheta,Dphi,Dtot,first_dimension_angle,second_dimension_angle,angular_coverage):
@@ -142,7 +142,7 @@ def OAMFourierCartesian(Ex,Ey,Ez,coordinates,mode_limit):
     powers=np.sum(np.abs(mode_coefficients**2),axis=0)
 
 
-    mode_probabilities=np.zeros((mode_index.shape[0],3),dtype=np.float32);
+    mode_probabilities=np.zeros((mode_index.shape[0],3),dtype=np.float32)
     mode_probabilities[:,0]=np.abs((1/np.sum(powers))*(mode_coefficients[:,0]**2))
     mode_probabilities[:,1]=np.abs((1/np.sum(powers))*(mode_coefficients[:,1]**2))
     mode_probabilities[:,2]=np.abs((1/np.sum(powers))*(mode_coefficients[:,2]**2))
@@ -163,7 +163,7 @@ def OAMFourierSpherical(Ex,Ey,Ez,coordinates,mode_limit,az_range,elev_range):
      #copolar_power=sum(sum(abs(mode_coefficients(:,:,1)).^2));
      #crosspolar_power=sum(sum(abs(mode_coefficients(:,:,2)).^2));
 
-    mode_probabilities=np.zeros((mode_index.shape[0],2),dtype=np.float32);
+    mode_probabilities=np.zeros((mode_index.shape[0],2),dtype=np.float32)
     #mode_prob(:,1)=(1/sum([copolar_power,crosspolar_power]))*sum(abs(mode_coefficients(:,:,1)').^2);
     #mode_prob(:,2)=(1/sum([copolar_power,crosspolar_power]))*sum(abs(mode_coefficients(:,:,2)').^2);
 
@@ -529,6 +529,8 @@ def PatternPlot(data,az,elev,pattern_min=-40,plot_max=0.0,plottype='Polar',logty
         ax.set_ylabel('Elevation (degrees)')
         ax.set_zlabel(bar_label)
 
+
+# noinspection PyTypeChecker
 @cuda.jit(device=True)
 def point_directivity(Ea,Eb,az_range,el_range,interest_index):
     """

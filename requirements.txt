@@ -1,0 +1,9 @@
+numpy~=1.19.2
+scipy~=1.6.2
+open3d~=0.9.0.0
+tqdm~=4.62.2
+cupy~=8.3.0
+matplotlib~=3.3.4
+numba~=0.52.0
+solidpython~=1.1.1
+setuptools~=52.0.0

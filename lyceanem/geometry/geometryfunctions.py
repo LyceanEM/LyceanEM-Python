@@ -40,5 +40,30 @@ def decimate_mesh(solid,mesh_sep):
     the discrete scattering model, using the centroids or vertices
     """
     new_solid=o3d.geometry.TriangleMesh()
+    #lineset=o3d.geometry.LineSet.create_from_triangle_mesh(solid)
+    #identify triangles which are too large via areas greater than mesh_sep**2
+    area_limit=mesh_sep**2
+    areas=tri_areas(solid)
+    large_tri_index=np.where(areas>area_limit)[0]
+
 
     return new_solid
+
+def elevationtotheta(el_range):
+    #el_range is a numpy array from the minimum to the maximum elevation angle value
+    #this can then be converted straight to the appropriate theta range
+    el_min=el_range[0]
+    el_max=el_range[-1]
+    #elevation absolute range is -90 to +90, while theta range is thus 180 to 0 degrees
+    if el_min<=0.0:
+        theta_min=90+np.abs(el_min)
+    else:
+        theta_min=90-np.abs(el_min)
+
+    if el_max<=0:
+        theta_max=90+np.abs(el_max)
+    else:
+        theta_max=90-np.abs(el_max)
+
+    theta=np.linspace(theta_min,theta_max,el_range.shape[0])
+    return theta

@@ -59,6 +59,7 @@ def dot_vec(a,b):
 
 @cuda.jit(device=True)
 def cross_norm(vector_a,vector_b,norm):
+    # noinspection PyTypeChecker
     temp_vector = cuda.local.array(shape=(3), dtype=complex64)
     temp_vector[:]=0.0
     cross_vec(vector_a,vector_b,temp_vector)
@@ -83,11 +84,15 @@ def calc_dv(source,target,vector):
 
 @cuda.jit(device=True)
 def transmit(ray_component,starting_point,end_point,wavelength):
+    # noinspection PyTypeChecker
     loss1 = cuda.local.array(shape=(1), dtype=complex64)
+    # noinspection PyTypeChecker
     lengths = cuda.local.array(shape=(1), dtype=float32)
     wave_vector=(2.0*scipy.constants.pi)/wavelength[0]
     calc_sep(starting_point,end_point,lengths)
+    # noinspection PyTypeChecker
     outgoing_dir = cuda.local.array(shape=(3), dtype=complex64)
+    # noinspection PyTypeChecker
     local_E_vector = cuda.local.array(shape=(3), dtype=complex64)
     calc_dv(starting_point,end_point,lengths,outgoing_dir)
     if lengths==0:
@@ -105,6 +110,7 @@ def transmit(ray_component,starting_point,end_point,wavelength):
 @cuda.jit(device=True)
 def transmitone(ray_component,starting_point,end_point,lengths,wavelength):
     lengths[0]=calc_sep(starting_point,end_point,lengths[0])
+    # noinspection PyTypeChecker
     outgoing_dir = cuda.local.array(shape=(3), dtype=complex64)
     calc_dv(starting_point,end_point,lengths,outgoing_dir)
     sourcelaunchtransformGPU(ray_component,starting_point,outgoing_dir)
@@ -116,6 +122,7 @@ def transmitone(ray_component,starting_point,end_point,lengths,wavelength):
 @cuda.jit(device=True)
 def transmitmulti(ray_component,starting_point,end_point,lengths,wavelength):
     lengths[0]=calc_sep(starting_point,end_point,lengths[0])
+    # noinspection PyTypeChecker
     outgoing_dir = cuda.local.array(shape=(3), dtype=complex64)
     calc_dv(starting_point,end_point,outgoing_dir)
     ray_component=sourcelaunchtransformGPU(ray_component,starting_point,outgoing_dir)
@@ -129,6 +136,7 @@ def pointlink(ray_component,starting_point,end_point,lengths,wavelength):
     #assuming we start with a `static' electric field vector, convert to `ray',
     #then propagate
     lengths=calc_sep(starting_point,end_point,lengths)
+    # noinspection PyTypeChecker
     propagation_dir = cuda.local.array(shape=(3), dtype=complex64)
     calc_dv(starting_point,end_point,propagation_dir)
     ray_component=sourcelaunchtransformGPU(ray_component,starting_point,propagation_dir)
@@ -145,12 +153,18 @@ def sourcelaunchtransformGPU(ray_field,outgoing_dir):
     This should be called for each `illumination' when the surface is `hit', and when the outgoing ray is calculated
     """
 
+    # noinspection PyTypeChecker
     temp_E_vector= cuda.local.array(shape=(2), dtype=ray_field.dtype)
     temp_E_vector[:]=0.0
+    # noinspection PyTypeChecker
     ray_u= cuda.local.array(shape=(3), dtype=ray_field.dtype)
+    # noinspection PyTypeChecker
     ray_v= cuda.local.array(shape=(3), dtype=ray_field.dtype)
+    # noinspection PyTypeChecker
     x_vec= cuda.local.array(shape=(3), dtype=float32)
+    # noinspection PyTypeChecker
     y_vec= cuda.local.array(shape=(3), dtype=float32)
+    # noinspection PyTypeChecker
     z_vec= cuda.local.array(shape=(3), dtype=float32)
     x_orth=float(0)
     y_orth=float(0)
@@ -207,12 +221,18 @@ def sourcelaunchtransformreal(ray_field,launch_point,outgoing_dir):
     This should be called for each `illumination' when the surface is `hit', and when the outgoing ray is calculated
     """
 
+    # noinspection PyTypeChecker
     temp_E_vector= cuda.local.array(shape=(2), dtype=float64)
     temp_E_vector[:]=0.0
+    # noinspection PyTypeChecker
     ray_u= cuda.local.array(shape=(3), dtype=float32)
+    # noinspection PyTypeChecker
     ray_v= cuda.local.array(shape=(3), dtype=float32)
+    # noinspection PyTypeChecker
     x_vec= cuda.local.array(shape=(3), dtype=float32)
+    # noinspection PyTypeChecker
     y_vec= cuda.local.array(shape=(3), dtype=float32)
+    # noinspection PyTypeChecker
     z_vec= cuda.local.array(shape=(3), dtype=float32)
     x_orth=float(0)
     y_orth=float(0)
@@ -269,6 +289,7 @@ def scatteringkernal(network_index,point_information,ray_components,wavelength):
      #margin=1e-5
     i = 0 # emulate a C-style for-loop, exposing the idx increment logic
     #ray_components[cu_ray_num,:]=0.0
+    # noinspection PyTypeChecker
     lengths=cuda.local.array(shape=(1),dtype=np.float64)
     while (i < (network_index.shape[1]-1)):
         if i==0:
@@ -318,7 +339,9 @@ def scatteringkernalv2(problem_size,network_index,point_information,scattering_m
      #margin=1e-5
     i = 0 # emulate a C-style for-loop, exposing the idx increment logic
     #ray_components[cu_ray_num,:]=0.0
+    # noinspection PyTypeChecker
     lengths=cuda.local.array(shape=(1),dtype=np.float64)
+    # noinspection PyTypeChecker
     ray_component=cuda.local.array(shape=(3),dtype=np.complex64)
     sink_index=network_index[cu_ray_num,-1]-1-problem_size[0]
     #print(cu_ray_num,sink_index)
@@ -331,6 +354,7 @@ def scatteringkernalv2(problem_size,network_index,point_information,scattering_m
                 ray_component[2]=point_information[network_index[cu_ray_num,i]-1]['ez']
             else:
                 source_impedance=cmath.sqrt(point_information[network_index[cu_ray_num,i]-1]['permeability']/point_information[network_index[cu_ray_num,i]-1]['permittivity'])
+                # noinspection PyTypeChecker
                 outgoing_dir = cuda.local.array(shape=(3), dtype=complex64)
                 calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
                 ray_component[0],ray_component[1],ray_component[2]=cross(point_information[network_index[cu_ray_num,i]-1]['ex'],point_information[network_index[cu_ray_num,i]-1]['ey'],point_information[network_index[cu_ray_num,i]-1]['ez'],outgoing_dir[0],outgoing_dir[1],outgoing_dir[2])
@@ -377,6 +401,7 @@ def scatteringkernaltest(problem_size,network_index,point_information,scattering
      #margin=1e-5
     i = 0 # emulate a C-style for-loop, exposing the idx increment logic
     #ray_components[cu_ray_num,:]=0.0
+    # noinspection PyTypeChecker
     ray_component=cuda.local.array(shape=(3),dtype=np.complex64)
     sink_index=network_index[cu_ray_num,-1]-1-problem_size[0]
     #print(cu_ray_num,sink_index)
@@ -390,6 +415,7 @@ def scatteringkernaltest(problem_size,network_index,point_information,scattering
 
             else:
                 source_impedance=cmath.sqrt(point_information[network_index[cu_ray_num,i]-1]['permeability']/point_information[network_index[cu_ray_num,i]-1]['permittivity'])
+                # noinspection PyTypeChecker
                 outgoing_dir = cuda.local.array(shape=(3), dtype=complex64)
                 calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
                 ray_component[0],ray_component[1],ray_component[2]=cross(point_information[network_index[cu_ray_num,i]-1]['ex'],point_information[network_index[cu_ray_num,i]-1]['ey'],point_information[network_index[cu_ray_num,i]-1]['ez'],outgoing_dir[0],outgoing_dir[1],outgoing_dir[2])
@@ -411,6 +437,7 @@ def scatteringkernaltest(problem_size,network_index,point_information,scattering
 
             #convert field amplitudes to tangential surface currents
             if (i<network_index.shape[1]-1) and (network_index[cu_ray_num,i+2]!=0):
+                # noinspection PyTypeChecker
                 outgoing_dir = cuda.local.array(shape=(3), dtype=complex64)
                 outgoing_dir[0]=point_information[network_index[cu_ray_num,i+1]]['nx']
                 outgoing_dir[1]=point_information[network_index[cu_ray_num,i+1]]['ny']
@@ -448,6 +475,7 @@ def scatteringkernalv3(problem_size,network_index,point_information,scattering_m
     i = 0 # emulate a C-style for-loop, exposing the idx increment logic
     #ray_components[cu_ray_num,:]=0.0
     flag=0
+    # noinspection PyTypeChecker
     ray_component=cuda.local.array(shape=(3),dtype=np.complex128)
     for sink_test in range(1,network_index.shape[1]):
         if (network_index[cu_ray_num,sink_test]==0):
@@ -477,6 +505,7 @@ def scatteringkernalv3(problem_size,network_index,point_information,scattering_m
 
             else:
                 source_impedance=cmath.sqrt(point_information[network_index[cu_ray_num,i]-1]['permeability'].real/point_information[network_index[cu_ray_num,i]-1]['permittivity'].real).real
+                # noinspection PyTypeChecker
                 outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex128)
                 outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
                 ray_component[0],ray_component[1],ray_component[2]=cross(point_information[network_index[cu_ray_num,i]-1]['ex'],point_information[network_index[cu_ray_num,i]-1]['ey'],point_information[network_index[cu_ray_num,i]-1]['ez'],outgoing_dir[0],outgoing_dir[1],outgoing_dir[2])
@@ -484,6 +513,7 @@ def scatteringkernalv3(problem_size,network_index,point_information,scattering_m
                 ray_component[1]=(ray_component[1]/source_impedance)*scattering_coefficient[0]
                 ray_component[2]=(ray_component[2]/source_impedance)*scattering_coefficient[0]
         elif i!=0:
+            # noinspection PyTypeChecker
             normal = cuda.local.array(shape=(3), dtype=np.complex128)
             normal[0]=point_information[network_index[cu_ray_num,i]-1]['nx']
             normal[1]=point_information[network_index[cu_ray_num,i]-1]['ny']
@@ -491,15 +521,16 @@ def scatteringkernalv3(problem_size,network_index,point_information,scattering_m
             ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],normal)
 
         if (network_index[cu_ray_num,i+1]!=0):
-        #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
-        #     #convert source point field to ray
-              outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex128)
-              outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
-              ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],outgoing_dir)
-              ray_component[0]=(ray_component[0]*point_information[network_index[cu_ray_num,i+1]-1]['ex'])*scattering_coefficient[0]
-              ray_component[1]=(ray_component[1]*point_information[network_index[cu_ray_num,i+1]-1]['ey'])*scattering_coefficient[0]
-              ray_component[2]=(ray_component[2]*point_information[network_index[cu_ray_num,i+1]-1]['ez'])*scattering_coefficient[0]
-              lengths=calc_sep(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],lengths)
+            #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
+            #     #convert source point field to ray
+            # noinspection PyTypeChecker
+            outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex128)
+            outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
+            ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],outgoing_dir)
+            ray_component[0]=(ray_component[0]*point_information[network_index[cu_ray_num,i+1]-1]['ex'])*scattering_coefficient[0]
+            ray_component[1]=(ray_component[1]*point_information[network_index[cu_ray_num,i+1]-1]['ey'])*scattering_coefficient[0]
+            ray_component[2]=(ray_component[2]*point_information[network_index[cu_ray_num,i+1]-1]['ez'])*scattering_coefficient[0]
+            lengths=calc_sep(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],lengths)
 
         i=i+1
 
@@ -525,6 +556,7 @@ def scatteringkernalv4(problem_size,network_index,point_information,scattering_m
     flag=0
     source_index=target_index[cu_ray_num,0]-1
     sink_index=target_index[cu_ray_num,1]-1-problem_size[0]
+    # noinspection PyTypeChecker
     ray_component=cuda.local.array(shape=(3),dtype=np.complex128)
     # for sink_test in range(1,network_index.shape[1]):
     #     if (network_index[cu_ray_num,sink_test]==0):
@@ -554,6 +586,7 @@ def scatteringkernalv4(problem_size,network_index,point_information,scattering_m
 
             else:
                 source_impedance=cmath.sqrt(point_information[network_index[cu_ray_num,i]-1]['permeability'].real/point_information[network_index[cu_ray_num,i]-1]['permittivity'].real).real
+                # noinspection PyTypeChecker
                 outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex128)
                 outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
                 ray_component[0],ray_component[1],ray_component[2]=cross(point_information[network_index[cu_ray_num,i]-1]['ex'],point_information[network_index[cu_ray_num,i]-1]['ey'],point_information[network_index[cu_ray_num,i]-1]['ez'],outgoing_dir[0],outgoing_dir[1],outgoing_dir[2])
@@ -602,6 +635,7 @@ def scatteringkernaltest(problem_size,network_index,point_information,scattering
     i = 0 # emulate a C-style for-loop, exposing the idx increment logic
     #ray_components[cu_ray_num,:]=0.0
     flag=0
+    # noinspection PyTypeChecker
     ray_component=cuda.local.array(shape=(3),dtype=np.complex128)
     for sink_test in range(1,network_index.shape[1]):
         if (network_index[cu_ray_num,sink_test]==0):
@@ -626,6 +660,7 @@ def polaranddistance(network_index,point_information,polar_coefficients,distance
                         #           threadIdx.y + ( blockIdx.y * blockDim.y )
      #margin=1e-5
     if (cu_ray_num<network_index.shape[0]):
+        # noinspection PyTypeChecker
         ray_component=cuda.local.array(shape=(3),dtype=np.complex64)
         i = 0 # emulate a C-style for-loop, exposing the idx increment logic
         #ray_components[cu_ray_num,:]=0.0
@@ -642,6 +677,7 @@ def polaranddistance(network_index,point_information,polar_coefficients,distance
 
                 else:
                     source_impedance=cmath.sqrt(point_information[network_index[cu_ray_num,i]-1]['permeability'].real/point_information[network_index[cu_ray_num,i]-1]['permittivity'].real).real
+                    # noinspection PyTypeChecker
                     outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
                     outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
                     ray_component[0],ray_component[1],ray_component[2]=cross(point_information[network_index[cu_ray_num,i]-1]['ex'],point_information[network_index[cu_ray_num,i]-1]['ey'],point_information[network_index[cu_ray_num,i]-1]['ez'],outgoing_dir[0],outgoing_dir[1],outgoing_dir[2])
@@ -649,6 +685,7 @@ def polaranddistance(network_index,point_information,polar_coefficients,distance
                     ray_component[1]=ray_component[1]/source_impedance
                     ray_component[2]=ray_component[2]/source_impedance
             elif i!=0:
+                # noinspection PyTypeChecker
                 normal = cuda.local.array(shape=(3), dtype=np.complex64)
                 normal[0]=point_information[network_index[cu_ray_num,i]-1]['nx']
                 normal[1]=point_information[network_index[cu_ray_num,i]-1]['ny']
@@ -657,15 +694,16 @@ def polaranddistance(network_index,point_information,polar_coefficients,distance
                 lengths=calc_sep(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],lengths)
 
             if (network_index[cu_ray_num,i+1]!=0):
-            #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
-            #     #convert source point field to ray
-                  outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
-                  outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
-                  ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],outgoing_dir)
+                #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
+                #     #convert source point field to ray
+                # noinspection PyTypeChecker
+                outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
+                outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
+                ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],outgoing_dir)
 
-                  ray_component[0]=ray_component[0]*point_information[network_index[cu_ray_num,i+1]-1]['ex']
-                  ray_component[1]=ray_component[1]*point_information[network_index[cu_ray_num,i+1]-1]['ey']
-                  ray_component[2]=ray_component[2]*point_information[network_index[cu_ray_num,i+1]-1]['ez']
+                ray_component[0]=ray_component[0]*point_information[network_index[cu_ray_num,i+1]-1]['ex']
+                ray_component[1]=ray_component[1]*point_information[network_index[cu_ray_num,i+1]-1]['ey']
+                ray_component[2]=ray_component[2]*point_information[network_index[cu_ray_num,i+1]-1]['ez']
 
 
             i=i+1
@@ -682,6 +720,7 @@ def freqdomainkernal(network_index,point_information,source_sink_index,wavelengt
                         #           threadIdx.y + ( blockIdx.y * blockDim.y )
      #margin=1e-5
     if (cu_ray_num<network_index.shape[0]):
+        # noinspection PyTypeChecker
         ray_component=cuda.local.array(shape=(3),dtype=np.complex128)
         i = 0 # emulate a C-style for-loop, exposing the idx increment logic
         #ray_components[cu_ray_num,:]=0.0
@@ -698,6 +737,7 @@ def freqdomainkernal(network_index,point_information,source_sink_index,wavelengt
 
                 else:
                     source_impedance=cmath.sqrt(point_information[network_index[cu_ray_num,i]-1]['permeability'].real/point_information[network_index[cu_ray_num,i]-1]['permittivity'].real).real
+                    # noinspection PyTypeChecker
                     outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
                     outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
                     ray_component[0],ray_component[1],ray_component[2]=cross(point_information[network_index[cu_ray_num,i]-1]['ex'],point_information[network_index[cu_ray_num,i]-1]['ey'],point_information[network_index[cu_ray_num,i]-1]['ez'],outgoing_dir[0],outgoing_dir[1],outgoing_dir[2])
@@ -706,6 +746,7 @@ def freqdomainkernal(network_index,point_information,source_sink_index,wavelengt
                     ray_component[2]=ray_component[2]/source_impedance
 
             elif i!=0:
+                # noinspection PyTypeChecker
                 normal = cuda.local.array(shape=(3), dtype=np.complex64)
                 normal[0]=point_information[network_index[cu_ray_num,i]-1]['nx']
                 normal[1]=point_information[network_index[cu_ray_num,i]-1]['ny']
@@ -716,6 +757,7 @@ def freqdomainkernal(network_index,point_information,source_sink_index,wavelengt
             if (network_index[cu_ray_num,i+1]!=0):
                 #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
                 #     #convert source point field to ray
+                # noinspection PyTypeChecker
                 outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
                 outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
                 ray_component=sourcelaunchtransformGPU(ray_component,outgoing_dir)
@@ -758,6 +800,7 @@ def freqdomainisokernal(network_index,point_information,source_sink_index,wavele
                         #           threadIdx.y + ( blockIdx.y * blockDim.y )
      #margin=1e-5
     if (cu_ray_num<network_index.shape[0]):
+        # noinspection PyTypeChecker
         ray_component=cuda.local.array(shape=(3),dtype=np.complex128)
         for i in range(network_index.shape[1]-1):
 
@@ -800,6 +843,7 @@ def timedomainkernal(full_index,point_information,source_sink_index,wavelength,e
                         #           threadIdx.y + ( blockIdx.y * blockDim.y )
      #margin=1e-5
      if (cu_ray_num<full_index.shape[0]):
+        # noinspection PyTypeChecker
         ray_component=cuda.local.array(shape=(3),dtype=np.float64)
         i = 0 # emulate a C-style for-loop, exposing the idx increment logic
         #ray_components[cu_ray_num,:]=0.0
@@ -819,6 +863,7 @@ def timedomainkernal(full_index,point_information,source_sink_index,wavelength,e
 
                 else:
                     source_impedance=cmath.sqrt(point_information[full_index[cu_ray_num,i]-1]['permeability'].real/point_information[full_index[cu_ray_num,i]-1]['permittivity'].real).real
+                    # noinspection PyTypeChecker
                     outgoing_dir = cuda.local.array(shape=(3), dtype=np.float64)
                     outgoing_dir=calc_dv(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],outgoing_dir)
                     ray_component[0],ray_component[1],ray_component[2]=cross(point_information[full_index[cu_ray_num,i]-1]['ex'].real,point_information[full_index[cu_ray_num,i]-1]['ey'].real,point_information[full_index[cu_ray_num,i]-1]['ez'].real,outgoing_dir[0],outgoing_dir[1],outgoing_dir[2])
@@ -826,6 +871,7 @@ def timedomainkernal(full_index,point_information,source_sink_index,wavelength,e
                     ray_component[1]=ray_component[1]/source_impedance
                     ray_component[2]=ray_component[2]/source_impedance
             elif i!=0:
+                # noinspection PyTypeChecker
                 normal = cuda.local.array(shape=(3), dtype=np.float64)
                 normal[0]=point_information[full_index[cu_ray_num,i]-1]['nx']
                 normal[1]=point_information[full_index[cu_ray_num,i]-1]['ny']
@@ -835,18 +881,19 @@ def timedomainkernal(full_index,point_information,source_sink_index,wavelength,e
                 #print(cu_ray_num,lengths,'m')
 
             if (full_index[cu_ray_num,i+1]!=0):
-            #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
-            #     #convert source point field to ray
-                  outgoing_dir = cuda.local.array(shape=(3), dtype=np.float64)
-                  outgoing_dir=calc_dv(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],outgoing_dir)
-                  ray_component=sourcelaunchtransformGPU(ray_component,outgoing_dir)
-                  #in time domain, the real part is the magnitude, and the imaginary part is the time delay
+                #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
+                #     #convert source point field to ray
+                # noinspection PyTypeChecker
+                outgoing_dir = cuda.local.array(shape=(3), dtype=np.float64)
+                outgoing_dir=calc_dv(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],outgoing_dir)
+                ray_component=sourcelaunchtransformGPU(ray_component,outgoing_dir)
+                #in time domain, the real part is the magnitude, and the imaginary part is the time delay
 
-                  ray_component[0]=ray_component[0]*point_information[full_index[cu_ray_num,i+1]-1]['ex'].real
-                  ray_component[1]=ray_component[1]*point_information[full_index[cu_ray_num,i+1]-1]['ey'].real
-                  ray_component[2]=ray_component[2]*point_information[full_index[cu_ray_num,i+1]-1]['ez'].real
-                  time_delay+=(point_information[full_index[cu_ray_num,i+1]-1]['ex'].imag)
-                  scatter_index=i
+                ray_component[0]=ray_component[0]*point_information[full_index[cu_ray_num,i+1]-1]['ex'].real
+                ray_component[1]=ray_component[1]*point_information[full_index[cu_ray_num,i+1]-1]['ey'].real
+                ray_component[2]=ray_component[2]*point_information[full_index[cu_ray_num,i+1]-1]['ez'].real
+                time_delay+=(point_information[full_index[cu_ray_num,i+1]-1]['ex'].imag)
+                scatter_index=i
 
 
             i=i+1
@@ -899,10 +946,15 @@ def timedomainkernal(full_index,point_information,source_sink_index,wavelength,e
 @cuda.jit(device=True)
 def xyztothetaphivectors(ray_component,point_information):
     #assuming a prime vector along the z axis
+    # noinspection PyTypeChecker
     thetaphi=cuda.local.array(shape=(2),dtype=np.complex128)
+    # noinspection PyTypeChecker
     prime = cuda.local.array(shape=(3), dtype=np.complex128)
+    # noinspection PyTypeChecker
     theta_vector = cuda.local.array(shape=(3), dtype=np.complex128)
+    # noinspection PyTypeChecker
     phi_vector=cuda.local.array(shape=(3), dtype=np.complex128)
+    # noinspection PyTypeChecker
     normal = cuda.local.array(shape=(3), dtype=np.complex128)
     normal[0]=point_information['nx']
     normal[1]=point_information['ny']
@@ -923,6 +975,7 @@ def timedomainthetaphi(full_index,point_information,source_sink_index,wavelength
                         #           threadIdx.y + ( blockIdx.y * blockDim.y )
      #margin=1e-5
      if (cu_ray_num<full_index.shape[0]):
+        # noinspection PyTypeChecker
         ray_component=cuda.local.array(shape=(3),dtype=np.complex128)
         i = 0 # emulate a C-style for-loop, exposing the idx increment logic
         #ray_components[cu_ray_num,:]=0.0
@@ -942,6 +995,7 @@ def timedomainthetaphi(full_index,point_information,source_sink_index,wavelength
 
                 else:
                     source_impedance=cmath.sqrt(point_information[full_index[cu_ray_num,i]-1]['permeability'].real/point_information[full_index[cu_ray_num,i]-1]['permittivity'].real).real
+                    # noinspection PyTypeChecker
                     outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
                     outgoing_dir=calc_dv(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],outgoing_dir)
                     ray_component[0],ray_component[1],ray_component[2]=cross(point_information[full_index[cu_ray_num,i]-1]['ex'],point_information[full_index[cu_ray_num,i]-1]['ey'],point_information[full_index[cu_ray_num,i]-1]['ez'],outgoing_dir[0],outgoing_dir[1],outgoing_dir[2])
@@ -949,6 +1003,7 @@ def timedomainthetaphi(full_index,point_information,source_sink_index,wavelength
                     ray_component[1]=ray_component[1]/source_impedance
                     ray_component[2]=ray_component[2]/source_impedance
             elif i!=0:
+                # noinspection PyTypeChecker
                 normal = cuda.local.array(shape=(3), dtype=np.complex64)
                 normal[0]=point_information[full_index[cu_ray_num,i]-1]['nx']
                 normal[1]=point_information[full_index[cu_ray_num,i]-1]['ny']
@@ -958,18 +1013,19 @@ def timedomainthetaphi(full_index,point_information,source_sink_index,wavelength
                 #print(cu_ray_num,lengths,'m')
 
             if (full_index[cu_ray_num,i+1]!=0):
-            #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
-            #     #convert source point field to ray
-                  outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
-                  outgoing_dir=calc_dv(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],outgoing_dir)
-                  ray_component=sourcelaunchtransformGPU(ray_component,point_information[full_index[cu_ray_num,i]-1],outgoing_dir)
-                  #in time domain, the real part is the magnitude, and the imaginary part is the time delay
+                #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
+                #     #convert source point field to ray
+                # noinspection PyTypeChecker
+                outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
+                outgoing_dir=calc_dv(point_information[full_index[cu_ray_num,i]-1],point_information[full_index[cu_ray_num,i+1]-1],outgoing_dir)
+                ray_component=sourcelaunchtransformGPU(ray_component,point_information[full_index[cu_ray_num,i]-1],outgoing_dir)
+                #in time domain, the real part is the magnitude, and the imaginary part is the time delay
 
-                  ray_component[0]=ray_component[0]*point_information[full_index[cu_ray_num,i+1]-1]['ex'].real
-                  ray_component[1]=ray_component[1]*point_information[full_index[cu_ray_num,i+1]-1]['ey'].real
-                  ray_component[2]=ray_component[2]*point_information[full_index[cu_ray_num,i+1]-1]['ez'].real
-                  time_delay+=(point_information[full_index[cu_ray_num,i+1]-1]['ex'].imag)
-                  scatter_index=i
+                ray_component[0]=ray_component[0]*point_information[full_index[cu_ray_num,i+1]-1]['ex'].real
+                ray_component[1]=ray_component[1]*point_information[full_index[cu_ray_num,i+1]-1]['ey'].real
+                ray_component[2]=ray_component[2]*point_information[full_index[cu_ray_num,i+1]-1]['ez'].real
+                time_delay+=(point_information[full_index[cu_ray_num,i+1]-1]['ex'].imag)
+                scatter_index=i
 
 
             i=i+1
@@ -1048,6 +1104,7 @@ def polarmixing(network_index,point_information,polar_coefficients):
     cu_ray_num = cuda.grid(1) # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
                         #           threadIdx.y + ( blockIdx.y * blockDim.y )
      #margin=1e-5
+    # noinspection PyTypeChecker
     ray_component=cuda.local.array(shape=(3),dtype=np.complex64)
     i = 0 # emulate a C-style for-loop, exposing the idx increment logic
     #ray_components[cu_ray_num,:]=0.0
@@ -1063,6 +1120,7 @@ def polarmixing(network_index,point_information,polar_coefficients):
 
             else:
                 source_impedance=cmath.sqrt(point_information[network_index[cu_ray_num,i]-1]['permeability'].real/point_information[network_index[cu_ray_num,i]-1]['permittivity'].real).real
+                # noinspection PyTypeChecker
                 outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
                 outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
                 ray_component[0],ray_component[1],ray_component[2]=cross(point_information[network_index[cu_ray_num,i]-1]['ex'],point_information[network_index[cu_ray_num,i]-1]['ey'],point_information[network_index[cu_ray_num,i]-1]['ez'],outgoing_dir[0],outgoing_dir[1],outgoing_dir[2])
@@ -1071,6 +1129,7 @@ def polarmixing(network_index,point_information,polar_coefficients):
                 ray_component[2]=ray_component[2]/source_impedance
 
         elif i!=0:
+            # noinspection PyTypeChecker
             normal = cuda.local.array(shape=(3), dtype=np.complex64)
             normal[0]=point_information[network_index[cu_ray_num,i]-1]['nx']
             normal[1]=point_information[network_index[cu_ray_num,i]-1]['ny']
@@ -1078,26 +1137,27 @@ def polarmixing(network_index,point_information,polar_coefficients):
             ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]],normal)
 
         if (network_index[cu_ray_num,i+1]!=0):
-        #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
-        #     #convert source point field to ray
-              outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
-              outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
-              ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],outgoing_dir)
+            #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
+            #     #convert source point field to ray
+            # noinspection PyTypeChecker
+            outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
+            outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
+            ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],outgoing_dir)
 
-        #     #project ray field onto scatter surface if it is a scatter point
-        #     #if (i!=0) and (network_index[cu_ray_num,i+1]!=0) and (i < (network_index.shape[1]-1)):
-        #         #print('scatter point',i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1],abs(ray_component[0]),abs(ray_component[1]),abs(ray_component[2]))
-        #     #    outgoing_dir = cuda.local.array(shape=(3), dtype=complex64)
-        #     #    outgoing_dir[0]=point_information[network_index[cu_ray_num,i+1]-1]['nx']
-        #     #    outgoing_dir[1]=point_information[network_index[cu_ray_num,i+1]-1]['ny']
-        #     #    outgoing_dir[2]=point_information[network_index[cu_ray_num,i+1]-1]['nz']
-        #     #    ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i+1]],outgoing_dir)
-        #     #else:
-        #         #print('end point',network_index[cu_ray_num,i],network_index[cu_ray_num,i+1],abs(ray_component[0]),abs(ray_component[1]),abs(ray_component[2]))
+            #     #project ray field onto scatter surface if it is a scatter point
+            #     #if (i!=0) and (network_index[cu_ray_num,i+1]!=0) and (i < (network_index.shape[1]-1)):
+            #         #print('scatter point',i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1],abs(ray_component[0]),abs(ray_component[1]),abs(ray_component[2]))
+            #     #    outgoing_dir = cuda.local.array(shape=(3), dtype=complex64)
+            #     #    outgoing_dir[0]=point_information[network_index[cu_ray_num,i+1]-1]['nx']
+            #     #    outgoing_dir[1]=point_information[network_index[cu_ray_num,i+1]-1]['ny']
+            #     #    outgoing_dir[2]=point_information[network_index[cu_ray_num,i+1]-1]['nz']
+            #     #    ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i+1]],outgoing_dir)
+            #     #else:
+            #         #print('end point',network_index[cu_ray_num,i],network_index[cu_ray_num,i+1],abs(ray_component[0]),abs(ray_component[1]),abs(ray_component[2]))
 
-              ray_component[0]=ray_component[0]*point_information[network_index[cu_ray_num,i+1]-1]['ex']
-              ray_component[1]=ray_component[1]*point_information[network_index[cu_ray_num,i+1]-1]['ey']
-              ray_component[2]=ray_component[2]*point_information[network_index[cu_ray_num,i+1]-1]['ez']
+            ray_component[0]=ray_component[0]*point_information[network_index[cu_ray_num,i+1]-1]['ex']
+            ray_component[1]=ray_component[1]*point_information[network_index[cu_ray_num,i+1]-1]['ey']
+            ray_component[2]=ray_component[2]*point_information[network_index[cu_ray_num,i+1]-1]['ez']
 
         i=i+1
 
@@ -1112,6 +1172,7 @@ def pp(network_index,point_information,polar_coefficients,paths):
     cu_ray_num = cuda.grid(1) # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
                         #           threadIdx.y + ( blockIdx.y * blockDim.y )
      #margin=1e-5
+    # noinspection PyTypeChecker
     ray_component=cuda.local.array(shape=(3),dtype=np.complex64)
     i = 0 # emulate a C-style for-loop, exposing the idx increment logic
     #ray_components[cu_ray_num,:]=0.0
@@ -1127,6 +1188,7 @@ def pp(network_index,point_information,polar_coefficients,paths):
 
             else:
                 source_impedance=cmath.sqrt(point_information[network_index[cu_ray_num,i]-1]['permeability'].real/point_information[network_index[cu_ray_num,i]-1]['permittivity'].real).real
+                # noinspection PyTypeChecker
                 outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
                 outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
                 ray_component[0],ray_component[1],ray_component[2]=cross(point_information[network_index[cu_ray_num,i]-1]['ex'],point_information[network_index[cu_ray_num,i]-1]['ey'],point_information[network_index[cu_ray_num,i]-1]['ez'],outgoing_dir[0],outgoing_dir[1],outgoing_dir[2])
@@ -1136,6 +1198,7 @@ def pp(network_index,point_information,polar_coefficients,paths):
             lengths=float(0)
             lengths=calc_sep(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],lengths)
         elif i!=0:
+            # noinspection PyTypeChecker
             normal = cuda.local.array(shape=(3), dtype=np.complex64)
             normal[0]=point_information[network_index[cu_ray_num,i]-1]['nx']
             normal[1]=point_information[network_index[cu_ray_num,i]-1]['ny']
@@ -1145,15 +1208,16 @@ def pp(network_index,point_information,polar_coefficients,paths):
             lengths=calc_sep(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],lengths)
 
         if (network_index[cu_ray_num,i+1]!=0):
-        #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
-        #     #convert source point field to ray
-              outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
-              outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
-              ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],outgoing_dir)
+            #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
+            #     #convert source point field to ray
+            # noinspection PyTypeChecker
+            outgoing_dir = cuda.local.array(shape=(3), dtype=np.complex64)
+            outgoing_dir=calc_dv(point_information[network_index[cu_ray_num,i]-1],point_information[network_index[cu_ray_num,i+1]-1],outgoing_dir)
+            ray_component=sourcelaunchtransformGPU(ray_component,point_information[network_index[cu_ray_num,i]-1],outgoing_dir)
 
-              ray_component[0]=ray_component[0]*point_information[network_index[cu_ray_num,i+1]-1]['ex']
-              ray_component[1]=ray_component[1]*point_information[network_index[cu_ray_num,i+1]-1]['ey']
-              ray_component[2]=ray_component[2]*point_information[network_index[cu_ray_num,i+1]-1]['ez']
+            ray_component[0]=ray_component[0]*point_information[network_index[cu_ray_num,i+1]-1]['ex']
+            ray_component[1]=ray_component[1]*point_information[network_index[cu_ray_num,i+1]-1]['ey']
+            ray_component[2]=ray_component[2]*point_information[network_index[cu_ray_num,i+1]-1]['ez']
 
         i=i+1
 
@@ -2302,6 +2366,7 @@ def definePatch(wavelength,width,length,substrate_dielectric=1,mode='Single'):
 
 def importDat(fileaddress):
     datafile=pathlib.Path(fileaddress)
+    # noinspection PyTypeChecker
     temp=np.loadtxt(datafile)
     freq=temp[0,4]#MHz
     planes=temp[0,0]
@@ -2441,7 +2506,7 @@ def OAMFourierCartesian(Ex,Ey,Ez,coordinates,mode_limit):
     powers=np.sum(np.abs(mode_coefficients**2),axis=0)
 
 
-    mode_probabilities=np.zeros((mode_index.shape[0],3),dtype=np.float32);
+    mode_probabilities=np.zeros((mode_index.shape[0],3),dtype=np.float32)
     mode_probabilities[:,0]=np.abs((1/np.sum(powers))*(mode_coefficients[:,0]**2))
     mode_probabilities[:,1]=np.abs((1/np.sum(powers))*(mode_coefficients[:,1]**2))
     mode_probabilities[:,2]=np.abs((1/np.sum(powers))*(mode_coefficients[:,2]**2))
@@ -2462,7 +2527,7 @@ def OAMFourierSpherical(Ex,Ey,Ez,coordinates,mode_limit,az_range,elev_range):
      #copolar_power=sum(sum(abs(mode_coefficients(:,:,1)).^2));
      #crosspolar_power=sum(sum(abs(mode_coefficients(:,:,2)).^2));
 
-    mode_probabilities=np.zeros((mode_index.shape[0],2),dtype=np.float32);
+    mode_probabilities=np.zeros((mode_index.shape[0],2),dtype=np.float32)
     #mode_prob(:,1)=(1/sum([copolar_power,crosspolar_power]))*sum(abs(mode_coefficients(:,:,1)').^2);
     #mode_prob(:,2)=(1/sum([copolar_power,crosspolar_power]))*sum(abs(mode_coefficients(:,:,2)').^2);
 

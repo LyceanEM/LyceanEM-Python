@@ -1069,7 +1069,7 @@ def gridedBullsEyePoints(diameter,ring_start,ring_num,ring_wavelength,ring_ampli
         source_coords[0,1]=0
         source_coords[0,2]=0
         for r_index in range(r_space.shape[0]):
-            if r_space[r_index]>=ring_start and r_space[r_index]<=(ring_start+ring_num*ring_wavelength):
+            if ring_start <= r_space[r_index] <= (ring_start + ring_num * ring_wavelength):
                 source_coords=np.append(source_coords,np.array([r_space[r_index]*np.cos(np.linspace(0,(2*np.pi),c_space[r_index])[0:-1]),r_space[r_index]*np.sin(np.linspace(0,(2*np.pi),c_space[r_index])[0:-1]),ring_amplitude*np.sin((r_space[r_index]-ring_start)*((np.pi*2)/ring_wavelength)+np.pi/2)*np.ones(c_space[r_index]-1)-(ring_amplitude)]).transpose(),axis=0)
             else:
                 source_coords=np.append(source_coords,np.array([r_space[r_index]*np.cos(np.linspace(0,(2*np.pi),c_space[r_index])[0:-1]),r_space[r_index]*np.sin(np.linspace(0,(2*np.pi),c_space[r_index])[0:-1]),np.zeros(c_space[r_index]-1)]).transpose(),axis=0)
@@ -1095,7 +1095,7 @@ def gridedBullsEyePoints(diameter,ring_start,ring_num,ring_wavelength,ring_ampli
         source_coords[0,1]=0
         source_coords[0,2]=0
         for r_index in range(r_space.shape[0]):
-            if r_space[r_index]>=ring_start and r_space[r_index]<=(ring_start+ring_num*ring_wavelength):
+            if ring_start <= r_space[r_index] <= (ring_start + ring_num * ring_wavelength):
                 source_coords=np.append(source_coords,np.array([r_space[r_index]*np.cos(np.linspace(0,(2*np.pi),c_space[r_index])[0:-1]),r_space[r_index]*np.sin(np.linspace(0,(2*np.pi),c_space[r_index])[0:-1]),ring_amplitude*np.sin((r_space[r_index]-ring_start)*((np.pi*2)/ring_wavelength)+np.pi/2)*np.ones(c_space[r_index]-1)-(ring_amplitude)]).transpose(),axis=0)
             else:
                 source_coords=np.append(source_coords,np.array([r_space[r_index]*np.cos(np.linspace(0,(2*np.pi),c_space[r_index])[0:-1]),r_space[r_index]*np.sin(np.linspace(0,(2*np.pi),c_space[r_index])[0:-1]),np.zeros(c_space[r_index]-1)]).transpose(),axis=0)
@@ -1357,5 +1357,9 @@ def defineParabola(diameter,focal_length,thickness,grid_resolution):
     return mesh
 
 def parabolic_reflector_segment():
-
+    """
+    This function is intended to generate a segment parabolic reflector, such as used for some radars
+    """
+    reflector=o3d.geometry.TriangleMesh()
+    mesh_points=o3d.geometry.PointCloud()
     return reflector,mesh_points
