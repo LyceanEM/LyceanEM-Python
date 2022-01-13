@@ -143,3 +143,4 @@ def calc_dv_norm(source,target,direction,length):
     length[:,0]=np.sqrt((target[:,0]-source[:,0])**2+(target[:,1]-source[:,1])**2+(target[:,2]-source[:,2])**2)
     direction=(target-source)/length
     return direction, length
+

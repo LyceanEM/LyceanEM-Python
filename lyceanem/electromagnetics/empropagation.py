@@ -722,7 +722,6 @@ def freqdomainkernal(network_index,point_information,source_sink_index,wavelengt
     if (cu_ray_num<network_index.shape[0]):
         # noinspection PyTypeChecker
         ray_component=cuda.local.array(shape=(3),dtype=np.complex128)
-        i = 0 # emulate a C-style for-loop, exposing the idx increment logic
         #ray_components[cu_ray_num,:]=0.0
         #print(scattering_matrix.shape[0],scattering_matrix.shape[1])
         for i in range(network_index.shape[1]-1):
@@ -1389,6 +1388,7 @@ def EMGPUFreqDomain(source_num,sink_num,full_index,point_information,wavelength)
     #polar_coefficients=d_polar_c.copy_to_host()
     scattering_network=cp.asnumpy(d_scattering_network)
     scattering_network_comp = scattering_network.view(dtype=np.complex128)[...,0]
+    #scattering_network_comp = scattering_network[:, :, :, 0] + scattering_network[:, :, :, 1] * 1j
     #path_lengths=d_paths.copy_to_host()
     #print('Polar Mixing Progress {:3.0f}%'.format((source_index/source_num)*100))
 
@@ -1710,6 +1710,7 @@ def TimeDomainv3(source_num,
     maximum_chunk_size=2**8
     path_lengths=np.zeros((ray_num),dtype=np.float32)
     time_map=np.zeros((source_num,sink_num,num_samples,3),dtype=np.float64)
+    time_step=1.0/sampling_freq
     flag=True
     if np.ceil(time_map.nbytes/1e9)>1:
         #setup time_map chunking
@@ -1763,7 +1764,9 @@ def TimeDomainv3(source_num,
             
             time_map[source_chunking[n]:source_chunking[n+1],:,:,:] = cp.asnumpy(d_temp_map)
             wake_times[n] = cp.asnumpy(d_wake_time)[0]
+            #calculate seperation and shift former time_map values to ensure sync
             wake_time=wake_times[n]
+
 
         print(wake_times)
     else:
@@ -1814,7 +1817,18 @@ def TimeDomainv3(source_num,
         #polar_coefficients=d_polar_c.copy_to_host()
         time_map=cp.asnumpy(d_time_map)
         wake_times=cp.asnumpy(d_wake_time)
-    return time_map, wake_times
+
+    if wake_times.size>1:
+        if (np.max((wake_times-np.min(wake_times))/time_step)>=1.0):
+            corrected_time_map=np.empty_like(time_map)
+            timeadjustments=np.round((wake_times-np.min(wake_times))/time_step).astype(int)
+            for n in range(len(source_chunking) - 1):
+                corrected_time_map[source_chunking[n]:source_chunking[n + 1], :, :timeadjustments[n], :]=0
+                corrected_time_map[source_chunking[n]:source_chunking[n + 1], :, timeadjustments[n]:, :] = time_map[source_chunking[n]:source_chunking[n + 1], :,:-timeadjustments[n],:]
+
+            time_map=corrected_time_map
+
+    return time_map, wake_times[0]
 
 
 def TimeDomainThetaPhi(source_num,
