@@ -3256,3 +3256,61 @@ def illuminationtransform(source_normal,arrival_vector,arriving_E_vector,local_i
                                 point_E_vector[0]*np.dot(y_vec,point_u)+point_E_vector[1]*np.dot(y_vec,point_v),
                                 point_E_vector[0]*np.dot(z_vec,point_u)+point_E_vector[1]*np.dot(z_vec,point_v)])
     return outgoing_E_vector
+
+@njit(cache=True, nogil=True)
+def source_transform(departure_vector, local_E_vector):
+    """
+    This function is intended to allow for transformation of measured or
+    modelled antenna patterns into the model cartesian space by linking each
+    Etheta/Ephi point to it's corresponding local coordinate which is then
+    rotated and the local U/V vectors for each point and associated normal
+    vectors can be used to calculate the resultant Ex,Ey,Ez fields.
+
+    Inputs
+    ------
+    departure vector : numpy 1*3 array,
+        normalised direction vector of the departing ray
+
+    local_E_vector : numpy 1*2 array,
+        electric field vector in Etheta/Ephi
+
+    local_to_global : numpy 3*3
+
+    Returns
+    -------
+    E_vector : numpy 1*3 complex array in Ex,Ey,Ez format
+
+    """
+
+    outgoing_E_vector = np.zeros((3), dtype=np.complex64)
+    ray_u = np.zeros((3), dtype=np.float32)
+    ray_v = np.zeros((3), dtype=np.float32)
+    x_vec = np.zeros((3), dtype=np.float32)
+    y_vec = np.zeros((3), dtype=np.float32)
+    z_vec = np.zeros((3), dtype=np.float32)
+    x_vec[0] = 1
+    y_vec[1] = 1
+    z_vec[2] = 1
+    # make sure ray vectors are locked on appropriate global axes
+    x_orth = np.linalg.norm(np.cross(x_vec, departure_vector))
+    y_orth = np.linalg.norm(np.cross(y_vec, departure_vector))
+    z_orth = np.linalg.norm(np.cross(z_vec, departure_vector))
+    if (abs(x_orth) > abs(y_orth)) and (abs(x_orth) > abs(z_orth)):
+        # use x-axis to establish ray uv axes
+        ray_u = np.cross(x_vec, departure_vector) / np.linalg.norm(np.cross(x_vec, departure_vector))
+
+    elif (abs(y_orth) >= abs(x_orth)) and (abs(y_orth) > abs(z_orth)):
+        # use y-axis to establish ray uv axes
+        ray_u = np.cross(y_vec, departure_vector) / np.linalg.norm(np.cross(y_vec, departure_vector))
+
+    elif (abs(z_orth) >= abs(x_orth)) and (abs(z_orth) >= abs(y_orth)):
+        # use z-axis
+        ray_u = np.cross(z_vec, departure_vector) / np.linalg.norm(np.cross(z_vec, departure_vector))
+
+    ray_v = np.cross(departure_vector, ray_u)
+    # the ray fields must be contained in ray_v and ray_u, as there can be no E field in the direction of propagation
+    # map ray axes onto global coordinate axes
+    outgoing_E_vector = np.array([local_E_vector[0] * np.dot(x_vec, ray_u) + local_E_vector[1] * np.dot(x_vec, ray_v),
+                                  local_E_vector[0] * np.dot(y_vec, ray_u) + local_E_vector[1] * np.dot(y_vec, ray_v),
+                                  local_E_vector[0] * np.dot(z_vec, ray_u) + local_E_vector[1] * np.dot(z_vec, ray_v)])
+    return outgoing_E_vector

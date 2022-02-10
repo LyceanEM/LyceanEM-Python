@@ -278,10 +278,12 @@ def calculate_scattering(aperture_coords,
                          wavelength=1.0,
                          scattering=0,
                          elements=False,
+                         los=True,
                          mesh_resolution=0.5,
                          project_vectors=False):
     """
     Based upon the aperture coordinates and solids, predict the farfield for the antenna.
+    If line of sight scattering is not required then set los=False, such as if the transmit and receive antennas are the same
     """
     if desired_E_axis.size > 3:
         # multiple excitations requried
@@ -302,14 +304,14 @@ def calculate_scattering(aperture_coords,
                                                                     np.asarray(aperture_coords.normals).astype(
                                                                         np.float32))
             else:
-                conformal_E_vectors = np.repeat(desired_E_axis[0,:].astype(np.float32), num_sources,axis=0)
+                conformal_E_vectors = np.repeat(desired_E_axis[0,:].astype(np.float32), num_sources,axis=0).reshape(num_sources,3)
         else:
             if project_vectors:
                 conformal_E_vectors = EM.calculate_conformalVectors(desired_E_axis[0,:],
                                                                     np.asarray(aperture_coords.normals).astype(
                                                                         np.float32))
             else:
-                conformal_E_vectors = np.repeat(desired_E_axis[0,:].astype(np.float32), num_sources,axis=0)
+                conformal_E_vectors = np.repeat(desired_E_axis[0,:].astype(np.float32), num_sources,axis=0).reshape(num_sources,3)
 
         unified_model = np.append(np.asarray(aperture_coords.points).astype(np.float32),
                                   np.asarray(sink_coords.points).astype(np.float32), axis=0)
@@ -358,11 +360,19 @@ def calculate_scattering(aperture_coords,
             scatter_points, areas = TL.source_cloud_from_shape(antenna_solid, 1e-6, (wavelength * mesh_resolution) ** 2)
 
         if ~multiE:
-            conformal_E_vectors = EM.calculate_conformalVectors(desired_E_axis[0, :],
-                                                                np.asarray(aperture_coords.normals).astype(np.float32))
+            if project_vectors:
+                conformal_E_vectors = EM.calculate_conformalVectors(desired_E_axis[0, :],
+                                                                    np.asarray(aperture_coords.normals).astype(
+                                                                        np.float32))
+            else:
+                conformal_E_vectors = np.repeat(desired_E_axis[0, :].astype(np.float32), num_sources, axis=0).reshape(num_sources,3)
         else:
-            conformal_E_vectors = EM.calculate_conformalVectors(desired_E_axis[0, :],
-                                                                np.asarray(aperture_coords.normals).astype(np.float32))
+            if project_vectors:
+                conformal_E_vectors = EM.calculate_conformalVectors(desired_E_axis[0, :],
+                                                                    np.asarray(aperture_coords.normals).astype(
+                                                                        np.float32))
+            else:
+                conformal_E_vectors = np.repeat(desired_E_axis[0, :].astype(np.float32), num_sources, axis=0).reshape(num_sources,3)
 
         unified_model = np.append(np.append(np.asarray(aperture_coords.points).astype(np.float32),
                                             np.asarray(sink_coords.points).astype(np.float32), axis=0),
@@ -420,19 +430,21 @@ def calculate_scattering(aperture_coords,
         point_informationv2[:]['ex'] = unified_weights[:, 0]
         point_informationv2[:]['ey'] = unified_weights[:, 1]
         point_informationv2[:]['ez'] = unified_weights[:, 2]
-        scatter_mask = np.zeros((point_informationv2.shape[0]), dtype=np.int32)
-        scatter_mask[0:num_sources] = 0
-        scatter_mask[(num_sources + num_sinks):] = scattering
+        #scatter_mask = np.zeros((point_informationv2.shape[0]), dtype=np.int32)
+        #scatter_mask[0:num_sources] = 0
+        #scatter_mask[(num_sources + num_sinks):] = scattering
 
     # full_index, initial_index = RF.integratedraycastersetup(num_sources,
     #                                                        num_sinks,
     #                                                        point_informationv2,
     #                                                        RF.convertTriangles(antenna_solid),
     #                                                        scatter_mask)
+
     full_index, rays = RF.workchunkingv2(np.asarray(aperture_coords.points).astype(np.float32),
                                          np.asarray(sink_coords.points).astype(np.float32),
                                          np.asarray(scatter_points.points).astype(np.float32),
-                                         RF.convertTriangles(antenna_solid), scattering + 1)
+                                         RF.convertTriangles(antenna_solid), scattering + 1,line_of_sight=los)
+
 
     if (not elements):
         # create efiles for model

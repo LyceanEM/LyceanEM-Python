@@ -144,3 +144,88 @@ def calc_dv_norm(source,target,direction,length):
     direction=(target-source)/length
     return direction, length
 
+
+class antenna_pattern:
+    """
+    Antenna Pattern class which allows for patterns to be handled consistently
+    across LyceanEM and other modules. The definitions assume that the pattern axes
+    are consistent with the global axes set. If a different orientation is required,
+    such as a premeasured antenna in a new orientation then the pattern rotate_function
+    must be used.
+
+    Antenna Pattern Frequency is in Hz, eventually I may update the class for multi point patterns
+    """
+
+    def __init__(self,
+                 elements=1,
+                 azimuth_resolution=37,
+                 elevation_resolution=37,
+                 pattern_frequency=1e9,
+                 arbitary_pattern_type='isotropic',
+                 arbitary_pattern_format='Etheta/Ephi'):
+
+        self.elements = elements
+        self.azimuth_resolution = azimuth_resolution
+        self.elevation_resolution = elevation_resolution
+        self.pattern_frequency = pattern_frequency
+        self.arbitary_pattern_type = arbitary_pattern_type
+        if arbitary_pattern_format == 'Etheta/Ephi':
+            self.pattern = np.zeros((self.azimuth_resolution, self.elevation_resolution, self.elements, 2),
+                                    dtype=np.complex64)
+        elif arbitary_pattern_format == 'ExEyEz':
+            self.pattern = np.zeros((self.azimuth_resolution, self.elevation_resolution, self.elements, 3),
+                                    dtype=np.complex64)
+        self.initilise_pattern()
+
+    def initilise_pattern(self):
+        """
+        pattern initilisation function, providing an isotopic pattern
+        or quasi-isotropic pattern
+
+        Returns
+        -------
+        Populated antenna pattern
+        """
+
+        if self.arbitary_pattern_type == 'isotropic':
+            self.pattern[:, :, 0] = 1.0
+        elif self.arbitary_pattern_type == 'xhalfspace':
+            az_angles = np.linspace(-180, 180, self.azimuth_resolution)
+            az_index = np.where(np.abs(az_angles) < 90)
+            self.pattern[az_index, :, 0] = 1.0
+        elif self.arbitary_pattern_type == 'yhalfspace':
+            az_angles = np.linspace(-180, 180, self.azimuth_resolution)
+            az_index = np.where(az_angles > 90)
+            self.pattern[az_index, :, 0] = 1.0
+        elif self.arbitary_pattern_type == 'zhalfspace':
+            elev_angles = np.linspace(-180, 180, self.elevation_resolution)
+            elev_index = np.where(elev_angles > 0)
+            self.pattern[:, elev_index, 0] = 1.0
+
+    def transmute_pattern(self):
+        """
+        convert the pattern from Etheta/Ephi format to Ex, Ey,Ez format
+        """
+        
+
+    def rotate_pattern(self, rotation_matrix):
+        """
+        Rotate the self pattern from the assumed global axes into the new direction
+
+        Parameters
+        ----------
+        new_axes : 3x3 numpy float array
+            the new vectors for the antenna x,y,z axes
+
+        Returns
+        -------
+        Updates self.pattern with the new pattern reflecting the antenna
+        orientation within the global models
+
+        """
+        # generate pattern_coordinates for rotation
+        az_mesh, elev_mesh = np.meshgrid(np.linspace(-180, 180, self.azimuth_resolution),
+                                         np.linspace(-90, 90, self.elevation_resolution))
+        x, y, z = RF.sph2cart(az_mesh.ravel(), elev_mesh.ravel(), np.ones((self.pattern.shape)))
+        field_points = np.array([x, y, z]).transpose()
+
