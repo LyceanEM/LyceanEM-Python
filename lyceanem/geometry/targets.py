@@ -10,6 +10,8 @@ In order to store in an accessable way the different RCS standard targets such a
 import numpy as np
 import geometry.geometryfunctions
 from ..raycasting import rayfunctions as RF
+import lyceanem.geometry
+from importlib_resources import files
 import scipy.stats
 import open3d as o3d
 from scipy.spatial.transform import Rotation as R
@@ -37,17 +39,19 @@ def NasaAlmond(resolution='quarter'):
 
     """
     if resolution=='half':
-        NasaAlmond=o3d.io.read_triangle_mesh("NasaAlmondHalfWavelengthv2.stl")
+        stream = files('lyceanem.geometry.data').joinpath('NasaAlmondHalfWavelengthv2.stl')
+        NasaAlmond=o3d.io.read_triangle_mesh(str(stream))
     elif resolution=='quarter':
-        NasaAlmond=o3d.io.read_triangle_mesh("NasaAlmondQuarterWavelengthv2.stl")
+        stream = files('lyceanem.geometry.data').joinpath('NasaAlmondQuarterWavelengthv2.stl')
+        NasaAlmond=o3d.io.read_triangle_mesh(str(stream))
     elif resolution=='tenth':
-        NasaAlmond=o3d.io.read_triangle_mesh("NasaAlmondTenthWavelengthv2.stl")
+        stream = files('lyceanem.geometry.data').joinpath('NasaAlmondTenthWavelengthv2.stl')
+        NasaAlmond=o3d.io.read_triangle_mesh(str(stream))
 
     NasaAlmond.compute_vertex_normals()
-    points=np.asarray(NasaAlmond.vertices)
-    normals=np.asarray(NasaAlmond.vertex_normals)
-    scatter_cloud=RF.points2pointcloud(np.copy(points))
-    scatter_cloud.normals=o3d.utility.Vector3dVector(np.copy(normals))
+    #points=np.asarray(NasaAlmond.vertices)
+    #normals=np.asarray(NasaAlmond.vertex_normals)
+    _,scatter_cloud=geometry.geometryfunctions.tri_centroids(NasaAlmond)
     return NasaAlmond,scatter_cloud
 
 # def Ogive(ogive_length,ogive_x,ogive_y,ogive_sharpness,mesh_length):
@@ -121,7 +125,9 @@ def parabola(radius,focal_length,thickness,mesh_length,mesh='all'):
         DESCRIPTION.
 
     """
-    parabolas = sd.import_scad('./parabolas.scad')
+    #stream = pkg_resources.resource_stream(__name__, 'parabolas.scad')
+    stream=files('lyceanem.geometry').joinpath('parabolas.scad')
+    parabolas = sd.import_scad(str(stream))
     height = ((1/(4*focal_length))*radius**2)
     height_external = ((1 / (4 * focal_length)) * (radius+thickness) ** 2)
     #keep with a focal point with zero radius.
@@ -149,8 +155,7 @@ def parabola(radius,focal_length,thickness,mesh_length,mesh='all'):
     parabola_mesh = o3d.io.read_triangle_mesh("temp.stl")
     parabola_mesh.compute_vertex_normals()
     parabola_mesh.compute_triangle_normals()
-    parabola_scatter_cloud = RF.points2pointcloud(geometry.geometryfunctions.tri_centroids(parabola_mesh))
-    parabola_scatter_cloud.normals = o3d.utility.Vector3dVector(np.asarray(parabola_mesh.triangle_normals))
+    _,parabola_scatter_cloud = geometry.geometryfunctions.tri_centroids(parabola_mesh)
     return parabola_mesh,parabola_scatter_cloud
 
 def meshed_pipe(eradius1,eradius2,iradius1,iradius2,height,mesh_length,mesh='centres'):

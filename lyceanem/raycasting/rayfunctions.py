@@ -1891,7 +1891,7 @@ def create_model_index(source_index,sink_index,scattering_point_index):
     #then boolean check and filter to ensure there are no loops, aiming next ray at originating point
     return io_indexing[np.not_equal(io_indexing[:,-2],io_indexing[:,-1]),:]
 
-def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter):
+def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter,line_of_sight=True):
     #temp function to chunk the number of rays to prevent creation of ray arrays to large for memory
     #upper bound is around 470000000 rays at a time, there is already chunking to prevent overflow of the GPU memory and timeouts
     raycasting_timestamp=timer()
@@ -1919,8 +1919,25 @@ def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter):
         chunknum=np.maximum(2,chunknum)
         source_chunking=np.linspace(0,sources.shape[0],chunknum,dtype=np.int32)
         for chunkindex in range(source_chunking.size-1):
-            io_indexing=create_model_index(source_index[source_chunking[chunkindex]:source_chunking[chunkindex+1]],sink_index,scattering_point_index)
-            filtered_index,final_index,first_wave_Rays=launchRaycaster1Dv3(sources,sinks,scattering_points,io_indexing,environment)
+            if line_of_sight:
+                io_indexing = create_model_index(source_index[source_chunking[chunkindex]:source_chunking[chunkindex + 1]],
+                                                 sink_index,
+                                                 scattering_point_index)
+                filtered_index,final_index,first_wave_Rays=launchRaycaster1Dv3(sources,
+                                                                               sinks,
+                                                                               scattering_points,
+                                                                               io_indexing,
+                                                                               environment)
+            else:
+                #drop line of sight rays from queue
+                io_indexing = create_model_index(source_index[source_chunking[chunkindex]:source_chunking[chunkindex + 1]],
+                                                 np.empty((0,1)),
+                                                 scattering_point_index)
+                filtered_index, final_index, first_wave_Rays = launchRaycaster1Dv3(sources,
+                                                                                   sinks,
+                                                                                   scattering_points,
+                                                                                   io_indexing,
+                                                                                   environment)
             if (len(filtered_index)==0):
                 filtered_index2=np.empty((0,3),dtype=np.int32)
                 final_index2=np.empty((0,3),dtype=np.int32)
@@ -1943,8 +1960,25 @@ def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter):
         chunknum=np.maximum(2,chunknum)
         source_chunking=np.linspace(0,sources.shape[0],chunknum,dtype=np.int32)
         for chunkindex in range(source_chunking.size-1):
-            io_indexing=create_model_index(source_index[source_chunking[chunkindex]:source_chunking[chunkindex+1]],sink_index,scattering_point_index)
-            filtered_index,final_index,first_wave_Rays=launchRaycaster1Dv3(sources,sinks,scattering_points,io_indexing,environment)
+            if line_of_sight:
+                io_indexing = create_model_index(source_index[source_chunking[chunkindex]:source_chunking[chunkindex + 1]],
+                                                 sink_index,
+                                                 scattering_point_index)
+                filtered_index, final_index, first_wave_Rays = launchRaycaster1Dv3(sources,
+                                                                                   sinks,
+                                                                                   scattering_points,
+                                                                                   io_indexing,
+                                                                                   environment)
+            else:
+                # drop line of sight rays from queue
+                io_indexing = create_model_index(source_index[source_chunking[chunkindex]:source_chunking[chunkindex + 1]],
+                                                 np.empty((0, 1)),
+                                                 scattering_point_index)
+                filtered_index, final_index, first_wave_Rays = launchRaycaster1Dv3(sources,
+                                                                                   sinks,
+                                                                                   scattering_points,
+                                                                                   io_indexing,
+                                                                                   environment)
             filtered_index2,final_index2,second_wave_rays=chunkingRaycaster1Dv3(sources,sinks,scattering_points,filtered_index,environment,False)
             if (filtered_index2.shape[0]*sinks.shape[0]>2e8):
                 temp_chunks=np.int(np.ceil((filtered_index2.shape[0]*sinks.shape[0])/2e8))
