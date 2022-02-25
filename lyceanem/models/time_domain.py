@@ -251,9 +251,16 @@ def calculate_scattering(aperture_coords,
                                                          excitation_function,
                                                          sampling_freq,
                                                          num_samples)
-                    Ex[element, :] = np.dot(np.ones((num_sources)),np.dot(np.ones((num_sinks)), TimeMap[:, :, :, 0]))
-                    Ey[element, :] = np.dot(np.ones((num_sources)),np.dot(np.ones((num_sinks)), TimeMap[:, :, :, 1]))
-                    Ez[element, :] = np.dot(np.ones((num_sources)),np.dot(np.ones((num_sinks)), TimeMap[:, :, :, 2]))
+                    wake_index = np.digitize(WakeTimes, time_index)
+                    Ex[element, wake_index:] = np.dot(np.ones((num_sources)),
+                                                      np.dot(np.ones((num_sinks)),
+                                                             TimeMap[:, :, :(num_samples - wake_index),0]))
+                    Ey[element, wake_index:] = np.dot(np.ones((num_sources)),
+                                                      np.dot(np.ones((num_sinks)),
+                                                             TimeMap[:, :, :(num_samples - wake_index),1]))
+                    Ez[element, wake_index:] = np.dot(np.ones((num_sources)),
+                                                      np.dot(np.ones((num_sinks)),
+                                                             TimeMap[:, :, :(num_samples - wake_index),2]))
 
         else:
             Ex = np.zeros((num_sources, num_sinks,num_samples), dtype=np.float64)

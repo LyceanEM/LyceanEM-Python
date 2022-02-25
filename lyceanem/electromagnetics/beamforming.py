@@ -462,7 +462,7 @@ def WeightTruncation(weights,resolution):
     new_weights=np.abs(weights)*np.exp(1j*((levels*2*np.pi)-np.pi))
     return new_weights
 
-def PatternPlot(data,az,elev,pattern_min=-40,plot_max=0.0,plottype='Polar',logtype='amplitude',ticknum=6):
+def PatternPlot(data,az,elev,pattern_min=-40,plot_max=0.0,plottype='Polar',logtype='amplitude',ticknum=6,title_text=None):
     #plot the provided linear unnormalised 2d matrix as a 3D surface plot
     #condition data
     data=np.abs(data)
@@ -515,6 +515,9 @@ def PatternPlot(data,az,elev,pattern_min=-40,plot_max=0.0,plottype='Polar',logty
         ax.add_patch(p)
         art3d.pathpatch_2d_to_3d(p, z=0, zdir="z")
         ax.view_init(elev=45., azim=-45)
+        if title_text!=None:
+            ax.set_title(title_text)
+
     elif plottype=='Cartesian-Surf':
         fig = plt.figure()
         ax = fig.add_subplot(projection='3d')
@@ -528,6 +531,8 @@ def PatternPlot(data,az,elev,pattern_min=-40,plot_max=0.0,plottype='Polar',logty
         ax.set_xlabel('Azimuth (degrees)')
         ax.set_ylabel('Elevation (degrees)')
         ax.set_zlabel(bar_label)
+        if title_text!=None:
+            ax.set_title(title_text)
 
 
 # noinspection PyTypeChecker
@@ -536,7 +541,7 @@ def point_directivity(Ea,Eb,az_range,el_range,interest_index):
     """
     compute the directivity at the point of interest in the farfield pattern
     """
-    
+
     average_power=0.0
     directivity_results=cuda.local.array(shape=(3), dtype=float32)
     return directivity_results

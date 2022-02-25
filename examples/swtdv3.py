@@ -24,15 +24,11 @@ import open3d as o3d
 import scipy.signal as sig
 from scipy.fft import fft, fftfreq
 from scipy.spatial.transform import Rotation as R
-import reflectordata
+import lyceanem.tests.reflectordata as reflectordata
 from scipy.spatial import distance
 from numpy.linalg import norm
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-
-from numba import cuda, int16, float32, from_dtype, jit, njit, guvectorize, prange
-from rayfunctionsv5 import point_t
-from EMScatteringv2 import scattering_t
 from timeit import default_timer as timer
 nb_logger = logging.getLogger('numba')
 nb_logger.setLevel(logging.ERROR)  # only show error
@@ -43,14 +39,16 @@ model_time=1e-7
 num_samples=int(model_time*(sampling_freq))
 #time_record=np.zeros((len(angle_values),num_samples,3),dtype='float')
 #simulate receiver noise
-bandwidth=2e9
+bandwidth=8e9
 kb=1.38065e-23
-thermal_noise_power=4*kb*293.15*50*bandwidth
-mean_noise=0
 receiver_impedence=50
-noise_volts = np.random.normal(mean_noise, np.sqrt(thermal_noise_power*receiver_impedence), num_samples)
+thermal_noise_power=4*kb*293.15*receiver_impedence*bandwidth
+noise_power=-80#dbw
+mean_noise=0
+
+#noise_volts = np.random.normal(mean_noise, np.sqrt(thermal_noise_power*receiver_impedence), num_samples)
 #time_ref=np.zeros((len(angle_values)),dtype='float')
-model_freq=24e9
+model_freq=26e9
 wavelength=3e8/model_freq
 show_scene=True
 transmit_horn_structure,transmitting_antenna_surface_coords=TL.meshedHorn(58e-3,58e-3,128e-3,2e-3,0.21,0.5*wavelength)
@@ -78,7 +76,7 @@ recieving_antenna_surface_coords.translate(np.asarray([0,1.427,0]),relative=True
 #sinks[0,2]=1.0
 #sink_normals=np.zeros((1,3),dtype=np.float32)  
 #sink_normals[0,2]=-1.0
-resolution=7
+resolution=2
 angles=np.linspace(0,90,91)
 wake_times=np.zeros((len(angles)))
 Ex=np.zeros((len(angles),num_samples))
@@ -104,7 +102,7 @@ for angle in tqdm(range(len(angles))):
         #point_area=(mesh_resolution)**2
         #reflectorplate=copy.deepcopy(reflectorplate_main)
         #scatter_points=copy.deepcopy(scatter_points_main)
-        reflectorplate,scatter_points=TL.meshedReflector(0.3,0.3,6e-3,wavelength*0.5,sides='front')
+        reflectorplate,scatter_points=TL.meshedReflector(0.3,0.3,6e-3,wavelength*0.5,sides='all')
         #scatter_points=TL.meshsolid(reflectorplate, point_area)
         filename='MediumSquareReflectorEMtest'
         position_vector=np.asarray([29e-3,0.0,0])
@@ -186,18 +184,27 @@ for angle in tqdm(range(len(angles))):
     #scatter_map2=RF.scatter_net_sortEM(source_coords.shape[0],sinks.shape[0],scatter_map2,depth_slicebounce,full_rays[~np.equal(full_index[:,2],0),:],1)
     time_index=np.linspace(0,model_time,num_samples)
     pulse_time=5e-9
-    output_power=1 #watts
+    output_power=0.01 #dBwatts
     powerdbm=10*np.log10(output_power)+30
-    vrms=np.sqrt(receiver_impedence/1000)*10**(powerdbm/20)
-    output_amplitude=vrms/(1/np.sqrt(2))
+    v_transmit=((10**(powerdbm/20))*receiver_impedence)**0.5
+    output_amplitude_rms=v_transmit/(1/np.sqrt(2))
+    output_amplitude_peak=v_transmit
     #excitation_signal=sig.unit_impulse(100)
    
     desired_E_axis=np.zeros((3),dtype=np.float32)
     desired_E_axis[2]=1.0
-    
+    noise_volts_peak=(10**(noise_power/10)*receiver_impedence)*0.5
     #o3d.visualization.draw_geometries([mesh_frame,reflectorplate,scatter_hit_points,transmit_horn_structure])
     #print(angles[angle],len(full_index[full_index[:,2]!=0,:]))
-    excitation_signal=output_amplitude*sig.chirp(np.linspace(0,pulse_time,int(pulse_time*sampling_freq)), 24e9, pulse_time, 24e9, method='linear', phi=0, vertex_zero=True)
+    excitation_signal=output_amplitude_rms*sig.chirp(np.linspace(0,
+                                                                 pulse_time,
+                                                                 int(pulse_time*sampling_freq)),
+                                                                 model_freq-bandwidth, 
+                                                                 pulse_time, 
+                                                                 model_freq, 
+                                                                 method='linear', 
+                                                                 phi=0, 
+                                                                 vertex_zero=True)+np.random.normal(mean_noise, noise_volts_peak, int(pulse_time*sampling_freq))
     Ex[angle,:],Ey[angle,:],Ez[angle,:],wake_times[angle]=TD.calculate_scattering(transmitting_antenna_surface_coords,
                                                                 recieving_antenna_surface_coords,
                                                                 excitation_signal,
@@ -209,13 +216,18 @@ for angle in tqdm(range(len(angles))):
                                                                 elements=False,
                                                                 sampling_freq=sampling_freq,
                                                                 num_samples=num_samples)
+    
+    noise_volts=np.random.normal(mean_noise, noise_volts_peak, num_samples)
+    Ex[angle,:]=Ex[angle,:]+noise_volts
+    Ey[angle,:]=Ey[angle,:]+noise_volts
+    Ez[angle,:]=Ez[angle,:]+noise_volts
     time_points[angle]=timer()-start_angle
     #est_remaining=np.mean(time_points[:(angle+1)])*(len(angles)-(angle+1))
     #print("Processing Time:  {:3.1f} s, Estimated Remaining time: {:3.1f} minutes".format(time_points[angle],est_remaining/60) )
-    np.savez('timedomainsmallplatechirp',Ex=Ex,Ey=Ey,Ez=Ez,excitation_signal=excitation_signal,time_index=time_index)
+    #np.savez('timedomainsmallplatechirp',Ex=Ex,Ey=Ey,Ez=Ez,excitation_signal=excitation_signal,time_index=time_index)
     
-
 norm_max=np.nanmax(np.array([np.nanmax(10*np.log10((Ex**2)/receiver_impedence)),np.nanmax(10*np.log10((Ey**2)/receiver_impedence)),np.nanmax(10*np.log10((Ez**2)/receiver_impedence))]))
+np.savez(filename,Ex=Ex,Ey=Ey,Ez=Ez,excitation_signal=excitation_signal,time_index=time_index)
 #ax.plot(time_index,time_map[0,0,:])
 #ax.plot(time_index,20*np.log10(Ex)-norm_max)
 #ax.plot(time_index,20*np.log10(Ey)-norm_max)
@@ -228,25 +240,32 @@ ax.plot(angles,10*np.log10(np.sum((Ex**2/receiver_impedence),axis=1)))
 ax.plot(angles,10*np.log10(np.sum((Ey**2/receiver_impedence),axis=1)))
 ax.plot(angles,10*np.log10(np.sum((Ez**2/receiver_impedence),axis=1)))
 time_index=np.linspace(0,model_time*1e9,num_samples)
-time,anglegrid=np.meshgrid(time_index,angles-45)
+time,anglegrid=np.meshgrid(time_index[:1801],angles-45)
+#fig2 = plt.figure()
+#ax2 = plt.axes(projection='3d')
 fig2, ax2 = plt.subplots(constrained_layout=True)
 origin = 'lower'
 # Now make a contour plot with the levels specified,
 # and with the colormap generated automatically from a list
 # of colors.
 
-levels = np.linspace(-60,0,61)
-CS = ax2.contourf(anglegrid,time, 10*np.log10((Ez**2)/receiver_impedence)-norm_max, levels,
-                    origin=origin,
-                    extend='both')
+levels = np.linspace(-80,0,41)
+#CS = ax2.plot_surface(anglegrid,time, 10*np.log10((Ez[:,:1801]**2)/receiver_impedence)-norm_max,levels,
+#                    origin=origin,
+#                    extend='both')
+CS = ax2.contourf(anglegrid,time, 10*np.log10((Ez[:,:1801]**2)/receiver_impedence)-norm_max, levels,
+                  origin=origin,
+                  extend='both')
 cbar = fig2.colorbar(CS)
 cbar.ax.set_ylabel('Received Power (dBm)')
+#cbar.set_clim(-60,0)
 #cbar.set_ticks([norm_max-60,norm_max])
 #cbar.ax.set_yticklabels([norm_max-60,norm_max])
-ax2.set_ylim(10,20)
+ax2.set_ylim(0,30)
 ax2.set_xlim(-45,45)
-ax2.set_xticks(np.linspace(-45, 45, 10))
-ax2.set_yticks(np.linspace(10, 20, 11))
+#ax2.set_zlim(-60,0)
+ax2.set_xticks(np.linspace(-45, 45, 7))
+ax2.set_yticks(np.linspace(0, 30, 16))
 #ax2.set_yticklabels(np.linspace(0, np.max(time_index)/1e-9, 11).astype(str))
 ax2.set_xlabel('Rotation Angle (degrees)')
 ax2.set_ylabel('Time of Flight (ns)')
@@ -316,10 +335,10 @@ cbar = fig2.colorbar(CS)
 cbar.ax.set_ylabel('Power Spectral Density')
 #cbar.set_ticks([norm_max-60,norm_max])
 #cbar.ax.set_yticklabels([norm_max-60,norm_max])
-ax2.set_ylim(0,30)
+ax2.set_ylim(2,30)
 ax2.set_xlim(-45,45)
-ax2.set_xticks(np.linspace(-45, 45, 10))
-ax2.set_yticks(np.linspace(0, 30, 10))
+ax2.set_xticks(np.linspace(-45, 45, 7))
+ax2.set_yticks(np.linspace(2, 30, 15))
 #ax2.set_yticklabels(np.linspace(0, np.max(time_index)/1e-9, 11).astype(str))
 ax2.set_xlabel('Rotation Angle (degrees)')
 ax2.set_ylabel('Frequency (Hz)')
@@ -344,10 +363,10 @@ cbar = fig2.colorbar(CS)
 cbar.ax.set_ylabel('Power (dBm)')
 #cbar.set_ticks([norm_max-60,norm_max])
 #cbar.ax.set_yticklabels([norm_max-60,norm_max])
-ax2.set_ylim(0,30)
+ax2.set_ylim(2,30)
 ax2.set_xlim(-45,45)
-ax2.set_xticks(np.linspace(-45, 45, 10))
-ax2.set_yticks(np.linspace(0, 30, 10))
+ax2.set_xticks(np.linspace(-45, 45, 7))
+ax2.set_yticks(np.linspace(2, 30, 15))
 #ax2.set_yticklabels(np.linspace(0, np.max(time_index)/1e-9, 11).astype(str))
 ax2.set_xlabel('Rotation Angle (degrees)')
 ax2.set_ylabel('Frequency (GHz)')
@@ -359,7 +378,7 @@ fig,ax=plt.subplots()
 #ax.plot(angles,setfreq_psd)
 ax.plot(angles,setfreq_psdalt)
 
-input_signal=excitation_signal*(output_amplitude)
+input_signal=excitation_signal*(output_amplitude_peak)
 inputfft=fft(input_signal)
 input_freq=fftfreq(120,1/sampling_freq)[:60]
 freqfuncabs=scipy.interpolate.interp1d(input_freq,np.abs(inputfft[:60]))
@@ -378,7 +397,7 @@ origin = 'lower'
 # and with the colormap generated automatically from a list
 # of colors.
 
-levels = np.linspace(np.nanmax(20*np.log10(np.abs(freqcroppeds21[np.isfinite(freqcroppeds21)])))-60,np.nanmax(20*np.log10(np.abs(freqcroppeds21[np.isfinite(freqcroppeds21)]))),61)
+levels = np.linspace(np.nanmax(20*np.log10(np.abs(freqcroppeds21[np.isfinite(freqcroppeds21)])))-10,np.nanmax(20*np.log10(np.abs(freqcroppeds21[np.isfinite(freqcroppeds21)]))),61)
 CS = ax2.contourf(anglegrid,freqgrid/1e9, 20*np.log10(np.abs(freqcroppeds21)), 
                   levels, 
                   origin=origin,

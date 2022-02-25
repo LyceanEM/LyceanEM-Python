@@ -1,5 +1,6 @@
 import open3d as o3d
 import numpy as np
+from numba import float32, float64, from_dtype, njit, vectorize
 
 def tri_areas(solid):
     """
@@ -49,21 +50,14 @@ def decimate_mesh(solid,mesh_sep):
 
     return new_solid
 
-def elevationtotheta(el_range):
-    #el_range is a numpy array from the minimum to the maximum elevation angle value
-    #this can then be converted straight to the appropriate theta range
-    el_min=el_range[0]
-    el_max=el_range[-1]
-    #elevation absolute range is -90 to +90, while theta range is thus 180 to 0 degrees
-    if el_min<=0.0:
-        theta_min=90+np.abs(el_min)
+@vectorize(['(float32(float32))','(float64(float64))'])
+def elevationtotheta(el):
+    #converting elevation in degrees to theta in degrees
+    #elevation is in range -90 to 90 degrees
+    #theta is in range 0 to 180 degrees
+    if el>=0.0:
+        theta=(90.0-el)
     else:
-        theta_min=90-np.abs(el_min)
+        theta=np.abs(el)+90.0
 
-    if el_max<=0:
-        theta_max=90+np.abs(el_max)
-    else:
-        theta_max=90-np.abs(el_max)
-
-    theta=np.linspace(theta_min,theta_max,el_range.shape[0])
     return theta
