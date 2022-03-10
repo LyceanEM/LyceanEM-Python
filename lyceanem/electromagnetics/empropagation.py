@@ -19,7 +19,7 @@ from numpy.linalg import norm
 from matplotlib import cm
 
 from numba import cuda, int16, float32, float64, complex64, complex128, from_dtype, jit, njit, guvectorize, prange
-from ..base import scattering_t
+from ..base import scattering_t, point_t, triangle_t
 
 
 

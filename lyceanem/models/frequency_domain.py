@@ -4,7 +4,8 @@ from ..electromagnetics import empropagation as EM
 from ..geometry import targets as TL
 from ..geometry import geometryfunctions as GF
 import open3d as o3d
-from ..base import scattering_t
+from ..base import scattering_t, point_t, triangle_t, calc_dv_norm
+
 
 
 def aperture_projection(aperture,
@@ -88,7 +89,7 @@ def calculate_farfield(aperture_coords,
     sink_normals = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
     origin = np.zeros((len(sinks), 3), dtype=np.float32).ravel()
     lengths = np.zeros((len(np.ravel(azaz)), 1), dtype=np.float32)
-    sink_normals, _ = RF.calc_dv_norm(sinks, np.zeros((len(sinks), 3), dtype=np.float32), sink_normals, lengths)
+    sink_normals, _ = calc_dv_norm(sinks, np.zeros((len(sinks), 3), dtype=np.float32), sink_normals, lengths)
     sink_cloud = RF.points2pointcloud(sinks)
     sink_cloud.normals = o3d.utility.Vector3dVector(sink_normals)
     num_sources = len(np.asarray(aperture_coords.points))
