@@ -1,6 +1,7 @@
-import open3d as o3d
 import numpy as np
-from numba import float32, float64, from_dtype, njit, vectorize
+import open3d as o3d
+from numba import vectorize
+
 
 def tri_areas(solid):
     """
@@ -61,3 +62,17 @@ def elevationtotheta(el):
         theta=np.abs(el)+90.0
 
     return theta
+
+@vectorize(['(float32(float32))','(float64(float64))'])
+def thetatoelevation(theta):
+    #converting elevation in degrees to theta in degrees
+    #elevation is in range -90 to 90 degrees
+    #theta is in range 0 to 180 degrees
+    if theta<=90.0:
+        #theta=(90.0-el)
+        el=90-theta
+    else:
+        #theta=np.abs(el)+90.0
+        el=-(theta-90.0)
+
+    return el

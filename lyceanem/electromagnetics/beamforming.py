@@ -1,18 +1,18 @@
 
 
-import numpy as np
 import cmath
-from ..raycasting import rayfunctions as RF
-import scipy.stats
-import open3d as o3d
+
 import matplotlib.pyplot as plt
-from matplotlib.patches import Wedge
 import mpl_toolkits.mplot3d.art3d as art3d
-
-from scipy.spatial import distance
+import numpy as np
+import open3d as o3d
+import scipy.stats
 from matplotlib import cm
-
+from matplotlib.patches import Wedge
 from numba import cuda, float32, njit, prange
+from scipy.spatial import distance
+
+from ..raycasting import rayfunctions as RF
 
 
 def Steering_Efficiency(Dtheta,Dphi,Dtot,first_dimension_angle,second_dimension_angle,angular_coverage):

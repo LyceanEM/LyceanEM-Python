@@ -6,29 +6,18 @@ Created on Tue Jun 16 13:15:07 2020
 @author: timtitan
 """
 import logging
-from tqdm import tqdm
+from timeit import default_timer as timer
+
 import numpy as np
-import lyceanem.raycasting.rayfunctions as RF
-import lyceanem.electromagnetics.empropagation as EM
+import open3d as o3d
+from tqdm import tqdm
+
 import lyceanem.geometry.targets as TL
 import lyceanem.models.frequency_domain as FD
-#import GPUScatteringTest as GU
-from math import sqrt
+import lyceanem.raycasting.rayfunctions as RF
+# import GPUScatteringTest as GU
 import lyceanem.tests.reflectordata as RD
-import scipy.stats
-import math
-import copy
-import matplotlib.pyplot as plt
-import open3d as o3d
-from scipy.spatial.transform import Rotation as R
 
-from scipy.spatial import distance
-from numpy.linalg import norm
-from matplotlib import cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-
-from numba import cuda, int16, float32, from_dtype, jit, njit, guvectorize, prange
-from timeit import default_timer as timer
 nb_logger = logging.getLogger('numba')
 nb_logger.setLevel(logging.ERROR)  # only show error
 angle_values=np.linspace(0,90,91)

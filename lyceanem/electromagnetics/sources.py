@@ -1,13 +1,10 @@
 import numpy as np
-
-
-#provide idealised patterns to allow testing of the different models
+# provide idealised patterns to allow testing of the different models
 import open3d as o3d
 
-from ..electromagnetics.empropagation import launchtransform
+from ..base import scattering_t
 from ..geometry import geometryfunctions as GF
 from ..raycasting import rayfunctions as RF
-from ..base import scattering_t
 
 
 def electriccurrentsource(prime_vector,theta,phi):

@@ -5,22 +5,22 @@ Created on Wed Jul 29 16:21:06 2020
 
 @author: timtitan
 """
-import numpy as np
-import pathlib
-import cupy as cp
 import cmath
-from ..raycasting import rayfunctions as RF
-import scipy.stats
-import math
 import copy
+import math
+import pathlib
+
+import cupy as cp
+import numpy as np
 import open3d as o3d
-from scipy.spatial import distance
-from numpy.linalg import norm
+import scipy.stats
 from matplotlib import cm
+from numba import cuda, float32, float64, complex64, njit, guvectorize, prange
+from numpy.linalg import norm
+from scipy.spatial import distance
 
-from numba import cuda, int16, float32, float64, complex64, complex128, from_dtype, jit, njit, guvectorize, prange
 from ..base import scattering_t
-
+from ..raycasting import rayfunctions as RF
 
 
 @cuda.jit(device=True)
@@ -2382,7 +2382,7 @@ def importDat(fileaddress):
     datafile=pathlib.Path(fileaddress)
     # noinspection PyTypeChecker
     temp=np.loadtxt(datafile)
-    freq=temp[0,4]#MHz
+    freq=temp[0,4]*1e6#Hz
     planes=temp[0,0]
     phi_lower=temp[0,1]
     phi_upper=temp[0,2]

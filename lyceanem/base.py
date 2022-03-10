@@ -1,9 +1,16 @@
 
 
-import numpy as np
 import math
-from numba import float32, float64, from_dtype, njit, guvectorize, vectorize
+
+import numpy as np
+from numba import float32, from_dtype, njit, guvectorize
+from scipy import interpolate as sp
 from scipy.spatial.transform import Rotation as R
+
+from .electromagnetics import beamforming as BM
+from .electromagnetics import empropagation as EM
+from .geometry import geometryfunctions as GF
+from .raycasting import rayfunctions as RF
 
 # A numpy record array (like a struct) to record triangle
 point_data = np.dtype([
@@ -161,7 +168,6 @@ class antenna_pattern:
     """
 
     def __init__(self,
-                 elements=1,
                  azimuth_resolution=37,
                  elevation_resolution=37,
                  pattern_frequency=1e9,
@@ -178,6 +184,10 @@ class antenna_pattern:
         self.arbitary_pattern_format = arbitary_pattern_format
         self.position_mapping = position_mapping
         self.rotation_offset = rotation_offset
+        az_mesh, elev_mesh = np.meshgrid(np.linspace(-180, 180, self.azimuth_resolution),
+                                         np.linspace(-90, 90, self.elevation_resolution))
+        self.az_mesh=az_mesh
+        self.elev_mesh=elev_mesh
         if self.arbitary_pattern_format == 'Etheta/Ephi':
             self.pattern = np.zeros((self.elevation_resolution, self.azimuth_resolution, 2),
                                     dtype=np.complex64)
@@ -221,17 +231,86 @@ class antenna_pattern:
         if self.arbitary_pattern_type == 'isotropic':
             self.pattern[:, :, 0] = 1.0
         elif self.arbitary_pattern_type == 'xhalfspace':
-            az_angles = np.linspace(-180, 180, self.azimuth_resolution)
+            az_angles = self.az_mesh[0,:]
             az_index = np.where(np.abs(az_angles) < 90)
             self.pattern[:, az_index, 0] = 1.0
         elif self.arbitary_pattern_type == 'yhalfspace':
-            az_angles = np.linspace(-180, 180, self.azimuth_resolution)
+            az_angles = self.az_mesh[0,:]
             az_index = np.where(az_angles > 90)
             self.pattern[:, az_index, 0] = 1.0
         elif self.arbitary_pattern_type == 'zhalfspace':
-            elev_angles = np.linspace(-180, 180, self.elevation_resolution)
+            elev_angles = self.elev_mesh[:,0]
             elev_index = np.where(elev_angles > 0)
             self.pattern[elev_index, :, 0] = 1.0
+
+    def import_pattern(self,file_location):
+        """
+        takes the file location and imports the individual pattern file, replacing exsisting values with those of the saved file
+        Inputs : file location
+
+        Returns : None
+        """
+        if file_location.suffix=='.txt':
+            #file is a CST ffs format
+            datafile = np.loadtxt(file_location, skiprows=2)
+            theta = datafile[:, 0]
+            phi = datafile[:, 1]
+            freq_index1=file_location.name.find('f=')
+            freq_index2=file_location.name.find(')')
+            file_frequency=float(file_location.name[freq_index1+2:freq_index2])*1e9
+            phi_steps = np.linspace(np.min(phi), np.max(phi), np.unique(phi).size)
+            theta_steps = np.linspace(np.min(theta), np.max(theta), np.unique(theta).size)
+            phi_res = np.unique(phi).size
+            theta_res = np.unique(theta).size
+            etheta = (datafile[:, 3] * np.exp(1j * np.deg2rad(datafile[:, 4]))).reshape(theta_res, phi_res)
+            ephi = (datafile[:, 5] * np.exp(1j * np.deg2rad(datafile[:, 6]))).reshape(theta_res, phi_res)
+            self.azimuth_resolution=phi_res
+            self.elevation_resolution=theta_res
+            self.elev_mesh= GF.thetatoelevation(theta).reshape(theta_res, phi_res)
+            self.az_mesh= phi.reshape(theta_res, phi_res)
+            self.pattern=np.zeros((self.elevation_resolution, self.azimuth_resolution, 2),
+                                    dtype=np.complex64)
+            self.pattern[:,:,0]=etheta
+            self.pattern[:,:,1] = ephi
+            self.pattern_frequency=file_frequency
+        elif file_location.suffix=='.dat':
+            #file is .dat format from anechoic chamber measurements
+            Ea,Eb,freq,norm,theta_values,phi_values=EM.importDat(file_location)
+            az_mesh,elev_mesh=np.meshgrid(phi_values,GF.thetatoelevation(theta_values))
+            self.azimuth_resolution=np.unique(phi_values).size
+            self.elevation_resolution=np.unique(theta_values).size
+            self.az_mesh = az_mesh
+            self.elev_mesh = elev_mesh
+            self.pattern = np.zeros((self.elevation_resolution, self.azimuth_resolution, 2),
+                                    dtype=np.complex64)
+            self.pattern_frequency = freq * 1e6
+            self.pattern[:, :, 0] = Ea.transpose() + norm
+            self.pattern[:, :, 1] = Eb.transpose() + norm
+
+    def export_pattern(self,file_location):
+        """
+        takes the file location and exports the pattern as a .dat file
+        """
+        theta_mesh=GF.elevationtotheta(self.elev_mesh)
+        phi_mesh=self.az_mesh
+
+        
+
+    def display_pattern(self,desired_pattern='both',pattern_min=-40):
+        """
+        displays the antenna pattern
+        """
+
+        if self.arbitary_pattern_format=='Etheta/Ephi':
+            if desired_pattern=='both':
+                BM.PatternPlot(self.pattern[:, :, 0], self.az_mesh, self.elev_mesh, pattern_min=pattern_min, title_text='Etheta')
+                BM.PatternPlot(self.pattern[:, :, 1], self.az_mesh, self.elev_mesh, pattern_min=pattern_min, title_text='Ephi')
+        elif self.arbitary_pattern_format=='ExEyEz':
+            if desired_pattern=='both':
+                BM.PatternPlot(self.pattern[:, :, 0], self.az_mesh, self.elev_mesh, pattern_min=pattern_min, title_text='Ex')
+                BM.PatternPlot(self.pattern[:, :, 1], self.az_mesh, self.elev_mesh, pattern_min=pattern_min, title_text='Ey')
+                BM.PatternPlot(self.pattern[:, :, 2], self.az_mesh, self.elev_mesh, pattern_min=pattern_min, title_text='Ez')
+
 
     def transmute_pattern(self):
         """
@@ -245,17 +324,14 @@ class antenna_pattern:
                                      self.azimuth_resolution,
                                      3),
                                     dtype=np.complex64)
-            az_mesh, elev_mesh = np.meshgrid(np.linspace(-180, 180, self.azimuth_resolution),
-                                             np.linspace(-90, 90, self.elevation_resolution))
-            _, theta = np.meshgrid(np.linspace(-180.0, 180.0, self.azimuth_resolution),
-                                   GF.elevationtotheta(np.linspace(-90, 90, self.elevation_resolution)))
+            theta=GF.elevationtotheta(self.elev_mesh)
             # convrsion part, move to transmute pattern
-            conversion_matrix1 = np.asarray([np.cos(np.deg2rad(theta.ravel())) * np.cos(np.deg2rad(az_mesh.ravel())),
-                                             np.cos(np.deg2rad(theta.ravel())) * np.sin(np.deg2rad(az_mesh.ravel())),
+            conversion_matrix1 = np.asarray([np.cos(np.deg2rad(theta.ravel())) * np.cos(np.deg2rad(self.az_mesh.ravel())),
+                                             np.cos(np.deg2rad(theta.ravel())) * np.sin(np.deg2rad(self.az_mesh.ravel())),
                                              -np.sin(np.deg2rad(theta.ravel()))]).transpose()
-            conversion_matrix2 = np.asarray([-np.sin(np.deg2rad(az_mesh.ravel())),
-                                             np.cos(np.deg2rad(az_mesh.ravel())),
-                                             np.zeros(az_mesh.size)]).transpose()
+            conversion_matrix2 = np.asarray([-np.sin(np.deg2rad(self.az_mesh.ravel())),
+                                             np.cos(np.deg2rad(self.az_mesh.ravel())),
+                                             np.zeros(self.az_mesh.size)]).transpose()
             decomposed_fields = oldformat[:, 0].reshape(-1, 1) * conversion_matrix1 + oldformat[:, 1].reshape(-1,
                                                                                                               1) * conversion_matrix2
             self.pattern[:, :, 0] = decomposed_fields[:, 0].reshape(self.elevation_resolution, self.azimuth_resolution)
@@ -269,22 +345,30 @@ class antenna_pattern:
                                      self.azimuth_resolution,
                                      2),
                                     dtype=np.complex64)
-            az_mesh, elev_mesh = np.meshgrid(np.linspace(-180, 180, self.azimuth_resolution),
-                                             np.linspace(-90, 90, self.elevation_resolution))
-            _, theta = np.meshgrid(np.linspace(-180.0, 180.0, self.azimuth_resolution),
-                                   GF.elevationtotheta(np.linspace(-90, 90, self.elevation_resolution)))
-            costhetacosphi = (np.cos(np.deg2rad(az_mesh.ravel())) * np.cos(np.deg2rad(theta.ravel()))).astype(
+            theta=GF.elevationtotheta(self.elev_mesh)
+            costhetacosphi = (np.cos(np.deg2rad(self.az_mesh.ravel())) * np.cos(np.deg2rad(theta.ravel()))).astype(
                 np.complex64)
-            sinphicostheta = (np.sin(np.deg2rad(az_mesh.ravel())) * np.cos(np.deg2rad(theta.ravel()))).astype(
+            sinphicostheta = (np.sin(np.deg2rad(self.az_mesh.ravel())) * np.cos(np.deg2rad(theta.ravel()))).astype(
                 np.complex64)
             sintheta = (np.sin(np.deg2rad(theta.ravel()))).astype(np.complex64)
-            sinphi = (np.sin(np.deg2rad(az_mesh.ravel()))).astype(np.complex64)
-            cosphi = (np.cos(np.deg2rad(az_mesh.ravel()))).astype(np.complex64)
+            sinphi = (np.sin(np.deg2rad(self.az_mesh.ravel()))).astype(np.complex64)
+            cosphi = (np.cos(np.deg2rad(self.az_mesh.ravel()))).astype(np.complex64)
             new_etheta = oldformat[:, 0] * costhetacosphi + oldformat[:, 1] * sinphicostheta - oldformat[:,
                                                                                                2] * sintheta
             new_ephi = -oldformat[:, 0] * sinphi + oldformat[:, 1] * cosphi
             self.pattern[:, :, 0] = new_etheta.reshape(self.elevation_resolution, self.azimuth_resolution)
             self.pattern[:, :, 1] = new_ephi.reshape(self.elevation_resolution, self.azimuth_resolution)
+
+    def cartesian_points(self):
+        """
+        exports the cartesian points foe all pattern points.
+        """
+        x, y, z = RF.sph2cart(np.deg2rad(self.az_mesh.ravel()),
+                              np.deg2rad(self.elev_mesh.ravel()),
+                              np.ones((self.pattern[:, :, 0].size)))
+        field_points = np.array([x, y, z]).transpose().astype(np.float32)+self.position_mapping
+
+        return field_points
 
     def rotate_pattern(self, rotation_matrix=None):
         """
@@ -302,11 +386,9 @@ class antenna_pattern:
 
         """
         # generate pattern_coordinates for rotation
-        az_mesh, elev_mesh = np.meshgrid(np.linspace(-180, 180, self.azimuth_resolution),
-                                         np.linspace(-90, 90, self.elevation_resolution))
-        theta = GF.elevationtotheta(elev_mesh)
-        x, y, z = RF.sph2cart(np.deg2rad(az_mesh.ravel()),
-                              np.deg2rad(elev_mesh.ravel()),
+        theta = GF.elevationtotheta(self.elev_mesh)
+        x, y, z = RF.sph2cart(np.deg2rad(self.az_mesh.ravel()),
+                              np.deg2rad(self.elev_mesh.ravel()),
                               np.ones((self.pattern[:, :, 0].size)))
         field_points = np.array([x, y, z]).transpose().astype(np.float32)
 
@@ -335,6 +417,21 @@ class antenna_pattern:
         if desired_format == 'Etheta/Ephi':
             # convert back
             self.transmute_pattern()
+
+    def resample_pattern_angular(self,new_azimuth_resolution,new_elevation_resolution):
+        """
+        resample pattern based upon provided azimuth and elevation resolution
+        """
+        new_az_mesh, new_elev_mesh = np.meshgrid(np.linspace(-180, 180, new_azimuth_resolution),
+                                                 np.linspace(-90, 90, new_elevation_resolution))
+        x, y, z = RF.sph2cart(np.deg2rad(new_az_mesh.ravel()),
+                              np.deg2rad(new_elev_mesh.ravel()),
+                              np.ones((self.pattern[:, :, 0].size)))
+        new_field_points = np.array([x, y, z]).transpose().astype(np.float32)
+        old_field_points=self.cartesian_points()
+        old_pattern=self.pattern.reshape(-1,2)
+        new_pattern=self.resample_pattern(old_field_points,old_pattern,new_field_points)
+
 
     def resample_pattern(self, old_points, old_pattern, new_points):
         """

@@ -7,17 +7,18 @@ In order to store in an accessable way the different RCS standard targets such a
 """
 
 
-import numpy as np
-import geometry.geometryfunctions
-from ..raycasting import rayfunctions as RF
-import lyceanem.geometry
-from importlib_resources import files
-import scipy.stats
-import open3d as o3d
-from scipy.spatial.transform import Rotation as R
-import solid as sd
 from subprocess import run
+
+import geometry.geometryfunctions
+import numpy as np
+import open3d as o3d
+import scipy.stats
+import solid as sd
+from importlib_resources import files
 from numpy.linalg import norm
+from scipy.spatial.transform import Rotation as R
+
+from ..raycasting import rayfunctions as RF
 
 EPSILON=1e-6 # how close to zero do we consider zero?
 

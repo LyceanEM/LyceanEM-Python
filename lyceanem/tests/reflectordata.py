@@ -6,14 +6,17 @@ Created on Thu Apr 29 10:30:17 2021
 @author: timtitan
 """
 
-import numpy as np
-import scipy.io as io
-import lyceanem.tests.data
-from importlib_resources import files
-import open3d as o3d
-import matplotlib.pyplot as plt
-from ..geometry import targets as tl
 import copy
+
+import numpy as np
+import open3d as o3d
+import scipy.io as io
+from importlib_resources import files
+
+import lyceanem.tests.data
+from ..geometry import targets as tl
+
+
 #freq=24e9
 #wavelength=3e8/freq
 #measurementaddress=Path("./")
