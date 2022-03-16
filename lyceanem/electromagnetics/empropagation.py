@@ -19,8 +19,8 @@ from numba import cuda, float32, float64, complex64, njit, guvectorize, prange
 from numpy.linalg import norm
 from scipy.spatial import distance
 
-from ..base import scattering_t
-from ..raycasting import rayfunctions as RF
+import lyceanem.base as base
+import lyceanem.raycasting.rayfunctions as RF
 
 
 @cuda.jit(device=True)
@@ -1286,7 +1286,7 @@ def EMGPUJointPathLengthandPolar(source_num,sink_num,full_index,point_informatio
     maximum_chunk_size=2**8
     path_lengths=np.zeros((ray_num),dtype=np.float32)
     polar_coefficients=np.ones((ray_num,3),dtype=np.complex64)
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
+    d_point_information = cuda.device_array(point_information.shape[0], dtype=base.scattering_t)
     d_point_information=cuda.to_device(point_information)
     #divide in terms of a block for each source, then
 
@@ -1351,7 +1351,7 @@ def EMGPUFreqDomain(source_num,sink_num,full_index,point_information,wavelength)
     scattering_network=np.zeros((source_num,sink_num,3,2),dtype=np.float64)
     d_scattering_network=cuda.device_array((scattering_network.shape[0],scattering_network.shape[1],scattering_network.shape[2]),dtype=np.complex64)
     d_scattering_network=cuda.to_device(scattering_network)
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
+    d_point_information = cuda.device_array(point_information.shape[0], dtype=base.scattering_t)
     d_point_information=cuda.to_device(point_information)
     d_wavelength=cuda.device_array((1),dtype=np.complex64)
     d_wavelength=cuda.to_device(np.csingle(np.ones((1),dtype=np.complex64)*wavelength))
@@ -1424,7 +1424,7 @@ def IsoGPUFreqDomain(source_num,sink_num,full_index,point_information,wavelength
     scattering_network=np.zeros((source_num,sink_num,3,2),dtype=np.float64)
     d_scattering_network=cuda.device_array((scattering_network.shape[0],scattering_network.shape[1],scattering_network.shape[2],scattering_network.shape[3]),dtype=np.float64)
     d_scattering_network=cuda.to_device(scattering_network)
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
+    d_point_information = cuda.device_array(point_information.shape[0], dtype=base.scattering_t)
     d_point_information=cuda.to_device(point_information)
     d_wavelength=cuda.device_array((1),dtype=np.complex64)
     d_wavelength=cuda.to_device(np.csingle(np.ones((1),dtype=np.complex64)*wavelength))
@@ -1616,7 +1616,7 @@ def TimeDomainv2(source_num,
     print(time_map.nbytes)
     d_time_map=cuda.device_array((time_map.shape[0],time_map.shape[1],time_map.shape[2],time_map.shape[3]),dtype=np.float64)
     d_time_map=cuda.to_device(time_map)
-    d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=scattering_t)
+    d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=base.scattering_t)
     d_point_information=cuda.to_device(point_informationv2)
     d_excitation=cuda.device_array(excitation_signal.shape[0],dtype=np.float64)
     d_excitation=cuda.to_device(excitation_signal)
@@ -1724,7 +1724,7 @@ def TimeDomainv3(source_num,
             #print(n,time_map[source_chunking[n]:source_chunking[n+1],:,:,:].shape)
             d_temp_map=cuda.device_array((time_map[source_chunking[n]:source_chunking[n+1],:,:,:].shape[0],time_map.shape[1],time_map.shape[2],time_map.shape[3]),dtype=np.float64)
             d_temp_map = cuda.to_device(time_map[source_chunking[n]:source_chunking[n+1],:,:,:])
-            d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=scattering_t)
+            d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=base.scattering_t)
             d_point_information = cuda.to_device(point_informationv2)
             d_excitation = cuda.device_array(excitation_signal.shape[0], dtype=np.float64)
             d_excitation = cuda.to_device(excitation_signal)
@@ -1772,7 +1772,7 @@ def TimeDomainv3(source_num,
     else:
         d_time_map=cuda.device_array((time_map.shape[0],time_map.shape[1],time_map.shape[2],time_map.shape[3]),dtype=np.float64)
         d_time_map=cuda.to_device(time_map)
-        d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=scattering_t)
+        d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=base.scattering_t)
         d_point_information=cuda.to_device(point_informationv2)
         d_excitation=cuda.device_array(excitation_signal.shape[0],dtype=np.float64)
         d_excitation=cuda.to_device(excitation_signal)
@@ -1892,7 +1892,7 @@ def TimeDomainThetaPhi(source_num,
             d_temp_map = cuda.device_array((time_map[source_chunking[n]:source_chunking[n + 1], :, :, :].shape[0],
                                             time_map.shape[1], time_map.shape[2], time_map.shape[3]), dtype=np.float64)
             d_temp_map = cuda.to_device(time_map[source_chunking[n]:source_chunking[n + 1], :, :, :])
-            d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=scattering_t)
+            d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=base.scattering_t)
             d_point_information = cuda.to_device(point_informationv2)
             d_excitation = cuda.device_array(excitation_signal.shape[0], dtype=np.float64)
             d_excitation = cuda.to_device(excitation_signal)
@@ -1940,7 +1940,7 @@ def TimeDomainThetaPhi(source_num,
         d_time_map = cuda.device_array((time_map.shape[0], time_map.shape[1], time_map.shape[2], time_map.shape[3]),
                                        dtype=np.float64)
         d_time_map = cuda.to_device(time_map)
-        d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=scattering_t)
+        d_point_information = cuda.device_array(point_informationv2.shape[0], dtype=base.scattering_t)
         d_point_information = cuda.to_device(point_informationv2)
         d_excitation = cuda.device_array(excitation_signal.shape[0], dtype=np.float64)
         d_excitation = cuda.to_device(excitation_signal)
@@ -2132,7 +2132,7 @@ def EMGPUScatteringWrapper(source_num,sink_num,full_index,point_information,wave
     d_problem_size=cuda.to_device(np.asarray([source_num,sink_num],dtype=np.int32))
     d_wavelength=cuda.device_array((1),dtype=np.float64)
     d_wavelength=cuda.to_device(np.ones((1),dtype=np.float32)*wavelength)
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
+    d_point_information = cuda.device_array(point_information.shape[0], dtype=base.scattering_t)
     d_point_information=cuda.to_device(point_information)
     for source_index in range(source_num):
         temp_payload=full_index[full_index[:,0]==(source_index+1),:]
@@ -2195,7 +2195,7 @@ def EMGPUWrapper(source_num,sink_num,full_index,point_information,wavelength):
     d_problem_size=cuda.to_device(np.asarray([source_num,sink_num],dtype=np.int32))
     d_wavelength=cuda.device_array((1),dtype=np.float64)
     d_wavelength=cuda.to_device(np.ones((1),dtype=np.float32)*wavelength)
-    d_point_information = cuda.device_array(point_information.shape[0], dtype=scattering_t)
+    d_point_information = cuda.device_array(point_information.shape[0], dtype=base.scattering_t)
     d_point_information=cuda.to_device(point_information)
     for n in range(ray_chunks.shape[0]-1):
         chunk_payload=full_index[ray_chunks[n]:ray_chunks[n+1],:]

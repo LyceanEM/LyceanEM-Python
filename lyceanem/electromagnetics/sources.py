@@ -2,9 +2,9 @@ import numpy as np
 # provide idealised patterns to allow testing of the different models
 import open3d as o3d
 
-from ..base import scattering_t
-from ..geometry import geometryfunctions as GF
-from ..raycasting import rayfunctions as RF
+import lyceanem.base as base
+import lyceanem.geometry.geometryfunctions as GF
+import lyceanem.raycasting.rayfunctions as RF
 
 
 def electriccurrentsource(prime_vector,theta,phi):
@@ -49,7 +49,7 @@ def antenna_pattern_source(local_axes_global,radius,import_antenna=False,antenna
     x,y,z=RF.sph2cart(az_mesh.ravel(),elev_mesh.ravel(),radius*np.ones((field_points)))
     solid=o3d.geometry.TriangleMesh.create_sphere(radius=radius,resolution=field_points)
     #define the material characteristics for the source
-    local_information = np.empty((len(field_points)), dtype=scattering_t)
+    local_information = np.empty((len(field_points)), dtype=base.scattering_t)
     # set all sources as magnetic current sources, and permittivity and permeability as free space
     local_information[:]['Electric'] = True
     local_information[:]['permittivity'] = 8.8541878176e-12
@@ -57,6 +57,7 @@ def antenna_pattern_source(local_axes_global,radius,import_antenna=False,antenna
     local_E_vector=np.zeros((field_points,2),dtype=np.complex)
     local_E_vector[:,0]=etheta.ravel()
     local_E_vector[:,1]=ephi.ravel()
+    pattern=base.antenna_pattern
     #outgoing_E_vector=launchtransform(source_normal, departure_vector, local_E_vector, local_information)
     return solid,points,pattern
 

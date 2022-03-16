@@ -74,6 +74,7 @@ scattering_point = np.dtype([
     #electric or magnetic current sources? E if True
     ('Electric', '?'),
     ], align=True)
+
 scattering_t = from_dtype(scattering_point) # Create a type that numba can recognize!
 
 

@@ -9,7 +9,6 @@ In order to store in an accessable way the different RCS standard targets such a
 
 from subprocess import run
 
-import geometry.geometryfunctions
 import numpy as np
 import open3d as o3d
 import scipy.stats
@@ -18,7 +17,8 @@ from importlib_resources import files
 from numpy.linalg import norm
 from scipy.spatial.transform import Rotation as R
 
-from ..raycasting import rayfunctions as RF
+import lyceanem.geometry.geometryfunctions as GF
+import lyceanem.raycasting.rayfunctions as RF
 
 EPSILON=1e-6 # how close to zero do we consider zero?
 
@@ -52,7 +52,7 @@ def NasaAlmond(resolution='quarter'):
     NasaAlmond.compute_vertex_normals()
     #points=np.asarray(NasaAlmond.vertices)
     #normals=np.asarray(NasaAlmond.vertex_normals)
-    _,scatter_cloud=geometry.geometryfunctions.tri_centroids(NasaAlmond)
+    _,scatter_cloud=GF.tri_centroids(NasaAlmond)
     return NasaAlmond,scatter_cloud
 
 # def Ogive(ogive_length,ogive_x,ogive_y,ogive_sharpness,mesh_length):
@@ -156,7 +156,7 @@ def parabola(radius,focal_length,thickness,mesh_length,mesh='all'):
     parabola_mesh = o3d.io.read_triangle_mesh("temp.stl")
     parabola_mesh.compute_vertex_normals()
     parabola_mesh.compute_triangle_normals()
-    _,parabola_scatter_cloud = geometry.geometryfunctions.tri_centroids(parabola_mesh)
+    _,parabola_scatter_cloud = GF.tri_centroids(parabola_mesh)
     return parabola_mesh,parabola_scatter_cloud
 
 def meshed_pipe(eradius1,eradius2,iradius1,iradius2,height,mesh_length,mesh='centres'):

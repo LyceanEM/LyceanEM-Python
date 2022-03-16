@@ -156,7 +156,7 @@ def calculate_farfield(aperture_coords,
         unified_weights[num_sources:num_sources + num_sinks,
         :] = 1 / num_sinks  # set total amplitude to 1 for the aperture
         unified_weights[num_sources + num_sinks:,
-        :] = scattering_weight / len(np.asarray(scatter_points.points))  # set total amplitude to 1 for the aperture
+        :] = scattering_weight #/ len(np.asarray(scatter_points.points))  # set total amplitude to 1 for the aperture
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
         # set all sources as magnetic current sources, and permittivity and permeability as free space
         point_informationv2[:]['Electric'] = True
