@@ -902,22 +902,38 @@ def AngleofArrivalVectors(partial_network):
     pointing_vectors=pointing_vectors/pointing_mags
     return pointing_vectors
 
-def CalculatePoyntingVectors(total_network,wavelength,scattering_index,ideal_vector=np.asarray([[1,0,0]]),az_bins=np.linspace(-np.pi,np.pi,721),el_bins=np.linspace(-np.pi/2.0,np.pi/2.0,181),time_bins=np.linspace(-1e-9,1.9e-8,1001),impulse=False,aoa=True):
+def CalculatePoyntingVectors(total_network,
+                             wavelength,
+                             scattering_index,
+                             ideal_vector=np.asarray([[1,0,0]]),
+                             az_bins=np.linspace(-np.pi,np.pi,721),
+                             el_bins=np.linspace(-np.pi/2.0,np.pi/2.0,181),
+                             time_bins=np.linspace(-1e-9,1.9e-8,1001),
+                             impulse=False,
+                             aoa=True):
     """
     Takes the total network generated using the raycasting process, and calculates the angle of arrival spectrum, delay spectrum, and angular standard deviation as a measure of `farfield ness' of the arriving waves'
 
     Parameters
     ----------
-    total_network : array of n*(m*3) tuples, the coordinates of each interaction point
-    wavelength : scaler
+    total_network : array of n*(m*3) tuples
+        the coordinates of each interaction point
+    wavelength : float
         wavelength of interest, currently a single value (SI units)
-    scattering_index : n*2 array of integers, the source and sink index of each ray
-    ideal_vector : 1*3 array, the direction vector of the `ideal' incoming ray
-    time bins : I have setup time bins initially sampled at 48GHz, as twice the frequency I am working at right now without being to many bins.
+    scattering_index : n*2 array of integers
+        the source and sink index of each ray
+    ideal_vector : 1*3 array
+        the direction vector of the `ideal' incoming ray
+    time bins : 1d numpy array of floats
+        I have setup time bins initially sampled at 48GHz, as twice the frequency I am working at right now without being to many bins.
 
     Returns
     -------
-    aoa_spectrum : angle of arrival spectrum array of size sinknum*len(theta_bins)
+    aoa_spectrum : array of size sinknum*len(theta_bins)
+        angle of arrival spectrum
+    impulse_response :
+
+    travel_times :
 
     """
     max_path_divergence=2.0

@@ -13,9 +13,30 @@ def aperture_projection(aperture,
                         wavelength=1.0,
                         az_range=np.linspace(-180.0, 180.0, 19),
                         elev_range=np.linspace(-90.0, 90.0, 19)):
-    """
+    """Aperture Projection of the provided trianglemesh
+
     Using the aperture provided and any blocking structures, predict the maximum directivity envelope of the aperture.
     This will initially just cover all the triangles of a provided solid, but eventually I will include a filter list.
+
+    Parameters
+    ---------
+    aperture : open3D trianglemesh
+        trianglemesh of of the desired aperture
+    environment : open3D trianglemesh
+        the environment or platform of interest, blocking the field of view of the aperture
+    wavelength : float
+        the wavelength of interest in metres
+    az_range : numpy 1d array of float32
+        the azimuth range desired for the farfield pattern in degrees
+    elev_range : numpy 1d array of float32
+        the elevation range desired for the farfield pattern in degrees
+
+    Returns
+    ----------
+    directivity_envelope : numpy 2D array of float32
+        The predicted maximum directivity envelope for the provided aperture at the wavelength of interest
+    pcd : open3d point cloud
+        a point cloud colored according to the projected area, normalised to the total projected area of the aperture.
     """
     if environment is None:
         blocking_triangles=RF.convertTriangles(aperture)
@@ -53,23 +74,18 @@ def calculate_farfield(aperture_coords,
     """
     Based upon the aperture coordinates and solids, predict the farfield for the antenna.
 
-    Inputs
-    aperture_coords : open3d point cloud of the aperture coordinates, from a single point to a
-    mesh sampling across and aperture or surface
-    antenna_solid : open3d triangle mesh of the platform or blockers in the environment
-    desired_E_axis : 1*3 numpy array of the
-
-    az_range,
-
-    el_range
-
-    scatter_points
-
-    wavelength
-
-    farfield_distance,
-
-    scattering
+    Parameters
+    ---------
+    aperture_coords : (open3d point cloud)
+        open3d of the aperture coordinates, from a single point to a mesh sampling across and aperture or surface
+    :param [antenna_solid]: [open3d triangle mesh of the platform or blockers in the environment],
+    :param [desired_E_axis]: [1*3 numpy array of the desired exciation vector],
+    :param [az_range]:
+    :param [el_range]:
+    :param [scatter_points]: [the environment scattering points], defaults to [None]
+    :param [wavelength]: [the wavelength of interest in metres], defaults to [1]
+    :param [farfield_distance]: [the distance to evaluate the antenna pattern], defaults to [2]
+    :param [scattering]: [the number of scatters required, if this is set to 0, then only line of sight propagation is considered], defaults to [0]
 
     scattering_weight
 
@@ -78,6 +94,10 @@ def calculate_farfield(aperture_coords,
     elements
 
     project_vectors
+
+    Returns
+    ---------
+    etheta : (numpy 2D )
     """
 
     # create sink points for the model

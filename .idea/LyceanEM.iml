@@ -22,4 +22,7 @@
       </list>
     </option>
   </component>
+  <component name="ReSTService">
+    <option name="DOC_DIR" value="$MODULE_DIR$" />
+  </component>
 </module>
