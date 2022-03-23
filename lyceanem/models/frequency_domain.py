@@ -78,26 +78,25 @@ def calculate_farfield(aperture_coords,
     ---------
     aperture_coords : (open3d point cloud)
         open3d of the aperture coordinates, from a single point to a mesh sampling across and aperture or surface
-    :param [antenna_solid]: [open3d triangle mesh of the platform or blockers in the environment],
-    :param [desired_E_axis]: [1*3 numpy array of the desired exciation vector],
-    :param [az_range]:
-    :param [el_range]:
-    :param [scatter_points]: [the environment scattering points], defaults to [None]
-    :param [wavelength]: [the wavelength of interest in metres], defaults to [1]
-    :param [farfield_distance]: [the distance to evaluate the antenna pattern], defaults to [2]
-    :param [scattering]: [the number of scatters required, if this is set to 0, then only line of sight propagation is considered], defaults to [0]
-
+    antenna_solid : (open3d triangle mesh)
+        triangle mesh of the platform or blockers in the environment
+    desired_E_axis : (1*3 numpy array of the desired exciation vector)
+    az_range :
+    el_range :
+    scatter_points : (the environment scattering points), defaults to [None]
+    wavelength : (the wavelength of interest in metres), defaults to [1]
+    farfield_distance : (float), the distance to evaluate the antenna pattern, defaults to [2]
+    scattering: (int)
+     the number of scatters required, if this is set to 0, then only line of sight propagation is considered, defaults to [0]
     scattering_weight
-
     mesh_resolution
-
     elements
-
     project_vectors
 
     Returns
     ---------
-    etheta : (numpy 2D )
+    etheta : (numpy 2D array)
+    ephi : (numpy 2D array)
     """
 
     # create sink points for the model

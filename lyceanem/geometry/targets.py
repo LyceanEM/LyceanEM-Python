@@ -96,6 +96,7 @@ def source_cloud_from_shape(o3dshape,offset,area_per_point):
 
     #source_cloud.points=o3d.utility.Vector3dVector(centroids+np.array(o3dshape.triangle_normals)*offset)
     #source_cloud.normals=o3dshape.triangle_normals
+    #print(np.sum(areas))
     num_points=np.ceil(np.sum(areas)/area_per_point).astype(int)
     source_cloud=o3dshape.sample_points_poisson_disk(num_points)
     source_cloud.estimate_normals()
