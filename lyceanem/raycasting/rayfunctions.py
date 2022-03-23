@@ -482,6 +482,7 @@ def visiblespace(source_coords,source_normals,environment,vertex_area=0,az_range
     else:
         portion=np.ravel(vertex_area[hit_index[:,0].astype(int)-1])*np.abs(np.ravel(np.cos(angles)))
 
+    portion[np.where(np.abs(angles)>(np.pi/2))[0]]=0.0
     visible_patterns=np.empty((len(az_range)*len(elev_range)),dtype=np.float32)
     visible_patterns[:]=0
     visible_patterns=patternsort(visible_patterns,sourcenum,sinknum,portion,hit_index).reshape(len(elev_range),len(az_range))
