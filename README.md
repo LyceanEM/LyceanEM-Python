@@ -9,6 +9,7 @@ This has been developed further since that point to include a frequency domain p
 
 Further development is planned for time domain modelling, computational efficiency, and eventually a Finite-Difference Time-Domain algorithm may be implemented to allow for modelling of a wider range of situations, or possibly hybrid modelling. This would use the FDTD algorithm for near field calculations, while using the ray tracing for more sparse situations.
 
+Further documentation can be found [here](https://lyceanem-python.readthedocs.io/en/latest/index.html)
 ## Dependencies
 
 The dependencies of this package are limited at present by those of BlueCrystal the University of Bristol's High Performance Computing Resource.
