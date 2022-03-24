@@ -78,8 +78,27 @@ def NasaAlmond(resolution='quarter'):
 #     scatter_cloud.normals=o3d.utility.Vector3dVector(np.copy(face_normals))
 #     return ogive_mesh,ogive_scattering_points
 
-def source_cloud_from_shape(o3dshape,offset,area_per_point):
-    #extracts and calculates the area, normal and centroid for each facet
+def source_cloud_from_shape(o3dshape,
+                            ideal_point_sep,
+                            maxdeviation=0.01):
+    """sample surface or mesh and return surface algined points on that mesh
+
+    Parameters
+    ----------
+    o3dshape : (open3d trianglemesh)
+        the surface or shape of interest in open3d trianglemesh format
+    ideal_point_sep : (float)
+        the desired spacing between each point and it's nearest neighbours, for apertures, this is usually half a wavelength at the highest frequency of interest
+    maxdeviation : (float)
+        the maximum allowable deviation between the ideal point seperation and the points, as a fraction
+
+    Returns
+    ------
+    source_cloud : (open3d point cloud)
+        the sampled points on the surface, with normal vectors aligned with the surface normal vectors
+    areas : (array of float32)
+        the area of each triangle in the trianglemesh in world units, as long as the surface is specified in metres, this will be sqm, alinged with the triangle index in the surface
+    """
     source_cloud=o3d.geometry.PointCloud()
     o3dshape.compute_triangle_normals()
     vertex_points=np.asarray(o3dshape.vertices)
@@ -97,8 +116,40 @@ def source_cloud_from_shape(o3dshape,offset,area_per_point):
     #source_cloud.points=o3d.utility.Vector3dVector(centroids+np.array(o3dshape.triangle_normals)*offset)
     #source_cloud.normals=o3dshape.triangle_normals
     #print(np.sum(areas))
+    area_per_point=(ideal_point_sep**2)*0.5
     num_points=np.ceil(np.sum(areas)/area_per_point).astype(int)
     source_cloud=o3dshape.sample_points_poisson_disk(num_points)
+    error=(ideal_point_sep-np.mean(source_cloud.compute_nearest_neighbor_distance()))/ideal_point_sep
+    loopcount=0
+    maxloops=20
+    errorlog=np.full((maxloops+1,2),np.nan)
+    while np.abs(error)>maxdeviation:
+        #point sampling is to high, put in control logic for allowable variation in terms of the maxdeviation (fraction of ideal_point_sep)
+        print(error)
+        loopcount+=1
+        errorlog[loopcount,0]=error
+        errorlog[loopcount,1]=np.ceil(num_points).astype(int)
+        if loopcount>=maxloops:
+            print('ran out counter, aborting')
+            break
+        if error<0:
+            #points are too far apart, add more points
+            num_points*=(1+np.abs(error))
+            source_cloud = o3dshape.sample_points_poisson_disk(np.ceil(num_points).astype(int))
+            error = (ideal_point_sep - np.mean(source_cloud.compute_nearest_neighbor_distance())) / ideal_point_sep
+        elif error>0:
+            #points are to close together, take away points
+            num_points *= (1 - np.abs(error))
+            source_cloud = o3dshape.sample_points_poisson_disk(np.ceil(num_points).astype(int))
+            error = (ideal_point_sep - np.mean(source_cloud.compute_nearest_neighbor_distance())) / ideal_point_sep
+
+    errorlog[loopcount+1,0]=error
+    errorlog[loopcount+1,1]=np.ceil(num_points).astype(int)
+    
+    #ensure that if the while loop cycled past the minimum it still finds it
+    optimum_num=errorlog[np.where(np.abs(errorlog[:,0])==np.nanmin(np.abs(errorlog[:,0])))[0][0],1]
+    source_cloud = o3dshape.sample_points_poisson_disk(optimum_num.astype(int))
+    #breakpoint()
     source_cloud.estimate_normals()
     return source_cloud,areas
 

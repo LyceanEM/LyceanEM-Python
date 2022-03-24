@@ -55,7 +55,9 @@ def Steering_Efficiency(Dtheta,Dphi,Dtot,first_dimension_angle,second_dimension_
 
 @njit(cache=True, nogil=True)
 def WavefrontWeights(source_coords,steering_vector,wavelength):
-    #calculate the weights for a given set of element coordinates, wavelength, and steering vector (cartesian)
+    """
+    calculate the weights for a given set of element coordinates, wavelength, and steering vector (cartesian)
+    """
     weights=np.zeros((source_coords.shape[0]),dtype=np.float64)
     #calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
     #dist=distance.cdist(source_coords,(steering_vector*1e9))
@@ -97,7 +99,9 @@ def TimeDelayWeights(source_coords,target_coord,magnitude=1.0):
 
 @njit(cache=True, nogil=True)
 def MRCWeights(Etheta,Ephi,command_angles,polarization_switch='Etheta',az_range=np.linspace(-180.0,180.0,19),elev_range=np.linspace(-90.0,90.0,19)):
-    #calculate the maximal ratio combining weights for a given set of element coordinates, wavelength, and command angles (az,elev)
+    """
+    calculate the maximal ratio combining weights for a given set of element coordinates, wavelength, and command angles (az,elev)
+    """
     weights=np.zeros((Etheta.shape[0]),dtype=np.complex64)
     az_index=np.argmin(np.abs(az_range-command_angles[0]))
     elev_index=np.argmin(np.abs(elev_range-command_angles[1]))
@@ -110,7 +114,9 @@ def MRCWeights(Etheta,Ephi,command_angles,polarization_switch='Etheta',az_range=
     return weights
 
 def OAMWeights(x,y,mode):
-    #generate OAM mode weights, based upon the radial angle of each element.
+    """
+    generate OAM mode weights, based upon the radial angle of each element.
+    """
     #assumed array is x directed
     angles=np.arctan2(x,y)
     weights=np.zeros((len(x)),dtype=np.complex64)
@@ -118,7 +124,9 @@ def OAMWeights(x,y,mode):
     return weights
 
 def OAMFourier(Ex,Ey,Ez,coordinates,prime_vector,mode_limit,first_dimension,second_dimension,coord_format='AzEl'):
-    #producing mode index, mode coefficiencts, and mode probabilities with the co and crosspolar (Etheta,Ephi), but can probably be done the same for Ex,Ey,Ez
+    """
+    producing mode index, mode coefficiencts, and mode probabilities with the co and crosspolar (Etheta,Ephi), but can probably be done the same for Ex,Ey,Ez
+    """
     #establish coordinate set, in this case theta and phi, but would work just as well with elevation and azimuth, assume that array is propagating in the z+ direction.
     if coord_format=='xyz':
         mode_index,mode_coefficients,mode_probabilites=OAMFourierCartesian(Ex,Ey,Ez,coordinates,mode_limit,first_dimension,second_dimension)
@@ -128,7 +136,9 @@ def OAMFourier(Ex,Ey,Ez,coordinates,prime_vector,mode_limit,first_dimension,seco
     return mode_index,mode_coefficients,mode_probabilites
 
 def OAMFourierCartesian(Ex,Ey,Ez,coordinates,mode_limit):
-    #assume probagation is in the Ez dimension
+    """
+    assume probagation is in the Ez dimension
+    """
     mode_index=np.linspace(-mode_limit,mode_limit,mode_limit*2+1)
     mode_coefficients=np.zeros((mode_index.shape[0],3),dtype=np.complex64)
     az,el,r=RF.cart2sph(coordinates[:,0], coordinates[:,1], coordinates[:,2])
@@ -150,7 +160,9 @@ def OAMFourierCartesian(Ex,Ey,Ez,coordinates,mode_limit):
     return mode_index,mode_coefficients,mode_probabilities
 
 def OAMFourierSpherical(Ex,Ey,Ez,coordinates,mode_limit,az_range,elev_range):
-    #assume probagation is in the Ez dimension
+    """
+    assume probagation is in the Ez dimension
+    """
     mode_index=np.linspace(-mode_limit,mode_limit,mode_limit*2+1)
     mode_coefficients=np.zeros((mode_index.shape[0],len(elev_range),3))
     #a coefficient of mode m, at angle theta is defined in terms of the
@@ -412,9 +424,11 @@ def PatternTransformPhase3D(norm_magnitudes,phases,min_level=-40,az_range=np.lin
 
 @njit(cache=True, nogil=True)
 def directivity_transform(Etheta,Ephi,az_range=np.linspace(-180.0,180.0,19),elev_range=np.linspace(-90.0,90.0,19),total_solid_angle=(4*np.pi)):
-    #transform Etheta and Ephi data into antenna directivity
-    #directivity is defined in terms of the power radiated in a specific direction, over the average radiated power
-    #power per unit solid angle
+    """
+    transform Etheta and Ephi data into antenna directivity
+    directivity is defined in terms of the power radiated in a specific direction, over the average radiated power
+    power per unit solid angle
+    """
     Dmax=np.zeros((3),dtype=np.float32)
     Umax=np.zeros((3),dtype=np.float32)
     Utheta=np.abs(Etheta)**2
@@ -462,8 +476,41 @@ def WeightTruncation(weights,resolution):
     new_weights=np.abs(weights)*np.exp(1j*((levels*2*np.pi)-np.pi))
     return new_weights
 
-def PatternPlot(data,az,elev,pattern_min=-40,plot_max=0.0,plottype='Polar',logtype='amplitude',ticknum=6,title_text=None):
-    #plot the provided linear unnormalised 2d matrix as a 3D surface plot
+def PatternPlot(data,
+                az,
+                elev,
+                pattern_min=-40,
+                plot_max=0.0,
+                plottype='Polar',
+                logtype='amplitude',
+                ticknum=6,
+                title_text=None):
+    """Plot the relavent 3D data in relative power (dB) or normalised directivity (dBi)
+    Parameters
+    ---------
+    data : (2D array of floats or complex)
+        the data to plot
+    az : (2D array of floats)
+        the azimuth angles for each datapoint in [data] in degrees
+    elev : (2D array of floats)
+        the elevation angles for each datapoint in [data] in degrees
+    pattern_min : (float)
+        the desired scale minimum in dB, default is [-40]
+    plot_max : (float)
+        the desired scale maximum in dB, default is [0]
+    plottype : (string)
+        the plot type, either [Polar], or [Cartesian-Surf], the default is [Polar]
+    logtype : (string)
+        the type of data being considered, either [amplitude] or [power], to ensure the correct logarithm is used, default is [amplitude]
+    ticknum : (int)
+        the number of ticks on the colorbar, default is [6]
+    title_text : (string)
+        the graph title, defaults to [None]
+
+    Returns
+    --------
+    None
+    """
     #condition data
     data=np.abs(data)
     #calculate log profile
@@ -487,7 +534,9 @@ def PatternPlot(data,az,elev,pattern_min=-40,plot_max=0.0,plottype='Polar',logty
         V = np.array([[1.1,0,0], [0,1.1,0], [0,0,1.1]],dtype=np.float32)
         origin = np.zeros((3,3),dtype=np.float32) # origin point
         offset=np.array([0.8,0.8,0.8],dtype=np.float32).reshape(1,3)
-        ax.quiver(origin[0,:]-offset,origin[0,:]-offset,origin[0,:]-offset, V[0,:], V[1,:],V[2,:], color=['red','blue','green'])
+        ax.quiver(origin[0,0]-offset,origin[0,0]-offset,origin[0,0]-offset, V[0,0], V[1,0],V[2,0], color=['red'])
+        ax.quiver(origin[0, 1] - offset, origin[0, 1] - offset, origin[0, 1] - offset, V[0, 1], V[1, 1], V[2, 1],color=['green'])
+        ax.quiver(origin[0, 2] - offset, origin[0, 2] - offset, origin[0, 2] - offset, V[0, 2], V[1, 2], V[2, 2],color=['blue'])
         plot_handle=ax.plot_surface(sinks[:,0].reshape(az.shape),
                         sinks[:,1].reshape(az.shape),
                         sinks[:,2].reshape(az.shape),

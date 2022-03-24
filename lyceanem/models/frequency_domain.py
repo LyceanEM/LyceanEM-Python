@@ -70,6 +70,7 @@ def calculate_farfield(aperture_coords,
                        scattering_weight=1.0,
                        mesh_resolution=0.5,
                        elements=False,
+                       los=True,
                        project_vectors=False):
     """
     Based upon the aperture coordinates and solids, predict the farfield for the antenna.
@@ -91,18 +92,21 @@ def calculate_farfield(aperture_coords,
     scattering_weight
     mesh_resolution
     elements
+    los : (boolean)
+        The line of sight component can be ignored by setting los to [False], defaults to [True]
     project_vectors
 
     Returns
     ---------
     etheta : (numpy 2D array)
+        The Etheta farfield component
     ephi : (numpy 2D array)
+        The EPhi farfield component
     """
 
     # create sink points for the model
     azaz, elel = np.meshgrid(az_range, el_range)
-    #assuming the elevation range starts as a negative number and then increases to positive range (-90 to 90), calculate the theta range
-    _, theta = np.meshgrid(np.linspace(-180.0, 180.0, az_range.shape[0]), GF.elevationtotheta(el_range))
+    theta = GF.elevationtotheta(elel)
     sinks = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
     sinks[:, 0], sinks[:, 1], sinks[:, 2] = RF.azeltocart(np.ravel(azaz), np.ravel(elel), farfield_distance)
     sink_normals = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
@@ -229,7 +233,8 @@ def calculate_farfield(aperture_coords,
                                          sinks,
                                          np.asarray(scatter_points.points).astype(np.float32),
                                          RF.convertTriangles(antenna_solid),
-                                         scattering + 1)
+                                         scattering + 1,
+                                         line_of_sight=los)
 
     if ~elements:
         # create efiles for model
@@ -463,7 +468,8 @@ def calculate_scattering(aperture_coords,
     full_index, rays = RF.workchunkingv2(np.asarray(aperture_coords.points).astype(np.float32),
                                          np.asarray(sink_coords.points).astype(np.float32),
                                          np.asarray(scatter_points.points).astype(np.float32),
-                                         RF.convertTriangles(antenna_solid), scattering + 1,line_of_sight=los)
+                                         RF.convertTriangles(antenna_solid), scattering + 1,
+                                         line_of_sight=los)
 
 
     if (not elements):

@@ -291,9 +291,11 @@ class antenna_pattern:
     def export_pattern(self,file_location):
         """
         takes the file location and exports the pattern as a .dat file
+        unfinished
         """
         theta_mesh=GF.elevationtotheta(self.elev_mesh)
         phi_mesh=self.az_mesh
+
 
         
 
