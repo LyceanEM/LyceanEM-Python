@@ -9,3 +9,8 @@ Electromagnetics
     beamforming
     empropagation
     sources
+
+.. toctree::
+    :hidden:
+
+    antenna_utilities
