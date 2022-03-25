@@ -1,7 +1,7 @@
 .. _electromagnetic:
 
 Electromagnetics
----------------
+-----------------
 
 Electromagnetics
 

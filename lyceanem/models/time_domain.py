@@ -21,10 +21,48 @@ def calculate_scattering(aperture_coords,
                          num_samples=10000,
                          mesh_resolution=0.5):
     """
-    Based upon the parameters giving, calculate the time domain scattering for the apertures and sinks
+    Based upon the parameters given, calculate the time domain scattering for the apertures and sinks.
     The defaults for sampling time are based upon a sampling rate of 1GHz, and a sample time of 1ms.
 
+    Parameters
+    ----------
+    aperture_coords : open3d point cloud
+        source coordinates
+    sink_coords : open3d point cloud
+        sink coordinates
+    antenna_solid : open3d trianglemesh
+        the environment for scattering, providing the blocking for the rays
+    desired_E_axis : 1D numpy array of floats
+        the desired excitation vector, can be a 1*3 array or a n*3 array if multiple different exciations are desired in one lauch
+    scatter_points : open3d point cloud
+        the scattering points in the environment. Defaults to [None], in which case scattering points will be generated from the antenna_solid. If no scattering should be considered then set scattering to [0].
+    wavelength : float
+        the wavelength of interest in metres
+    scattering : int
+        the number of reflections to be considered, defaults to [0], but up to 2 can be considered. The higher this number to greater to computational effort, and for most situations 1 should be ample.
+    elements : boolean
+        whether the sources and sinks should be considered as elements of a phased array, or a fixed phase aperture like a horn or reflector
+    sampling_freq : float
+        the desired sampling frequency, should be twice the highest frequency of interest to avoid undersampling artifacts
+    num_samples : int
+        the length of the desired sampling, can be calculated from the desired model time
+    mesh_resolution : float
+        the desired mesh resolution in terms of wavelengths if scattering points are not provided. A scattering mesh is generated on the surfaces of all provided trianglemesh structures.
+
+    Return
+    -------
+    Ex : numpy array of float
+        the x directed voltage at the sink coordinates in the time domain, if elements=True, then it will be an array of num_sinks * num_samples, otherwise it will be a 1D array
+    Ey : numpy array of float
+        the y directed voltage at the sink coordinates in the time domain, if elements=True, then it will be an array of num_sinks * num_samples, otherwise it will be a 1D array
+    Ez : numpy array of float
+        the z directed voltage at the sink coordinates in the time domain, if elements=True, then it will be an array of num_sinks * num_samples, otherwise it will be a 1D array
+    Waketimes : numpy array of float
+        the shortest time required for a ray to reach any sink from any source, as long as elements=False. If elements=True, then this is not implemented in the same way, and will return the shortest time required for the final source.
     """
+
+
+
     time_index = np.linspace(0, num_samples/sampling_freq, num_samples)
     if desired_E_axis.size > 3:
         # multiple excitations requried

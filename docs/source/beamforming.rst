@@ -1,6 +1,6 @@
 .. _beamforming:
 Beamforming
----------
+-------------
 
 .. automodule:: lyceanem.electromagnetics.beamforming
-    :members:
+    :members: PatternPlot, Steering_Efficiency, directivity_transform
