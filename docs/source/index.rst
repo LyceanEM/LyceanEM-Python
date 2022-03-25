@@ -5,6 +5,12 @@
 
 Welcome to LyceanEM's documentation!
 ====================================
+
+.. image:: _static/lynx.png
+   :width: 200px
+   :align: center
+   :alt: LyceanEM Logo
+
 **LyceanEM** is a Python library for modelling electromagnetic propagation for sensors and communications.
 :ref:`Frequency Domain <frequency_domain>` and :ref:`Time Domain <time_domain>` models are included that allow the
 user to model a wide array of complex problems from antenna array architecture and assess beamforming algorithm
