@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Jul 29 16:21:06 2020
-
-@author: timtitan
-"""
 import cmath
 import copy
 import math
@@ -1324,21 +1319,27 @@ def EMGPUJointPathLengthandPolar(source_num,sink_num,full_index,point_informatio
 
 def EMGPUFreqDomain(source_num,sink_num,full_index,point_information,wavelength):
     """
-    wrapper for the GPU EM processer, outputting the resultant ray components as lengths, allowing for the whole thing to be sorted again.
-    At present, the indexing only supports processing the rays for line of sight and single bounce, but that will be sorted quite quickly
+    Wrapper for the GPU EM processer
+    At present, the indexing only supports processing the rays for line of sight and single or double bounces
+
     Parameters
-    ----------
-    full_index : int array
+    -----------
+    source_num : (int)
+        the number of source points
+    sink_num : (int)
+        the number of sink points
+    full_index : (2D numpy array of ints)
         index of all successful rays
-    point_information : TYPE
-        DESCRIPTION.
-    wavelength : TYPE
-        DESCRIPTION.
+    point_information : (custom point data type)
+        the point information contains the amplitude exciation for the sources, and the positions and normal vectors for all points, together with electromangetic properties,
+        however, the general assumption of this model is that there is only freespace and metal interacting.
+    wavelength : (float)
+        the wavelength of interest
 
     Returns
     -------
-    resultant_rays : TYPE
-        DESCRIPTION.
+    scattering_network_comp : (2D numpy array, complex)
+        the resultant scattering network for the provided ray paths
 
     """
     #cuda.select_device(0)
@@ -3133,23 +3134,19 @@ def launchtransform(source_normal,departure_vector,local_E_vector,local_informat
     """
     Launch transform maps the local E vector onto the outgoing ray. The local coordinate sysem of uv-normal axes defining the e_vector,
     which is then mapped onto the h and v transverse components of the outgoing ray
-    Inputs
+    Parameters
     ------
-    source_normal : numpy 1*3 array,
+    source_normal : (numpy 1*3 array)
         a normalised direction vector recording the orientation of the source with respect to the global axes
-
-    departure vector : numpy 1*3 array,
+    departure vector : (numpy 1*3 array)
         normalised direction vector of the departing ray
-
-    local_E_vector : numpy 1*3 array,
+    local_E_vector : (numpy 1*3 array)
         electric field vector in uv-normal axes, representing the local `illumination function', this is not normalised, as it should be recording the field amplitude as well as directions.
 
     Returns
     -------
-    E_u : electric field in the transverse u direction
-
-    E_v : electric field in the transverse v direction
-
+    outgoing_E_vector : (numpy 1*3 complex array)
+        electric field in global axes
     """
     if not(source):
         #transform the arrived E vector to local axes for correct polarization mixing
@@ -3200,23 +3197,19 @@ def illuminationtransform(source_normal,arrival_vector,arriving_E_vector,local_i
     """
     Illuminating transform maps the local E vector onto the surface. The local coordinate sysem of uv-normal axes defining the surface and avaliable axes,
     which is then mapped back into global E vector axes
-    Inputs
+    Parameters
     ------
-    source_normal : numpy 1*3 array,
+    source_normal : (numpy 1*3 array)
         a normalised direction vector recording the orientation of the source with respect to the global axes
-
-    departure vector : numpy 1*3 array,
+    departure vector : (numpy 1*3 array)
         normalised direction vector of the departing ray
-
-    local_E_vector : numpy 1*3 array,
+    local_E_vector : (numpy 1*3 array, complex)
         electric field vector in uv-normal axes, representing the local `illumination function', this is not normalised, as it should be recording the field amplitude as well as directions.
 
     Returns
     -------
-    E_u : electric field in the transverse u direction
-
-    E_v : electric field in the transverse v direction
-
+    outgoing_E_vector : ((numpy 1*3 array, complex)
+        electric field in the global axes direction
     """
     point_E_vector=np.zeros((2),dtype=np.complex64)
     outgoing_E_vector=np.zeros((3),dtype=np.complex64)

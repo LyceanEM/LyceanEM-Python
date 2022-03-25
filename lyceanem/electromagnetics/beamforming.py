@@ -485,9 +485,11 @@ def PatternPlot(data,
                 logtype='amplitude',
                 ticknum=6,
                 title_text=None):
-    """Plot the relavent 3D data in relative power (dB) or normalised directivity (dBi)
+    """
+    Plot the relavent 3D data in relative power (dB) or normalised directivity (dBi)
+
     Parameters
-    ---------
+    -----------
     data : (2D array of floats or complex)
         the data to plot
     az : (2D array of floats)

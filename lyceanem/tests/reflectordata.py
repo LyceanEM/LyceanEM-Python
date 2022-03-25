@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Apr 29 10:30:17 2021
-
-@author: timtitan
-"""
 
 import copy
 

@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Sep 22 14:55:43 2020
-In order to store in an accessable way the different RCS standard targets such as the NASA Almond etc
-@author: timtitan
-"""
-
-
 from subprocess import run
 
 import numpy as np

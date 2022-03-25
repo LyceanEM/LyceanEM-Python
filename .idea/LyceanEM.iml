@@ -12,8 +12,8 @@
     <option name="removeUnused" value="true" />
   </component>
   <component name="PyDocumentationSettings">
-    <option name="format" value="PLAIN" />
-    <option name="myDocStringFormat" value="Plain" />
+    <option name="format" value="NUMPY" />
+    <option name="myDocStringFormat" value="NumPy" />
   </component>
   <component name="PyNamespacePackagesService">
     <option name="namespacePackageFolders">

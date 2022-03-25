@@ -10,10 +10,24 @@ import lyceanem.raycasting.rayfunctions as RF
 def electriccurrentsource(prime_vector,theta,phi):
     """
     create an idealised electric current source that can be used to test the outputs of the model
+
     Parameters
-    prime vector : orientation of the electric current source
-    electric current source defined in terms of theta and phi (degrees)
+    ----------
+    prime_vector : 1D numpy array of floats
+        orientation of the electric current source in xyz
+    theta : 2D numpy array of floats
+        theta angles of desired pattern in degrees
+    phi : 2D numpy array of floats
+        phi angles of desired pattern in degrees
+
+    Returns
+    -------
+    etheta : 2D numpy array of complex
+        Etheta polarisation
+    ephi : 2D numpy array of complex
+        Ephi polarisation
     """
+
     etheta=np.zeros(theta.shape,dtype=np.complex64)
     ephi=np.zeros(theta.shape,dtype=np.complex64)
     etheta = prime_vector[0]* np.cos(np.deg2rad(phi)) * np.cos(np.deg2rad(theta)) + prime_vector[1]*np.sin(np.deg2rad(phi)) * np.cos(np.deg2rad(theta)) - prime_vector[2]* np.sin(np.deg2rad(theta))
@@ -23,16 +37,27 @@ def electriccurrentsource(prime_vector,theta,phi):
 def antenna_pattern_source(local_axes_global,radius,import_antenna=False,antenna_file=None):
     """
     This function generates an antenna pattern and `opaque' sphere as the base, representing an inserted antenna with measured pattern.
-    Inputs
-    loacl_axes_global : a 3 by 3 float matrix pf the local axis vectors (x,y,z), in the global coordinate set.
-    radius : of the sphere, setting the minimum enclosing volume of the antenna
-    import_antenna : boolean, to select whether to import a measure or simulated antenna file
-    antenna_file : a filename for the antenna file to be used. The initial set will be based upon the .dat files used by the University of Bristol Anechoic Chamber
 
-    Outputs
-    solid : open3d trianglemesh of the enclosing sphere
-    points : open3d point cloud of the N relevent antenna pattern sample points
-    pattern : 3 by N complex matrix of the sample points of the antenna pattern, specified as Ex,Ey,Ez components
+    This function is not yet complete
+    Parameters
+    ----------
+    loacl_axes_global : 2D numpy array of float
+        3 by 3 array of the local axis vectors (x,y,z), in the global coordinate set.
+    radius : float
+        radius of the sphere, setting the minimum enclosing volume of the antenna
+    import_antenna : boolean,
+        if [True] the provided antenna_file location will be used to import an antenna file to populate the variable
+    antenna_file : PosixPath
+        a file location for the antenna file to be used. The initial set will be based upon the .dat files used by the University of Bristol Anechoic Chamber
+
+    Returns
+    --------
+    solid : open3d trianglemesh
+        the enclosing sphere for the antenna
+    points : open3d point cloud
+        the sample points for the antenna pattern, to be used as source points for the frequency domain model
+    pattern : 3 by N numpy array of complex
+        array of the sample points of the antenna pattern, specified as Ex,Ey,Ez components
     """
     if ~import_antenna:
         #generate an arbitary locally Z directed electric current source

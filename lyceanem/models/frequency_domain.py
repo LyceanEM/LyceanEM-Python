@@ -77,30 +77,38 @@ def calculate_farfield(aperture_coords,
 
     Parameters
     ---------
-    aperture_coords : (open3d point cloud)
+    aperture_coords : open3d point cloud
         open3d of the aperture coordinates, from a single point to a mesh sampling across and aperture or surface
-    antenna_solid : (open3d triangle mesh)
+    antenna_solid : open3d triangle mesh
         triangle mesh of the platform or blockers in the environment
-    desired_E_axis : (1*3 numpy array of the desired exciation vector)
-    az_range :
-    el_range :
-    scatter_points : (the environment scattering points), defaults to [None]
-    wavelength : (the wavelength of interest in metres), defaults to [1]
-    farfield_distance : (float), the distance to evaluate the antenna pattern, defaults to [2]
-    scattering: (int)
+    desired_E_axis :
+        1*3 numpy array of the desired excitation vector
+    az_range : 1D numpy array of float
+        the desired azimuth planes in degrees
+    el_range : 1D numpy array of float
+        the desired elevation planes in degrees
+    scatter_points : open3d point cloud
+        the environment scattering points, defaults to [None]
+    wavelength : float
+        wavelength of interest in meters, defaults to [1]
+    farfield_distance : float
+        the distance to evaluate the antenna pattern, defaults to [2]
+    scattering: int
      the number of scatters required, if this is set to 0, then only line of sight propagation is considered, defaults to [0]
-    scattering_weight
-    mesh_resolution
-    elements
-    los : (boolean)
+    scattering_weight :
+    mesh_resolution :
+    elements : boolean
+        whether the sources and sinks should be considered as elements of a phased array, or a fixed phase aperture like a horn or reflector
+    los : boolean
         The line of sight component can be ignored by setting los to [False], defaults to [True]
-    project_vectors
+    project_vectors : boolean
+        should the excitation vector/vectors be projected to be conformal with the surface of the source coordinates
 
     Returns
     ---------
-    etheta : (numpy 2D array)
+    etheta : numpy 2D array
         The Etheta farfield component
-    ephi : (numpy 2D array)
+    ephi : numpy 2D array
         The EPhi farfield component
     """
 
@@ -307,8 +315,40 @@ def calculate_scattering(aperture_coords,
                          mesh_resolution=0.5,
                          project_vectors=False):
     """
-    Based upon the aperture coordinates and solids, predict the farfield for the antenna.
-    If line of sight scattering is not required then set los=False, such as if the transmit and receive antennas are the same
+    calculating the scattering from the provided source coordinates, to the provided sink coordinates in the environment.
+    This can be used to generate point to point scattering parameters or full scattering networks.
+
+    Parameters
+    ----------
+    aperture_coords : open3d point cloud
+        source coordinates
+    sink_coords : open3d point cloud
+        sink coordinates
+    antenna_solid : open3d trianglemesh
+        the environment for scattering, providing the blocking for the rays
+    desired_E_axis : 1D numpy array of floats
+        the desired excitation vector, can be a 1*3 array or a n*3 array if multiple different exciations are desired in one lauch
+    scatter_points : open3d point cloud
+        the scattering points in the environment. Defaults to [None], in which case scattering points will be generated from the antenna_solid. If no scattering should be considered then set scattering to [0].
+    wavelength : float
+        the wavelength of interest in metres
+    scattering : int
+        the number of reflections to be considered, defaults to [0], but up to 2 can be considered. The higher this number to greater to computational effort, and for most situations 1 should be ample.
+    elements : boolean
+        whether the sources and sinks should be considered as elements of a phased array, or a fixed phase aperture like a horn or reflector
+    los : boolean
+        The line of sight component can be ignored by setting los to [False], defaults to [True]
+    mesh_resolution : float
+        the desired mesh resolution in terms of wavelengths if scattering points are not provided. A scattering mesh is generated on the surfaces of all provided trianglemesh structures.
+    project_vectors : boolean
+
+
+    Returns
+    -------
+    Ex : numpy array of complex
+    Ey : numpy array of complex
+    Ez : numpy array of complex
+
     """
     if desired_E_axis.size > 3:
         # multiple excitations requried

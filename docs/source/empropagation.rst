@@ -3,4 +3,4 @@ Electromagnetic Propagation
 ===========================
 
 .. automodule:: lyceanem.electromagnetics.empropagation
-    :members:
+    :members: EMGPUFreqDomain

@@ -1,13 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Apr  3 22:23:21 2020
-
-@author: tp12099
-
-imported example functions from raytracespheresexample
-and will change bit by bit to try and work out where my implementation went wrong
-"""
-
 import math
 from timeit import default_timer as timer
 
@@ -428,22 +419,25 @@ def visiblespace(source_coords,source_normals,environment,vertex_area=0,az_range
     #
     Parameters
     ----------
-    source_coords : n by 3 tuple
-        xyz coordinates of
-    az_range : m array of az planes
-        degrees
-    elev_range : l array of elev_points
-        degrees
-    environment : triangle_data of the environment, can be loaded from stl files and similar
-    shell_range: float
+    source_coords : (n by 3 numpy array of floats)
+        xyz coordinates of the sources
+    source_normals : (n by 3 numpy array of floats)
+        normal vectors for each source point
+    environment : (open3d trianglemesh)
+        triangle_data of the environment, can be loaded from stl files and similar
+    vertex_area : (float or array of floats)
+        the area associated with each source point, defaults to 0, but can also be specified for each source
+    az_range : (array of float)
+        array of azimuth planes in degrees
+    elev_range : (array of float)
+        array of elevation points in degrees
+    shell_range: (float)
         radius of point cloud shell
-    #
     Returns
     -------
-    visible_patterns : m by l by n matrix
+    visible_patterns : (m by l by n array of floats)
         3D antenna patterns
-    #
-    resultant_pcd :pointcloud
+    resultant_pcd : (open3d pointcloud)
         colour data to scale the points fractional visibility from the source aperture
     """
 
@@ -907,9 +901,9 @@ def CalculatePoyntingVectors(total_network,
                              wavelength,
                              scattering_index,
                              ideal_vector=np.asarray([[1,0,0]]),
-                             az_bins=np.linspace(-np.pi,np.pi,721),
-                             el_bins=np.linspace(-np.pi/2.0,np.pi/2.0,181),
-                             time_bins=np.linspace(-1e-9,1.9e-8,1001),
+                             az_bins=np.linspace(-np.pi,np.pi,19),
+                             el_bins=np.linspace(-np.pi/2.0,np.pi/2.0,19),
+                             time_bins=np.linspace(-1e-9,1.9e-8,20),
                              impulse=False,
                              aoa=True):
     """
@@ -926,7 +920,7 @@ def CalculatePoyntingVectors(total_network,
     ideal_vector : 1*3 array
         the direction vector of the `ideal' incoming ray
     time bins : 1d numpy array of floats
-        I have setup time bins initially sampled at 48GHz, as twice the frequency I am working at right now without being to many bins.
+        default is 20 bins, but this should always be set by the user to a sampling rate sufficent for twice the expected highest frequency
 
     Returns
     -------
@@ -1450,6 +1444,7 @@ def charge_rays_environment1Dv2(sources,sinks,environment_points,point_indexing)
 def rayHits1Dv2(ray_payload,point_indexing,sink_index):
     """
     filtering process for each raycasting stage, seprating rays which hit sinks from non-terminating rays.
+    Parameters
     ----------
     ray_payload : TYPE
         DESCRIPTION.
@@ -1911,8 +1906,27 @@ def create_model_index(source_index,sink_index,scattering_point_index):
     return io_indexing[np.not_equal(io_indexing[:,-2],io_indexing[:,-1]),:]
 
 def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter,line_of_sight=True):
+    """
+    raycasting index creation and assignment to raycaster, upper bound is around 4.7e8 rays at a time, there is already chunking to prevent overflow of the GPU memory and timeouts
+
+    Parameters
+    ----------
+    sources : ()
+    sinks : ()
+    scattering_points : ()
+    environment : ()
+    max_scatter : ()
+    line_of_sight : (boolean)
+
+    Returns
+    ---------
+    full_index : (2D numpy array of ints)
+        the index for all successful rays cast from source coordinates, to any scattering points, to the sink point for each entry
+    RAYS_CAST : (int)
+        the number of rays cast in this launch.
+    """
     #temp function to chunk the number of rays to prevent creation of ray arrays to large for memory
-    #upper bound is around 470000000 rays at a time, there is already chunking to prevent overflow of the GPU memory and timeouts
+
     raycasting_timestamp=timer()
     ray_estimate=(sources.shape[0]*(sinks.shape[0]+scattering_points.shape[0]))+(sources.shape[0]*(scattering_points.shape[0]*sinks.shape[0]*(max_scatter)))
     #print("Total of {:3.1f} rays required".format(ray_estimate))
