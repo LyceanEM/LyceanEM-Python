@@ -32,6 +32,7 @@ release = '0.01'
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.napoleon',
               'sphinxcontrib.bibtex',
+              'sphinx.ext.intersphinx',
               'sphinx.ext.imgmath']
 bibtex_bibfiles = ['_static/lyceanemrefs.bib']
 # Add any paths that contain templates here, relative to this directory.

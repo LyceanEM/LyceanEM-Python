@@ -12,6 +12,7 @@ If LyceanEM has been useful to your research and you would like to acknowledge t
 we would like to encourage you to cite the following paper :footcite:p:`Pelham2021a`.
 
 The base class of LyceanEM is that of the `antenna pattern'. This class provides a useful container for individual antenna patterns, with builtin functions to generate simple patterns, import, rotate, and display them.
+
 .. toctree::
     base
 

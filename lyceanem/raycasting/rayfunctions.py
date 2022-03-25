@@ -415,29 +415,30 @@ def integratedRaycaster(ray_index,scattering_points,environment_local):
 
 def visiblespace(source_coords,source_normals,environment,vertex_area=0,az_range=np.linspace(-180.0,180.0,19),elev_range=np.linspace(-90.0,90.0,19),shell_range=0.5):
     """
-    generates a matrix stack of visible space for each element, indexed by source_coord.
-    #
+    Visiblespace generates a matrix stack of visible space for each element, indexed by source_coordinate.
+
     Parameters
-    ----------
-    source_coords : (n by 3 numpy array of floats)
+    --------------
+    source_coords : n by 3 numpy array of floats
         xyz coordinates of the sources
-    source_normals : (n by 3 numpy array of floats)
+    source_normals : n by 3 numpy array of floats
         normal vectors for each source point
-    environment : (open3d trianglemesh)
+    environment : open3d trianglemesh
         triangle_data of the environment, can be loaded from stl files and similar
-    vertex_area : (float or array of floats)
+    vertex_area : float or array of floats
         the area associated with each source point, defaults to 0, but can also be specified for each source
-    az_range : (array of float)
+    az_range : array of float
         array of azimuth planes in degrees
-    elev_range : (array of float)
+    elev_range : array of float
         array of elevation points in degrees
-    shell_range: (float)
+    shell_range: float
         radius of point cloud shell
+
     Returns
-    -------
-    visible_patterns : (m by l by n array of floats)
+    -------------------
+    visible_patterns : m by l by n array of floats
         3D antenna patterns
-    resultant_pcd : (open3d pointcloud)
+    resultant_pcd : open3d pointcloud
         colour data to scale the points fractional visibility from the source aperture
     """
 
@@ -1907,22 +1908,22 @@ def create_model_index(source_index,sink_index,scattering_point_index):
 
 def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter,line_of_sight=True):
     """
-    raycasting index creation and assignment to raycaster, upper bound is around 4.7e8 rays at a time, there is already chunking to prevent overflow of the GPU memory and timeouts
+    Raycasting index creation and assignment to raycaster, upper bound is around 4.7e8 rays at a time, there is already chunking to prevent overflow of the GPU memory and timeouts
 
     Parameters
     ----------
-    sources : ()
-    sinks : ()
-    scattering_points : ()
-    environment : ()
-    max_scatter : ()
-    line_of_sight : (boolean)
+    sources : n*3 numpy array of float
+    sinks : m*3 numpy array of float
+    scattering_points : o*3 numpy array of float
+    environment : numpy array of triangle_t
+    max_scatter : int
+    line_of_sight : boolean
 
     Returns
     ---------
-    full_index : (2D numpy array of ints)
+    full_index : 2D numpy array of ints
         the index for all successful rays cast from source coordinates, to any scattering points, to the sink point for each entry
-    RAYS_CAST : (int)
+    RAYS_CAST : int
         the number of rays cast in this launch.
     """
     #temp function to chunk the number of rays to prevent creation of ray arrays to large for memory
