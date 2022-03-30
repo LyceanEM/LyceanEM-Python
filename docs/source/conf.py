@@ -49,12 +49,15 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 #                        'open3d',
 #                        'solidpython']
 
-#intersphinx_mapping = {
-#    'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
-#    'matplotlib': ('https://matplotlib.org/', None),
-#    'numpy': ('https://docs.scipy.org/doc/numpy', None),
-#    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-#}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
+    'matplotlib': ('https://matplotlib.org/', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'open3d': ('http://www.open3d.org/docs/0.9.0/', None),
+    'numba': ('https://numba.readthedocs.io/en/stable/', None),
+    'solidpython': ('https://solidpython.readthedocs.io/en/latest/', None)
+}
 
 
 # -- Options for HTML output -------------------------------------------------
