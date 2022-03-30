@@ -154,6 +154,99 @@ def calc_dv_norm(source,target,direction,length):
     direction=(target-source)/length
     return direction, length
 
+class structures:
+    """
+    Structure class to store information about the geometry and materials in the environment, holding the seperate
+    shapes as open3D trianglemesh data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
+
+    Units should be SI, metres
+
+    This is the default class for passing structures to the different models.
+    """
+
+    def __init__(self,
+                 solids,
+                 material_characteristics):
+        #solids is a list of open3D trianglemesh structures
+        self.solids=[]
+        for item in solids:
+            self.solids.append(item)
+        self.materials=[]
+        for item in material_characteristics:
+            self.materials.append(item)
+
+    def remove_structure(self,deletion_index):
+        """
+        removes a component or components from the class
+        Parameters
+        ----------
+        deletion_index
+
+        Returns
+        -------
+        None
+        """
+        for entry in range(len(deletion_index)):
+            self.solids.pop(deletion_index[entry])
+            self.materials.pop(deletion_index[entry])
+
+    def add_structure(self,new_solids,new_materials):
+        """
+        adds a component or components from the structure
+        Parameters
+        ----------
+        new_solids
+        new_materials
+
+        Returns
+        -------
+
+        """
+        self.solids.append(new_solids)
+        self.materials.append(new_materials)
+
+    def rotate_structures(self,rotation_matrix,rotation_centre=np.zeros((3),dtype=np.float32)):
+        """
+        rotates the components of the structure around a common point, default is the origin
+
+        Parameters
+        ----------
+        rotation_vector : open3d rotation matrix
+            o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector)
+        rotation_centre : 1*3 numpy float array
+            centre of rotation for the structures
+
+
+        Returns
+        -------
+
+        """
+        #warning, current commond just rotates around the origin, and until Open3D can be brought up to the
+        #latest version without breaking BlueCrystal reqruiements, this will require additional code.
+
+        for item in self.solids:
+            self.solids[item].rotate(rotation_matrix,centre=True)
+
+
+    def translate_structures(self,vector):
+        """
+        translates the structures in the class by the given cartesian vector (x,y,z)
+        Parameters
+        ----------
+        vector : 1*3 numpy array of floats
+            The desired translation vector for the structures
+
+        Returns
+        -------
+        None
+        """
+        for item in self.solids:
+            self.solids[item].translate(vector)
+
+
+
+
+
 
 class antenna_pattern:
     """
