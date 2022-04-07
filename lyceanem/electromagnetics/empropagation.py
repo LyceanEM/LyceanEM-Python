@@ -2821,9 +2821,9 @@ def directivity_transform(Etheta,Ephi,az_range=np.linspace(-180.0,180.0,19),elev
             power_sum=power_sum+r*np.abs(np.sin(np.radians(az_range[azinc]+az_range[azinc+1])/2.0))
 
     ephi_power_sum=power_sum-etheta_power_sum
-    Umax[0]=np.max(Utheta)
-    Umax[1]=np.max(Uphi)
-    Umax[2]=np.max(Utotal)
+    Umax[0]=np.nanmax(Utheta)
+    Umax[1]=np.nanmax(Uphi)
+    Umax[2]=np.nanmax(Utotal)
     Uav = power_sum*((np.radians(np.abs(az_range[1]-az_range[0])))*(np.radians(np.abs(elev_range[1]-elev_range[0]))))/(total_solid_angle)
     Dmax=Umax/Uav
     Dtheta=Utheta/Uav

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import copy
 import math
 from timeit import default_timer as timer
 
@@ -196,8 +197,8 @@ def hit(ray,triangle):
 
     #if A is less than zero, then the ray is coming from behind the triangle
     #cull backface triangles
-    #if (A<0):
-    #    return False,math.inf
+    if (A<0):
+        return False,math.inf
     #calculate distance from vertice 0 to ray origin
     tvecx=ray.ox-triangle.v0x #s
     tvecy=ray.oy-triangle.v0y #s
@@ -1533,6 +1534,7 @@ def launchRaycaster1Dv3(sources,sinks,scattering_points,io_indexing,environment_
     raystart=timer()
     ray_num=len(first_ray_payload)
     tri_num=len(environment_local)
+    #print('Launch Raycaster Triangles ', len(environment_local))
     max_tris=2**20
     triangle_chunk=np.linspace(0,tri_num,math.ceil(tri_num/max_tris)+1,dtype=np.int32)
     chunk_size=2**18
@@ -1656,6 +1658,7 @@ def chunkingRaycaster1Dv3(sources,sinks,scattering_points,filtered_index,environ
     raystart=timer()
     ray_num=len(second_ray_payload)
     tri_num=len(environment_local)
+    #print('Chunking Raycaster Triangles ', len(environment_local))
     max_tris=2**18
     triangle_chunk=np.linspace(0,tri_num,math.ceil(tri_num/max_tris)+1,dtype=np.int32)
     # Create a container for the pixel RGBA information of our image
@@ -1927,7 +1930,7 @@ def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter,line_
         the number of rays cast in this launch.
     """
     #temp function to chunk the number of rays to prevent creation of ray arrays to large for memory
-
+    #print('WorkChunking Triangles ',len(environment))
     raycasting_timestamp=timer()
     ray_estimate=(sources.shape[0]*(sinks.shape[0]+scattering_points.shape[0]))+(sources.shape[0]*(scattering_points.shape[0]*sinks.shape[0]*(max_scatter)))
     #print("Total of {:3.1f} rays required".format(ray_estimate))
@@ -1943,7 +1946,8 @@ def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter,line_
         source_chunking=np.linspace(0,sources.shape[0],chunknum,dtype=np.int32)
         for chunkindex in range(source_chunking.size-1):
             io_indexing=create_model_index(source_index[source_chunking[chunkindex]:source_chunking[chunkindex+1]],sink_index,scattering_point_index)
-            _,temp_index,first_wave_Rays=launchRaycaster1Dv3(sources,sinks,scattering_points,io_indexing,environment)
+            #print('WorkChunkingMaxScatter1 Triangles ', len(environment))
+            _,temp_index,first_wave_Rays=launchRaycaster1Dv3(sources,sinks,scattering_points,io_indexing,copy.deepcopy(environment))
             full_index=np.append(full_index,temp_index,axis=0)
             RAYS_CAST=first_wave_Rays
 
@@ -1961,7 +1965,8 @@ def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter,line_
                                                                                sinks,
                                                                                scattering_points,
                                                                                io_indexing,
-                                                                               environment)
+                                                                               copy.deepcopy(environment))
+                #print('WorkChunkingMaxScatter2 Triangles ', len(environment), 'Filtered Rays' , len(filtered_index), 'Final Rays',len(final_index))
             else:
                 #drop line of sight rays from queue
                 io_indexing = create_model_index(source_index[source_chunking[chunkindex]:source_chunking[chunkindex + 1]],
@@ -1979,6 +1984,7 @@ def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter,line_
             else:
                 filtered_index2,final_index2,second_wave_rays=chunkingRaycaster1Dv3(sources,sinks,scattering_points,filtered_index,environment,terminate_flag=True)
             #cuda.profile_stop()
+            #print('WorkChunkingMaxScatter2 Triangles ', len(environment), 'Filtered Rays Stage 2', len(filtered_index2), 'Final Rays Stage 2',len(final_index2))
             start=timer()
             # filtered_network2,final_network2,filtered_index2,final_index2=rayHits(second_ray_payload,distmap2,io_index2,scatter_inc=2,origins_local=second_origin)
             RAYS_CAST=first_wave_Rays+second_wave_rays

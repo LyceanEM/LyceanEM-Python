@@ -30,8 +30,8 @@ def calculate_scattering(aperture_coords,
         source coordinates
     sink_coords : open3d point cloud
         sink coordinates
-    antenna_solid : open3d trianglemesh
-        the environment for scattering, providing the blocking for the rays
+    antenna_solid : structure class
+        the class should contain all the environment for scattering, providing the blocking for the rays
     desired_E_axis : 1D numpy array of floats
         the desired excitation vector, can be a 1*3 array or a n*3 array if multiple different exciations are desired in one lauch
     scatter_points : open3d point cloud
@@ -72,7 +72,7 @@ def calculate_scattering(aperture_coords,
 
     num_sources = len(np.asarray(aperture_coords.points))
     num_sinks = len(np.asarray(sink_coords.points))
-
+    environment_triangles = antenna_solid.triangles_base_raycaster()
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
         scatter_points = o3d.geometry.PointCloud()
@@ -209,7 +209,7 @@ def calculate_scattering(aperture_coords,
     full_index, rays = RF.workchunkingv2(np.asarray(aperture_coords.points).astype(np.float32),
                                          np.asarray(sink_coords.points).astype(np.float32),
                                          np.asarray(scatter_points.points).astype(np.float32),
-                                         RF.convertTriangles(antenna_solid), scattering + 1)
+                                         environment_triangles, scattering + 1)
 
     if not elements:
         # create efiles for model

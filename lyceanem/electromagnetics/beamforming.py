@@ -517,11 +517,16 @@ def PatternPlot(data,
     data=np.abs(data)
     #calculate log profile
     if logtype=='power':
-        logdata=10*np.log(data/np.max(data))
+        logdata=10*np.log(data)
         bar_label='Relative Power (dB)'
     else:
-        logdata=20*np.log(data/np.max(data))
-        bar_label='Normalised Directivity (dBi)'
+        logdata=20*np.log(data)
+
+    if plot_max==0.0:
+        logdata-=np.nanmax(logdata)
+        bar_label = 'Normalised Directivity (dBi)'
+    else:
+        bar_label = 'Directivity (dBi)'
 
     logdata[logdata<=pattern_min]=pattern_min
     norm_log=(logdata-pattern_min)/np.abs(pattern_min)
@@ -576,12 +581,32 @@ def PatternPlot(data,
         ax.set_xlim([np.min(az),np.max(az)])
         ax.set_ylim([np.min(elev), np.max(elev)])
         ax.set_zlim([pattern_min,0])
-        ax.set_xticks(np.linspace(pattern_min, 0, 5))
+        ax.set_zticks(np.linspace(pattern_min, 0, ticknum))
         ax.set_xticks(np.linspace(-180, 180, 9))
         ax.set_yticks(np.linspace(-90, 90., 5))
         ax.set_xlabel('Azimuth (degrees)')
         ax.set_ylabel('Elevation (degrees)')
         ax.set_zlabel(bar_label)
+        if title_text!=None:
+            ax.set_title(title_text)
+    elif plottype=='Contour':
+        fig, ax = plt.subplots(constrained_layout=True)
+        origin = 'lower'
+        levels=np.linspace(pattern_min,plot_max,ticknum*10)
+        CS = ax.contourf(az, elev, logdata, levels,
+                         cmap='viridis',
+                         origin=origin)
+        cbar = fig.colorbar(CS, ticks=np.linspace(pattern_min, plot_max, ticknum))
+        cbar.ax.set_ylabel(bar_label)
+        c_labels = np.linspace(pattern_min, plot_max, ticknum).astype('str')
+        cbar.set_ticklabels(c_labels.tolist())
+        ax.set_xlim([np.min(az), np.max(az)])
+        ax.set_ylim([np.min(elev), np.max(elev)])
+        ax.set_xticks(np.linspace(-180, 180, 9))
+        ax.set_yticks(np.linspace(-90, 90., 13))
+        ax.set_xlabel('Azimuth (degrees)')
+        ax.set_ylabel('Elevation (degrees)')
+        ax.grid()
         if title_text!=None:
             ax.set_title(title_text)
 

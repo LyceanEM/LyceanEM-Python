@@ -22,8 +22,8 @@ def aperture_projection(aperture,
     ---------
     aperture : open3D trianglemesh
         trianglemesh of of the desired aperture
-    environment : open3D trianglemesh
-        the environment or platform of interest, blocking the field of view of the aperture
+    environment : structure class
+        the class should contain all the environment for scattering, providing the blocking for the rays
     wavelength : float
         the wavelength of interest in metres
     az_range : numpy 1d array of float32
@@ -41,7 +41,7 @@ def aperture_projection(aperture,
     if environment is None:
         blocking_triangles=RF.convertTriangles(aperture)
     else:
-        blocking_triangles=np.append(RF.convertTriangles(aperture),RF.convertTriangles(environment),axis=0)
+        blocking_triangles = environment.triangles_base_raycaster()
 
     directivity_envelope = np.zeros((elev_range.shape[0], az_range.shape[0]), dtype=np.float32)
     triangle_centroids,_ = GF.tri_centroids(aperture)
@@ -79,8 +79,8 @@ def calculate_farfield(aperture_coords,
     ---------
     aperture_coords : open3d point cloud
         open3d of the aperture coordinates, from a single point to a mesh sampling across and aperture or surface
-    antenna_solid : open3d triangle mesh
-        triangle mesh of the platform or blockers in the environment
+    antenna_solid : structure class
+        the class should contain all the environment for scattering, providing the blocking for the rays
     desired_E_axis :
         1*3 numpy array of the desired excitation vector
     az_range : 1D numpy array of float
@@ -125,6 +125,7 @@ def calculate_farfield(aperture_coords,
     sink_cloud.normals = o3d.utility.Vector3dVector(sink_normals)
     num_sources = len(np.asarray(aperture_coords.points))
     num_sinks = len(np.asarray(sink_cloud.points))
+    environment_triangles = antenna_solid.triangles_base_raycaster()
     if project_vectors:
         conformal_E_vectors = EM.calculate_conformalVectors(desired_E_axis,
                                                             np.asarray(aperture_coords.normals).astype(np.float32))
@@ -240,7 +241,7 @@ def calculate_farfield(aperture_coords,
     full_index, rays = RF.workchunkingv2(np.asarray(aperture_coords.points).astype(np.float32),
                                          sinks,
                                          np.asarray(scatter_points.points).astype(np.float32),
-                                         RF.convertTriangles(antenna_solid),
+                                         environment_triangles,
                                          scattering + 1,
                                          line_of_sight=los)
 
@@ -324,8 +325,8 @@ def calculate_scattering(aperture_coords,
         source coordinates
     sink_coords : open3d point cloud
         sink coordinates
-    antenna_solid : open3d trianglemesh
-        the environment for scattering, providing the blocking for the rays
+    antenna_solid : structure class
+        the class should contain all the environment for scattering, providing the blocking for the rays
     desired_E_axis : 1D numpy array of floats
         the desired excitation vector, can be a 1*3 array or a n*3 array if multiple different exciations are desired in one lauch
     scatter_points : open3d point cloud
@@ -358,7 +359,7 @@ def calculate_scattering(aperture_coords,
 
     num_sources = len(np.asarray(aperture_coords.points))
     num_sinks = len(np.asarray(sink_coords.points))
-
+    environment_triangles = antenna_solid.triangles_base_raycaster()
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
         scatter_points = o3d.geometry.PointCloud()
@@ -504,11 +505,11 @@ def calculate_scattering(aperture_coords,
     #                                                        point_informationv2,
     #                                                        RF.convertTriangles(antenna_solid),
     #                                                        scatter_mask)
-
+    e
     full_index, rays = RF.workchunkingv2(np.asarray(aperture_coords.points).astype(np.float32),
                                          np.asarray(sink_coords.points).astype(np.float32),
                                          np.asarray(scatter_points.points).astype(np.float32),
-                                         RF.convertTriangles(antenna_solid), scattering + 1,
+                                         environment_triangles, scattering + 1,
                                          line_of_sight=los)
 
 
