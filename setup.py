@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
   name='LyceanEM',
-  version='0.0.1',
+  version='0.0.2',
   description='LyceanEM is a Python library for modelling electromagnetic propagation for sensors and communications. You can find the documentation at https://lyceanem-python.readthedocs.io/en/latest/',
   packages=find_packages(exclude=('docs', '*.tests')),
   python_requires='>=3.6',
