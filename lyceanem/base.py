@@ -20,40 +20,40 @@ point_data = np.dtype([
     ('permittivity', 'c8'), ('permeability', 'c8'),
     # electric or magnetic current sources? E if True
     ('Electric', '?'),
-    ], align=True)
-point_t = from_dtype(point_data) # Create a type that numba can recognize!
+], align=True)
+point_t = from_dtype(point_data)  # Create a type that numba can recognize!
 
 # A numpy record array (like a struct) to record triangle
 triangle_data = np.dtype([
     # v0 data
     ('v0x', 'f4'), ('v0y', 'f4'), ('v0z', 'f4'),
     # v1 data
-    ('v1x', 'f4'),  ('v1y', 'f4'), ('v1z', 'f4'),
+    ('v1x', 'f4'), ('v1y', 'f4'), ('v1z', 'f4'),
     # v2 data
-    ('v2x', 'f4'),  ('v2y', 'f4'), ('v2z', 'f4'),
+    ('v2x', 'f4'), ('v2y', 'f4'), ('v2z', 'f4'),
     # normal vector
     # ('normx', 'f4'),  ('normy', 'f4'), ('normz', 'f4'),
     # ('reflection', np.float64),
     # ('diffuse_c', np.float64),
     # ('specular_c', np.float64),
-    ], align=True)
-triangle_t = from_dtype(triangle_data) # Create a type that numba can recognize!
+], align=True)
+triangle_t = from_dtype(triangle_data)  # Create a type that numba can recognize!
 
 # ray class, to hold the ray origin, direction, and eventuall other data.
-ray_data =np.dtype([
+ray_data = np.dtype([
     # origin data
-    ('ox' ,'f4') ,('oy' ,'f4') ,('oz' ,'f4'),
+    ('ox', 'f4'), ('oy', 'f4'), ('oz', 'f4'),
     # direction vector
-    ('dx' ,'f4') ,('dy' ,'f4') ,('dz' ,'f4'),
+    ('dx', 'f4'), ('dy', 'f4'), ('dz', 'f4'),
     # target
     # direction vector
     # ('tx','f4'),('ty','f4'),('tz','f4'),
     # distance traveled
-    ('dist' ,'f4'),
+    ('dist', 'f4'),
     # intersection
-    ('intersect' ,'?'),
-    ] ,align=True)
-ray_t = from_dtype(ray_data) # Create a type that numba can recognize!
+    ('intersect', '?'),
+], align=True)
+ray_t = from_dtype(ray_data)  # Create a type that numba can recognize!
 # We can use that type in our device functions and later the kernel!
 
 scattering_point = np.dtype([
@@ -64,7 +64,7 @@ scattering_point = np.dtype([
     # normal
     ('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4'),
     # weights
-    ('ex' ,'c8') ,('ey' ,'c8') ,('ez' ,'c8'),
+    ('ex', 'c8'), ('ey', 'c8'), ('ez', 'c8'),
     # conductivity, permittivity and permiability
     # free space values should be
     # permittivity of free space 8.8541878176e-12F/m
@@ -72,14 +72,14 @@ scattering_point = np.dtype([
     ('permittivity', 'c8'), ('permeability', 'c8'),
     # electric or magnetic current sources? E if True
     ('Electric', '?'),
-    ], align=True)
+], align=True)
 
-scattering_t = from_dtype(scattering_point) # Create a type that numba can recognize!
+scattering_t = from_dtype(scattering_point)  # Create a type that numba can recognize!
 
 
 @njit
 def cart2pol(x, y):
-    rho = np.sqrt( x**2 + y** 2)
+    rho = np.sqrt(x ** 2 + y ** 2)
     phi = np.arctan2(y, x)
     return (rho, phi)
 
@@ -179,39 +179,41 @@ class structures:
         self.solids = []
         for item in solids:
             self.solids.append(item)
-        #self.materials = []
-        #for item in material_characteristics:
+        # self.materials = []
+        # for item in material_characteristics:
         #    self.materials.append(item)
 
     def remove_structure(self, deletion_index):
         """
         removes a component or components from the class
         Parameters
-        ----------
-        deletion_index
+        -----------
+        deletion_index : list
+            list of integers or numpy array of integers to the solids to be removed
 
         Returns
-        -------
+        --------
         None
         """
         for entry in range(len(deletion_index)):
             self.solids.pop(deletion_index[entry])
             self.materials.pop(deletion_index[entry])
 
-    def add_structure(self, new_solids, new_materials):
+    def add_structure(self, new_solids):
         """
         adds a component or components from the structure
         Parameters
-        ----------
-        new_solids
-        new_materials
+        -----------
+        new_solids : open3d trianglemesh
+            the solid to be added to the structure
 
         Returns
-        -------
+        --------
+        None
 
         """
         self.solids.append(new_solids)
-        self.materials.append(new_materials)
+        # self.materials.append(new_materials)
 
     def rotate_structures(self, rotation_matrix, rotation_centre=np.zeros((3), dtype=np.float32)):
         """
@@ -219,15 +221,14 @@ class structures:
 
         Parameters
         ----------
-        rotation_vector : open3d rotation matrix
+        rotation_matrix : open3d rotation matrix
             o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector)
         rotation_centre : 1*3 numpy float array
             centre of rotation for the structures
 
-
         Returns
-        -------
-
+        --------
+        None
         """
         # warning, current commond just rotates around the origin, and until Open3D can be brought up to the
         # latest version without breaking BlueCrystal reqruiements, this will require additional code.
@@ -238,13 +239,14 @@ class structures:
     def translate_structures(self, vector):
         """
         translates the structures in the class by the given cartesian vector (x,y,z)
+
         Parameters
-        ----------
+        -----------
         vector : 1*3 numpy array of floats
             The desired translation vector for the structures
 
         Returns
-        -------
+        --------
         None
         """
         for item in self.solids:
@@ -254,17 +256,21 @@ class structures:
         """
         generates the triangles for all the trianglemesh objects in the structure, and outputs them as a continuous array of
         triangle_t format triangles
+
+        Parameters
+        -----------
+        None
+
         Returns
-        -------
+        --------
         triangles : N by 1 numpy array of triangle_t triangles
             a continuous array of all the triangles in the structure
         """
-        triangles=np.empty((0),dtype=triangle_t)
+        triangles = np.empty((0), dtype=triangle_t)
         for item in self.solids:
             triangles = np.append(triangles, RF.convertTriangles(copy.deepcopy(item)))
 
         return triangles
-
 
 
 class antenna_pattern:
@@ -333,7 +339,7 @@ class antenna_pattern:
 
     def initilise_pattern(self):
         """
-        pattern initilisation function, providing an isotopic pattern
+        pattern initialisation function, providing an isotopic pattern
         or quasi-isotropic pattern
 
         Returns
@@ -478,7 +484,7 @@ class antenna_pattern:
 
     def cartesian_points(self):
         """
-        exports the cartesian points foe all pattern points.
+        exports the cartesian points for all pattern points.
         """
         x, y, z = RF.sph2cart(np.deg2rad(self.az_mesh.ravel()),
                               np.deg2rad(self.elev_mesh.ravel()),

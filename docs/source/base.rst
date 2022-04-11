@@ -2,7 +2,8 @@
 LyceanEM Base
 ==============
 
-
+.. automodule:: lyceanem.base
+    :no-members:
 
 .. autoclass:: lyceanem.base.antenna_pattern
     :members:

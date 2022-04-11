@@ -22,8 +22,8 @@ def aperture_projection(aperture,
     ---------
     aperture : open3D trianglemesh
         trianglemesh of of the desired aperture
-    environment : structure class
-        the class should contain all the environment for scattering, providing the blocking for the rays
+    environment : :class: `structures`
+        the :class: `structures` class should contain all the environment for scattering, providing the blocking for the rays
     wavelength : float
         the wavelength of interest in metres
     az_range : numpy 1d array of float32
