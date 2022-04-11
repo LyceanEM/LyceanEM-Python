@@ -19,8 +19,14 @@ In addition to the module dependancies, this model is designed to use the featur
 
 ## Installation
 
-LyceanEM can be installed using conda 
+LyceanEM can be installed using conda or pip. Using conda the command is
 
 ```
 conda install -c lyceanem lyceanem
+```
+
+While to install using pip the command is 
+
+```
+ pip install LyceanEM
 ```
