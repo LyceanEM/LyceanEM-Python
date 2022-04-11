@@ -16,3 +16,11 @@ The dependencies of this package are limited at present by those of BlueCrystal 
 In order to maintain compatibility, Open3D is held at version 0.9.0. 
 
 In addition to the module dependancies, this model is designed to use the features provided by CUDA, and so a compatible Nvidia graphics card is required to run these models.
+
+## Installation
+
+LyceanEM can be installed using conda 
+
+```
+conda install -c lyceanem lyceanem
+```
