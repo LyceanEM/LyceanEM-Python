@@ -131,7 +131,10 @@ def calculate_farfield(aperture_coords,
                                                             np.asarray(aperture_coords.normals).astype(np.float32))
     else:
         conformal_E_vectors=np.repeat(desired_E_axis.reshape(1,3).astype(np.float32),num_sources,axis=0)
-
+    output_power = 1  # dBwatts
+    powerdbm = 10 * np.log10(output_power) + 30
+    receiver_impedence=50
+    v_transmit = ((10 ** (powerdbm / 20)) * receiver_impedence) ** 0.5
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
         scatter_points = o3d.geometry.PointCloud()
@@ -140,9 +143,9 @@ def calculate_farfield(aperture_coords,
         unified_normals = np.append(np.asarray(aperture_coords.normals).astype(np.float32),
                                     np.asarray(sink_cloud.normals).astype(np.float32), axis=0)
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
-        unified_weights[0:num_sources,:] = conformal_E_vectors / num_sources  # set total amplitude to 1 for the aperture
+        unified_weights[0:num_sources,:] = (conformal_E_vectors / num_sources)*v_transmit  # set total amplitude to 1 for the aperture
         unified_weights[num_sources:num_sources + num_sinks,
-        :] = 1 / num_sinks  # set total amplitude to 1 for the aperture
+        :] = 1 #/ num_sinks  # set total amplitude to 1 for the aperture
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
         # set all sources as magnetic current sources, and permittivity and permeability as free space
         point_informationv2[:]['Electric'] = True
@@ -184,9 +187,9 @@ def calculate_farfield(aperture_coords,
                                     np.asarray(scatter_points.normals).astype(np.float32), axis=0)
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
         unified_weights[0:num_sources,
-        :] = conformal_E_vectors / num_sources  # set total amplitude to 1 for the aperture
+        :] = (conformal_E_vectors / num_sources)*v_transmit  # set total amplitude to 1 for the aperture
         unified_weights[num_sources:num_sources + num_sinks,
-        :] = 1 / num_sinks  # set total amplitude to 1 for the aperture
+        :] = 1 #/ num_sinks  # set total amplitude to 1 for the aperture
         unified_weights[num_sources + num_sinks:,
         :] = scattering_weight #/ len(np.asarray(scatter_points.points))  # set total amplitude to 1 for the aperture
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
@@ -277,11 +280,11 @@ def calculate_farfield(aperture_coords,
             point_informationv2[0:num_sources]['ex'] = 0.0
             point_informationv2[0:num_sources]['ey'] = 0.0
             point_informationv2[0:num_sources]['ez'] = 0.0
-            point_informationv2[element]['ex'] = conformal_E_vectors[element, 0] / num_sources
-            point_informationv2[element]['ey'] = conformal_E_vectors[element, 1] / num_sources
-            point_informationv2[element]['ez'] = conformal_E_vectors[element, 2] / num_sources
-            unified_weights[0:num_sources, :] = 0.0
-            unified_weights[element, :] = conformal_E_vectors[element, :] / num_sources
+            point_informationv2[element]['ex'] = (conformal_E_vectors[element, 0] / num_sources)*v_transmit
+            point_informationv2[element]['ey'] = (conformal_E_vectors[element, 1] / num_sources)*v_transmit
+            point_informationv2[element]['ez'] = (conformal_E_vectors[element, 2] / num_sources)*v_transmit
+            #unified_weights[0:num_sources, :] = 0.0
+            #unified_weights[element, :] = (conformal_E_vectors[element, :] / num_sources)*v_transmit
             scatter_map = EM.EMGPUFreqDomain(num_sources,
                                              sinks.shape[0],
                                              full_index,
@@ -505,7 +508,7 @@ def calculate_scattering(aperture_coords,
     #                                                        point_informationv2,
     #                                                        RF.convertTriangles(antenna_solid),
     #                                                        scatter_mask)
-    e
+
     full_index, rays = RF.workchunkingv2(np.asarray(aperture_coords.points).astype(np.float32),
                                          np.asarray(sink_coords.points).astype(np.float32),
                                          np.asarray(scatter_points.points).astype(np.float32),

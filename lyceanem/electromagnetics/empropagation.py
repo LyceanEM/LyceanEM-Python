@@ -2796,10 +2796,10 @@ def directivity_transform(Etheta,Ephi,az_range=np.linspace(-180.0,180.0,19),elev
     #power per unit solid angle
     Dmax=np.zeros((3),dtype=np.float32)
     Umax=np.zeros((3),dtype=np.float32)
-    Utheta=np.abs(Etheta)**2
-    Uphi=np.abs(Ephi)**2
-    Utotal=np.abs(Etheta)**2+np.abs(Ephi)**2
-    power_sum=0
+    Utheta=np.abs(Etheta**2)
+    Uphi=np.abs(Ephi**2)
+    Utotal=np.abs(Etheta**2)+np.abs(Ephi**2)
+    power_sum=0.0
     temp_vector=np.zeros((4),dtype=np.float32)
     for elinc in range(len(elev_range)-1):
         for azinc in range(len(az_range)-1):
@@ -2825,6 +2825,44 @@ def directivity_transform(Etheta,Ephi,az_range=np.linspace(-180.0,180.0,19),elev
     Umax[1]=np.nanmax(Uphi)
     Umax[2]=np.nanmax(Utotal)
     Uav = power_sum*((np.radians(np.abs(az_range[1]-az_range[0])))*(np.radians(np.abs(elev_range[1]-elev_range[0]))))/(total_solid_angle)
+    Dmax=Umax/Uav
+    Dtheta=Utheta/Uav
+    Dphi=Uphi/Uav
+    Dtot=Utotal/Uav
+
+    return Dtheta,Dphi,Dtot,Dmax
+
+@njit(cache=True, nogil=True)
+def directivity_transformv2(Etheta,Ephi,az_range=np.linspace(-180.0,180.0,19),elev_range=np.linspace(-90.0,90.0,19),total_solid_angle=(4*np.pi)):
+    #transform Etheta and Ephi data into antenna directivity
+    #directivity is defined in terms of the power radiated in a specific direction, over the average radiated power
+    #power per unit solid angle
+    Dmax=np.zeros((3),dtype=np.float32)
+    Umax=np.zeros((3),dtype=np.float32)
+    Utheta=np.abs(Etheta**2)
+    Uphi=np.abs(Ephi**2)
+    Utotal=np.abs(Etheta**2)+np.abs(Ephi**2)
+    power_sum=0.0
+    temp_vector=np.zeros((4),dtype=np.float32)
+    temp_vector2 = np.zeros((4), dtype=np.float32)
+    for elinc in range(len(elev_range)-1):
+        for azinc in range(len(az_range)-1):
+            temp_vector[0]=Utheta[elinc,azinc]
+            temp_vector[1]=Utheta[elinc+1,azinc]
+            temp_vector[2]=Utheta[elinc,azinc+1]
+            temp_vector[3]=Utheta[elinc+1,azinc+1]
+            temp_vector2[0] = Uphi[elinc, azinc]
+            temp_vector2[1] = Uphi[elinc + 1, azinc]
+            temp_vector2[2] = Uphi[elinc, azinc + 1]
+            temp_vector2[3] = Uphi[elinc + 1, azinc + 1]
+            r1=np.mean(temp_vector)
+            r2 = np.mean(temp_vector2)
+            power_sum=power_sum+r1*np.abs(np.sin(np.radians(az_range[azinc]+az_range[azinc+1])/2.0))+r2*np.abs(np.sin(np.radians(az_range[azinc]+az_range[azinc+1])/2.0))
+
+    Umax[0]=np.nanmax(Utheta)
+    Umax[1]=np.nanmax(Uphi)
+    Umax[2]=np.nanmax(Utotal)
+    Uav = power_sum*((np.radians(az_range[1]-az_range[0]))*(np.radians(elev_range[1]-elev_range[0])))/total_solid_angle
     Dmax=Umax/Uav
     Dtheta=Utheta/Uav
     Dphi=Uphi/Uav

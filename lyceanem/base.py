@@ -364,7 +364,10 @@ class antenna_pattern:
 
     def import_pattern(self, file_location):
         """
-        takes the file location and imports the individual pattern file, replacing exsisting values with those of the saved file
+        takes the file location and imports the individual pattern file, replacing exsisting values with those of the saved file.
+
+        It is import to note that for CST ASCII export format, that you select a plot range of -180 to 180 for phi, and that by defauly CST exports from 0 to 180 in theta, which
+        is the opposite direction to the default for LyceanEM, so this data structures are flipped for consistency.
         Inputs : file location
 
         Returns : None
@@ -381,16 +384,16 @@ class antenna_pattern:
             theta_steps = np.linspace(np.min(theta), np.max(theta), np.unique(theta).size)
             phi_res = np.unique(phi).size
             theta_res = np.unique(theta).size
-            etheta = (datafile[:, 3] * np.exp(1j * np.deg2rad(datafile[:, 4]))).reshape(theta_res, phi_res)
-            ephi = (datafile[:, 5] * np.exp(1j * np.deg2rad(datafile[:, 6]))).reshape(theta_res, phi_res)
+            etheta = (datafile[:, 3] * np.exp(1j * np.deg2rad(datafile[:, 4]))).reshape(phi_res,theta_res).transpose()
+            ephi = (datafile[:, 5] * np.exp(1j * np.deg2rad(datafile[:, 6]))).reshape(phi_res,theta_res).transpose()
             self.azimuth_resolution = phi_res
             self.elevation_resolution = theta_res
-            self.elev_mesh = GF.thetatoelevation(theta).reshape(theta_res, phi_res)
-            self.az_mesh = phi.reshape(theta_res, phi_res)
+            self.elev_mesh = np.flipud(GF.thetatoelevation(theta).reshape(phi_res,theta_res).transpose())
+            self.az_mesh = np.flipud(phi.reshape(phi_res,theta_res).transpose())
             self.pattern = np.zeros((self.elevation_resolution, self.azimuth_resolution, 2),
                                     dtype=np.complex64)
-            self.pattern[:, :, 0] = etheta
-            self.pattern[:, :, 1] = ephi
+            self.pattern[:, :, 0] = np.flipud(etheta)
+            self.pattern[:, :, 1] = np.flipud(ephi)
             self.pattern_frequency = file_frequency
         elif file_location.suffix == '.dat':
             # file is .dat format from anechoic chamber measurements
@@ -409,10 +412,40 @@ class antenna_pattern:
     def export_pattern(self, file_location):
         """
         takes the file location and exports the pattern as a .dat file
-        unfinished
+        unfinished, must be in Etheta/Ephi format,
+
+        Parameters
+        -----------
+        file_location : posix path
+            the path for the output file, including name
+
+        Returns
+        --------
+        None
         """
-        theta_mesh = GF.elevationtotheta(self.elev_mesh)
-        phi_mesh = self.az_mesh
+        if self.arbitary_pattern_format == 'ExEyEz':
+            self.transmute_pattern()
+
+        theta_flat = GF.elevationtotheta(self.elev_mesh).transpose().reshape(-1,1)
+        phi_mesh = self.az_mesh.transpose().reshape(-1,1)
+        planes=self.azimuth_resolution
+        copolardb=20*np.log10(np.abs(self.pattern[:,:,0].transpose().reshape(-1,1)))
+        copolarangle=np.degrees(np.angle(self.pattern[:,:,0].transpose().reshape(-1,1)))
+        crosspolardb = 20 * np.log10(np.abs(self.pattern[:, :, 1].transpose().reshape(-1,1)))
+        crosspolarangle = np.degrees(np.angle(self.pattern[:, :, 1].transpose().reshape(-1,1)))
+        norm=np.nanmax(np.array([np.nanmax(copolardb),np.nanmax(crosspolardb)]))
+        copolardb -= norm
+        crosspolardb -= norm
+        infoarray=np.array([planes,np.min(self.az_mesh),np.max(self.az_mesh),norm,self.pattern_frequency/1e6]).reshape(1,-1)
+
+        dataarray = np.concatenate((theta_flat.reshape(-1,1),
+                                    copolardb.reshape(-1,1),
+                                    copolarangle.reshape(-1,1),
+                                    crosspolardb.reshape(-1,1),
+                                    crosspolarangle.reshape(-1,1)),axis=1)
+        outputarray=np.concatenate((infoarray,dataarray),axis=0)
+        np.savetxt(file_location,outputarray, delimiter=',',fmt="%.2e")
+
 
     def display_pattern(self, desired_pattern='both', pattern_min=-40):
         """
@@ -585,3 +618,22 @@ class antenna_pattern:
             new_pattern[:, component] = new_mag * np.exp(1j * new_angles)
 
         return new_pattern
+
+    def directivity(self):
+        """
+
+        Returns
+        -------
+        Dtheta : numpy array
+            directivity for Etheta farfield
+        Dphi : numpy array
+            directivity for Ephi farfield
+        Dtotal : numpy array
+            overall directivity pattern
+        Dmax : numpy array
+            the maximum directivity for each pattern
+
+        """
+        Dtheta, Dphi, Dtotal, Dmax = EM.directivity_transformv2(self.pattern[:,:,0], self.pattern[:,:,1], az_range=self.az_mesh[0,:],
+                                                              elev_range=self.elev_mesh[:,0])
+        return Dtheta,Dphi,Dtotal,Dmax
