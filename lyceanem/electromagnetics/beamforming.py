@@ -517,10 +517,10 @@ def PatternPlot(data,
     data=np.abs(data)
     #calculate log profile
     if logtype=='power':
-        logdata=10*np.log(data)
+        logdata=10*np.log10(data)
         bar_label='Relative Power (dB)'
     else:
-        logdata=20*np.log(data)
+        logdata=20*np.log10(data)
 
     if plot_max==0.0:
         logdata-=np.nanmax(logdata)
@@ -529,8 +529,9 @@ def PatternPlot(data,
         bar_label = 'Directivity (dBi)'
 
     logdata[logdata<=pattern_min]=pattern_min
-    norm_log=(logdata-pattern_min)/np.abs(pattern_min)
+
     if plottype=='Polar':
+        norm_log = (logdata - pattern_min) / np.abs(pattern_min)
         sinks=np.zeros((len(np.ravel(az)),3),dtype=np.float32)
         sinks[:,0],sinks[:,1],sinks[:,2]=RF.azeltocart(np.ravel(az),np.ravel(elev),np.ravel(norm_log))
         dist = np.sqrt(sinks[:,0].reshape(az.shape)**2 + sinks[:,1].reshape(az.shape)**2 + sinks[:,2].reshape(az.shape)**2)
@@ -580,8 +581,8 @@ def PatternPlot(data,
         ax.plot_surface(az, elev, logdata, cmap='viridis', edgecolor='none')
         ax.set_xlim([np.min(az),np.max(az)])
         ax.set_ylim([np.min(elev), np.max(elev)])
-        ax.set_zlim([pattern_min,0])
-        ax.set_zticks(np.linspace(pattern_min, 0, ticknum))
+        ax.set_zlim([pattern_min,plot_max])
+        ax.set_zticks(np.linspace(pattern_min, plot_max, ticknum))
         ax.set_xticks(np.linspace(-180, 180, 9))
         ax.set_yticks(np.linspace(-90, 90., 5))
         ax.set_xlabel('Azimuth (degrees)')
@@ -606,6 +607,11 @@ def PatternPlot(data,
         ax.set_yticks(np.linspace(-90, 90., 13))
         ax.set_xlabel('Azimuth (degrees)')
         ax.set_ylabel('Elevation (degrees)')
+        levels2 = np.linspace(pattern_min, plot_max, ticknum)
+        CS4 = ax.contour(az, elev, logdata, levels2,
+                          colors=('k',),
+                          linewidths=(2,),
+                          origin=origin)
         ax.grid()
         if title_text!=None:
             ax.set_title(title_text)

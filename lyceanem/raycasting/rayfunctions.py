@@ -2035,19 +2035,34 @@ def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter,line_
                                              scattering_point_index)
 
         if io_indexing.shape[0] >= ray_limit:
-            # need to split the array and process seperatly
+            # need to split the array and process separately
             sub_io = np.array_split(io_indexing, np.ceil(io_indexing.shape[0] / ray_limit).astype(int))
             chunknum = len(sub_io)
-            filtered_index=np.empty((0,3),dtype=np.int32)
             final_index = np.empty((0, 3), dtype=np.int32)
+            RAYS_CAST=0
             for chunkindex in range(chunknum):
                 temp_filtered_index,temp_final_index,first_wave_Rays=launchRaycaster1Dv3(sources,
                                                                                sinks,
                                                                                scattering_points,
                                                                                sub_io[chunkindex],
                                                                                copy.deepcopy(environment))
-                filtered_index = np.append(filtered_index, temp_filtered_index, axis=0)
-                final_index = np.append(final_index, temp_final_index, axis=0)
+                #filtered_index = np.append(filtered_index, temp_filtered_index, axis=0)
+                #final_index = np.append(final_index, temp_final_index, axis=0)
+                if temp_filtered_index.shape[0] == 0:
+                    temp_filtered_index2 = np.empty((0, 3), dtype=np.int32)
+                    temp_final_index2 = np.empty((0, 3), dtype=np.int32)
+                    second_wave_rays = 0
+                else:
+                    temp_filtered_index2, temp_final_index2, second_wave_rays = chunkingRaycaster1Dv3(sources, sinks,
+                                                                                            scattering_points,
+                                                                                            temp_filtered_index, environment,
+                                                                                            terminate_flag=True)
+                RAYS_CAST +=(first_wave_Rays+ second_wave_rays)
+                # create combined path network
+                host_size = np.shape(temp_final_index)
+                host_padding = np.zeros((host_size[0], 1), dtype=np.int32)
+                temp_full_index = np.append(np.append(temp_final_index, host_padding, axis=1), temp_final_index2, axis=0)
+                full_index = np.append(full_index, temp_full_index, axis=0)
         else:
             filtered_index, final_index, first_wave_Rays = launchRaycaster1Dv3(sources,
                                                                                sinks,
@@ -2055,22 +2070,22 @@ def workchunkingv2(sources,sinks,scattering_points,environment,max_scatter,line_
                                                                                io_indexing,
                                                                                copy.deepcopy(environment))
 
-        if filtered_index.shape[0]==0:
-            filtered_index2=np.empty((0,3),dtype=np.int32)
-            final_index2=np.empty((0,3),dtype=np.int32)
-            second_wave_rays=0
-        else:
-            filtered_index2,final_index2,second_wave_rays=chunkingRaycaster1Dv3(sources,sinks,scattering_points,filtered_index,environment,terminate_flag=True)
-            #cuda.profile_stop()
-            #print('WorkChunkingMaxScatter2 Triangles ', len(environment), 'Filtered Rays Stage 2', len(filtered_index2), 'Final Rays Stage 2',len(final_index2))
-            start=timer()
-            # filtered_network2,final_network2,filtered_index2,final_index2=rayHits(second_ray_payload,distmap2,io_index2,scatter_inc=2,origins_local=second_origin)
-            RAYS_CAST=first_wave_Rays+second_wave_rays
-            #create combined path network
-            host_size=np.shape(final_index)
-            host_padding=np.zeros((host_size[0],1),dtype=np.int32)
-            temp_full_index=np.append(np.append(final_index,host_padding,axis=1),final_index2,axis=0)
-            full_index=np.append(full_index,temp_full_index,axis=0)
+            if filtered_index.shape[0]==0:
+                filtered_index2=np.empty((0,3),dtype=np.int32)
+                final_index2=np.empty((0,3),dtype=np.int32)
+                second_wave_rays=0
+            else:
+                filtered_index2,final_index2,second_wave_rays=chunkingRaycaster1Dv3(sources,sinks,scattering_points,filtered_index,environment,terminate_flag=True)
+                #cuda.profile_stop()
+                #print('WorkChunkingMaxScatter2 Triangles ', len(environment), 'Filtered Rays Stage 2', len(filtered_index2), 'Final Rays Stage 2',len(final_index2))
+                start=timer()
+                # filtered_network2,final_network2,filtered_index2,final_index2=rayHits(second_ray_payload,distmap2,io_index2,scatter_inc=2,origins_local=second_origin)
+                RAYS_CAST=first_wave_Rays+second_wave_rays
+                #create combined path network
+                host_size=np.shape(final_index)
+                host_padding=np.zeros((host_size[0],1),dtype=np.int32)
+                temp_full_index=np.append(np.append(final_index,host_padding,axis=1),final_index2,axis=0)
+                full_index=np.append(full_index,temp_full_index,axis=0)
 
     elif max_scatter==3:
         full_index=np.empty((0,4),dtype=np.int32)

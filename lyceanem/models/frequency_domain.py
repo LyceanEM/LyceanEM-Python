@@ -67,6 +67,7 @@ def calculate_farfield(aperture_coords,
                        wavelength=1.0,
                        farfield_distance=2.0,
                        scattering=0,
+                       source_weights=None,
                        scattering_weight=1.0,
                        mesh_resolution=0.5,
                        elements=False,
@@ -95,6 +96,8 @@ def calculate_farfield(aperture_coords,
         the distance to evaluate the antenna pattern, defaults to [2]
     scattering: int
      the number of scatters required, if this is set to 0, then only line of sight propagation is considered, defaults to [0]
+     source_weights : numpy array complex
+        the desired source weights if the source field is to be specified explicitly, should be normalised. This replaces the desired_E_axis specification.
     scattering_weight :
     mesh_resolution :
     elements : boolean
@@ -142,8 +145,12 @@ def calculate_farfield(aperture_coords,
                                   np.asarray(sink_cloud.points).astype(np.float32), axis=0)
         unified_normals = np.append(np.asarray(aperture_coords.normals).astype(np.float32),
                                     np.asarray(sink_cloud.normals).astype(np.float32), axis=0)
-        unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
-        unified_weights[0:num_sources,:] = (conformal_E_vectors / num_sources)*v_transmit  # set total amplitude to 1 for the aperture
+        unified_weights=np.ones((unified_model.shape[0], 3), dtype=np.complex64)
+        if source_weights is None:
+            unified_weights[0:num_sources,:] = (conformal_E_vectors / num_sources)*v_transmit  # set total amplitude to 1 for the aperture
+        else:
+            unified_weights[0:num_sources,:] = source_weights*v_transmit
+
         unified_weights[num_sources:num_sources + num_sinks,
         :] = 1 #/ num_sinks  # set total amplitude to 1 for the aperture
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
@@ -186,8 +193,10 @@ def calculate_farfield(aperture_coords,
                                               np.asarray(sink_cloud.normals).astype(np.float32), axis=0),
                                     np.asarray(scatter_points.normals).astype(np.float32), axis=0)
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
-        unified_weights[0:num_sources,
-        :] = (conformal_E_vectors / num_sources)*v_transmit  # set total amplitude to 1 for the aperture
+        if source_weights is None:
+            unified_weights[0:num_sources, :] = (conformal_E_vectors / num_sources) * v_transmit  # set total amplitude to 1 for the aperture
+        else:
+            unified_weights[0:num_sources, :] = source_weights * v_transmit
         unified_weights[num_sources:num_sources + num_sinks,
         :] = 1 #/ num_sinks  # set total amplitude to 1 for the aperture
         unified_weights[num_sources + num_sinks:,
@@ -247,7 +256,7 @@ def calculate_farfield(aperture_coords,
                                          environment_triangles,
                                          scattering + 1,
                                          line_of_sight=los)
-
+    print(rays)
     if ~elements:
         # create efiles for model
         etheta = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)

@@ -1,11 +1,12 @@
 import copy
 import math
-
+from packaging import version
 import numpy as np
 from numba import float32, from_dtype, njit, guvectorize
 from scipy import interpolate as sp
 from scipy.spatial.transform import Rotation as R
 
+import open3d as o3d
 from .electromagnetics import beamforming as BM
 from .electromagnetics import empropagation as EM
 from .geometry import geometryfunctions as GF
@@ -215,7 +216,7 @@ class structures:
         self.solids.append(new_solids)
         # self.materials.append(new_materials)
 
-    def rotate_structures(self, rotation_matrix, rotation_centre=np.zeros((3), dtype=np.float32)):
+    def rotate_structures(self, rotation_matrix, rotation_centre=np.zeros((3,1), dtype=np.float32)):
         """
         rotates the components of the structure around a common point, default is the origin
 
@@ -232,9 +233,13 @@ class structures:
         """
         # warning, current commond just rotates around the origin, and until Open3D can be brought up to the
         # latest version without breaking BlueCrystal reqruiements, this will require additional code.
-
-        for item in self.solids:
-            self.solids[item].rotate(rotation_matrix, centre=True)
+        if version.parse(o3d.__version__)>=version.parse('0.10.0'):
+            #new syntax for rotations
+            for item in self.solids:
+                self.solids[item].rotate(rotation_matrix, centre=rotation_centre)
+        else:
+            for item in self.solids:
+                self.solids[item].rotate(rotation_matrix, centre=True)
 
     def translate_structures(self, vector):
         """
@@ -303,6 +308,7 @@ class antenna_pattern:
         self.arbitary_pattern_format = arbitary_pattern_format
         self.position_mapping = position_mapping
         self.rotation_offset = rotation_offset
+        self.field_radius=1.0
         az_mesh, elev_mesh = np.meshgrid(np.linspace(-180, 180, self.azimuth_resolution),
                                          np.linspace(-90, 90, self.elevation_resolution))
         self.az_mesh = az_mesh
@@ -521,7 +527,7 @@ class antenna_pattern:
         """
         x, y, z = RF.sph2cart(np.deg2rad(self.az_mesh.ravel()),
                               np.deg2rad(self.elev_mesh.ravel()),
-                              np.ones((self.pattern[:, :, 0].size)))
+                              np.ones((self.pattern[:, :, 0].size))*self.field_radius)
         field_points = np.array([x, y, z]).transpose().astype(np.float32) + self.position_mapping
 
         return field_points
@@ -634,6 +640,8 @@ class antenna_pattern:
             the maximum directivity for each pattern
 
         """
-        Dtheta, Dphi, Dtotal, Dmax = EM.directivity_transformv2(self.pattern[:,:,0], self.pattern[:,:,1], az_range=self.az_mesh[0,:],
-                                                              elev_range=self.elev_mesh[:,0])
+        Dtheta, Dphi, Dtotal, Dmax = EM.directivity_transformv2(self.pattern[:,:,0],
+                                                                self.pattern[:,:,1],
+                                                                az_range=self.az_mesh[0,:],
+                                                                elev_range=self.elev_mesh[:,0])
         return Dtheta,Dphi,Dtotal,Dmax
