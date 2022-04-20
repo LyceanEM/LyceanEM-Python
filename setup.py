@@ -62,6 +62,11 @@ cmdclass['build_doc'] = build_doc
 build_requires = ['numpy >={}'.format(min_numpy_build_version)]
 install_requires = [
     'numpy >={}'.format(min_numpy_run_version),
+    'matplotlib >=3.1.2',
+    'numba==0.55.1',
+    'open3d==0.9.0.0',
+    'scipy==1.4.1',
+    'solidpython==0.2.0',
     'setuptools',
     'importlib_metadata; python_version < "3.9"',
 ]
