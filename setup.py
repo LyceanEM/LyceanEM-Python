@@ -34,7 +34,7 @@ setup(
         "Intended Audience :: Education",
         "Intended Audience :: Other Audience",
         "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: GNU Affero General Public License v3",
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
         "Operating System :: Microsoft :: Windows",
