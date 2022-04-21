@@ -61,8 +61,8 @@ environment, and installing both cudatoolkit and cupy.
 
 Resources
 ==========
-* Code: `https://github.com/LyceanEM/LyceanEM-Python`_
-* Documentation: `https://lyceanem-python.readthedocs.io/en/latest/`_
-* License: `https://github.com/LyceanEM/LyceanEM-Python/blob/master/LICENSE.txt`_
+* Code: `github.com/LyceanEM/LyceanEM-Python <https://github.com/LyceanEM/LyceanEM-Python>`_
+* Documentation: `lyceanem-python.readthedocs.io/en/latest/ <https://lyceanem-python.readthedocs.io/en/latest/>`_
+* License: `github.com/LyceanEM/LyceanEM-Python/blob/master/LICENSE.txt <https://github.com/LyceanEM/LyceanEM-Python/blob/master/LICENSE.txt>`_
 
 
