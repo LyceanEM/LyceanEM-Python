@@ -302,12 +302,12 @@ def get_root():
     directory that contains setup.py, setup.cfg, and versioneer.py .
     """
     root = os.path.realpath(os.path.abspath(os.getcwd()))
-    setup_py = os.path.join(root, "setup.py")
+    setup_py = os.path.join(root, "examples/setup.py")
     versioneer_py = os.path.join(root, "versioneer.py")
     if not (os.path.exists(setup_py) or os.path.exists(versioneer_py)):
         # allow 'python path/to/setup.py COMMAND'
         root = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0])))
-        setup_py = os.path.join(root, "setup.py")
+        setup_py = os.path.join(root, "examples/setup.py")
         versioneer_py = os.path.join(root, "versioneer.py")
     if not (os.path.exists(setup_py) or os.path.exists(versioneer_py)):
         err = ("Versioneer was unable to run the project root directory. "
@@ -2099,7 +2099,7 @@ def scan_setup_py():
     found = set()
     setters = False
     errors = 0
-    with open("setup.py", "r") as f:
+    with open("examples/setup.py", "r") as f:
         for line in f.readlines():
             if "import versioneer" in line:
                 found.add("import")
