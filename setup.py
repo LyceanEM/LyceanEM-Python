@@ -8,6 +8,7 @@ setup(
   description='LyceanEM is a Python library for modelling electromagnetic propagation for sensors and communications. You can find the documentation at https://lyceanem-python.readthedocs.io/en/latest/',
   packages=packages,
   python_requires='>=3.7',
+  cmdclass=versioneer.get_cmdclass(),
   install_requires=[
     'numpy~=1.21',
     'open3d~=0.9.0.0',

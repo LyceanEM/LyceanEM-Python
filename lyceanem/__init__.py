@@ -12,3 +12,5 @@ __copyright__ = '''\
 © Timothy Pelham 2016-2022
 '''
 __license__ = 'GNU Affero General Public License v3'
+from . import _version
+__version__ = _version.get_versions()['version']
