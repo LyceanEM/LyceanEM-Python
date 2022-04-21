@@ -1,26 +1,34 @@
+{% set name = "lyceanem" %}
+{% set version = "0.0.2" %}
+
 package:
-  name: "lyceanem"
-  version: "0.0.2"
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
 about:
   summary: "LyceanEM is a Python library for modelling electromagnetic propagation for sensors and communications. You can find the documentation at https://lyceanem-python.readthedocs.io/en/latest/"
 
-source:
-  path: ..
 
-dependencies:
-  - python>=3.5
+source:
+  path: ../
+
+
+dependancies:
+  - python>=3.7
   - anaconda
+  - cudatoolkit~=11.6
+  - cupy
   - pip
   - pip:
-      - numpy~=1.19.2
+      - numpy~=1.21.2
       - scipy~=1.6.2
       - open3d~=0.9.0.0
-      - cupy~=8.3.0
       - matplotlib~=3.3.4
-      - numba~=0.52.0
+      - numba~=0.55.0
       - solidpython~=1.1.1
-      - setuptools~=52.0.0
+
 
 build:
+  number: 0
   noarch: python
-  script: python setup.py install
+  script: python setup.py install --single-version-externally-managed --record=record.txt

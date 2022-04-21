@@ -13,9 +13,9 @@ Further documentation can be found [here](https://lyceanem-python.readthedocs.io
 ## Dependencies
 
 The dependencies of this package are limited at present by those of BlueCrystal the University of Bristol's High Performance Computing Resource.
-In order to maintain compatibility, Open3D is held at version 0.9.0. 
+In order to maintain compatibility, Open3D is held at version 0.9.0.  
 
-In addition to the module dependancies, this model is designed to use the features provided by CUDA, and so a compatible Nvidia graphics card is required to run these models.
+In addition to the module dependancies, this model is designed to use the features provided by CUDA, and so a compatible Nvidia graphics card is required to run these models, and cudatoolkit 11 or higher and cupy are required
 
 ## Installation
 
