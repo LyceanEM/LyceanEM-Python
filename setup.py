@@ -4,7 +4,7 @@ packages=find_packages(include=['lyceanem','lyceanem.*'])
 
 setup(
   name='LyceanEM',
-  version=versioneer.get_version(),
+  version=versioneer.get_versions()["version"],
   description='LyceanEM is a Python library for modelling electromagnetic propagation for sensors and communications. You can find the documentation at https://lyceanem-python.readthedocs.io/en/latest/',
   packages=packages,
   python_requires='>=3.7',
