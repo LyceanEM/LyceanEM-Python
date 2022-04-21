@@ -3,15 +3,21 @@
 Installation
 =====
 
-LyceanEM is not currently setup to install via pip, so the recommended method is to clone the repository from github, and then install from the repository
+LyceanEM can be install via pip, the reccommended method is to create a virtual environment using conda, install cudatoolkit and cupy using conda, and then lyceanem using pip
+
+.. code-block:: console
+
+   $ conda install -c conda-forge cudatoolkit
+   $ conda install -c conda-forge cupy
+   $ pip install lyceanem
+
+Alternatively the codebase can be downloaded from git directly and built from source
+
 
 .. code-block:: console
 
     $ git clone 'https://github.com/LyceanEM/LyceanEM-Python.git'
+    $ cd LyceanEM
+    $ pip install -e .
 
-The module can then be installed by navigating into the repository and using pip.
-
-.. code-block:: console
-
-    $ pip3 install .LyceanEM
 

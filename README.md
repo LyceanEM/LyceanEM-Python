@@ -51,7 +51,7 @@ environment, and installing both cudatoolkit and cupy.
 
    $ conda install -c conda-forge cudatoolkit
    $ conda install -c conda-forge cupy
-   $ conda install -c lyceanem lyceanem
+   $ pip install lyceanem
 
 ```
 Assuming the cudatoolkit and cupy are already installed, then LyceanEM can also be installed via pip.
