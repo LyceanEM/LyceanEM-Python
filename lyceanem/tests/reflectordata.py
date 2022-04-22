@@ -30,7 +30,26 @@ from ..geometry import targets as tl
 #downsampled_reflector=medium_reference_reflector.voxel_down_sample(voxel_size=wavelength*0.5)
 #downsampled_reflector.translate(-reference_point.ravel(),relative=True)
 #downsampled_reflector.translate([-0.15,-0.15,0],relative=True)
-
+def exampleUAV():
+    bodystream = files(lyceanem.tests.data).joinpath('UAV.stl')
+    arraystream = files(lyceanem.tests.data).joinpath('UAVarray.stl')
+    body = o3d.io.read_triangle_mesh(str(bodystream))
+    array = o3d.io.read_triangle_mesh(str(arraystream))
+    rotation_vector1 = np.asarray([0.0, np.deg2rad(90), 0.0])
+    rotation_vector2 = np.asarray([np.deg2rad(90), 0.0, 0.0])
+    body.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1), center=False)
+    body.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2), center=False)
+    array.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1), center=False)
+    array.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2), center=False)
+    body.translate(np.asarray([0.25, 0, 0]), relative=True)
+    array.translate(np.asarray([0.25, 0, 0]), relative=True)
+    array.translate(np.array([-0.18, 0, 0.0125]), relative=True)
+    body.translate(np.array([-0.18, 0, 0.0125]), relative=True)
+    array.compute_vertex_normals()
+    array.paint_uniform_color(np.array([1, 0.259, 0.145]))
+    body.compute_vertex_normals()
+    body.paint_uniform_color(np.array([0, 0.259, 0.145]))
+    return body,array
 
 def prototypescan(mesh_size,wavelength=3e8/24e9,importpcd=True):
     if importpcd:
