@@ -63,6 +63,7 @@ Contents
    installation
    design
    Tutorial
+   auto_examples/index
    models
    electromagnetics
    raycasting

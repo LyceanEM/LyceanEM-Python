@@ -34,6 +34,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxcontrib.bibtex',
               'sphinx.ext.intersphinx',
               'sphinx.ext.viewcode',
+              'sphinx_gallery.gen_gallery',
               'sphinx.ext.imgmath']
 bibtex_bibfiles = ['_static/lyceanemrefs.bib']
 # Add any paths that contain templates here, relative to this directory.
@@ -60,6 +61,12 @@ intersphinx_mapping = {
     'solidpython': ('https://solidpython.readthedocs.io/en/latest/', None)
 }
 
+#Sphinx Gallery Configuration
+sphinx_gallery_conf = {
+    'examples_dirs':['../examples'],
+    'gallery_dirs': ['auto_examples'],
+
+}
 
 # -- Options for HTML output -------------------------------------------------
 

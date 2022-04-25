@@ -8,3 +8,4 @@ As a mesh approach is used to generate the source coordinates, the mesh resoluti
 
 .. automodule:: lyceanem.models.time_domain
     :members: calculate_scattering
+

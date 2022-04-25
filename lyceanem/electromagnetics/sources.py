@@ -56,6 +56,7 @@ def antenna_pattern_source(radius,import_antenna=False,antenna_file=None):
         the sample points for the antenna pattern, to be used as source points for the frequency domain model
     pattern : 3 by N numpy array of complex
         array of the sample points of the antenna pattern, specified as Ex,Ey,Ez components
+
     """
     if import_antenna:
         # import antenna pattern

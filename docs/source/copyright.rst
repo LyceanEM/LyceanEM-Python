@@ -4,5 +4,6 @@ Copyright
 
 LyceanEM is released under the following license
 
-.. literalinclude:: ../../LICENSE
+.. literalinclude:: ../../LICENSE.txt
     :language: none
+
