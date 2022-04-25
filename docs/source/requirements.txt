@@ -6,6 +6,7 @@ matplotlib
 numba
 solidpython
 scipy
+lyceanem
 sphinx
 sphinxcontrib-bibtex
 sphinx_rtd_theme
