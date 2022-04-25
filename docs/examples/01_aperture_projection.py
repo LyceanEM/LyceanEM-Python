@@ -45,7 +45,10 @@ import lyceanem.tests.reflectordata as data
 body,array=data.exampleUAV()
 
 #visualise UAV and Array
-#o3d.visualization.draw_geometries([body,array])
+o3d.visualization.draw_geometries([body,array])
+
+# %%
+# .. image:: open3d_structure.png
 
 #crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to the hidden surfaces, but correctly an aperture will only have an outer face.
 surface_array=copy.deepcopy(array)
@@ -79,7 +82,11 @@ directivity_envelope,pcd=aperture_projection(surface_array,
 # The resultant maximum directivity envelope is provided as both a numpy array of directivities for each angle, but also as an open3d point cloud.
 # This allows easy visualisation using the open3d draw_geometries function
 
-#o3d.visualization.draw_geometries([body,surface_array,pcd])
+o3d.visualization.draw_geometries([body,surface_array,pcd])
+
+# %%
+# .. image:: open3d_results_rendering.png
+
 
 #Maximum Directivity
 print('Maximum Directivity of {:3.1f} dBi'.format(np.max(10*np.log10(directivity_envelope))))

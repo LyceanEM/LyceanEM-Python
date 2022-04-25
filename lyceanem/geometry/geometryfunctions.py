@@ -11,8 +11,14 @@ def tri_areas(solid):
     """
     triangle_vertices = np.asarray(solid.vertices)
     triangleidx = np.asarray(solid.triangles)
-    a_vectors = triangle_vertices[triangleidx[:, 1], :] - triangle_vertices[triangleidx[:, 0], :]
-    b_vectors = triangle_vertices[triangleidx[:, 2], :] - triangle_vertices[triangleidx[:, 0], :]
+    a_vectors = (
+        triangle_vertices[triangleidx[:, 1], :]
+        - triangle_vertices[triangleidx[:, 0], :]
+    )
+    b_vectors = (
+        triangle_vertices[triangleidx[:, 2], :]
+        - triangle_vertices[triangleidx[:, 0], :]
+    )
     u = np.cross(a_vectors, b_vectors)
     areas = 0.5 * ((u[:, 0] ** 2 + u[:, 1] ** 2 + u[:, 2] ** 2) ** 0.5)
 
@@ -30,7 +36,7 @@ def tri_centroids(solid):
     oa = triangle_vertices[triangleidx[:, 0], :]
     ob = triangle_vertices[triangleidx[:, 1], :]
     oc = triangle_vertices[triangleidx[:, 2], :]
-    centroids = ((1 / 3) * (oa + ob + oc))
+    centroids = (1 / 3) * (oa + ob + oc)
     centroid_cloud = o3d.geometry.PointCloud()
     centroid_cloud.points = o3d.utility.Vector3dVector(centroids)
     centroid_cloud.normals = solid.triangle_normals
@@ -54,20 +60,20 @@ def decimate_mesh(solid, mesh_sep):
     return new_solid
 
 
-@vectorize(['(float32(float32))', '(float64(float64))'])
+@vectorize(["(float32(float32))", "(float64(float64))"])
 def elevationtotheta(el):
     # converting elevation in degrees to theta in degrees
     # elevation is in range -90 to 90 degrees
     # theta is in range 0 to 180 degrees
     if el >= 0.0:
-        theta = (90.0 - el)
+        theta = 90.0 - el
     else:
         theta = np.abs(el) + 90.0
 
     return theta
 
 
-@vectorize(['(float32(float32))', '(float64(float64))'])
+@vectorize(["(float32(float32))", "(float64(float64))"])
 def thetatoelevation(theta):
     # converting elevation in degrees to theta in degrees
     # elevation is in range -90 to 90 degrees
@@ -82,9 +88,9 @@ def thetatoelevation(theta):
     return el
 
 
-def open3drotate(item,
-                 rotation_matrix,
-                 rotation_centre=np.zeros((3, 1), dtype=np.float32)):
+def open3drotate(
+    item, rotation_matrix, rotation_centre=np.zeros((3, 1), dtype=np.float32)
+):
     """
 
     Parameters
@@ -101,12 +107,12 @@ def open3drotate(item,
     item : open3d object
         rotated item
     """
-    if version.parse(o3d.__version__) >= version.parse('0.10.0'):
+    if version.parse(o3d.__version__) >= version.parse("0.10.0"):
         # new syntax for rotations
         item.rotate(rotation_matrix, center=rotation_centre)
     else:
 
-        item.translate(-1*rotation_centre)
+        item.translate(-1 * rotation_centre)
         item.rotate(rotation_matrix, center=False)
         item.translate(rotation_centre)
 
