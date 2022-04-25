@@ -12,6 +12,8 @@
 
 import sys
 import os
+import re
+
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../../'))
 # -- Project information -----------------------------------------------------
@@ -65,7 +67,17 @@ intersphinx_mapping = {
 sphinx_gallery_conf = {
     'examples_dirs':['../examples'],
     'gallery_dirs': ['auto_examples'],
-
+    'filename_pattern': re.escape(os.sep),
+    'image_scrapers': ('matplotlib'),
+    'matplotlib_animations': True,
+    'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
+                            "# It can be customized to whatever you like\n"
+                            "%matplotlib inline"),
+    'last_notebook_cell': "# This is the last cell",
+    'reference_url': {
+         # The module you locally document uses None
+        'sphinx_gallery': None,
+    }
 }
 
 # -- Options for HTML output -------------------------------------------------

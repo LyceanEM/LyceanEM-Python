@@ -11,7 +11,11 @@ There are two fundamentally different approaches considered. The first is that o
 If LyceanEM has been useful to your research and you would like to acknowledge the projection in your publication,
 we would like to encourage you to cite the following paper :footcite:p:`Pelham2021a`.
 
-The base class of LyceanEM is that of the `antenna pattern'. This class provides a useful container for individual antenna patterns, with builtin functions to generate simple patterns, import, rotate, and display them.
+The basic class of LyceanEM for farfield patterns is the `antenna pattern`. This class provides a useful container for individual antenna patterns, with builtin functions to generate simple patterns, import, rotate, and display them.
+
+In order to handle solids in a consistent manner for raycasting, LyceanEM implements the class `structures` as a way to bundle multiple trianglemesh solids that are part of a whole. This enables not just packaging for the raycaster, but also further development for multimaterial modelling.
+
+
 
 .. toctree::
     base
