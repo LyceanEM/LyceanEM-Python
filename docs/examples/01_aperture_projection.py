@@ -48,7 +48,7 @@ body,array=data.exampleUAV()
 o3d.visualization.draw_geometries([body,array])
 
 # %%
-# .. image:: open3d_structure.png
+# .. image:: ../_static/open3d_structure.png
 
 #crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to the hidden surfaces, but correctly an aperture will only have an outer face.
 surface_array=copy.deepcopy(array)
@@ -60,7 +60,7 @@ surface_array.triangle_normals=o3d.utility.Vector3dVector(
 # %%
 # Structures
 # --------------
-# LyceanEM uses a class nameed 'structures' to store and maniuplate joined 3D solids. Currently all that is implemented is the class itself, and methods to allow translation and rotation of the trianglemesh solids. A structure can be passed to the models to provide the environment to be considered as blockers.
+# LyceanEM uses a class named 'structures' to store and maniuplate joined 3D solids. Currently all that is implemented is the class itself, and methods to allow translation and rotation of the trianglemesh solids. A structure can be passed to the models to provide the environment to be considered as blockers.
 # structures are created by calling the class, and passing it a list of the open3d trianglemesh structures to be added.
 from lyceanem.base import structures
 blockers=structures([body])
@@ -85,7 +85,7 @@ directivity_envelope,pcd=aperture_projection(surface_array,
 o3d.visualization.draw_geometries([body,surface_array,pcd])
 
 # %%
-# .. image:: open3d_results_rendering.png
+# .. image:: ../_static/open3d_results_rendering.png
 
 
 #Maximum Directivity
@@ -128,5 +128,5 @@ ax.set_title('Maximum Directivity Envelope')
 fig.show()
 
 # %%
-# .. image:: sphx_glr_01_aperture_projection_001.png
+# .. image:: ../_static/sphx_glr_01_aperture_projection_001.png
 
