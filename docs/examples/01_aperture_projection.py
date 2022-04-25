@@ -120,3 +120,6 @@ ax.set_ylabel('Elevation (degrees)')
 ax.set_title('Maximum Directivity Envelope')
 fig.show()
 
+# %%
+# .. image:: sphx_glr_01_aperture_projection_001.png
+

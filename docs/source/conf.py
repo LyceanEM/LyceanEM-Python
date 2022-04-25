@@ -13,6 +13,7 @@
 import sys
 import os
 import re
+from lyceanem.base import PNGScraper
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../../'))
@@ -68,7 +69,7 @@ sphinx_gallery_conf = {
     'examples_dirs':['../examples'],
     'gallery_dirs': ['auto_examples'],
     'filename_pattern': re.escape(os.sep),
-    'image_scrapers': ('matplotlib'),
+    'image_scrapers': ('matplotlib', PNGScraper()),
     'matplotlib_animations': True,
     'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
                             "# It can be customized to whatever you like\n"
@@ -77,7 +78,8 @@ sphinx_gallery_conf = {
     'reference_url': {
          # The module you locally document uses None
         'sphinx_gallery': None,
-    }
+    },
+    'plot_gallery': False,
 }
 
 # -- Options for HTML output -------------------------------------------------
