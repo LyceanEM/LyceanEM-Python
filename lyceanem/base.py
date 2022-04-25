@@ -233,13 +233,9 @@ class structures:
         """
         # warning, current commond just rotates around the origin, and until Open3D can be brought up to the
         # latest version without breaking BlueCrystal reqruiements, this will require additional code.
-        if version.parse(o3d.__version__)>=version.parse('0.10.0'):
-            #new syntax for rotations
-            for item in self.solids:
-                self.solids[item].rotate(rotation_matrix, centre=rotation_centre)
-        else:
-            for item in self.solids:
-                self.solids[item].rotate(rotation_matrix, centre=True)
+        for item in self.solids:
+            self.solids[item]=GF.open3drotate(self.solids[item],rotation_matrix,rotation_centre)
+
 
     def translate_structures(self, vector):
         """

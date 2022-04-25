@@ -16,7 +16,7 @@ from scipy.spatial import distance
 
 import lyceanem.base as base
 import lyceanem.raycasting.rayfunctions as RF
-
+import lyceanem.geometry.geometryfunctions as GF
 
 @cuda.jit(device=True)
 def dot(ax1,ay1,az1,ax2,ay2,az2):
@@ -2236,7 +2236,7 @@ def DisplayESources(source_display_coords,E_vectors,source_type='E',arrow_length
                                                             cylinder_radius=  0.04 * arrow_length
                                                             )
     rot_mat = caculate_align_mat(E_vectors[0,:])
-    quiver_set.rotate(rot_mat, center=np.zeros((3),dtype=np.float32))
+    quiver_set=GF.open3drotate(quiver_set,rot_mat)
     quiver_set.translate(source_display_coords[0,:]+E_vectors[0,:]*(-0.5*arrow_length))
     quiver_set.paint_uniform_color(arrow_color)
     quiver_set.compute_vertex_normals()
@@ -2248,7 +2248,7 @@ def DisplayESources(source_display_coords,E_vectors,source_type='E',arrow_length
                                                             cylinder_radius=  0.04 * arrow_length
                                                             )
         rot_mat = caculate_align_mat(E_vectors[arrow_num,:])
-        mesh_arrow.rotate(rot_mat, center=np.zeros((3),dtype=np.float32))
+        mesh_arrow=GF.open3drotate(mesh_arrow,rot_mat)
         mesh_arrow.translate(source_display_coords[arrow_num]+E_vectors[arrow_num,:]*(-0.5*arrow_length))
         mesh_arrow.paint_uniform_color(arrow_color)
         mesh_arrow.compute_vertex_normals()

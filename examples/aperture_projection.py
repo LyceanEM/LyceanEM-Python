@@ -4,6 +4,10 @@ import open3d as o3d
 import copy
 from lyceanem.models.frequency_domain import aperture_projection
 from lyceanem.base import structures
+#set farfield resolution and wavelength
+az_res=37
+elev_res=37
+wavelength=3e8/10e9
 #import example UAV and nose mounted array from examples
 body,array=data.exampleUAV()
 #visualise UAV and Array
@@ -15,12 +19,15 @@ surface_array.triangles=o3d.utility.Vector3iVector(
 surface_array.triangle_normals=o3d.utility.Vector3dVector(
         np.asarray(array.triangle_normals)[:len(array.triangle_normals) // 2, :])
 
-#set wavelength of interest, say 10GHz
-wavelength=3e8/10e9
+#populate blocking structures
 blockers=structures([body])
 
 directivity_envelop,pcd=aperture_projection(surface_array,
                                             environment=blockers,
                                             wavelength=wavelength,
-                                            az_range=np.linspace(-180.0, 180.0, 19),
-                                            elev_range=np.linspace(-90.0, 90.0, 19))
+                                            az_range=np.linspace(-180.0, 180.0, az_res),
+                                            elev_range=np.linspace(-90.0, 90.0, elev_res))
+#visulise the resultant directivity map
+o3d.visualization.draw_geometries([body,surface_array,pcd])
+#Maximum Directivity
+print('Maximum Directivity of {:3.1f} dBi'.format(np.max(10*np.log10(directivity_envelop))))

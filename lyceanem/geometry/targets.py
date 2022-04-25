@@ -48,29 +48,6 @@ def NasaAlmond(resolution='quarter'):
     _,scatter_cloud=GF.tri_centroids(NasaAlmond)
     return NasaAlmond,scatter_cloud
 
-# def Ogive(ogive_length,ogive_x,ogive_y,ogive_sharpness,mesh_length):
-#     #ogive as defined in reference
-
-#     circle_radius=ogive_sharpness*2*ogive_x
-#     ogive=sd.resize([ogive_x,ogive_y,ogive_length])(
-#         sd.rotate_extrude(segments=37)(
-#             sd.intersection()(
-#             sd.translate([ogive_x/2,circle_radius/2,0])(sd.square(size=[ogive_x,circle_radius],center=True))
-#             sd.translate([-(circle_radius-ogive_radius),0,0])(sd.circle(r=circle_radius,segments=200))
-#             )
-#             )
-#         )
-
-#     sd.scad_render_to_file(ogive, 'temp.scad')
-#     # run openscad and export to stl
-#     run(["openscad-nightly", "-o", "temp.stl", "temp.scad","--export-format=binstl"])
-
-#     structure=o3d.io.read_triangle_mesh("temp.stl")
-#     structure.compute_vertex_normals()
-#     scatter_cloud=RF.points2pointcloud(np.copy(test_faces))
-#     scatter_cloud.normals=o3d.utility.Vector3dVector(np.copy(face_normals))
-#     return ogive_mesh,ogive_scattering_points
-
 def source_cloud_from_shape(o3dshape,
                             ideal_point_sep,
                             maxdeviation=0.01):
@@ -800,12 +777,14 @@ def OTAEllipsoid(reflector_index,major_axis_size,minor_axis_size,max_grid,reflec
             s1_plate,s1_points=meshedReflector(major_axis_size,minor_axis_size,6e-3,max_grid,sides=gridded_sides)
         elif reflector_shape=='circle':
             s1_plate,s1_points=meshedCircle(major_axis_size,minor_axis_size,6e-3,max_grid,sides=gridded_sides)
+        s1_points=GF.open3drotate(s1_points,
+                                  o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(np.asarray([np.arcsin(-1.0),0.0,0.0])))
+        s1_points = GF.open3drotate(s1_points,
+                                    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz([0.0,0.0,reflector_pointers[0]]))
 
-        s1_points.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(np.asarray([np.arcsin(-1.0),0.0,0.0])),center=False)
-        s1_points.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz([0.0,0.0,reflector_pointers[0]]),center=False)
         s1_points.translate(full_coords[0,:].transpose(),relative=True)
-        s1_plate.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(np.asarray([np.arcsin(-1.0),0.0,0.0])),center=False)
-        s1_plate.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz([0.0,0.0,reflector_pointers[0]]),center=False)
+        s1_plate=GF.open3drotate(s1_plate,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(np.asarray([np.arcsin(-1.0),0.0,0.0])))
+        s1_plate=GF.open3drotate(s1_plate,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz([0.0,0.0,reflector_pointers[0]]))
         s1_plate.translate(full_coords[0,:].transpose(),relative=True)
 
     if (reflector_index==1 or reflector_index>=10):
@@ -814,11 +793,11 @@ def OTAEllipsoid(reflector_index,major_axis_size,minor_axis_size,max_grid,reflec
         elif reflector_shape=='circle':
             u1_plate,u1_points=meshedCircle(major_axis_size,minor_axis_size,6e-3,max_grid,sides=gridded_sides)
 
-        u1_plate.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(np.asarray([np.arcsin(-1.0),0.0,0.0])),center=False)
-        u1_plate.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz([0.0,0.0,reflector_pointers[1]]),center=False)
+        u1_plate=GF.open3drotate(u1_plate,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(np.asarray([np.arcsin(-1.0),0.0,0.0])))
+        u1_plate=GF.open3drotate(u1_plate,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz([0.0,0.0,reflector_pointers[1]]))
         u1_plate.translate(full_coords[1,:].transpose(),relative=True)
-        u1_points.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(np.asarray([np.arcsin(-1.0),0.0,0.0])),center=False)
-        u1_points.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz([0.0,0.0,reflector_pointers[1]]),center=False)
+        u1_points=GF.open3drotate(u1_points,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(np.asarray([np.arcsin(-1.0),0.0,0.0])))
+        u1_points=GF.open3drotate(u1_points,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz([0.0,0.0,reflector_pointers[1]]))
         u1_points.translate(full_coords[1,:].transpose(),relative=True)
 
     if (reflector_index==2 or reflector_index>=10):

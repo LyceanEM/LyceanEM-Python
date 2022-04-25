@@ -9,7 +9,8 @@ import scipy.io as io
 from importlib_resources import files
 
 import lyceanem.tests.data
-from ..geometry import targets as tl
+import lyceanem.geometry.targets as tl
+import lyceanem.geometry.geometryfunctions as GF
 
 
 #freq=24e9
@@ -37,10 +38,10 @@ def exampleUAV():
     array = o3d.io.read_triangle_mesh(str(arraystream))
     rotation_vector1 = np.asarray([0.0, np.deg2rad(90), 0.0])
     rotation_vector2 = np.asarray([np.deg2rad(90), 0.0, 0.0])
-    body.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1), center=False)
-    body.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2), center=False)
-    array.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1), center=False)
-    array.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2), center=False)
+    body=GF.open3drotate(body,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1))
+    body=GF.open3drotate(body,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2))
+    array=GF.open3drotate(array,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1))
+    array=GF.open3drotate(array,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2))
     body.translate(np.asarray([0.25, 0, 0]), relative=True)
     array.translate(np.asarray([0.25, 0, 0]), relative=True)
     array.translate(np.array([-0.18, 0, 0.0125]), relative=True)
@@ -91,11 +92,12 @@ def prototypescan(mesh_size,wavelength=3e8/24e9,importpcd=True):
         toppoints.normals= o3d.utility.Vector3dVector(top_normals)
         sideapoints=copy.deepcopy(toppoints)
         rotation_vector1=np.radians(np.array([0,0,90]))
-        sideapoints.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),center=False)
+        sideapoints=GF.open3drotate(sideapoints,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1))
         bottompoints=copy.deepcopy(sideapoints)
-        bottompoints.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),center=False)
+        bottompoints=GF.open3drotate(bottompoints,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1))
         sidebpoints=copy.deepcopy(bottompoints)
-        sidebpoints.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),center=False)
+        sidebpoints=GF.open3drotate(sidebpoints,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1))
+
         back_normals=np.zeros((temp_points_back.shape[0],3))
         back_normals[:,2]=-1
         backpoints=o3d.geometry.PointCloud()
@@ -153,11 +155,14 @@ def mediumreferencescan(mesh_size,wavelength=3e8/24e9,importpcd=True):
         toppoints.normals= o3d.utility.Vector3dVector(top_normals)
         sideapoints=copy.deepcopy(toppoints)
         rotation_vector1=np.radians(np.array([0,0,90]))
-        sideapoints.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),center=False)
+        sideapoints=GF.open3drotate(sideapoints,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1))
+
         bottompoints=copy.deepcopy(sideapoints)
-        bottompoints.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),center=False)
+        bottompoints=GF.open3drotate(bottompoints,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1))
+
         sidebpoints=copy.deepcopy(bottompoints)
-        sidebpoints.rotate(o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),center=False)
+        sidebpoints=GF.open3drotate(sidebpoints,o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1))
+
         back_normals=np.zeros((temp_points_back.shape[0],3))
         back_normals[:,2]=-1
         backpoints=o3d.geometry.PointCloud()

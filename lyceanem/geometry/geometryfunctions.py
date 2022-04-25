@@ -1,6 +1,7 @@
 import numpy as np
 import open3d as o3d
 from numba import vectorize
+from packaging import version
 
 
 def tri_areas(solid):
@@ -76,3 +77,30 @@ def thetatoelevation(theta):
         el=-(theta-90.0)
 
     return el
+
+def open3drotate(item,rotation_matrix,rotation_centre=np.zeros((3,1), dtype=np.float32)):
+    """
+
+    Parameters
+    ----------
+    item : open3d object
+        PointCloud, TriangleMesh or other open3d objects with .rotate function
+    rotation_matrix : open3d rotation matrix
+        rotation matrix for the desired transformation
+    rotation_centre : numpy float (3,1)
+        desired rotation centre, defaults to the origin
+
+    Returns
+    -------
+    item : open3d object
+        rotated item
+    """
+    if version.parse(o3d.__version__) >= version.parse('0.10.0'):
+        # new syntax for rotations
+        item.rotate(rotation_matrix, centre=rotation_centre)
+    else:
+        item.transform(-1 * rotation_centre)
+        item.rotate(rotation_matrix, centre=False)
+        item.transform(rotation_centre)
+
+    return item
