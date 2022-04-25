@@ -9,3 +9,4 @@ scipy~=1.6.2
 sphinx
 sphinxcontrib-bibtex
 sphinx_rtd_theme
+sphinx_gallery
