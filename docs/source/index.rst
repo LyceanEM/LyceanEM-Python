@@ -66,6 +66,7 @@ Contents
    models
    electromagnetics
    raycasting
+   targets
    contributing
    copyright
 

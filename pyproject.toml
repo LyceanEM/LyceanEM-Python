@@ -1,9 +1,3 @@
 [build-system]
 requires = ["setuptools", "versioneer"]
 build-backend = "setuptools.build_meta"
-
-dynamic = ["version", "readme"]
-
-[tool.setuptools.dynamic]
-version = {attr = "my_package.VERSION"}
-readme = {file = ["README.rst", "USAGE.rst"]}

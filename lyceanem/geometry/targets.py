@@ -1842,7 +1842,34 @@ def meshedHorn(
     grid_resolution,
     sides="front",
 ):
-    # simplified horn with solid backing to model forward propagation only
+    """
+    A basic horn antenna, providing the aperture points, and the basic physical structure
+    The horn is orientated with the centre of the aperture at the origin, and the boresight aligned with the positive z direction.
+
+    Parameters
+    ----------
+    majorsize : float
+        the width of the horn aperture in the x direction
+    minorsize : float
+        the width of the horn aperture in the y direction
+    length : float
+        the length of the horn structure
+    edge_width : float
+        the width of the physical structure around the horn
+    flare_angle :
+        the taper angle of the horn
+    grid_resolution : float
+        the spacing between the aperture points, should be half a wavelength at the frequency of interest
+    sides : str
+        command for the mesh, default is 'front', and for a horn, this should not be changed.
+
+    Returns
+    -------
+    structure : open3d trianglemesh
+        the physical structure of the horn
+    mesh_points : open3d pointcloud
+        the source points for the horn aperture
+    """
     structure = shapeTrapezoid(
         majorsize + (edge_width * 2), minorsize + (edge_width * 2), length, flare_angle
     )
