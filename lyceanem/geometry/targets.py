@@ -61,18 +61,18 @@ def source_cloud_from_shape(o3dshape, ideal_point_sep, maxdeviation=0.01):
 
     Parameters
     ----------
-    o3dshape : (open3d trianglemesh)
+    o3dshape : open3d trianglemesh
         the surface or shape of interest in open3d trianglemesh format
-    ideal_point_sep : (float)
+    ideal_point_sep : float
         the desired spacing between each point and it's nearest neighbours, for apertures, this is usually half a wavelength at the highest frequency of interest
-    maxdeviation : (float)
-        the maximum allowable deviation between the ideal point seperation and the points, as a fraction
+    maxdeviation : float
+        the maximum allowable deviation between the ideal point seperation and the average point seperation, as a fraction
 
     Returns
     ------
-    source_cloud : (open3d point cloud)
+    source_cloud : open3d point cloud
         the sampled points on the surface, with normal vectors aligned with the surface normal vectors
-    areas : (array of float32)
+    areas : array of float32
         the area of each triangle in the trianglemesh in world units, as long as the surface is specified in metres, this will be sqm, alinged with the triangle index in the surface
     """
     source_cloud = o3d.geometry.PointCloud()
@@ -1208,7 +1208,31 @@ def shapeTrapezoid(x_size, y_size, length, flare_angle):
 
 
 def meshedReflector(majorsize, minorsize, thickness, grid_resolution, sides="all"):
-    # combined rectReflector and numpy mesh creation to add arbitarily spaced points to a reflector
+    """
+
+    A helper function which creates a meshed cuboid with the `front` face center at the origin, and with the boresight aligned with the positive z direction
+
+    Parameters
+    ----------
+    majorsize : float
+        the width of the cuboid in the x direction
+    minorsize : float
+        the width of the cuboid in the y direction
+    thickness : float
+        the thickness of the cuboid structure
+    grid_resolution : float
+        the spacing between the scattering points, should be half a wavelength at the frequency of interest
+    sides : str
+        command for the mesh, default is 'all', creating a mesh of surface points on all sides of the cuboid, other options are 'front' which only creates points for the side aligned with the positive z direction, or 'centres', which creates a point for the centre of each side.
+
+    Returns
+    -------
+    reflector : open3d trianglemesh
+        the defined cuboid as an open3d trianglemesh
+    mesh_points : open3d pointcloud
+        the scattering points, spaced at grid_resolution seperation between each point, and with normal vectors from the populating surfaces
+
+    """
     reflector = rectReflector(majorsize, minorsize, thickness)
     mesh_points = gridedReflectorPoints(
         majorsize, minorsize, thickness, grid_resolution, sides

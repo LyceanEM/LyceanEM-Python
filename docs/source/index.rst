@@ -28,11 +28,6 @@ To install LyceanEM from pip
 
    $  pip install LyceanEM
 
-or to install from conda you can use
-
-.. code-block:: console
-
-   $ conda install -c lyceanem lyceanem
 
 Development
 -----------
@@ -66,7 +61,7 @@ Contents
    models
    electromagnetics
    raycasting
-   targets
+   geometry
    contributing
    copyright
 

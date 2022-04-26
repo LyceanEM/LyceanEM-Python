@@ -21,23 +21,23 @@ def Steering_Efficiency(
 
     Parameters
     ----------
-    Dtheta : TYPE
+    Dtheta : numpy 2D array of floats or complex
         DESCRIPTION.
-    Dphi : TYPE
+    Dphi : numpy 2D array of floats or complex
         DESCRIPTION.
-    Dtot : TYPE
+    Dtot : numpy 2D array of floats or complex
         DESCRIPTION.
-    angular coverage : TYPE
-        DESCRIPTION.
+    angular coverage : float
+        the total angular coverage to be considered, should be $4\pi$ steradians
 
     Returns
     -------
-    setheta : TYPE
-        DESCRIPTION.
-    sephi : TYPE
-        DESCRIPTION.
-    setot : TYPE
-        DESCRIPTION.
+    setheta : float
+        steering efficiency in Dtheta
+    sephi : float
+        steering efficiency in Dphi
+    setot : float
+        steering efficiency in Dtotal
 
     """
     with np.errstate(divide="ignore"):
@@ -771,10 +771,36 @@ def directivity_transform(
     total_solid_angle=(4 * np.pi),
 ):
     """
-    transform Etheta and Ephi data into antenna directivity
+    Directivity Transform for Etheta and Ephi
+
     directivity is defined in terms of the power radiated in a specific direction, over the average radiated power
     power per unit solid angle
+
+    Parameters
+    ----------
+    Etheta : numpy 2D array of floats or complex
+
+    Ephi : numpy 2D array of floats or complex
+
+    az_range : numpy array of floats
+
+    elev_range : numpy array of floats
+
+    total_solid_angle : float
+
+
+    Returns
+    -------
+    Dtheta : numpy 2D array of floats
+        The directivity pattern in Etheta
+    Dphi : numpy 2D array of floats
+        The directivity pattern in Ephi
+    Dtot : numpy 2D array of floats
+        The total directivity pattern
+    Dmax : numpy array of floats
+        The maximum directivity in Dtheta,Dphi,Dtot
     """
+
     Dmax = np.zeros((3), dtype=np.float32)
     Umax = np.zeros((3), dtype=np.float32)
     Utheta = np.abs(Etheta) ** 2
@@ -853,23 +879,23 @@ def PatternPlot(
 
     Parameters
     -----------
-    data : (2D array of floats or complex)
+    data : 2D array of floats or complex
         the data to plot
-    az : (2D array of floats)
+    az : 2D array of floats
         the azimuth angles for each datapoint in [data] in degrees
-    elev : (2D array of floats)
+    elev : 2D array of floats
         the elevation angles for each datapoint in [data] in degrees
-    pattern_min : (float)
+    pattern_min : float
         the desired scale minimum in dB, default is [-40]
-    plot_max : (float)
+    plot_max : float
         the desired scale maximum in dB, default is [0]
-    plottype : (string)
-        the plot type, either [Polar], or [Cartesian-Surf], the default is [Polar]
-    logtype : (string)
+    plottype : str
+        the plot type, either [Polar], [Cartesian-Surf], or [Contour]. The default is [Polar]
+    logtype : str
         the type of data being considered, either [amplitude] or [power], to ensure the correct logarithm is used, default is [amplitude]
-    ticknum : (int)
+    ticknum : int
         the number of ticks on the colorbar, default is [6]
-    title_text : (string)
+    title_text : str
         the graph title, defaults to [None]
 
     Returns
