@@ -47,7 +47,7 @@ def decimate_mesh(solid, mesh_sep):
     """
     In order to calculate the scattering appropriately the triangle mesh should be decimated so that the vertices
     are spaced mesh_sep apart.
-    inputs are the trianglemesh object solid, and the mesh_sep, and the output is a new solid. This is only required for
+    inputs are the :class:`open3d.geometry.TriangleMesh` solid, and the mesh_sep, and the output is a new :class:`open3d.geometry.TriangleMesh`. This is only required for
     the discrete scattering model, using the centroids or vertices
     """
     new_solid = o3d.geometry.TriangleMesh()
@@ -96,7 +96,7 @@ def open3drotate(
     Parameters
     ----------
     item : open3d object
-        PointCloud, TriangleMesh or other open3d objects with .rotate function
+        :class:`open3d.geometry.PointCloud`, :class:`open3d.geometry.TriangleMesh` or other open3d objects with .rotate function
     rotation_matrix : open3d rotation matrix
         rotation matrix for the desired transformation
     rotation_centre : numpy float (3,1)

@@ -3,8 +3,22 @@ import numpy as np
 
 def antenna_stats(freq, x, y, z):
     """
-    Assume Frequency is in Hz, and xyz are in m, calculate the electrical size
-    in ka format and radius in wavelengths
+    Utility for evaluating electrical size
+
+    Parameters
+    ----------
+    freq : float
+        frequency of the antenna in Hz
+    x : float
+        largest dimension in x, or half width in x direction (m)
+    y : float
+        largest dimension in y, or half width in y direction (m)
+    z : float
+        largest dimension in z, or half width in z direction (m)
+
+    Returns
+    -------
+
     """
     wavelength = 3e8 / freq
     k = (2 * np.pi) / wavelength

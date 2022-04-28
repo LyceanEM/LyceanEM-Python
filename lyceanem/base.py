@@ -209,7 +209,7 @@ def calc_dv_norm(source, target, direction, length):
 class structures:
     """
     Structure class to store information about the geometry and materials in the environment, holding the seperate
-    shapes as open3D trianglemesh data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
+    shapes as :class:`open3d.geometry.TriangleMesh` data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
     This class will be developed to include material parameters to enable more complex modelling.
 
     Units should be SI, metres
@@ -218,7 +218,7 @@ class structures:
     """
 
     def __init__(self, solids):
-        # solids is a list of open3D trianglemesh structures
+        # solids is a list of open3D :class:`open3d.geometry.TriangleMesh` structures
         self.solids = []
         for item in solids:
             self.solids.append(item)
@@ -229,6 +229,7 @@ class structures:
     def remove_structure(self, deletion_index):
         """
         removes a component or components from the class
+
         Parameters
         -----------
         deletion_index : list
@@ -245,9 +246,10 @@ class structures:
     def add_structure(self, new_solids):
         """
         adds a component or components from the structure
+
         Parameters
         -----------
-        new_solids : open3d trianglemesh
+        new_solids : :class:`open3d.geometry.TriangleMesh`
             the solid to be added to the structure
 
         Returns
@@ -300,7 +302,7 @@ class structures:
 
     def triangles_base_raycaster(self):
         """
-        generates the triangles for all the trianglemesh objects in the structure, and outputs them as a continuous array of
+        generates the triangles for all the :class:`open3d.geometry.TriangleMesh` objects in the structure, and outputs them as a continuous array of
         triangle_t format triangles
 
         Parameters

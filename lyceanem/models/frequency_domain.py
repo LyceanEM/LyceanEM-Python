@@ -15,17 +15,17 @@ def aperture_projection(
     az_range=np.linspace(-180.0, 180.0, 19),
     elev_range=np.linspace(-90.0, 90.0, 19),
 ):
-    """Aperture Projection of the provided trianglemesh
+    """
 
     Using the aperture provided and any blocking structures, predict the maximum directivity envelope of the aperture.
     This will initially just cover all the triangles of a provided solid, but eventually I will include a filter list.
 
     Parameters
     ---------
-    aperture : open3D trianglemesh
-        trianglemesh of of the desired aperture
-    environment : :class: `structures`
-        the :class: `structures` class should contain all the environment for scattering, providing the blocking for the rays
+    aperture : :class:`open3d.geometry.TriangleMesh`
+        trianglemesh of the desired aperture
+    environment : :class:`lyceanem.base.structures`
+        the :class:`lyceanem.base.structures` class should contain all the environment for scattering, providing the blocking for the rays
     wavelength : float
         the wavelength of interest in metres
     az_range : numpy 1d array of float32
@@ -86,9 +86,9 @@ def calculate_farfield(
 
     Parameters
     ---------
-    aperture_coords : open3d point cloud
+    aperture_coords : :class:`open3d.geometry.PointCloud`
         open3d of the aperture coordinates, from a single point to a mesh sampling across and aperture or surface
-    antenna_solid : structure class
+    antenna_solid : :class:`lyceanem.base.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
     desired_E_axis :
         1*3 numpy array of the desired excitation vector
@@ -447,15 +447,15 @@ def calculate_scattering(
 
     Parameters
     ----------
-    aperture_coords : open3d point cloud
+    aperture_coords : :class:`open3d.geometry.PointCloud`
         source coordinates
-    sink_coords : open3d point cloud
+    sink_coords : :class:`open3d.geometry.PointCloud`
         sink coordinates
-    antenna_solid : structure class
+    antenna_solid : :class:`lyceanem.base.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
     desired_E_axis : 1D numpy array of floats
         the desired excitation vector, can be a 1*3 array or a n*3 array if multiple different exciations are desired in one lauch
-    scatter_points : open3d point cloud
+    scatter_points : :class:`open3d.geometry.PointCloud`
         the scattering points in the environment. Defaults to [None], in which case scattering points will be generated from the antenna_solid. If no scattering should be considered then set scattering to [0].
     wavelength : float
         the wavelength of interest in metres

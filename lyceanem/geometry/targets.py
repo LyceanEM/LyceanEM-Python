@@ -61,19 +61,22 @@ def source_cloud_from_shape(o3dshape, ideal_point_sep, maxdeviation=0.01):
 
     Parameters
     ----------
-    o3dshape : open3d trianglemesh
-        the surface or shape of interest in open3d trianglemesh format
+    o3dshape : :class:`open3d.geometry.TriangleMesh`
+        the surface or shape of interest
     ideal_point_sep : float
-        the desired spacing between each point and it's nearest neighbours, for apertures, this is usually half a wavelength at the highest frequency of interest
+        the desired spacing between each point and it's nearest neighbours, for apertures, this is usually half a
+        wavelength at the highest frequency of interest
     maxdeviation : float
-        the maximum allowable deviation between the ideal point seperation and the average point seperation, as a fraction
+        the maximum allowable deviation between the ideal point seperation and the average point seperation, as a
+        fraction
 
     Returns
     ------
-    source_cloud : open3d point cloud
+    source_cloud : :class:`open3d.geometry.PointCloud`
         the sampled points on the surface, with normal vectors aligned with the surface normal vectors
     areas : array of float32
-        the area of each triangle in the trianglemesh in world units, as long as the surface is specified in metres, this will be sqm, alinged with the triangle index in the surface
+        the area of each triangle in the :class:`open3d.geometry.TriangleMesh` in world units, as long as the surface
+        is specified in metres, this will be sqm, alinged with the triangle index in the surface.
     """
     source_cloud = o3d.geometry.PointCloud()
     o3dshape.compute_triangle_normals()
@@ -1223,14 +1226,17 @@ def meshedReflector(majorsize, minorsize, thickness, grid_resolution, sides="all
     grid_resolution : float
         the spacing between the scattering points, should be half a wavelength at the frequency of interest
     sides : str
-        command for the mesh, default is 'all', creating a mesh of surface points on all sides of the cuboid, other options are 'front' which only creates points for the side aligned with the positive z direction, or 'centres', which creates a point for the centre of each side.
+        command for the mesh, default is 'all', creating a mesh of surface points on all sides of the cuboid, other
+        options are 'front' which only creates points for the side aligned with the positive z direction, or 'centres',
+         which creates a point for the centre of each side.
 
     Returns
     -------
-    reflector : open3d trianglemesh
-        the defined cuboid as an open3d trianglemesh
-    mesh_points : open3d pointcloud
-        the scattering points, spaced at grid_resolution seperation between each point, and with normal vectors from the populating surfaces
+    reflector : :class:`open3d.geometry.TriangleMesh`
+        the defined cuboid
+    mesh_points : :class:`open3d.geometry.PointCloud`
+        the scattering points, spaced at grid_resolution seperation between each point, and with normal vectors from
+        the populating surfaces
 
     """
     reflector = rectReflector(majorsize, minorsize, thickness)
@@ -1889,9 +1895,9 @@ def meshedHorn(
 
     Returns
     -------
-    structure : open3d trianglemesh
+    structure : :class:`open3d.geometry.TriangleMesh`
         the physical structure of the horn
-    mesh_points : open3d pointcloud
+    mesh_points : :class:`open3d.geometry.PointCloud`
         the source points for the horn aperture
     """
     structure = shapeTrapezoid(

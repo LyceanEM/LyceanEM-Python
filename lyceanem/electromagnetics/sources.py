@@ -58,9 +58,9 @@ def antenna_pattern_source(radius, import_antenna=False, antenna_file=None):
 
     Returns
     --------
-    solid : open3d trianglemesh
+    solid : :class:`open3d.geometry.TriangleMesh`
         the enclosing sphere for the antenna
-    points : open3d point cloud
+    points : :class:`open3d.geometry.PointCloud`
         the sample points for the antenna pattern, to be used as source points for the frequency domain model
     pattern : 3 by N numpy array of complex
         array of the sample points of the antenna pattern, specified as Ex,Ey,Ez components

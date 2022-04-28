@@ -174,7 +174,7 @@ for angle in tqdm(range(len(angles))):
     #responseiso2[angle_inc]=np.dot(np.dot(np.ones((source_coords.shape[0])),np.sum(scatter_iso_map[:,:,:],axis=2)),np.ones((sinks.shape[0])))
     #scatter_map2=RF.scatter_net_sortEM(source_coords.shape[0],sinks.shape[0],np.zeros((source_coords.shape[0],sinks.shape[0],3,2),dtype=np.complex64),depth_slicelos,full_rays[np.equal(full_index[:,2],0),:],0)
     #scatter_map2=RF.scatter_net_sortEM(source_coords.shape[0],sinks.shape[0],scatter_map2,depth_slicebounce,full_rays[~np.equal(full_index[:,2],0),:],1)
-    time_index=np.linspace(0,model_time,num_samples)
+    #time_index=np.linspace(0,model_time,num_samples)
     pulse_time=5e-9
     output_power=0.01 #dBwatts
     powerdbm=10*np.log10(output_power)+30

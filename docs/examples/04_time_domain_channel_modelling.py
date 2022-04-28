@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
-Modelling a Physical Channel in the Frequency Domain
+Modelling a Physical Channel in the Time Domain
 ======================================================
 
-This example uses the frequency domain :func:`lyceanem.models.frequency_domain.calculate_scattering` function to
-predict the scattering parameters for the frequency and environment included in the model.
+This example uses the frequency domain :func:`lyceanem.models.time_domain.calculate_scattering` function to
+predict the time domain response for a given excitation signal and environment included in the model.
 This model allows for a very wide range of antennas and antenna arrays to be considered, but for simplicity only horn
 antennas will be included in this example. The simplest case would be a single source point and single receive point,
 rather than an aperture antenna such as a horn.
@@ -22,9 +22,20 @@ import copy
 # Frequency and Mesh Resolution
 # ------------------------------
 #
-freq = np.asarray(15.0e9)
-wavelength = 3e8 / freq
-mesh_resolution = 0.5 * wavelength
+sampling_freq = 60e9
+model_time = 1e-7
+num_samples = int(model_time * (sampling_freq))
+
+# simulate receiver noise
+bandwidth = 8e9
+kb = 1.38065e-23
+receiver_impedence = 50
+thermal_noise_power = 4 * kb * 293.15 * receiver_impedence * bandwidth
+noise_power = -80  # dbw
+mean_noise = 0
+
+model_freq = 10e9
+wavelength = 3e8 / model_freq
 
 # %%
 # Setup transmitters and receivers
@@ -34,17 +45,18 @@ import lyceanem.geometry.targets as TL
 import lyceanem.geometry.geometryfunctions as GF
 
 transmit_horn_structure, transmitting_antenna_surface_coords = TL.meshedHorn(
-    58e-3, 58e-3, 128e-3, 2e-3, 0.21, mesh_resolution
+    58e-3, 58e-3, 128e-3, 2e-3, 0.21, wavelength * 0.5
 )
 receive_horn_structure, receiving_antenna_surface_coords = TL.meshedHorn(
-    58e-3, 58e-3, 128e-3, 2e-3, 0.21, mesh_resolution
+    58e-3, 58e-3, 128e-3, 2e-3, 0.21, wavelength * 0.5
 )
 
 # %%
 # Position Transmitter
 # ----------------------
 # rotate the transmitting antenna to the desired orientation, and then translate to final position.
-# :func:'lyceanem.geometryfunctions.open3drotate' allows both the center of rotation to be defined, and ensures the right syntax is used for Open3d, as it was changed from 0.9.0 to 0.10.0 and onwards.
+# :func:`lyceanem.geometry.geometryfunctions.open3drotate` allows both the center of rotation to be defined, and
+# ensures the right syntax is used for Open3d, as it was changed from 0.9.0 to 0.10.0 and onwards.
 #
 rotation_vector1 = np.radians(np.asarray([90.0, 0.0, 0.0]))
 rotation_vector2 = np.radians(np.asarray([0.0, 0.0, -90.0]))
@@ -153,27 +165,12 @@ desired_E_axis = np.zeros((1, 3), dtype=np.float32)
 desired_E_axis[0, 1] = 1.0
 
 # %%
-# Frequency Domain Scattering
+# Time Domain Scattering
 # ----------------------------
-# Once the arrangement of interest has been setup, :func:'lyceanem.models.frequency_domain.calculate_scattering' can be called, using raycasting to calculate the scattering parameters based upon the inputs.
-# The scattering parameter determines how many reflections will be considered. A value of 0 would mean only line of sight contributions will be calculated, with 1 including single reflections, and 2 including double reflections as well.
-
-import lyceanem.models.frequency_domain as FD
-
-Ex, Ey, Ez = FD.calculate_scattering(
-    aperture_coords=transmitting_antenna_surface_coords,
-    sink_coords=receiving_antenna_surface_coords,
-    antenna_solid=blockers,
-    desired_E_axis=desired_E_axis,
-    scatter_points=scatter_points,
-    wavelength=wavelength,
-    scattering=1,
-)
-
-# %%
-# Examine Scattering
-# ---------------------
-# The resultant scattering is decomposed into the Ex,Ey,Ez components at the receiving antenna, by itself this is not that interesting, so for this example we will rotate the reflector back, and then create a loop to step the reflector through different angles from 0 to 90 degrees in 1 degree steps.
+#
+import scipy.signal as sig
+import lyceanem.models.time_domain as TD
+from lyceanem.base import structures
 
 
 angle_values = np.linspace(0, 90, 91)
@@ -198,6 +195,11 @@ reflectorplate = GF.open3drotate(
 
 from tqdm import tqdm
 
+wake_times = np.zeros((len(angle_values)))
+Ex = np.zeros((len(angle_values), num_samples))
+Ey = np.zeros((len(angle_values), num_samples))
+Ez = np.zeros((len(angle_values), num_samples))
+
 for angle_inc in tqdm(range(len(angle_values))):
     rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_increment]))
     scatter_points = GF.open3drotate(
@@ -208,49 +210,55 @@ for angle_inc in tqdm(range(len(angle_values))):
         reflectorplate,
         o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
     )
-    Ex, Ey, Ez = FD.calculate_scattering(
-        aperture_coords=transmitting_antenna_surface_coords,
-        sink_coords=receiving_antenna_surface_coords,
-        antenna_solid=blockers,
-        desired_E_axis=desired_E_axis,
+    blockers = structures([reflectorplate,transmit_horn_structure,receive_horn_structure])
+    pulse_time = 5e-9
+    output_power = 0.01  # dBwatts
+    powerdbm = 10 * np.log10(output_power) + 30
+    v_transmit = ((10 ** (powerdbm / 20)) * receiver_impedence) ** 0.5
+    output_amplitude_rms = v_transmit / (1 / np.sqrt(2))
+    output_amplitude_peak = v_transmit
+
+    desired_E_axis = np.zeros((3), dtype=np.float32)
+    desired_E_axis[2] = 1.0
+    noise_volts_peak = (10 ** (noise_power / 10) * receiver_impedence) * 0.5
+
+    excitation_signal = output_amplitude_rms * sig.chirp(
+        np.linspace(0, pulse_time, int(pulse_time * sampling_freq)),
+        model_freq - bandwidth,
+        pulse_time,
+        model_freq,
+        method="linear",
+        phi=0,
+        vertex_zero=True,
+    ) + np.random.normal(mean_noise, noise_volts_peak, int(pulse_time * sampling_freq))
+    (
+        Ex[angle_inc, :],
+        Ey[angle_inc, :],
+        Ez[angle_inc, :],
+        wake_times[angle_inc],
+    ) = TD.calculate_scattering(
+        transmitting_antenna_surface_coords,
+        receiving_antenna_surface_coords,
+        excitation_signal,
+        blockers,
+        desired_E_axis,
         scatter_points=scatter_points,
         wavelength=wavelength,
         scattering=1,
+        elements=False,
+        sampling_freq=sampling_freq,
+        num_samples=num_samples,
     )
-    responsex[angle_inc] = Ex
-    responsey[angle_inc] = Ey
-    responsez[angle_inc] = Ez
+
+    noise_volts = np.random.normal(mean_noise, noise_volts_peak, num_samples)
+    Ex[angle_inc, :] = Ex[angle_inc, :] + noise_volts
+    Ey[angle_inc, :] = Ey[angle_inc, :] + noise_volts
+    Ez[angle_inc, :] = Ez[angle_inc, :] + noise_volts
+
 
 # %%
 # Plot Normalised Response
 # ----------------------------
 # Using matplotlib, plot the results
 
-import matplotlib.pyplot as plt
-
-normalised_max = np.max(
-    np.array(
-        [
-            np.max(20 * np.log10(np.abs(responsex))),
-            np.max(20 * np.log10(np.abs(responsey))),
-            np.max(20 * np.log10(np.abs(responsez))),
-        ]
-    )
-)
-ExdB = 20 * np.log10(np.abs(responsex[:])) - normalised_max
-EydB = 20 * np.log10(np.abs(responsey[:])) - normalised_max
-EzdB = 20 * np.log10(np.abs(responsez[:])) - normalised_max
-
-fig, ax = plt.subplots()
-ax.plot(angle_values - 45, ExdB, label="Ex")
-ax.plot(angle_values - 45, EydB, label="Ey")
-ax.plot(angle_values - 45, EzdB, label="Ez")
-plt.xlabel("$\\theta_{N}$ (degrees)")
-plt.ylabel("Normalised Level (dB)")
-ax.set_ylim(-60.0, 0)
-ax.set_xlim(np.min(angle_values) - 45, np.max(angle_values) - 45)
-ax.set_xticks(np.linspace(np.min(angle_values) - 45, np.max(angle_values) - 45, 19))
-ax.set_yticks(np.linspace(-60, 0.0, 21))
-legend = ax.legend(loc="upper right", shadow=True)
-plt.grid()
-plt.show()
+time_index = np.linspace(0, model_time, num_samples)
