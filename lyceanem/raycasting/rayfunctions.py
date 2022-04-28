@@ -464,7 +464,7 @@ def visiblespace(
         xyz coordinates of the sources
     source_normals : n by 3 numpy array of floats
         normal vectors for each source point
-    environment : :class:`lyceanem.base.structure`
+    environment : :class:`lyceanem.base.triangles`
         blocking environment
     vertex_area : float or array of floats
         the area associated with each source point, defaults to 0, but can also be specified for each source
@@ -499,7 +499,7 @@ def visiblespace(
     # need to create farfield sinks in az,elev coordinates, then convert to xyz sink coordinates, and generate index
     # missed_points,hit_points,missed_index,hit_index,shadow_rays=chunkingRaycaster1D(source_coords,sinks,np.zeros((1,3),dtype=np.float32),initial_index,environment,1,terminate_flag=True)
     hit_index, _ = workchunkingv2(
-        source_coords, sinks, np.empty((0, 3), dtype=np.float32), environment.triangles_base_raycaster(), 1
+        source_coords, sinks, np.empty((0, 3), dtype=np.float32), environment, 1
     )
     unified_model = np.append(
         source_coords.astype(np.float32), sinks.astype(np.float32), axis=0

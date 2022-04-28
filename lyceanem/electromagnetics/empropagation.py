@@ -2121,9 +2121,10 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
         the number of sink points
     full_index : (2D numpy array of ints)
         index of all successful rays
-    point_information : (custom point data type)
-        the point information contains the amplitude exciation for the sources, and the positions and normal vectors for all points, together with electromangetic properties,
-        however, the general assumption of this model is that there is only freespace and metal interacting.
+    point_information : :type:`lyceanem.base.scattering_point`
+        the point information contains the amplitude exciation for the sources, and the positions and normal vectors for
+         all points, together with electromangetic properties, however, the general assumption of this model is that
+         there is only freespace and metal interacting.
     wavelength : (float)
         the wavelength of interest
 

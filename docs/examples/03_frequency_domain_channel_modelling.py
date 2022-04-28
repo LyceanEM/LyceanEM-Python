@@ -126,7 +126,8 @@ blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_str
 # %%
 # Visualise the Scene Geometry
 # ------------------------------
-# Use open3d function draw_geometries to visualise the scene and ensure that all the relavent sources and scatter points are correct. Point normal vectors can be displayed by pressing 'n' while the window is open.
+# Use open3d function draw_geometries to visualise the scene and ensure that all the relavent sources and
+# scatter points are correct. Point normal vectors can be displayed by pressing 'n' while the window is open.
 mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
     size=0.5, origin=[0, 0, 0]
 )
@@ -147,7 +148,8 @@ o3d.visualization.draw_geometries(
 # %%
 # Specify desired Transmit Polarisation
 # --------------------------------------
-# The transmit polarisation has a significant effect on the channel characteristics. In this example the transmit horn will be vertically polarised, (e-vector aligned with the z direction)
+# The transmit polarisation has a significant effect on the channel characteristics. In this example the transmit
+# horn will be vertically polarised, (e-vector aligned with the y direction)
 
 desired_E_axis = np.zeros((1, 3), dtype=np.float32)
 desired_E_axis[0, 1] = 1.0
@@ -155,8 +157,10 @@ desired_E_axis[0, 1] = 1.0
 # %%
 # Frequency Domain Scattering
 # ----------------------------
-# Once the arrangement of interest has been setup, :func:'lyceanem.models.frequency_domain.calculate_scattering' can be called, using raycasting to calculate the scattering parameters based upon the inputs.
-# The scattering parameter determines how many reflections will be considered. A value of 0 would mean only line of sight contributions will be calculated, with 1 including single reflections, and 2 including double reflections as well.
+# Once the arrangement of interest has been setup, :func:'lyceanem.models.frequency_domain.calculate_scattering' can
+# be called, using raycasting to calculate the scattering parameters based upon the inputs. The scattering parameter
+# determines how many reflections will be considered. A value of 0 would mean only line of sight contributions will be
+# calculated, with 1 including single reflections, and 2 including double reflections as well.
 
 import lyceanem.models.frequency_domain as FD
 
@@ -173,7 +177,9 @@ Ex, Ey, Ez = FD.calculate_scattering(
 # %%
 # Examine Scattering
 # ---------------------
-# The resultant scattering is decomposed into the Ex,Ey,Ez components at the receiving antenna, by itself this is not that interesting, so for this example we will rotate the reflector back, and then create a loop to step the reflector through different angles from 0 to 90 degrees in 1 degree steps.
+# The resultant scattering is decomposed into the Ex,Ey,Ez components at the receiving antenna, by itself this is not
+# that interesting, so for this example we will rotate the reflector back, and then create a loop to step the reflector
+# through different angles from 0 to 90 degrees in 1 degree steps.
 
 
 angle_values = np.linspace(0, 90, 91)
@@ -237,9 +243,9 @@ normalised_max = np.max(
         ]
     )
 )
-ExdB = 20 * np.log10(np.abs(responsex[:])) - normalised_max
-EydB = 20 * np.log10(np.abs(responsey[:])) - normalised_max
-EzdB = 20 * np.log10(np.abs(responsez[:])) - normalised_max
+ExdB = 20 * np.log10(np.abs(responsex)) - normalised_max
+EydB = 20 * np.log10(np.abs(responsey)) - normalised_max
+EzdB = 20 * np.log10(np.abs(responsez)) - normalised_max
 
 fig, ax = plt.subplots()
 ax.plot(angle_values - 45, ExdB, label="Ex")
@@ -254,3 +260,6 @@ ax.set_yticks(np.linspace(-60, 0.0, 21))
 legend = ax.legend(loc="upper right", shadow=True)
 plt.grid()
 plt.show()
+
+# %%
+# .. image:: ../_static/sphx_glr_03_frequency_domain_channel_modelling_001.png

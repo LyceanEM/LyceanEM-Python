@@ -145,7 +145,7 @@ CS = ax.contourf(
     extend="both",
 )
 cbar = fig.colorbar(CS)
-cbar.ax.set_ylabel("Relative Power (dB)")
+cbar.ax.set_ylabel("Directivity (dBi)")
 cbar.set_ticks(np.linspace(plot_max - 40, plot_max, 9))
 cbar.ax.set_yticklabels(np.linspace(plot_max - 40, plot_max, 9).astype("str"))
 levels2 = np.linspace(

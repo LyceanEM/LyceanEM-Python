@@ -10,8 +10,6 @@ This model allows for a very wide range of antennas and antenna arrays to be con
 antennas will be included in this example. The simplest case would be a single source point and single receive point,
 rather than an aperture antenna such as a horn.
 
-
-
 """
 
 import numpy as np
@@ -34,7 +32,7 @@ thermal_noise_power = 4 * kb * 293.15 * receiver_impedence * bandwidth
 noise_power = -80  # dbw
 mean_noise = 0
 
-model_freq = 10e9
+model_freq = 16e9
 wavelength = 3e8 / model_freq
 
 # %%
@@ -261,4 +259,78 @@ for angle_inc in tqdm(range(len(angle_values))):
 # ----------------------------
 # Using matplotlib, plot the results
 
-time_index = np.linspace(0, model_time, num_samples)
+
+import matplotlib.pyplot as plt
+
+time_index=np.linspace(0,model_time*1e9,num_samples)
+time,anglegrid=np.meshgrid(time_index[:1801],angle_values-45)
+norm_max=np.nanmax(np.array([np.nanmax(10*np.log10((Ex**2)/receiver_impedence)),np.nanmax(10*np.log10((Ey**2)/receiver_impedence)),np.nanmax(10*np.log10((Ez**2)/receiver_impedence))]))
+
+fig2, ax2 = plt.subplots(constrained_layout=True)
+origin = 'lower'
+# Now make a contour plot with the levels specified,
+# and with the colormap generated automatically from a list
+# of colors.
+
+levels = np.linspace(-80,0,41)
+
+CS = ax2.contourf(anglegrid,time, 10*np.log10((Ez[:,:1801]**2)/receiver_impedence)-norm_max, levels,
+                  origin=origin,
+                  extend='both')
+cbar = fig2.colorbar(CS)
+cbar.ax.set_ylabel('Received Power (dBm)')
+
+ax2.set_ylim(0,30)
+ax2.set_xlim(-45,45)
+
+ax2.set_xticks(np.linspace(-45, 45, 7))
+ax2.set_yticks(np.linspace(0, 30, 16))
+
+ax2.set_xlabel('Rotation Angle (degrees)')
+ax2.set_ylabel('Time of Flight (ns)')
+ax2.set_title('Received Power vs Time for rotating Plate (24GHz)')
+
+from scipy.fft import fft, fftfreq
+import scipy
+xf = fftfreq(len(time_index), 1/sampling_freq)[:len(time_index)//2]
+input_signal=excitation_signal*(output_amplitude_peak)
+inputfft=fft(input_signal)
+input_freq=fftfreq(120,1/sampling_freq)[:60]
+freqfuncabs=scipy.interpolate.interp1d(input_freq,np.abs(inputfft[:60]))
+freqfuncangle=scipy.interpolate.interp1d(input_freq,np.angle(inputfft[:60]))
+newinput=freqfuncabs(xf[1600])*np.exp(freqfuncangle(xf[1600]))
+Exf=fft(Ex)
+Eyf=fft(Ey)
+Ezf=fft(Ez)
+
+# %%
+# .. image:: ../_static/sphx_glr_04_time_domain_channel_modelling_001.png
+
+# %%
+# Frequency Specific Results
+# -------------------------------
+# The time of flight plot is useful to displaying the output of the model, giving a understanding about what is
+# physically happening in the channel, but to get an idea of the behaviour in the frequency domain we need to use a
+# fourier transform to move from time and voltages to frequency.
+
+s21x=20*np.log10(np.abs(Exf[:,1600]/newinput))
+s21y=20*np.log10(np.abs(Eyf[:,1600]/newinput))
+s21z=20*np.log10(np.abs(Ezf[:,1600]/newinput))
+tdangles=np.linspace(-45,45,91)
+fig,ax=plt.subplots()
+ax.plot(tdangles,s21x-np.max(s21z),label='Ex')
+ax.plot(tdangles,s21y-np.max(s21z),label='Ey')
+ax.plot(tdangles,s21z-np.max(s21z),label='Ez')
+plt.xlabel("$\\theta_{N}$ (degrees)")
+plt.ylabel("Normalised Level (dB)")
+ax.set_ylim(-60.0, 0)
+ax.set_xlim(np.min(angle_values) - 45, np.max(angle_values) - 45)
+ax.set_xticks(np.linspace(np.min(angle_values) - 45, np.max(angle_values) - 45, 19))
+ax.set_yticks(np.linspace(-60, 0.0, 21))
+legend = ax.legend(loc="upper right", shadow=True)
+plt.grid()
+plt.title('$S_{21}$ at 16GHz')
+plt.show()
+
+# %%
+# .. image:: ../_static/sphx_glr_04_time_domain_channel_modelling_002.png

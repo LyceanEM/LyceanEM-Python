@@ -10,3 +10,4 @@ LyceanEM Base
 
 .. autoclass:: lyceanem.base.structures
     :members:
+

@@ -589,23 +589,23 @@ def calculate_scattering(
         if ~multiE:
             if project_vectors:
                 conformal_E_vectors = EM.calculate_conformalVectors(
-                    desired_E_axis[0, :],
+                    desired_E_axis[0, :].reshape(1, 3),
                     np.asarray(aperture_coords.normals).astype(np.float32),
                 )
             else:
                 conformal_E_vectors = np.repeat(
-                    desired_E_axis[0, :].astype(np.float32), num_sources, axis=0
-                ).reshape(num_sources, 3)
+                    desired_E_axis[0, :].astype(np.float32).reshape(1, 3), num_sources, axis=0
+                )
         else:
             if project_vectors:
                 conformal_E_vectors = EM.calculate_conformalVectors(
-                    desired_E_axis[0, :],
+                    desired_E_axis[0, :].reshape(1, 3),
                     np.asarray(aperture_coords.normals).astype(np.float32),
                 )
             else:
                 conformal_E_vectors = np.repeat(
-                    desired_E_axis[0, :].astype(np.float32), num_sources, axis=0
-                ).reshape(num_sources, 3)
+                    desired_E_axis[0, :].astype(np.float32).reshape(1, 3), num_sources, axis=0
+                )
 
         unified_model = np.append(
             np.append(
@@ -868,7 +868,7 @@ def calculate_scattering_isotropic(
             1 / num_sinks
         )  # set total amplitude to 1 for the aperture
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
-        # set all sources as magnetic current sources, and permittivity and permeability as free space
+        # set all sources as electric current sources, and permittivity and permeability as free space
         point_informationv2[:]["Electric"] = True
         point_informationv2[:]["permittivity"] = 8.8541878176e-12
         point_informationv2[:]["permeability"] = 1.25663706212e-6
@@ -1036,7 +1036,7 @@ def calculate_scattering_isotropic(
         np.asarray(aperture_coords.points).astype(np.float32),
         np.asarray(sink_coords.points).astype(np.float32),
         np.asarray(scatter_points.points).astype(np.float32),
-        RF.convertTriangles(antenna_solid),
+        antenna_solid.triangles_base_raycaster(),
         scattering + 1,
     )
 
