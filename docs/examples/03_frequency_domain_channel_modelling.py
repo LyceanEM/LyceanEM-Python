@@ -44,7 +44,8 @@ receive_horn_structure, receiving_antenna_surface_coords = TL.meshedHorn(
 # Position Transmitter
 # ----------------------
 # rotate the transmitting antenna to the desired orientation, and then translate to final position.
-# :func:'lyceanem.geometryfunctions.open3drotate' allows both the center of rotation to be defined, and ensures the right syntax is used for Open3d, as it was changed from 0.9.0 to 0.10.0 and onwards.
+# :func:`lyceanem.geometryfunctions.open3drotate` allows both the center of rotation to be defined, and ensures the
+# right syntax is used for Open3d, as it was changed from 0.9.0 to 0.10.0 and onwards.
 #
 rotation_vector1 = np.radians(np.asarray([90.0, 0.0, 0.0]))
 rotation_vector2 = np.radians(np.asarray([0.0, 0.0, -90.0]))
@@ -126,7 +127,7 @@ blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_str
 # %%
 # Visualise the Scene Geometry
 # ------------------------------
-# Use open3d function draw_geometries to visualise the scene and ensure that all the relavent sources and
+# Use open3d function draw_geometries to visualise the scene and ensure that all the relevant sources and
 # scatter points are correct. Point normal vectors can be displayed by pressing 'n' while the window is open.
 mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
     size=0.5, origin=[0, 0, 0]
