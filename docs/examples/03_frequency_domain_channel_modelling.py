@@ -127,8 +127,9 @@ blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_str
 # %%
 # Visualise the Scene Geometry
 # ------------------------------
-# Use open3d function draw_geometries to visualise the scene and ensure that all the relevant sources and
-# scatter points are correct. Point normal vectors can be displayed by pressing 'n' while the window is open.
+# Use open3d function :func:`open3d.visualization.draw_geometries` to visualise the scene and ensure that all the
+# relavent sources and scatter points are correct. Point normal vectors can be displayed by pressing 'n' while the
+# window is open.
 mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
     size=0.5, origin=[0, 0, 0]
 )
@@ -145,6 +146,7 @@ o3d.visualization.draw_geometries(
 )
 # %%
 # .. image:: ../_static/03_frequency_domain_channel_model_picture_01.png
+#
 
 # %%
 # Specify desired Transmit Polarisation
@@ -158,7 +160,7 @@ desired_E_axis[0, 1] = 1.0
 # %%
 # Frequency Domain Scattering
 # ----------------------------
-# Once the arrangement of interest has been setup, :func:'lyceanem.models.frequency_domain.calculate_scattering' can
+# Once the arrangement of interest has been setup, :func:`lyceanem.models.frequency_domain.calculate_scattering` can
 # be called, using raycasting to calculate the scattering parameters based upon the inputs. The scattering parameter
 # determines how many reflections will be considered. A value of 0 would mean only line of sight contributions will be
 # calculated, with 1 including single reflections, and 2 including double reflections as well.

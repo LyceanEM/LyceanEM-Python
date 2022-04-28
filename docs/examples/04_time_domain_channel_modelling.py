@@ -136,7 +136,9 @@ blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_str
 # %%
 # Visualise the Scene Geometry
 # ------------------------------
-# Use open3d function draw_geometries to visualise the scene and ensure that all the relavent sources and scatter points are correct. Point normal vectors can be displayed by pressing 'n' while the window is open.
+# Use open3d function :func:`open3d.visualization.draw_geometries` to visualise the scene and ensure that all the
+# relavent sources and scatter points are correct. Point normal vectors can be displayed by pressing 'n' while the
+# window is open.
 mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
     size=0.5, origin=[0, 0, 0]
 )

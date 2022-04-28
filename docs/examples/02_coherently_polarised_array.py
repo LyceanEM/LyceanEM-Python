@@ -33,12 +33,16 @@ wavelength = 3e8 / 10e9
 # Geometries
 # ------------------------
 # In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
-# open3d trianglemesh structures can be accessed by importing the data subpackage
+# :class:`open3d.geometry.TriangleMesh` structures can be accessed by importing the data subpackage
 import lyceanem.tests.reflectordata as data
 
 body, array = data.exampleUAV()
 
-# visualise UAV and Array
+# %%
+# Visualise the Resultant UAV and Array
+# ---------------------------------------
+# :func:`open3d.visualization.draw_geometries` can be used to visualise the open3d data
+# structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.PointCloud`
 o3d.visualization.draw_geometries([body, array])
 
 # %%

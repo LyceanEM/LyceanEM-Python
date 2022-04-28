@@ -101,8 +101,8 @@ directivity_envelope, pcd = aperture_projection(
 # Open3D Visualisation
 # ------------------------
 # The resultant maximum directivity envelope is provided as both a numpy array of directivities for each angle, but
-# also as an open3d point cloud.
-# This allows easy visualisation using the open3d draw_geometries function
+# also as an open3d point cloud. This allows easy visualisation using :func:`open3d.visualization.draw_geometries`.
+# %%
 
 o3d.visualization.draw_geometries([body, surface_array, pcd])
 
