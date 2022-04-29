@@ -48,7 +48,7 @@ mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5, origin=
 o3d.visualization.draw_geometries([body, array,source_coords,mesh_frame])
 
 # %%
-# .. image:: ../_static/open3d_structure.png
+# .. image:: ../_static/UAVArraywithPoints.png
 
 # crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to
 # the hidden surfaces, but correctly an aperture will only have an outer face.
@@ -71,6 +71,16 @@ from lyceanem.geometry.targets import source_cloud_from_shape
 source_points,_ = source_cloud_from_shape(surface_array, wavelength * 0.5)
 
 o3d.visualization.draw_geometries([body, array,source_points])
+
+# %%
+# .. image:: ../_static/sourcecloudfromshapeuav.png
+
+# %%
+# Drawbacks of :func:`lyceanem.geometry.geometryfunctions.sourcecloudfromshape`
+# ------------------------------------------------------------------------------
+# As can be seen by comparing the two source point sets, :func:`lyceanem.geometry.geometryfunctions.sourcecloudfromshape`
+# has a significant drawback when used for complex sharply curved antenna arrays, as the poisson disk sampling method
+# does not produce consistently spaced results.
 
 desired_E_axis = np.zeros((1, 3), dtype=np.float32)
 desired_E_axis[0, 2] = 1.0
@@ -101,6 +111,15 @@ UAV_Static_Pattern.pattern[:,:,0]=Etheta
 UAV_Static_Pattern.pattern[:,:,0]=Ephi
 
 UAV_Static_Pattern.display_pattern()
+
+# %%
+# .. image:: ../_static/sphx_glr_02_coherently_polarised_array_001.png
+# .. image:: ../_static/sphx_glr_02_coherently_polarised_array_002.png
+
 UAV_Static_Pattern.display_pattern(plottype='Contour')
+
+# %%
+# .. image:: ../_static/sphx_glr_02_coherently_polarised_array_003.png
+# .. image:: ../_static/sphx_glr_02_coherently_polarised_array_004.png
 
 

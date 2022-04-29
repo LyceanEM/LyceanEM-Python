@@ -1176,7 +1176,9 @@ def PatternPlot(
         ax.set_yticks(np.linspace(-90, 90.0, 13))
         ax.set_xlabel("Azimuth (degrees)")
         ax.set_ylabel("Elevation (degrees)")
-        levels2 = np.linspace(pattern_min, plot_max, ticknum)
+        #setup for 3dB contours
+        contournum = np.ceil((plot_max - pattern_min) / 3).astype(int)
+        levels2 = np.linspace(-contournum * 3, plot_max, contournum + 1)
         CS4 = ax.contour(
             az, elev, logdata, levels2, colors=("k",), linewidths=(2,), origin=origin
         )

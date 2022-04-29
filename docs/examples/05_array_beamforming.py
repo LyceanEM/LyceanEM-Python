@@ -49,7 +49,7 @@ mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5, origin=
 o3d.visualization.draw_geometries([body, array,source_coords,mesh_frame])
 
 # %%
-# .. image:: ../_static/open3d_structure.png
+# .. image:: ../_static/UAVArraywithPoints.png
 
 
 from lyceanem.base import structures
@@ -90,6 +90,9 @@ from lyceanem.electromagnetics.beamforming import PatternPlot
 az_mesh,elev_mesh=np.meshgrid(az_range,el_range)
 
 PatternPlot(directivity_map[:,:,2], az_mesh, elev_mesh,logtype='power',plottype='Contour')
+
+# %%
+# .. image:: ../_static/sphx_glr_04_array_beamforming_001.png
 
 from lyceanem.electromagnetics.beamforming import Steering_Efficiency
 
