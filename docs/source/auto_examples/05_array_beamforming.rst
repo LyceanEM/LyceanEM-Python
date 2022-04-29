@@ -148,7 +148,7 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
 .. GENERATED FROM PYTHON SOURCE LINES 95-96
 
-.. image:: ../_static/sphx_glr_04_array_beamforming_001.png
+.. image:: ../_static/sphx_glr_05_array_beamforming_001.png
 
 .. GENERATED FROM PYTHON SOURCE LINES 96-112
 
