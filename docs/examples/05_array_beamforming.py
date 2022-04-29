@@ -92,7 +92,7 @@ az_mesh,elev_mesh=np.meshgrid(az_range,el_range)
 PatternPlot(directivity_map[:,:,2], az_mesh, elev_mesh,logtype='power',plottype='Contour')
 
 # %%
-# .. image:: ../_static/sphx_glr_04_array_beamforming_001.png
+# .. image:: ../_static/sphx_glr_05_array_beamforming_001.png
 
 from lyceanem.electromagnetics.beamforming import Steering_Efficiency
 
