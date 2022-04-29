@@ -262,11 +262,11 @@ def MaximumDirectivityMap(
     Parameters
     ----------
     Etheta : 3D numpy array
-        The $E\theta$ polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+        The Etheta polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
     Ephi : 3D numpy array
-        The $E\phi$ polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+        The Ephi polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
     source_coords : :class:`open3d.geometry.PointCloud`
-        The source coordinates of each element, corresponding to the order of element patterns in $E\theta$ and $E\phi$. Units should be m
+        The source coordinates of each element, corresponding to the order of element patterns in Etheta and Ephi. Units should be m
     wavelength : float
         The wavelength of interest
     az_res : int
@@ -279,10 +279,10 @@ def MaximumDirectivityMap(
         The elevation values for the farfield mesh, arranged from smallest to largest
     forming : str
         Which polarisation should be beamformed, the default is [Total], beamforming the total directivity pattern,
-        avoiding issues with elements which have a strongly $E\theta$ or $E\phi$ pattern. This can also be set
+        avoiding issues with elements which have a strongly $E\\theta$ or $E\\phi$ pattern. This can also be set
         to [Etheta] or [Ephi]
     total_solid_angle : float
-        the total solid angle covered by the farfield patterns, this defaults to $4\pi$ for a full spherical pattern
+        the total solid angle covered by the farfield patterns, this defaults to $4\\pi$ for a full spherical pattern
     phase_resolution : int
         the desired phase resolution of the beamforming architecture in bits. Default is [24], which means no practical
         truncation will occur. If beam mapping is desired at a single resoltion is required, then this can be set
