@@ -50,12 +50,12 @@ def Steering_Efficiency(
         tot_index = 10 * np.log10(np.abs(Dtot)) >= (
             10 * np.log10(np.nanmax(np.abs(Dtot))) - 3
         )
-        setheta = (np.sum(a_index) / (Dtheta.shape[0] * Dtheta.shape[1])) * 100
-        sephi = (np.sum(b_index) / (Dphi.shape[0] * Dphi.shape[1])) * 100
-        setot = (np.sum(tot_index) / (Dtot.shape[0] * Dtot.shape[1])) * 100
-        # setheta=((np.sum(a_index)*(first_dimension_angle*second_dimension_angle))/angular_coverage)*100
-        # sephi=((np.sum(b_index)*(first_dimension_angle*second_dimension_angle))/angular_coverage)*100
-        # setot=((np.sum(tot_index)*(first_dimension_angle*second_dimension_angle))/angular_coverage)*100
+        #setheta = (np.sum(a_index) / (Dtheta.shape[0] * Dtheta.shape[1])) * 100
+        #sephi = (np.sum(b_index) / (Dphi.shape[0] * Dphi.shape[1])) * 100
+        #setot = (np.sum(tot_index) / (Dtot.shape[0] * Dtot.shape[1])) * 100
+        setheta=((np.sum(a_index)*(first_dimension_angle*second_dimension_angle))/angular_coverage)*100
+        sephi=((np.sum(b_index)*(first_dimension_angle*second_dimension_angle))/angular_coverage)*100
+        setot=((np.sum(tot_index)*(first_dimension_angle*second_dimension_angle))/angular_coverage)*100
 
     return setheta, sephi, setot
 
@@ -118,7 +118,7 @@ def TimeDelayWeights(source_coords, target_coord, magnitude=1.0):
 
 
 @njit(cache=True, nogil=True)
-def MRCWeights(
+def EGCWeights(
     Etheta,
     Ephi,
     command_angles,
@@ -127,7 +127,7 @@ def MRCWeights(
     elev_range=np.linspace(-90.0, 90.0, 19),
 ):
     """
-    calculate the maximal ratio combining weights for a given set of element coordinates, wavelength, and command angles (az,elev)
+    calculate the equal gain combining weights for a given set of element coordinates, wavelength, and command angles (az,elev)
     """
     weights = np.zeros((Etheta.shape[0]), dtype=np.complex64)
     az_index = np.argmin(np.abs(az_range - command_angles[0]))
@@ -249,11 +249,55 @@ def MaximumDirectivityMap(
     az_res,
     elev_res,
     az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-180.0, 180.0, 19),
+    elev_range=np.linspace(-90.0, 90.0, 19),
     forming="Total",
     total_solid_angle=(4 * np.pi),
     phase_resolution=24,
 ):
+    """
+    Uses wavefront beamsteering, and equal gain combining algorithms to steer the antenna array to each possible
+    command angle in the farfield, mapping out the maximum achieved directivity at the command angle for each command
+    angle set.
+
+    Parameters
+    ----------
+    Etheta : 3D numpy array
+        The $E\theta$ polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    Ephi : 3D numpy array
+        The $E\phi$ polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    source_coords : :class:`open3d.geometry.PointCloud`
+        The source coordinates of each element, corresponding to the order of element patterns in $E\theta$ and $E\phi$. Units should be m
+    wavelength : float
+        The wavelength of interest
+    az_res : int
+        Azimuth resolution
+    elev_res : int
+        Elevation resolution
+    az_range : 1D numpy array of float
+        The azimuth values for the farfield mesh, arranged from smallest to largest
+    elev_range : 1D numpy array of float
+        The elevation values for the farfield mesh, arranged from smallest to largest
+    forming : str
+        Which polarisation should be beamformed, the default is [Total], beamforming the total directivity pattern,
+        avoiding issues with elements which have a strongly $E\theta$ or $E\phi$ pattern. This can also be set
+        to [Etheta] or [Ephi]
+    total_solid_angle : float
+        the total solid angle covered by the farfield patterns, this defaults to $4\pi$ for a full spherical pattern
+    phase_resolution : int
+        the desired phase resolution of the beamforming architecture in bits. Default is [24], which means no practical
+        truncation will occur. If beam mapping is desired at a single resoltion is required, then this can be set
+        between 2 and 24. If multiple values are required, it may be more efficient to
+        use :func:`lyceanem.electromagnetics.beamforming.MaximumDirectivityMapDiscrete`, which allows a 1D array of
+        resolutions to be supplied, and produces a maximum directivity map for each.
+
+    Returns
+    -------
+    directivity_map : 3D numpy array of float
+        The achieved maximum directivity map. At each point the directivity corresponds to the achieved directivity at
+        that command angle. Arranged as elev axis, azimuth axis, Dtheta,Dphi,Dtot
+
+    """
+    source_points=np.asarray(source_coords.points)
     directivity_map = np.zeros((elev_res, az_res, 3))
     command_angles = np.zeros((2), dtype=np.float32)
     for az_inc in range(az_res):
@@ -268,11 +312,11 @@ def MaximumDirectivityMap(
             ) = RF.sph2cart(
                 np.radians(command_angles[0]), np.radians(command_angles[1]), 1
             )
-            WS_weights = WavefrontWeights(source_coords, steering_vector, wavelength)
-            MRC_weights = MRCWeights(
+            WS_weights = WavefrontWeights(source_points, steering_vector, wavelength)
+            EGC_weights = EGCWeights(
                 Etheta, Ephi, command_angles, az_range=az_range, elev_range=elev_range
             )
-            MRC_weights2 = MRCWeights(
+            EGC_weights2 = EGCWeights(
                 Etheta,
                 Ephi,
                 command_angles,
@@ -282,20 +326,20 @@ def MaximumDirectivityMap(
             )
             if phase_resolution <= 12:
                 WS_weights = WeightTruncation(WS_weights, phase_resolution)
-                MRC_weights = WeightTruncation(MRC_weights, phase_resolution)
-                MRC_weights2 = WeightTruncation(MRC_weights2, phase_resolution)
+                EGC_weights = WeightTruncation(EGC_weights, phase_resolution)
+                EGC_weights2 = WeightTruncation(EGC_weights2, phase_resolution)
 
             Ethetabeamformed = np.sum(
-                MRC_weights.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
+                EGC_weights.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
             )
             Ephibeamformed = np.sum(
-                MRC_weights.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
+                EGC_weights.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
             )
             Ethetabeamformed2 = np.sum(
-                MRC_weights2.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
+                EGC_weights2.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
             )
             Ephibeamformed2 = np.sum(
-                MRC_weights2.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
+                EGC_weights2.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
             )
             Ethetabeamformed3 = np.sum(
                 WS_weights.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
@@ -382,6 +426,49 @@ def MaximumDirectivityMapDiscrete(
     total_solid_angle=(4 * np.pi),
     phase_resolution=np.asarray([24]),
 ):
+    """
+    Uses wavefront beamsteering, and equal gain combining algorithms to steer the antenna array to each possible
+    command angle in the farfield, mapping out the maximum achieved directivity at the command angle for each command
+    angle set.
+
+    Parameters
+    ----------
+    Etheta : 3D numpy array
+        The $E\theta$ polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    Ephi : 3D numpy array
+        The $E\phi$ polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    source_coords : :class:`open3d.geometry.PointCloud`
+        The source coordinates of each element, corresponding to the order of element patterns in $E\theta$ and $E\phi$. Units should be m
+    wavelength : float
+        The wavelength of interest
+    az_res : int
+        Azimuth resolution
+    elev_res : int
+        Elevation resolution
+    az_range : 1D numpy array of float
+        The azimuth values for the farfield mesh, arranged from smallest to largest
+    elev_range : 1D numpy array of float
+        The elevation values for the farfield mesh, arranged from smallest to largest
+    forming : str
+        Which polarisation should be beamformed, the default is [Total], beamforming the total directivity pattern,
+        avoiding issues with elements which have a strongly $E\theta$ or $E\phi$ pattern. This can also be set
+        to [Etheta] or [Ephi]
+    total_solid_angle : float
+        the total solid angle covered by the farfield patterns, this defaults to $4\pi$ for a full spherical pattern
+    phase_resolution : 1D numpy array of int
+        the desired phase resolution of the beamforming architecture in bits. Default is [24], which means no practical
+        truncation will occur. If beam mapping is desired at a single resolution is required, then this can be set
+        between 2 and 24, if more than one resolution value is required, then a 1D array of values can be specified.
+        resolutions to be supplied, and produces a maximum directivity map for each.
+
+    Returns
+    -------
+    directivity_map : 3D numpy array of float
+        The achieved maximum directivity map. At each point the directivity corresponds to the achieved directivity at
+        that command angle.
+
+    """
+    source_points = np.asarray(source_coords.points)
     directivity_map = np.zeros(
         (elev_res, az_res, 3, phase_resolution.shape[0]), dtype=np.float32
     )
@@ -402,16 +489,16 @@ def MaximumDirectivityMapDiscrete(
                     np.radians(command_angles[0]), np.radians(command_angles[1]), 1
                 )
                 WS_weights = WavefrontWeights(
-                    source_coords, steering_vector, wavelength
+                    source_points, steering_vector, wavelength
                 )
-                MRC_weights = MRCWeights(
+                EGC_weights = EGCWeights(
                     Etheta,
                     Ephi,
                     command_angles,
                     az_range=az_range,
                     elev_range=elev_range,
                 )
-                MRC_weights2 = MRCWeights(
+                EGC_weights2 = EGCWeights(
                     Etheta,
                     Ephi,
                     command_angles,
@@ -421,20 +508,20 @@ def MaximumDirectivityMapDiscrete(
                 )
 
                 WS_weights = WeightTruncation(WS_weights, resolution)
-                MRC_weights = WeightTruncation(MRC_weights, resolution)
-                MRC_weights2 = WeightTruncation(MRC_weights2, resolution)
+                EGC_weights = WeightTruncation(EGC_weights, resolution)
+                EGC_weights2 = WeightTruncation(EGC_weights2, resolution)
 
                 Ethetabeamformed = np.sum(
-                    MRC_weights.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
+                    EGC_weights.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
                 )
                 Ephibeamformed = np.sum(
-                    MRC_weights.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
+                    EGC_weights.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
                 )
                 Ethetabeamformed2 = np.sum(
-                    MRC_weights2.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
+                    EGC_weights2.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
                 )
                 Ephibeamformed2 = np.sum(
-                    MRC_weights2.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
+                    EGC_weights2.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
                 )
                 Ethetabeamformed3 = np.sum(
                     WS_weights.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
@@ -562,14 +649,14 @@ def MaximumfieldMapDiscrete(
                 WS_weights = WavefrontWeights(
                     source_coords, steering_vector, wavelength
                 )
-                MRC_weights = MRCWeights(
+                EGC_weights = EGCWeights(
                     Etheta,
                     Ephi,
                     command_angles,
                     az_range=az_range,
                     elev_range=elev_range,
                 )
-                MRC_weights2 = MRCWeights(
+                EGC_weights2 = EGCWeights(
                     Etheta,
                     Ephi,
                     command_angles,
@@ -579,20 +666,20 @@ def MaximumfieldMapDiscrete(
                 )
 
                 WS_weights = WeightTruncation(WS_weights, resolution)
-                MRC_weights = WeightTruncation(MRC_weights, resolution)
-                MRC_weights2 = WeightTruncation(MRC_weights2, resolution)
+                EGC_weights = WeightTruncation(EGC_weights, resolution)
+                EGC_weights2 = WeightTruncation(EGC_weights2, resolution)
 
                 Ethetabeamformed = np.sum(
-                    MRC_weights.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
+                    EGC_weights.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
                 )
                 Ephibeamformed = np.sum(
-                    MRC_weights.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
+                    EGC_weights.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
                 )
                 Ethetabeamformed2 = np.sum(
-                    MRC_weights2.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
+                    EGC_weights2.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
                 )
                 Ephibeamformed2 = np.sum(
-                    MRC_weights2.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
+                    EGC_weights2.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
                 )
                 Ethetabeamformed3 = np.sum(
                     WS_weights.reshape(Etheta.shape[0], 1, 1) * Etheta, axis=0
@@ -663,6 +750,7 @@ def MaximumfieldMapDiscrete(
                 inc_res += 1
 
     return efield_map
+
 
 
 def PatternTransform3D(
@@ -850,6 +938,66 @@ def directivity_transform(
 
     return Dtheta, Dphi, Dtot, Dmax
 
+@njit(cache=True, nogil=True)
+def directivity_transformv2(
+    Etheta,
+    Ephi,
+    az_range=np.linspace(-180.0, 180.0, 19),
+    elev_range=np.linspace(-90.0, 90.0, 19),
+    total_solid_angle=(4 * np.pi),
+):
+    # transform Etheta and Ephi data into antenna directivity
+    # directivity is defined in terms of the power radiated in a specific direction, over the average radiated power
+    # power per unit solid angle
+    Dmax = np.zeros((3), dtype=np.float32)
+    Umax = np.zeros((3), dtype=np.float32)
+    Utheta = np.abs(Etheta ** 2)
+    Uphi = np.abs(Ephi ** 2)
+    Utotal = np.abs(Etheta ** 2) + np.abs(Ephi ** 2)
+    power_sum = 0.0
+    temp_vector = np.zeros((4), dtype=np.float32)
+    temp_vector2 = np.zeros((4), dtype=np.float32)
+    for elinc in range(len(elev_range) - 1):
+        for azinc in range(len(az_range) - 1):
+            temp_vector[0] = Utheta[elinc, azinc]
+            temp_vector[1] = Utheta[elinc + 1, azinc]
+            temp_vector[2] = Utheta[elinc, azinc + 1]
+            temp_vector[3] = Utheta[elinc + 1, azinc + 1]
+            temp_vector2[0] = Uphi[elinc, azinc]
+            temp_vector2[1] = Uphi[elinc + 1, azinc]
+            temp_vector2[2] = Uphi[elinc, azinc + 1]
+            temp_vector2[3] = Uphi[elinc + 1, azinc + 1]
+            r1 = np.mean(temp_vector)
+            r2 = np.mean(temp_vector2)
+            power_sum = (
+                power_sum
+                + r1
+                * np.abs(
+                    np.sin(np.radians(az_range[azinc] + az_range[azinc + 1]) / 2.0)
+                )
+                + r2
+                * np.abs(
+                    np.sin(np.radians(az_range[azinc] + az_range[azinc + 1]) / 2.0)
+                )
+            )
+
+    Umax[0] = np.nanmax(Utheta)
+    Umax[1] = np.nanmax(Uphi)
+    Umax[2] = np.nanmax(Utotal)
+    Uav = (
+        power_sum
+        * (
+            (np.radians(az_range[1] - az_range[0]))
+            * (np.radians(elev_range[1] - elev_range[0]))
+        )
+        / total_solid_angle
+    )
+    Dmax = Umax / Uav
+    Dtheta = Utheta / Uav
+    Dphi = Uphi / Uav
+    Dtot = Utotal / Uav
+
+    return Dtheta, Dphi, Dtot, Dmax
 
 @njit(cache=True, nogil=True)
 def WeightTruncation(weights, resolution):

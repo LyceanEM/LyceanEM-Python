@@ -37,7 +37,7 @@ def aperture_projection(
     ----------
     directivity_envelope : numpy 2D array of float32
         The predicted maximum directivity envelope for the provided aperture at the wavelength of interest
-    pcd : open3d point cloud
+    pcd : :class:`open3d.geometry.PointCloud`
         a point cloud colored according to the projected area, normalised to the total projected area of the aperture.
     """
     if environment is None:
@@ -341,35 +341,8 @@ def calculate_farfield(
         scattering + 1,
         line_of_sight=los,
     )
-    print(rays)
-    if ~elements:
-        # create efiles for model
-        etheta = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)
-        ephi = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)
-        Ex = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)
-        Ey = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)
-        Ez = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)
-        scatter_map = EM.EMGPUFreqDomain(
-            num_sources, num_sinks, full_index, point_informationv2, wavelength
-        )
 
-        Ex[:, :] = np.sum(scatter_map[:, :, 0], axis=0).reshape(
-            el_range.shape[0], az_range.shape[0]
-        )
-        Ey[:, :] = np.sum(scatter_map[:, :, 1], axis=0).reshape(
-            el_range.shape[0], az_range.shape[0]
-        )
-        Ez[:, :] = np.sum(scatter_map[:, :, 2], axis=0).reshape(
-            el_range.shape[0], az_range.shape[0]
-        )
-        # convert to etheta,ephi
-        etheta = (
-            Ex * np.cos(np.deg2rad(azaz)) * np.cos(np.deg2rad(theta))
-            + Ey * np.sin(np.deg2rad(azaz)) * np.cos(np.deg2rad(theta))
-            - Ez * np.sin(np.deg2rad(theta))
-        )
-        ephi = -Ex * np.sin(np.deg2rad(azaz)) + Ey * np.cos(np.deg2rad(azaz))
-    else:
+    if elements:
         # create efiles for model
         etheta = np.zeros(
             (num_sources, el_range.shape[0], az_range.shape[0]), dtype=np.complex64
@@ -425,6 +398,34 @@ def calculate_farfield(
                 element, :, :
             ] * np.cos(np.deg2rad(azaz))
 
+    else:
+                # create efiles for model
+        etheta = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)
+        ephi = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)
+        Ex = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)
+        Ey = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)
+        Ez = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)
+        scatter_map = EM.EMGPUFreqDomain(
+            num_sources, num_sinks, full_index, point_informationv2, wavelength
+        )
+
+        Ex[:, :] = np.sum(scatter_map[:, :, 0], axis=0).reshape(
+            el_range.shape[0], az_range.shape[0]
+        )
+        Ey[:, :] = np.sum(scatter_map[:, :, 1], axis=0).reshape(
+            el_range.shape[0], az_range.shape[0]
+        )
+        Ez[:, :] = np.sum(scatter_map[:, :, 2], axis=0).reshape(
+            el_range.shape[0], az_range.shape[0]
+        )
+        # convert to etheta,ephi
+        etheta = (
+            Ex * np.cos(np.deg2rad(azaz)) * np.cos(np.deg2rad(theta))
+            + Ey * np.sin(np.deg2rad(azaz)) * np.cos(np.deg2rad(theta))
+            - Ez * np.sin(np.deg2rad(theta))
+        )
+        ephi = -Ex * np.sin(np.deg2rad(azaz)) + Ey * np.cos(np.deg2rad(azaz))
+        
     return etheta, ephi
 
 

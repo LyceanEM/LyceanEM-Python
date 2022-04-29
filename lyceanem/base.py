@@ -329,7 +329,7 @@ class antenna_pattern:
     such as a premeasured antenna in a new orientation then the pattern rotate_function
     must be used.
 
-    Antenna Pattern Frequency is in Hz, eventually I may update the class for multi point patterns
+    Antenna Pattern Frequency is in Hz
     Rotation Offset is Specified in terms of rotations around the x, y, and z axes as roll,pitch/elevation, and azimuth
     in radians.
     """
@@ -544,9 +544,22 @@ class antenna_pattern:
         outputarray = np.concatenate((infoarray, dataarray), axis=0)
         np.savetxt(file_location, outputarray, delimiter=",", fmt="%.2e")
 
-    def display_pattern(self, desired_pattern="both", pattern_min=-40):
+    def display_pattern(self, plottype='Polar',desired_pattern="both", pattern_min=-40):
         """
-        displays the antenna pattern
+        Displays the Antenna Pattern using :func:`lyceanem.electromagnetics.beamforming.PatterPlot`
+
+        Parameters
+        ----------
+        plottype : str
+            the plot type, either [Polar], [Cartesian-Surf], or [Contour]. The default is [Polar]
+        desired_pattern : str
+            the desired pattern, default is [both], but is Pattern format is 'Etheta/Ephi' then options are [Etheta] or [Ephi], and if Pattern format is 'ExEyEz', then options are [Ex], [Ey], or [Ez].
+        pattern_min : float
+            the desired scale minimum in dB, the default is [-40]
+
+        Returns
+        -------
+        None
         """
 
         if self.arbitary_pattern_format == "Etheta/Ephi":
@@ -556,6 +569,7 @@ class antenna_pattern:
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
+                    plottype=plottype,
                     title_text="Etheta",
                 )
                 BM.PatternPlot(
@@ -563,6 +577,25 @@ class antenna_pattern:
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Ephi",
+                )
+            elif desired_pattern == 'Etheta':
+                BM.PatternPlot(
+                    self.pattern[:, :, 0],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Etheta",
+                )
+            elif desired_pattern == 'Ephi':
+                BM.PatternPlot(
+                    self.pattern[:, :, 1],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
                     title_text="Ephi",
                 )
         elif self.arbitary_pattern_format == "ExEyEz":
@@ -572,6 +605,7 @@ class antenna_pattern:
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
+                    plottype=plottype,
                     title_text="Ex",
                 )
                 BM.PatternPlot(
@@ -579,6 +613,7 @@ class antenna_pattern:
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
+                    plottype=plottype,
                     title_text="Ey",
                 )
                 BM.PatternPlot(
@@ -586,12 +621,40 @@ class antenna_pattern:
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Ez",
+                )
+            elif desired_pattern == 'Ex':
+                BM.PatternPlot(
+                    self.pattern[:, :, 0],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Ex",
+                )
+            elif desired_pattern == 'Ey':
+                BM.PatternPlot(
+                    self.pattern[:, :, 1],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Ey",
+                )
+            elif desired_pattern == 'Ez':
+                BM.PatternPlot(
+                    self.pattern[:, :, 2],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
                     title_text="Ez",
                 )
 
     def transmute_pattern(self):
         """
-        convert the pattern from Etheta/Ephi format to Ex, Ey,Ez format
+        convert the pattern from Etheta/Ephi format to Ex, Ey,Ez format, or back again
         """
         if self.arbitary_pattern_format == "Etheta/Ephi":
             oldformat = self.pattern.reshape(-1, self.pattern.shape[2])

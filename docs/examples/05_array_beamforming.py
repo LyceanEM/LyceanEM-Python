@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
-Modelling a Coherently Polarised Aperture
+Array Beamforming
 ======================================================
 
 This example uses the frequency domain :func:`lyceanem.models.frequency_domain.calculate_farfield` function to predict
-the farfield pattern for a linearly polarised aperture. This could represent an antenna array without any beamforming
-weights.
+the farfield patterns for a linearly polarised aperture with multiple elements. This is then beamformed to all farfield points using multiple open loop beamforming algorithms to attemp to 'map' out the acheivable beamforming for the antenna array using :func:`lyceanem.electromagnetics.beamforming.MaximumDirectivityMap`.
+
+The Steering Efficiency can then be evaluated using :func:`lyceanem.electromagnetics.beamforming.Steering_Efficiency` for the resultant achieved beamforming.
 
 
 """
@@ -26,7 +27,7 @@ import copy
 # an X band aperture.
 
 az_res = 181
-elev_res = 181
+elev_res = 37
 wavelength = 3e8 / 10e9
 
 # %%
@@ -50,27 +51,20 @@ o3d.visualization.draw_geometries([body, array,source_coords,mesh_frame])
 # %%
 # .. image:: ../_static/open3d_structure.png
 
-# crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to
-# the hidden surfaces, but correctly an aperture will only have an outer face.
-surface_array = copy.deepcopy(array)
-surface_array.triangles = o3d.utility.Vector3iVector(
-    np.asarray(array.triangles)[: len(array.triangles) // 2, :]
-)
-surface_array.triangle_normals = o3d.utility.Vector3dVector(
-    np.asarray(array.triangle_normals)[: len(array.triangle_normals) // 2, :]
-)
 
 from lyceanem.base import structures
 
 blockers = structures([body,array])
 
+# %%
+# Model Farfield Array Patterns
+# -------------------------------
+# The same function is used to predict the farfield pattern of each element in the array, but the variable 'elements'
+# is set as True, instructing the function to return the antenna patterns as 3D arrays arranged with axes element,
+# elevation points, and azimuth points. These can then be beamformed using the desired beamforming algorithm. LyceanEM
+# currently includes two open loop algorithms for phase weights :func:`lyceanem.electromagnetics.beamforming.EGCWeights`,
+# and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 from lyceanem.models.frequency_domain import calculate_farfield
-
-from lyceanem.geometry.targets import source_cloud_from_shape
-
-source_points,_ = source_cloud_from_shape(surface_array, wavelength * 0.5)
-
-o3d.visualization.draw_geometries([body, array,source_points])
 
 desired_E_axis = np.zeros((1, 3), dtype=np.float32)
 desired_E_axis[0, 2] = 1.0
@@ -82,25 +76,33 @@ Etheta,Ephi=calculate_farfield(source_coords,
                                el_range=np.linspace(-90,90,elev_res),
                                wavelength=wavelength,
                                farfield_distance=20,
+                               elements=True,
                                project_vectors=True)
 
-# %%
-# Storing and Manipulating Antenna Patterns
-# ---------------------------------------------
-# The resultant antenna pattern can be stored in :class:`lyceanem.base.antenna_pattern` as it has been modelled as one
-# distributed aperture, the advantage of this class is the integrated display, conversion and export functions. It is
-# very simple to define, and save the pattern, and then display with a call
-# to :func:`lyceanem.base.antenna_pattern.display_pattern`. This produces 3D polar plots which can be manipulated to
-# give a better view of the whole pattern, but if contour plots are required, then this can also be produced by passing
-# plottype='Contour' to the function.
 
-from lyceanem.base import antenna_pattern
+from lyceanem.electromagnetics.beamforming import MaximumDirectivityMap
+az_range=np.linspace(-180,180,az_res)
+el_range=np.linspace(-90,90,elev_res)
+directivity_map=MaximumDirectivityMap(Etheta,Ephi,source_coords,wavelength,az_res,elev_res,az_range,el_range)
 
-UAV_Static_Pattern=antenna_pattern(azimuth_resolution=az_res,elevation_resolution=elev_res)
-UAV_Static_Pattern.pattern[:,:,0]=Etheta
-UAV_Static_Pattern.pattern[:,:,0]=Ephi
+from lyceanem.electromagnetics.beamforming import PatternPlot
 
-UAV_Static_Pattern.display_pattern()
-UAV_Static_Pattern.display_pattern(plottype='Contour')
+az_mesh,elev_mesh=np.meshgrid(az_range,el_range)
+
+PatternPlot(directivity_map[:,:,2], az_mesh, elev_mesh,logtype='power',plottype='Contour')
+
+from lyceanem.electromagnetics.beamforming import Steering_Efficiency
+
+setheta,sephi,setot=Steering_Efficiency(directivity_map[:,:,0], directivity_map[:,:,1], directivity_map[:,:,2], np.radians(np.diff(el_range)[0]), np.radians(np.diff(az_range)[0]), 4*np.pi)
+
+print(
+    "Steering Effciency of {:3.1f}%".format(
+        setot)
+    )
 
 
+print(
+    "Maximum Directivity of {:3.1f} dBi".format(
+        np.max(10 * np.log10(directivity_map[:,:,2]))
+    )
+)
