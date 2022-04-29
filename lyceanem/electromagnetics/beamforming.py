@@ -1186,6 +1186,7 @@ def PatternPlot(
         if title_text != None:
             ax.set_title(title_text)
 
+    plt.show()
 
 # noinspection PyTypeChecker
 @cuda.jit(device=True)

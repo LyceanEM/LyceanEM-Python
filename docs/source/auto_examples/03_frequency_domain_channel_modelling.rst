@@ -37,12 +37,6 @@ rather than an aperture antenna such as a horn.
     import copy
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 22-25
 
 Frequency and Mesh Resolution
@@ -56,12 +50,6 @@ Frequency and Mesh Resolution
     freq = np.asarray(15.0e9)
     wavelength = 3e8 / freq
     mesh_resolution = 0.5 * wavelength
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 30-33
@@ -83,12 +71,6 @@ Setup transmitters and receivers
     receive_horn_structure, receiving_antenna_surface_coords = TL.meshedHorn(
         58e-3, 58e-3, 128e-3, 2e-3, 0.21, mesh_resolution
     )
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 44-50
@@ -125,20 +107,6 @@ right syntax is used for Open3d, as it was changed from 0.9.0 to 0.10.0 and onwa
     )
     transmitting_antenna_surface_coords.translate(np.asarray([2.695, 0, 0]), relative=True)
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-
-    geometry::PointCloud with 36 points.
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 71-74
 
 Position Receiver
@@ -159,20 +127,6 @@ rotate the receiving horn to desired orientation and translate to final position
         o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
     )
     receiving_antenna_surface_coords.translate(np.asarray([0, 1.427, 0]), relative=True)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-
-    geometry::PointCloud with 36 points.
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 86-89
@@ -203,20 +157,6 @@ Create a Scattering plate a source of multipath reflections
     scatter_points.translate(position_vector, relative=True)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-
-    geometry::PointCloud with 900 points.
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 107-110
 
 Specify Reflection Angle
@@ -243,12 +183,6 @@ Rotate the scattering plate to the optimum angle for reflection from the transmi
     from lyceanem.base import structures
 
     blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_structure])
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 128-133
@@ -278,12 +212,6 @@ window is open.
         ]
     )
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 148-150
 
 .. image:: ../_static/03_frequency_domain_channel_model_picture_01.png
@@ -303,12 +231,6 @@ horn will be vertically polarised, (e-vector aligned with the y direction)
 
     desired_E_axis = np.zeros((1, 3), dtype=np.float32)
     desired_E_axis[0, 1] = 1.0
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 161-167
@@ -336,12 +258,6 @@ calculated, with 1 including single reflections, and 2 including double reflecti
         wavelength=wavelength,
         scattering=1,
     )
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 181-186
@@ -404,20 +320,6 @@ through different angles from 0 to 90 degrees in 1 degree steps.
         responsez[angle_inc] = Ez
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-      0%|          | 0/91 [00:00<?, ?it/s]      1%|1         | 1/91 [00:01<01:51,  1.24s/it]      2%|2         | 2/91 [00:02<01:50,  1.24s/it]      3%|3         | 3/91 [00:03<01:48,  1.23s/it]      4%|4         | 4/91 [00:04<01:47,  1.23s/it]      5%|5         | 5/91 [00:06<01:46,  1.24s/it]      7%|6         | 6/91 [00:07<01:43,  1.22s/it]      8%|7         | 7/91 [00:08<01:41,  1.21s/it]      9%|8         | 8/91 [00:09<01:40,  1.21s/it]     10%|9         | 9/91 [00:11<01:40,  1.22s/it]     11%|#         | 10/91 [00:12<01:39,  1.23s/it]     12%|#2        | 11/91 [00:13<01:38,  1.24s/it]     13%|#3        | 12/91 [00:14<01:37,  1.23s/it]     14%|#4        | 13/91 [00:15<01:35,  1.22s/it]     15%|#5        | 14/91 [00:17<01:33,  1.22s/it]     16%|#6        | 15/91 [00:18<01:34,  1.25s/it]     18%|#7        | 16/91 [00:19<01:33,  1.24s/it]     19%|#8        | 17/91 [00:20<01:30,  1.22s/it]     20%|#9        | 18/91 [00:22<01:28,  1.21s/it]     21%|##        | 19/91 [00:23<01:25,  1.18s/it]     22%|##1       | 20/91 [00:24<01:23,  1.17s/it]     23%|##3       | 21/91 [00:25<01:22,  1.17s/it]     24%|##4       | 22/91 [00:26<01:19,  1.16s/it]     25%|##5       | 23/91 [00:27<01:18,  1.15s/it]     26%|##6       | 24/91 [00:28<01:16,  1.14s/it]     27%|##7       | 25/91 [00:29<01:14,  1.12s/it]     29%|##8       | 26/91 [00:31<01:12,  1.12s/it]     30%|##9       | 27/91 [00:32<01:11,  1.11s/it]     31%|###       | 28/91 [00:33<01:11,  1.13s/it]     32%|###1      | 29/91 [00:34<01:09,  1.12s/it]     33%|###2      | 30/91 [00:35<01:07,  1.10s/it]     34%|###4      | 31/91 [00:36<01:05,  1.10s/it]     35%|###5      | 32/91 [00:37<01:04,  1.09s/it]     36%|###6      | 33/91 [00:38<01:02,  1.08s/it]     37%|###7      | 34/91 [00:39<01:01,  1.08s/it]     38%|###8      | 35/91 [00:40<01:00,  1.09s/it]     40%|###9      | 36/91 [00:41<00:59,  1.08s/it]     41%|####      | 37/91 [00:42<00:58,  1.08s/it]     42%|####1     | 38/91 [00:44<00:56,  1.06s/it]     43%|####2     | 39/91 [00:45<00:54,  1.06s/it]     44%|####3     | 40/91 [00:46<00:53,  1.05s/it]     45%|####5     | 41/91 [00:47<00:52,  1.05s/it]     46%|####6     | 42/91 [00:48<00:51,  1.05s/it]     47%|####7     | 43/91 [00:49<00:50,  1.05s/it]     48%|####8     | 44/91 [00:50<00:49,  1.05s/it]     49%|####9     | 45/91 [00:51<00:47,  1.04s/it]     51%|#####     | 46/91 [00:52<00:46,  1.04s/it]     52%|#####1    | 47/91 [00:53<00:45,  1.04s/it]     53%|#####2    | 48/91 [00:54<00:44,  1.04s/it]     54%|#####3    | 49/91 [00:55<00:43,  1.04s/it]     55%|#####4    | 50/91 [00:56<00:42,  1.04s/it]     56%|#####6    | 51/91 [00:57<00:41,  1.03s/it]     57%|#####7    | 52/91 [00:58<00:40,  1.03s/it]     58%|#####8    | 53/91 [00:59<00:39,  1.03s/it]     59%|#####9    | 54/91 [01:00<00:38,  1.04s/it]     60%|######    | 55/91 [01:01<00:37,  1.03s/it]     62%|######1   | 56/91 [01:02<00:36,  1.04s/it]     63%|######2   | 57/91 [01:03<00:35,  1.04s/it]     64%|######3   | 58/91 [01:04<00:34,  1.04s/it]     65%|######4   | 59/91 [01:05<00:33,  1.03s/it]     66%|######5   | 60/91 [01:06<00:31,  1.03s/it]     67%|######7   | 61/91 [01:07<00:31,  1.04s/it]     68%|######8   | 62/91 [01:08<00:30,  1.04s/it]     69%|######9   | 63/91 [01:10<00:29,  1.05s/it]     70%|#######   | 64/91 [01:11<00:28,  1.05s/it]     71%|#######1  | 65/91 [01:12<00:27,  1.04s/it]     73%|#######2  | 66/91 [01:13<00:25,  1.04s/it]     74%|#######3  | 67/91 [01:14<00:24,  1.04s/it]     75%|#######4  | 68/91 [01:15<00:24,  1.07s/it]     76%|#######5  | 69/91 [01:16<00:24,  1.10s/it]     77%|#######6  | 70/91 [01:17<00:23,  1.10s/it]     78%|#######8  | 71/91 [01:18<00:22,  1.13s/it]     79%|#######9  | 72/91 [01:19<00:21,  1.12s/it]     80%|########  | 73/91 [01:20<00:19,  1.11s/it]     81%|########1 | 74/91 [01:21<00:18,  1.08s/it]     82%|########2 | 75/91 [01:22<00:16,  1.06s/it]     84%|########3 | 76/91 [01:23<00:15,  1.05s/it]     85%|########4 | 77/91 [01:25<00:14,  1.04s/it]     86%|########5 | 78/91 [01:26<00:13,  1.05s/it]     87%|########6 | 79/91 [01:27<00:12,  1.05s/it]     88%|########7 | 80/91 [01:28<00:11,  1.05s/it]     89%|########9 | 81/91 [01:29<00:10,  1.05s/it]     90%|######### | 82/91 [01:30<00:09,  1.06s/it]     91%|#########1| 83/91 [01:31<00:08,  1.07s/it]     92%|#########2| 84/91 [01:32<00:07,  1.06s/it]     93%|#########3| 85/91 [01:33<00:06,  1.07s/it]     95%|#########4| 86/91 [01:34<00:05,  1.06s/it]     96%|#########5| 87/91 [01:35<00:04,  1.09s/it]     97%|#########6| 88/91 [01:36<00:03,  1.07s/it]     98%|#########7| 89/91 [01:37<00:01,  1.20it/s]    100%|##########| 91/91 [01:37<00:00,  2.06it/s]    100%|##########| 91/91 [01:37<00:00,  1.07s/it]
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 234-237
 
 Plot Normalised Response
@@ -460,24 +362,9 @@ Using matplotlib, plot the results
 
 
 
-
-.. image-sg:: /auto_examples/images/sphx_glr_03_frequency_domain_channel_modelling_001.png
-   :alt: 03 frequency domain channel modelling
-   :srcset: /auto_examples/images/sphx_glr_03_frequency_domain_channel_modelling_001.png
-   :class: sphx-glr-single-img
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 268-268
-
-.. image:: ../_static/sphx_glr_03_frequency_domain_channel_modelling_001.png
-
-
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  56.600 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_auto_examples_03_frequency_domain_channel_modelling.py:

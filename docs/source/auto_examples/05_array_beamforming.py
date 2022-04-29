@@ -91,6 +91,9 @@ az_mesh,elev_mesh=np.meshgrid(az_range,el_range)
 
 PatternPlot(directivity_map[:,:,2], az_mesh, elev_mesh,logtype='power',plottype='Contour')
 
+# %%
+# .. image:: ../_static/sphx_glr_04_array_beamforming_001.png
+
 from lyceanem.electromagnetics.beamforming import Steering_Efficiency
 
 setheta,sephi,setot=Steering_Efficiency(directivity_map[:,:,0], directivity_map[:,:,1], directivity_map[:,:,2], np.radians(np.diff(el_range)[0]), np.radians(np.diff(az_range)[0]), 4*np.pi)

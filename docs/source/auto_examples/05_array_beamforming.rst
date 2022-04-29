@@ -35,12 +35,6 @@ The Steering Efficiency can then be evaluated using :func:`lyceanem.electromagne
     import copy
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 19-28
 
 Setting Farfield Resolution and Wavelength
@@ -63,12 +57,6 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 34-38
 
 Geometries
@@ -83,12 +71,6 @@ In order to make things easy to start, an example geometry has been included wit
     import lyceanem.tests.reflectordata as data
 
     body, array,source_coords = data.exampleUAV(10e9)
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 43-47
@@ -107,12 +89,6 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
     o3d.visualization.draw_geometries([body, array,source_coords,mesh_frame])
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 52-53
 
 .. image:: ../_static/UAVArraywithPoints.png
@@ -128,12 +104,6 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
     blockers = structures([body,array])
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 60-67
 
 Model Farfield Array Patterns
@@ -144,7 +114,7 @@ elevation points, and azimuth points. These can then be beamformed using the des
 currently includes two open loop algorithms for phase weights :func:`lyceanem.electromagnetics.beamforming.EGCWeights`,
 and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-109
+.. GENERATED FROM PYTHON SOURCE LINES 67-94
 
 .. code-block:: default
 
@@ -175,6 +145,16 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
     PatternPlot(directivity_map[:,:,2], az_mesh, elev_mesh,logtype='power',plottype='Contour')
 
+
+.. GENERATED FROM PYTHON SOURCE LINES 95-96
+
+.. image:: ../_static/sphx_glr_04_array_beamforming_001.png
+
+.. GENERATED FROM PYTHON SOURCE LINES 96-112
+
+.. code-block:: default
+
+
     from lyceanem.electromagnetics.beamforming import Steering_Efficiency
 
     setheta,sephi,setot=Steering_Efficiency(directivity_map[:,:,0], directivity_map[:,:,1], directivity_map[:,:,2], np.radians(np.diff(el_range)[0]), np.radians(np.diff(az_range)[0]), 4*np.pi)
@@ -192,33 +172,9 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
     )
 
 
-
-.. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_001.png
-   :alt: 05 array beamforming
-   :srcset: /auto_examples/images/sphx_glr_05_array_beamforming_001.png
-   :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1057: RuntimeWarning: divide by zero encountered in log10
-      logdata = 10 * np.log10(data)
-    Steering Effciency of 4.1%
-    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/docs/examples/05_array_beamforming.py:106: RuntimeWarning: divide by zero encountered in log10
-      np.max(10 * np.log10(directivity_map[:,:,2]))
-    Maximum Directivity of 25.2 dBi
-
-
-
-
-
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 4 minutes  4.593 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_auto_examples_05_array_beamforming.py:

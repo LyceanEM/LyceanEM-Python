@@ -264,5 +264,3 @@ legend = ax.legend(loc="upper right", shadow=True)
 plt.grid()
 plt.show()
 
-# %%
-# .. image:: ../_static/sphx_glr_03_frequency_domain_channel_modelling_001.png

@@ -111,6 +111,15 @@ UAV_Static_Pattern.pattern[:,:,0]=Etheta
 UAV_Static_Pattern.pattern[:,:,0]=Ephi
 
 UAV_Static_Pattern.display_pattern()
+
+# %%
+# .. image:: ../_static/sphx_glr_02_coherently_polarised_array_001.png
+# .. image:: ../_static/sphx_glr_02_coherently_polarised_array_002.png
+
 UAV_Static_Pattern.display_pattern(plottype='Contour')
+
+# %%
+# .. image:: ../_static/sphx_glr_02_coherently_polarised_array_003.png
+# .. image:: ../_static/sphx_glr_02_coherently_polarised_array_004.png
 
 
