@@ -425,9 +425,15 @@ class antenna_pattern:
 
         It is import to note that for CST ASCII export format, that you select a plot range of -180 to 180 for phi, and that by defauly CST exports from 0 to 180 in theta, which
         is the opposite direction to the default for LyceanEM, so this data structures are flipped for consistency.
-        Inputs : file location
 
-        Returns : None
+        Parameters
+        -----------
+        file location : :class:`pathlib.Path`
+            file location
+
+        Returns
+        ---------
+        None
         """
         if file_location.suffix == ".txt":
             # file is a CST ffs format
@@ -493,7 +499,7 @@ class antenna_pattern:
 
         Parameters
         -----------
-        file_location : posix path
+        file_location : :class:`pathlib.Path`
             the path for the output file, including name
 
         Returns
