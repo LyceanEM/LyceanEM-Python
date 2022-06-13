@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import copy
 from subprocess import run
 
 import numpy as np
@@ -2693,3 +2694,87 @@ def parabolic_reflector_segment():
     reflector = o3d.geometry.TriangleMesh()
     mesh_points = o3d.geometry.PointCloud()
     return reflector, mesh_points
+
+def CASSIOPeiA_triplet(wavelength, triplet_number, triplet_spacing=1.0, offset_angle=0.0):
+    """
+    convinience function to create the CASSIOPeiA triplets, three dipole antennas with centres space a quarter
+    wavelength apart. The efield vectors are arranged for z direction polarisation.
+
+    Parameters
+    ----------
+    wavelength : float
+        the wavelength of interest
+    triplet_number: int
+        the number of triplets required, to be generated with center at the origin, and extending symmetrically
+        in the x axis. If the number is even then the central clusters will be spaced symmetrically either side of
+        the origin. If odd, then there will be a central cluster.
+    triplet_spacing : float
+        the spacing between the centres of the triplets in the xy plane (m)
+    offset_angle:float
+        offset angle of the primary antenna element from the x axis. Default is zero, but the clusters can be rotated
+        around by altering this parameter.
+
+    Returns
+    -------
+    source_points:
+        the positions of the antennas with normal vectors, the normals are defined arbitarily to aid in the helical
+        arrangement of the layers
+    efield_vectors:
+        the polarisation vectors of the triplets.
+    """
+    source_points=o3d.geometry.PointCloud()
+    efield_vectors=np.zeros((triplet_number*3,3),dtype=np.complex64)
+    efield_vectors[:,2]=1.0
+    triplet_points=np.zeros((3,3),dtype=np.float32)
+    #spacing is equivalent to an equilateral triangle
+    antenna_spacing=wavelength*0.25
+    triplet_points[0,0]=(3**0.5/3)*antenna_spacing
+    #rotate as required for primary element offset
+    offsetangle = np.radians(offset_angle)
+    rot_mat = np.asarray([[np.cos(offsetangle), -np.sin(offsetangle), 0], [np.sin(offsetangle), np.cos(offsetangle), 0], [0, 0, 1]])
+    triplet_points[0, :] = (triplet_points[0, :] * rot_mat)[:, 0]
+    angle=np.radians(120)
+    rot_mat=np.asarray([[np.cos(angle),-np.sin(angle),0],[np.sin(angle),np.cos(angle),0],[0,0,1]])
+    triplet_points[1,:]=(triplet_points[0,:]*rot_mat)[:,0]
+    angle = np.radians(240)
+    rot_mat = np.asarray([[np.cos(angle), -np.sin(angle), 0], [np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
+    triplet_points[2, :] = (triplet_points[0, :] * rot_mat)[:, 0]
+    #now lay out the clusters at the required spacing along the x axis.
+    outer_cluster=((triplet_number-1)/2)*triplet_spacing
+    cluster_centres=np.linspace(-outer_cluster,outer_cluster,triplet_number)
+    cluster_points=np.tile(triplet_points,[triplet_number,1])
+    for cluster in range(triplet_number):
+        cluster_points[cluster*3:(cluster+1)*3,0]+=cluster_centres[cluster]
+    normals=np.zeros((triplet_number*3,3),dtype=np.float32)
+    normals[:,1]=1
+    source_points.points = o3d.utility.Vector3dVector(cluster_points)
+    source_points.normals =o3d.utility.Vector3dVector(normals)
+    #create board and center
+    plane=o3d.geometry.TriangleMesh.create_box(width=2*(outer_cluster+triplet_spacing*0.5),height=wavelength*0.5,depth=wavelength*0.05)
+    plane.translate([-(outer_cluster+triplet_spacing*0.5),-wavelength*0.25,-wavelength*0.025],relative=True)
+
+    return source_points,plane,efield_vectors
+
+def CASSIOPeiA_Array(wavelength, num_rows, num_col, row_spacing=1.0, triplet_spacing=1.0, offset_angle=0.0, total_twist_angle=180):
+
+    outer_row=((num_rows-1)/2)*row_spacing
+    row_centres=np.linspace(-outer_row,outer_row,num_rows)
+    angle_offsets=np.linspace(-total_twist_angle/2,total_twist_angle/2,num_rows)
+    array_points=o3d.geometry.PointCloud()
+    array_structure=o3d.geometry.TriangleMesh()
+    #create row of triplet clusters
+    source_points,plane,efield_vectors=CASSIOPeiA_triplet(wavelength, num_col, triplet_spacing=triplet_spacing, offset_angle=offset_angle)
+    for row in range(num_rows):
+        temp_row=copy.deepcopy(source_points)
+        temp_plane=copy.deepcopy(plane)
+        temp_row.translate([0,0,row_centres[row]],relative=True)
+        temp_plane.translate([0,0,row_centres[row]],relative=True)
+        rotation_vector = np.radians(np.array([0, 0, angle_offsets[row]]))
+        rotation_matrix=o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector)
+        temp_row=GF.open3drotate(temp_row, rotation_matrix)
+        temp_plane = GF.open3drotate(temp_plane, rotation_matrix)
+        array_points+=temp_row
+        array_structure+=temp_plane
+
+    array_efield_vectors=np.tile(efield_vectors,[num_rows,1])
+    return array_points,array_structure,array_efield_vectors
