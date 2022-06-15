@@ -889,7 +889,7 @@ class antenna_pattern:
             the maximum directivity for each pattern
 
         """
-        Dtheta, Dphi, Dtotal, Dmax = EM.directivity_transformv2(
+        Dtheta, Dphi, Dtotal, Dmax = BM.directivity_transformv2(
             self.pattern[:, :, 0],
             self.pattern[:, :, 1],
             az_range=self.az_mesh[0, :],

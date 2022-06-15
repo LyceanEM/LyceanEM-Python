@@ -1188,6 +1188,41 @@ def PatternPlot(
 
     plt.show()
 
+def PatternPlot2D(data,
+    az,
+    pattern_min=-40,
+    plot_max=0.0,
+    plottype="Polar",
+    logtype="amplitude",
+    ticknum=6,
+    title_text=None,
+    ):
+    # condition data
+    data = np.abs(data)
+    # calculate log profile
+    if logtype == "power":
+        logdata = 10 * np.log10(data)
+        bar_label = "Relative Power (dB)"
+    else:
+        logdata = 20 * np.log10(data)
+
+    if plot_max == 0.0:
+        logdata -= np.nanmax(logdata)
+        bar_label = "Normalised Directivity (dBi)"
+    else:
+        bar_label = "Directivity (dBi)"
+
+    logdata[logdata <= pattern_min] = pattern_min
+    tick_marks=np.linspace(pattern_min, plot_max, ticknum)
+    az_rad=np.radians(az)
+    fig, ax = plt.subplots(subplot_kw={'projection':'polar'})
+    ax.plot(az_rad, logdata)
+    ax.set_rmax(plot_max)
+    ax.set_rticks(tick_marks)  # Less radial ticks
+    ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
+    ax.grid(True)
+    plt.show()
+
 # noinspection PyTypeChecker
 @cuda.jit(device=True)
 def point_directivity(Ea, Eb, az_range, el_range, interest_index):
