@@ -149,10 +149,7 @@ def calculate_farfield(
         conformal_E_vectors = np.repeat(
             desired_E_axis.reshape(1, 3).astype(np.float32), num_sources, axis=0
         )
-    output_power = 1  # dBwatts
-    powerdbm = 10 * np.log10(output_power) + 30
-    receiver_impedence = 50
-    v_transmit = ((10 ** (powerdbm / 20)) * receiver_impedence) ** 0.5
+
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
         scatter_points = o3d.geometry.PointCloud()
@@ -170,9 +167,9 @@ def calculate_farfield(
         if source_weights is None:
             unified_weights[0:num_sources, :] = (
                 conformal_E_vectors / num_sources
-            ) * v_transmit  # set total amplitude to 1 for the aperture
+            )   # set total amplitude to 1 for the aperture
         else:
-            unified_weights[0:num_sources, :] = source_weights * v_transmit
+            unified_weights[0:num_sources, :] = source_weights
 
         unified_weights[
             num_sources : num_sources + num_sinks, :
@@ -251,9 +248,9 @@ def calculate_farfield(
         if source_weights is None:
             unified_weights[0:num_sources, :] = (
                 conformal_E_vectors / num_sources
-            ) * v_transmit  # set total amplitude to 1 for the aperture
+            )  # set total amplitude to 1 for the aperture
         else:
-            unified_weights[0:num_sources, :] = source_weights * v_transmit
+            unified_weights[0:num_sources, :] = source_weights
         unified_weights[
             num_sources : num_sources + num_sinks, :
         ] = 1  # / num_sinks  # set total amplitude to 1 for the aperture
@@ -366,13 +363,13 @@ def calculate_farfield(
             point_informationv2[0:num_sources]["ez"] = 0.0
             point_informationv2[element]["ex"] = (
                 conformal_E_vectors[element, 0] / num_sources
-            ) * v_transmit
+            )
             point_informationv2[element]["ey"] = (
                 conformal_E_vectors[element, 1] / num_sources
-            ) * v_transmit
+            )
             point_informationv2[element]["ez"] = (
                 conformal_E_vectors[element, 2] / num_sources
-            ) * v_transmit
+            )
             # unified_weights[0:num_sources, :] = 0.0
             # unified_weights[element, :] = (conformal_E_vectors[element, :] / num_sources)*v_transmit
             scatter_map = EM.EMGPUFreqDomain(
@@ -479,19 +476,23 @@ def calculate_scattering(
 
     """
     if desired_E_axis.size > 3:
-        # multiple excitations requried
-        multiE = True
+        if not elements:
+            multiE = True
+        else:
+            multiE=False
     else:
         multiE = False
 
     num_sources = len(np.asarray(aperture_coords.points))
     num_sinks = len(np.asarray(sink_coords.points))
+
     environment_triangles = antenna_solid.triangles_base_raycaster()
+
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
         scatter_points = o3d.geometry.PointCloud()
 
-        if ~multiE:
+        if not multiE:
             if project_vectors:
                 conformal_E_vectors = EM.calculate_conformalVectors(
                     desired_E_axis[0, :],
@@ -508,9 +509,12 @@ def calculate_scattering(
                     np.asarray(aperture_coords.normals).astype(np.float32),
                 )
             else:
-                conformal_E_vectors = np.repeat(
-                    desired_E_axis[0, :].astype(np.float32), num_sources, axis=0
-                ).reshape(num_sources, 3)
+                if desired_E_axis.size == 3:
+                    conformal_E_vectors = np.repeat(
+                        desired_E_axis[0, :].astype(np.float32), num_sources, axis=0
+                    ).reshape(num_sources, 3)
+                else:
+                    conformal_E_vectors=desired_E_axis.reshape(num_sources,3)
 
         unified_model = np.append(
             np.asarray(aperture_coords.points).astype(np.float32),
@@ -587,7 +591,7 @@ def calculate_scattering(
                 antenna_solid, 1e-6, (wavelength * mesh_resolution) ** 2
             )
 
-        if ~multiE:
+        if not multiE:
             if project_vectors:
                 conformal_E_vectors = EM.calculate_conformalVectors(
                     desired_E_axis[0, :].reshape(1, 3),
@@ -604,9 +608,12 @@ def calculate_scattering(
                     np.asarray(aperture_coords.normals).astype(np.float32),
                 )
             else:
-                conformal_E_vectors = np.repeat(
-                    desired_E_axis[0, :].astype(np.float32).reshape(1, 3), num_sources, axis=0
-                )
+                if desired_E_axis.size == 3:
+                    conformal_E_vectors = np.repeat(
+                        desired_E_axis[0, :].astype(np.float32).reshape(1, 3), num_sources, axis=0
+                    )
+                else:
+                    conformal_E_vectors=desired_E_axis.reshape(num_sources,3)
 
         unified_model = np.append(
             np.append(

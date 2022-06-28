@@ -1372,13 +1372,13 @@ def OTAEllipsoid(
                 major_axis_size, minor_axis_size, 6e-3, max_grid, sides=gridded_sides
             )
 
-        v1_plate.rotate(
+        v1_plate=GF.open3drotate(v1_plate,
             o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(
                 np.asarray([np.arcsin(-1.0), 0.0, 0.0])
             ),
             center=False,
         )
-        v1_plate.rotate(
+        v1_plate=GF.open3drotate(v1_plate,
             o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(
                 [0.0, 0.0, reflector_pointers[2]]
             ),
@@ -1922,7 +1922,7 @@ def coneReflector(radius, height):
         radius, height, resolution, split
     )
     translate_dist = np.array([0, 0, 3])
-    reflector1.rotate(
+    reflector1=GF.open3drotate(reflector1,
         o3d.geometry.TriangleMesh.get_rotation_matrix_from_axis_angle(
             np.array([0.0, np.radians(180), 0.0])
         ),
