@@ -205,6 +205,113 @@ def calc_dv_norm(source, target, direction, length):
     direction = (target - source) / length
     return direction, length
 
+class points:
+    """
+    Structure class to store information about the geometry and materials in the environment, holding the seperate
+    shapes as :class:`open3d.geometry.TriangleMesh` data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
+    This class will be developed to include material parameters to enable more complex modelling.
+
+    Units should be SI, metres
+
+    This is the default class for passing structures to the different models.
+    """
+
+    def __init__(self, points):
+        # solids is a list of open3D :class:`open3d.geometry.TriangleMesh` structures
+        self.points = []
+        for item in points:
+            self.points.append(item)
+        # self.materials = []
+        # for item in material_characteristics:
+        #    self.materials.append(item)
+
+    def remove_points(self, deletion_index):
+        """
+        removes a component or components from the class
+
+        Parameters
+        -----------
+        deletion_index : list
+            list of integers or numpy array of integers to the solids to be removed
+
+        Returns
+        --------
+        None
+        """
+        for entry in range(len(deletion_index)):
+            self.points.pop(deletion_index[entry])
+            self.materials.pop(deletion_index[entry])
+
+    def add_points(self, new_points):
+        """
+        adds a component or components from the structure
+
+        Parameters
+        -----------
+        new_points : :class:`open3d.geometry.PointCloud`
+            the point cloud to be added to the point cloud collection
+
+        Returns
+        --------
+        None
+
+        """
+        self.points.append(new_points)
+        # self.materials.append(new_materials)
+
+    def rotate_points(
+        self, rotation_matrix, rotation_centre=np.zeros((3, 1), dtype=np.float32)
+    ):
+        """
+        rotates the components of the structure around a common point, default is the origin
+
+        Parameters
+        ----------
+        rotation_matrix : open3d rotation matrix
+            o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector)
+        rotation_centre : 1*3 numpy float array
+            centre of rotation for the structures
+
+        Returns
+        --------
+        None
+        """
+        # warning, current commond just rotates around the origin, and until Open3D can be brought up to the
+        # latest version without breaking BlueCrystal reqruiements, this will require additional code.
+        for item in range(len(self.points)):
+            self.point[item] = GF.open3drotate(
+                self.point[item], rotation_matrix, rotation_centre
+            )
+
+    def translate_points(self, vector):
+        """
+        translates the point clouds in the class by the given cartesian vector (x,y,z)
+
+        Parameters
+        -----------
+        vector : 1*3 numpy array of floats
+            The desired translation vector for the structures
+
+        Returns
+        --------
+        None
+        """
+        for item in range(len(self.points)):
+            self.points[item].translate(vector)
+
+    def export_points(self):
+        """
+        combines all the points in the collection as a combined point cloud for modelling
+
+        Returns
+        -------
+        combined points
+        """
+        combined_points=o3d.geometry.PointCloud()
+        for item in range(len(self.points)):
+            combined_points=combined_points+self.points[item]
+
+        return combined_points
 
 class structures:
     """
@@ -220,8 +327,8 @@ class structures:
     def __init__(self, solids):
         # solids is a list of open3D :class:`open3d.geometry.TriangleMesh` structures
         self.solids = []
-        for item in solids:
-            self.solids.append(item)
+        for item in range(len(solids)):
+            self.solids.append(solids[item])
         # self.materials = []
         # for item in material_characteristics:
         #    self.materials.append(item)
@@ -277,9 +384,8 @@ class structures:
         --------
         None
         """
-        # warning, current commond just rotates around the origin, and until Open3D can be brought up to the
-        # latest version without breaking BlueCrystal reqruiements, this will require additional code.
-        for item in self.solids:
+
+        for item in range(len(self.solids)):
             self.solids[item] = GF.open3drotate(
                 self.solids[item], rotation_matrix, rotation_centre
             )
@@ -297,8 +403,41 @@ class structures:
         --------
         None
         """
-        for item in self.solids:
+        for item in range(len(self.solids)):
             self.solids[item].translate(vector)
+
+    def export_vertices(self,structure_index=None):
+        """
+        Exports the vertices for either all
+
+        Parameters
+        ----------
+        structure_index : list
+            list of structures of interest for vertices export
+
+        Returns
+        -------
+        point_cloud :
+        """
+        point_cloud=o3d.geometry.PointCloud()
+        if structure_index==None:
+            #if no structure index is provided, then generate an index including all items in the class
+            structure_index=[]
+            for item in range(len(self.solids)):
+                structure_index.append(item)
+
+        for item in structure_index:
+            temp_cloud=o3d.geometry.PointCloud()
+            temp_cloud.points=self.solids[item].vertices
+            if self.solids[item].has_vertex_normals():
+                temp_cloud.normals=self.solids[item].vertex_normals
+            else:
+                self.solids[item].compute_vertex_normals()
+                temp_cloud.normals = self.solids[item].vertex_normals
+
+            point_cloud=point_cloud+temp_cloud
+
+        return point_cloud
 
     def triangles_base_raycaster(self):
         """
@@ -320,6 +459,75 @@ class structures:
 
         return triangles
 
+
+class antenna_structures:
+    """
+    Dedicated class to store information on a specific antenna, including aperture points
+    as :class:`open3d.geometry.PointCloud` data structures, and structure shapes
+    as :class:`open3d.geometry.TriangleMesh` data structures. Everything in the class will be considered an integrated
+    unit, rotating and moving together. This inherits functions from the structures and points classes.
+
+    This class will be developed to include material parameters to enable more complex modelling.
+
+    Units should be SI, metres
+
+    """
+
+    def __init__(self, structures, points):
+
+        self.structures = structures
+        self.points = points
+
+    def rotate_antenna(self,rotation_matrix, rotation_centre=np.zeros((3, 1), dtype=np.float32)
+    ):
+        """
+        rotates the components of the structure around a common point, default is the origin
+
+        Parameters
+        ----------
+        rotation_matrix : open3d rotation matrix
+            o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector)
+        rotation_centre : 1*3 numpy float array
+            centre of rotation for the structures
+
+        Returns
+        --------
+        None
+        """
+
+        for item in self.structures.solids:
+            self.structures.solids[item] = GF.open3drotate(
+                self.structures.solids[item], rotation_matrix, rotation_centre
+            )
+        for item in self.points.points:
+            self.points.points[item] = GF.open3drotate(
+                self.points.points[item], rotation_matrix, rotation_centre
+            )
+
+    def translate_antenna(self,vector):
+        """
+        translates the structures and points in the class by the given cartesian vector (x,y,z)
+
+        Parameters
+        -----------
+        vector : 1*3 numpy array of floats
+            The desired translation vector for the antenna
+
+        Returns
+        --------
+        None
+        """
+        for item in self.structures.solids:
+            self.structures.solids[item].translate(vector)
+        for item in self.points.points:
+            self.points.points[item].translate(vector)
+
+    def export_all_points(self):
+
+        point_cloud=self.points.export_points()
+        point_cloud=point_cloud+self.structures.export_vertices()
+
+        return point_cloud
 
 class antenna_pattern:
     """

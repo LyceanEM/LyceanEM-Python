@@ -246,10 +246,10 @@ def MaximumDirectivityMap(
     Ephi,
     source_coords,
     wavelength,
-    az_res,
-    elev_res,
     az_range=np.linspace(-180.0, 180.0, 19),
     elev_range=np.linspace(-90.0, 90.0, 19),
+    az_index=None,
+    elev_index=None,
     forming="Total",
     total_solid_angle=(4 * np.pi),
     phase_resolution=24,
@@ -269,14 +269,14 @@ def MaximumDirectivityMap(
         The source coordinates of each element, corresponding to the order of element patterns in Etheta and Ephi. Units should be m
     wavelength : float
         The wavelength of interest
-    az_res : int
-        Azimuth resolution
-    elev_res : int
-        Elevation resolution
     az_range : 1D numpy array of float
         The azimuth values for the farfield mesh, arranged from smallest to largest
     elev_range : 1D numpy array of float
         The elevation values for the farfield mesh, arranged from smallest to largest
+    az_index : 1D array of int
+        optional parameter, can be specified as an index of the azimuth values of interest via indexing, defaults to [None], which ensures all values are covered
+    elev_index : 1D array of int
+        optional parameter, can be specified as an index of the elevation values of interest via indexing, defaults to [None], which ensures all values are covered
     forming : str
         Which polarisation should be beamformed, the default is [Total], beamforming the total directivity pattern,
         avoiding issues with elements which have a strongly $E\\theta$ or $E\\phi$ pattern. This can also be set
@@ -285,7 +285,7 @@ def MaximumDirectivityMap(
         the total solid angle covered by the farfield patterns, this defaults to $4\\pi$ for a full spherical pattern
     phase_resolution : int
         the desired phase resolution of the beamforming architecture in bits. Default is [24], which means no practical
-        truncation will occur. If beam mapping is desired at a single resoltion is required, then this can be set
+        truncation will occur. If beam mapping at a single resolution is required, then this can be set
         between 2 and 24. If multiple values are required, it may be more efficient to
         use :func:`lyceanem.electromagnetics.beamforming.MaximumDirectivityMapDiscrete`, which allows a 1D array of
         resolutions to be supplied, and produces a maximum directivity map for each.
@@ -297,13 +297,25 @@ def MaximumDirectivityMap(
         that command angle. Arranged as elev axis, azimuth axis, Dtheta,Dphi,Dtot
 
     """
-    source_points=np.asarray(source_coords.points)
+
+    if elev_index==None:
+        #if no elev index is provided then generate for all possible values (assumes every elevation point is of interest)
+        elev_index = np.linspace(0, len(elev_range) - 1, len(elev_range)).astype(int)
+
+    if az_index==None:
+        #if no az index is provided then generate for all possible values (assumes every azimuth point is of interest)
+        az_index = np.linspace(0, len(az_range) - 1, len(az_range)).astype(int)
+
+    az_res=len(az_index)
+    elev_res=len(elev_index)
+    source_points = np.asarray(source_coords.points)
     directivity_map = np.zeros((elev_res, az_res, 3))
     command_angles = np.zeros((2), dtype=np.float32)
+
     for az_inc in range(az_res):
         for elev_inc in range(elev_res):
-            command_angles[0] = az_range[az_inc]
-            command_angles[1] = elev_range[elev_inc]
+            command_angles[0] = az_range[az_index[az_inc]]
+            command_angles[1] = elev_range[elev_index[elev_inc]]
             steering_vector = np.zeros((1, 3))
             (
                 steering_vector[0, 0],
@@ -1192,13 +1204,22 @@ def PatternPlot2D(data,
     az,
     pattern_min=-40,
     plot_max=0.0,
-    plottype="Polar",
     logtype="amplitude",
     ticknum=6,
+    line_labels=None,
     title_text=None,
     ):
     # condition data
     data = np.abs(data)
+
+    if data.ndim>1:
+        #multi line plot, condition data, as second axis should be the number of different lines.
+        multiline=True
+        num_lines = data.shape[1]
+    else:
+        multiline=False
+
+
     # calculate log profile
     if logtype == "power":
         logdata = 10 * np.log10(data)
@@ -1216,11 +1237,30 @@ def PatternPlot2D(data,
     tick_marks=np.linspace(pattern_min, plot_max, ticknum)
     az_rad=np.radians(az)
     fig, ax = plt.subplots(subplot_kw={'projection':'polar'})
-    ax.plot(az_rad, logdata)
+    if multiline==True:
+        for line in range(num_lines):
+            if not (line_labels == None):
+                ax.plot(az_rad,logdata[:,line],label=line_labels[line])
+            else:
+                ax.plot(az_rad, logdata[:, line])
+    else:
+        ax.plot(az_rad, logdata)
+
     ax.set_rmax(plot_max)
     ax.set_rticks(tick_marks)  # Less radial ticks
     ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
     ax.grid(True)
+    if not (line_labels == None):
+        #legend position
+        legend_angle = np.deg2rad(30)
+        ax.legend(loc="lower left",
+                  bbox_to_anchor=(.5 + np.cos(legend_angle) / 2, .5 + np.sin(legend_angle) / 2))
+
+    if not(title_text==None):
+        ax.set_title(title_text, va='bottom')
+
+    label_angle=np.deg2rad(280)
+    ax.text(label_angle,plot_max*1.2,bar_label)
     plt.show()
 
 # noinspection PyTypeChecker
