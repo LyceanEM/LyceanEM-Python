@@ -28,7 +28,7 @@ def antenna_stats(freq, x, y, z):
     print("ka={:1.5f}".format(k * a))
     print("Radius in Wavelengths={:1.5f}".format(a / wavelength))
 
-def antenna_size(freq,antenna_structure):
+def antenna_size(freq,antenna):
     """
     Utility for calculating the electrical size of a given antenna structure
 
@@ -44,14 +44,18 @@ def antenna_size(freq,antenna_structure):
     ka : float
         electrical size of antenna structure for given frequency
     """
-    total_points=antenna_structure.export_all_points()
-    max_points=total_points.get_max_bound()
-    min_points = total_points.get_min_bound()
-    x=max_points[0]+np.abs(min_points[0])
-    y = max_points[1] + np.abs(min_points[1])
-    z = max_points[2] + np.abs(min_points[2])
+    total_points=antenna.export_all_points()
+    #calculate bounding box
+    bounding_box=total_points.get_oriented_bounding_box()
+    max_points=bounding_box.get_max_bound()
+    min_points = bounding_box.get_min_bound()
+    center=bounding_box.get_center()
+    max_dist = np.sqrt(
+        (max_points[0] - center[0]) ** 2 + (max_points[1] - center[1]) ** 2 + (max_points[2] - center[2]) ** 2)
+    min_dist=np.sqrt((center[0]-min_points[0])**2+(center[1]-min_points[1])**2+(center[2]-min_points[2])**2)
+    a=np.mean([max_dist,min_dist])
     wavelength = 3e8 / freq
     k = (2 * np.pi) / wavelength
-    ka = np.sqrt((x) ** 2 + (y) ** 2 + (z) ** 2) * 0.5
+    ka = k*a
     return ka
 
