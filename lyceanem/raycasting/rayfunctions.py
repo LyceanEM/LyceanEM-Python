@@ -673,23 +673,26 @@ def convertTriangles(triangle_object):
     """
     convert o3d triangle object to ray tracer triangle class
     """
-    vertices = np.asarray(triangle_object.vertices)
-    tri_index = np.asarray(triangle_object.triangles)
-    normals = np.asarray(triangle_object.triangle_normals)
-    triangles = np.empty(len(tri_index), dtype=base.triangle_t)
-    for idx in range(len(tri_index)):
-        triangles[idx]["v0x"] = np.single(vertices[tri_index[idx, 0], 0])
-        triangles[idx]["v0y"] = np.single(vertices[tri_index[idx, 0], 1])
-        triangles[idx]["v0z"] = np.single(vertices[tri_index[idx, 0], 2])
-        triangles[idx]["v1x"] = np.single(vertices[tri_index[idx, 1], 0])
-        triangles[idx]["v1y"] = np.single(vertices[tri_index[idx, 1], 1])
-        triangles[idx]["v1z"] = np.single(vertices[tri_index[idx, 1], 2])
-        triangles[idx]["v2x"] = np.single(vertices[tri_index[idx, 2], 0])
-        triangles[idx]["v2y"] = np.single(vertices[tri_index[idx, 2], 1])
-        triangles[idx]["v2z"] = np.single(vertices[tri_index[idx, 2], 2])
-        # triangles[idx]['normx']=np.single(normals[idx,0])
-        # triangles[idx]['normy']=np.single(normals[idx,1])
-        # triangles[idx]['normz']=np.single(normals[idx,2])
+    if triangle_object==None:
+        triangles = np.empty(0, dtype=base.triangle_t)
+    else:
+        vertices = np.asarray(triangle_object.vertices)
+        tri_index = np.asarray(triangle_object.triangles)
+        normals = np.asarray(triangle_object.triangle_normals)
+        triangles = np.empty(len(tri_index), dtype=base.triangle_t)
+        for idx in range(len(tri_index)):
+            triangles[idx]["v0x"] = np.single(vertices[tri_index[idx, 0], 0])
+            triangles[idx]["v0y"] = np.single(vertices[tri_index[idx, 0], 1])
+            triangles[idx]["v0z"] = np.single(vertices[tri_index[idx, 0], 2])
+            triangles[idx]["v1x"] = np.single(vertices[tri_index[idx, 1], 0])
+            triangles[idx]["v1y"] = np.single(vertices[tri_index[idx, 1], 1])
+            triangles[idx]["v1z"] = np.single(vertices[tri_index[idx, 1], 2])
+            triangles[idx]["v2x"] = np.single(vertices[tri_index[idx, 2], 0])
+            triangles[idx]["v2y"] = np.single(vertices[tri_index[idx, 2], 1])
+            triangles[idx]["v2z"] = np.single(vertices[tri_index[idx, 2], 2])
+            # triangles[idx]['normx']=np.single(normals[idx,0])
+            # triangles[idx]['normy']=np.single(normals[idx,1])
+            # triangles[idx]['normz']=np.single(normals[idx,2])
 
     return triangles
 

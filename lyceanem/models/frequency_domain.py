@@ -143,11 +143,11 @@ def calculate_farfield(
     environment_triangles = antenna_solid.triangles_base_raycaster()
     if project_vectors:
         conformal_E_vectors = EM.calculate_conformalVectors(
-            desired_E_axis, np.asarray(aperture_coords.normals).astype(np.float32)
+            desired_E_axis, np.asarray(aperture_coords.normals).astype(np.complex64)
         )
     else:
         conformal_E_vectors = np.repeat(
-            desired_E_axis.reshape(1, 3).astype(np.float32), num_sources, axis=0
+            desired_E_axis.reshape(1, 3).astype(np.complex64), num_sources, axis=0
         )
 
     if scattering == 0:
