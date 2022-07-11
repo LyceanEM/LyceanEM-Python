@@ -3527,11 +3527,11 @@ def DisplayESources(
 
 @njit(cache=True, nogil=True)
 def orthconformalvector(desired_axis, point_normal):
-    ray_u = np.zeros((3), dtype=np.float32)
-    ray_v = np.zeros((3), dtype=np.float32)
-    x_vec = np.zeros((3), dtype=np.float32)
-    y_vec = np.zeros((3), dtype=np.float32)
-    z_vec = np.zeros((3), dtype=np.float32)
+    ray_u = np.zeros((3), dtype=np.complex64)
+    ray_v = np.zeros((3), dtype=np.complex64)
+    x_vec = np.zeros((3), dtype=np.complex64)
+    y_vec = np.zeros((3), dtype=np.complex64)
+    z_vec = np.zeros((3), dtype=np.complex64)
     x_vec[0] = 1
     y_vec[1] = 1
     z_vec[2] = 1
@@ -3557,16 +3557,18 @@ def orthconformalvector(desired_axis, point_normal):
             np.cross(z_vec, desired_axis)
         )
 
-    # ray_v=np.cross(desired_axis,ray_u)
-    conformal_vector = ray_u
-    return conformal_vector
+    #ray_v=np.cross(desired_axis,ray_u)
+    #ray_u
+
+    return ray_u
 
 
 # @njit(cache=True, nogil=True)
 def calculate_conformalVectors(desired_E_axis, source_normals):
     # based upon the provided source normal vectors and the desired polrization axis, calculate the conformal E vectors required for conformal current sources.
-    conformal_E_vectors = np.zeros((source_normals.shape[0], 3), dtype=np.float32)
-    temp_axis = np.zeros((source_normals.shape[0], 3), dtype=np.float32)
+    conformal_E_vectors = np.zeros((source_normals.shape[0], 3), dtype=np.complex64)
+    temp_axis = np.zeros((source_normals.shape[0], 3), dtype=np.complex64)
+
     for normal_inc in range(len(source_normals)):
         # generate a normalised orthogonal vector
 
@@ -3579,7 +3581,7 @@ def calculate_conformalVectors(desired_E_axis, source_normals):
         else:
             temp_axis[normal_inc, :] = np.cross(
                 desired_E_axis, source_normals[normal_inc, :]
-            ) / np.linalg.norm(np.cross(desired_E_axis, source_normals[normal_inc, :]))
+            ) / np.linalg.norm(np.cross(desired_E_axis.astype(np.complex64), source_normals[normal_inc, :]))
             conformal_E_vectors[normal_inc, :] = np.cross(
                 -1 * temp_axis[normal_inc, :], source_normals[normal_inc, :]
             ) / np.linalg.norm(

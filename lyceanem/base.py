@@ -428,15 +428,19 @@ class structures:
                 structure_index.append(item)
 
         for item in structure_index:
-            temp_cloud=o3d.geometry.PointCloud()
-            temp_cloud.points=self.solids[item].vertices
-            if self.solids[item].has_vertex_normals():
-                temp_cloud.normals=self.solids[item].vertex_normals
+            if self.solids[item]==None:
+                #do nothing
+                temp_cloud = o3d.geometry.PointCloud()
             else:
-                self.solids[item].compute_vertex_normals()
-                temp_cloud.normals = self.solids[item].vertex_normals
+                temp_cloud = o3d.geometry.PointCloud()
+                temp_cloud.points=self.solids[item].vertices
+                if self.solids[item].has_vertex_normals():
+                    temp_cloud.normals=self.solids[item].vertex_normals
+                else:
+                    self.solids[item].compute_vertex_normals()
+                    temp_cloud.normals = self.solids[item].vertex_normals
 
-            point_cloud=point_cloud+temp_cloud
+                point_cloud=point_cloud+temp_cloud
 
         return point_cloud
 
@@ -496,11 +500,11 @@ class antenna_structures:
         None
         """
 
-        for item in self.structures.solids:
+        for item in range(len(self.structures.solids)):
             self.structures.solids[item] = GF.open3drotate(
                 self.structures.solids[item], rotation_matrix, rotation_centre
             )
-        for item in self.points.points:
+        for item in range(len(self.points.points)):
             self.points.points[item] = GF.open3drotate(
                 self.points.points[item], rotation_matrix, rotation_centre
             )
@@ -565,6 +569,23 @@ class antenna_structures:
         wavelength = 3e8 / freq
         directivity=(4*np.pi*projected_area)/(wavelength**2)
         return directivity
+
+    def visualise_antenna(self):
+        #use open3d to display the
+        total_points = self.export_all_points()
+        # calculate bounding box
+        bounding_box = total_points.get_oriented_bounding_box()
+        max_points = bounding_box.get_max_bound()
+        min_points = bounding_box.get_min_bound()
+        center = bounding_box.get_center()
+        max_dist = np.sqrt(
+            (max_points[0] - center[0]) ** 2 + (max_points[1] - center[1]) ** 2 + (max_points[2] - center[2]) ** 2)
+        min_dist = np.sqrt(
+            (center[0] - min_points[0]) ** 2 + (center[1] - min_points[1]) ** 2 + (center[2] - min_points[2]) ** 2)
+        a = np.mean([max_dist, min_dist])
+        #
+        mesh_frame = [o3d.geometry.TriangleMesh.create_coordinate_frame(size=a, origin=[0, 0, 0])]
+        o3d.visualization.draw_geometries(self.points.points+self.structures.solids+mesh_frame)
 
 class antenna_pattern:
     """
