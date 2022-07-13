@@ -8,7 +8,7 @@ except PackageNotFoundError:
     # package is not installed
     pass
 
-__copyright__ = '''\
+__copyright__ = """\
 © Timothy Pelham 2016-2022
-'''
-__license__ = 'GNU Affero General Public License v3'
+"""
+__license__ = "GNU Affero General Public License v3"

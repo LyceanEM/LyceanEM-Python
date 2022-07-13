@@ -2,7 +2,7 @@ import numpy as np
 import open3d as o3d
 import scipy.constants
 
-from ..base import scattering_t
+from ..base_types import scattering_t
 from ..electromagnetics import empropagation as EM
 from ..geometry import targets as TL
 from ..raycasting import rayfunctions as RF
@@ -32,7 +32,7 @@ def calculate_scattering(
         source coordinates
     sink_coords : :class:`open3d.geometry.TriangleMesh`
         sink coordinates
-    antenna_solid : :class:`lyceanem.base.structures`
+    antenna_solid : :class:`lyceanem.base_classes.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
     desired_E_axis : 1D numpy array of floats
         the desired excitation vector, can be a 1*3 array or a n*3 array if multiple different exciations are desired in one lauch

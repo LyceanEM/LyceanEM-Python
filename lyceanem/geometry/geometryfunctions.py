@@ -118,6 +118,7 @@ def open3drotate(
 
     return item
 
+
 def get_cross_prod_mat(pVec_Arr):
     # pVec_Arr shape (3)
     qCross_prod_mat = np.array(

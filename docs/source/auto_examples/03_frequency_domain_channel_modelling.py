@@ -120,7 +120,7 @@ reflectorplate = GF.open3drotate(
     o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
 )
 
-from lyceanem.base import structures
+from lyceanem.base_classes import structures
 
 blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_structure])
 

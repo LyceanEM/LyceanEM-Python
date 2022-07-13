@@ -52,7 +52,7 @@ o3d.visualization.draw_geometries([body, array,source_coords,mesh_frame])
 # .. image:: ../_static/UAVArraywithPoints.png
 
 
-from lyceanem.base import structures
+from lyceanem.base_classes import structures
 
 blockers = structures([body,array])
 

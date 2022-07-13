@@ -50,12 +50,21 @@ def Steering_Efficiency(
         tot_index = 10 * np.log10(np.abs(Dtot)) >= (
             10 * np.log10(np.nanmax(np.abs(Dtot))) - 3
         )
-        #setheta = (np.sum(a_index) / (Dtheta.shape[0] * Dtheta.shape[1])) * 100
-        #sephi = (np.sum(b_index) / (Dphi.shape[0] * Dphi.shape[1])) * 100
-        #setot = (np.sum(tot_index) / (Dtot.shape[0] * Dtot.shape[1])) * 100
-        setheta=((np.sum(a_index)*(first_dimension_angle*second_dimension_angle))/angular_coverage)*100
-        sephi=((np.sum(b_index)*(first_dimension_angle*second_dimension_angle))/angular_coverage)*100
-        setot=((np.sum(tot_index)*(first_dimension_angle*second_dimension_angle))/angular_coverage)*100
+        # setheta = (np.sum(a_index) / (Dtheta.shape[0] * Dtheta.shape[1])) * 100
+        # sephi = (np.sum(b_index) / (Dphi.shape[0] * Dphi.shape[1])) * 100
+        # setot = (np.sum(tot_index) / (Dtot.shape[0] * Dtot.shape[1])) * 100
+        setheta = (
+            (np.sum(a_index) * (first_dimension_angle * second_dimension_angle))
+            / angular_coverage
+        ) * 100
+        sephi = (
+            (np.sum(b_index) * (first_dimension_angle * second_dimension_angle))
+            / angular_coverage
+        ) * 100
+        setot = (
+            (np.sum(tot_index) * (first_dimension_angle * second_dimension_angle))
+            / angular_coverage
+        ) * 100
 
     return setheta, sephi, setot
 
@@ -298,16 +307,16 @@ def MaximumDirectivityMap(
 
     """
 
-    if elev_index==None:
-        #if no elev index is provided then generate for all possible values (assumes every elevation point is of interest)
+    if elev_index == None:
+        # if no elev index is provided then generate for all possible values (assumes every elevation point is of interest)
         elev_index = np.linspace(0, len(elev_range) - 1, len(elev_range)).astype(int)
 
-    if az_index==None:
-        #if no az index is provided then generate for all possible values (assumes every azimuth point is of interest)
+    if az_index == None:
+        # if no az index is provided then generate for all possible values (assumes every azimuth point is of interest)
         az_index = np.linspace(0, len(az_range) - 1, len(az_range)).astype(int)
 
-    az_res=len(az_index)
-    elev_res=len(elev_index)
+    az_res = len(az_index)
+    elev_res = len(elev_index)
     source_points = np.asarray(source_coords.points)
     directivity_map = np.zeros((elev_res, az_res, 3))
     command_angles = np.zeros((2), dtype=np.float32)
@@ -764,7 +773,6 @@ def MaximumfieldMapDiscrete(
     return efield_map
 
 
-
 def PatternTransform3D(
     norm_magnitudes,
     min_level=-40,
@@ -950,6 +958,7 @@ def directivity_transform(
 
     return Dtheta, Dphi, Dtot, Dmax
 
+
 @njit(cache=True, nogil=True)
 def directivity_transformv2(
     Etheta,
@@ -1010,6 +1019,7 @@ def directivity_transformv2(
     Dtot = Utotal / Uav
 
     return Dtheta, Dphi, Dtot, Dmax
+
 
 @njit(cache=True, nogil=True)
 def WeightTruncation(weights, resolution):
@@ -1188,7 +1198,7 @@ def PatternPlot(
         ax.set_yticks(np.linspace(-90, 90.0, 13))
         ax.set_xlabel("Azimuth (degrees)")
         ax.set_ylabel("Elevation (degrees)")
-        #setup for 3dB contours
+        # setup for 3dB contours
         contournum = np.ceil((plot_max - pattern_min) / 3).astype(int)
         levels2 = np.linspace(-contournum * 3, plot_max, contournum + 1)
         CS4 = ax.contour(
@@ -1200,7 +1210,9 @@ def PatternPlot(
 
     plt.show()
 
-def PatternPlot2D(data,
+
+def PatternPlot2D(
+    data,
     az,
     pattern_min=-40,
     plot_max=0.0,
@@ -1208,17 +1220,16 @@ def PatternPlot2D(data,
     ticknum=6,
     line_labels=None,
     title_text=None,
-    ):
+):
     # condition data
     data = np.abs(data)
 
-    if data.ndim>1:
-        #multi line plot, condition data, as second axis should be the number of different lines.
-        multiline=True
+    if data.ndim > 1:
+        # multi line plot, condition data, as second axis should be the number of different lines.
+        multiline = True
         num_lines = data.shape[1]
     else:
-        multiline=False
-
+        multiline = False
 
     # calculate log profile
     if logtype == "power":
@@ -1234,13 +1245,13 @@ def PatternPlot2D(data,
         bar_label = "Directivity (dBi)"
 
     logdata[logdata <= pattern_min] = pattern_min
-    tick_marks=np.linspace(pattern_min, plot_max, ticknum)
-    az_rad=np.radians(az)
-    fig, ax = plt.subplots(subplot_kw={'projection':'polar'})
-    if multiline==True:
+    tick_marks = np.linspace(pattern_min, plot_max, ticknum)
+    az_rad = np.radians(az)
+    fig, ax = plt.subplots(subplot_kw={"projection": "polar"})
+    if multiline == True:
         for line in range(num_lines):
             if not (line_labels == None):
-                ax.plot(az_rad,logdata[:,line],label=line_labels[line])
+                ax.plot(az_rad, logdata[:, line], label=line_labels[line])
             else:
                 ax.plot(az_rad, logdata[:, line])
     else:
@@ -1251,17 +1262,23 @@ def PatternPlot2D(data,
     ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
     ax.grid(True)
     if not (line_labels == None):
-        #legend position
+        # legend position
         legend_angle = np.deg2rad(30)
-        ax.legend(loc="lower left",
-                  bbox_to_anchor=(.5 + np.cos(legend_angle) / 2, .5 + np.sin(legend_angle) / 2))
+        ax.legend(
+            loc="lower left",
+            bbox_to_anchor=(
+                0.5 + np.cos(legend_angle) / 2,
+                0.5 + np.sin(legend_angle) / 2,
+            ),
+        )
 
-    if not(title_text==None):
-        ax.set_title(title_text, va='bottom')
+    if not (title_text == None):
+        ax.set_title(title_text, va="bottom")
 
-    label_angle=np.deg2rad(280)
-    ax.text(label_angle,plot_max*1.2,bar_label)
+    label_angle = np.deg2rad(280)
+    ax.text(label_angle, plot_max * 1.2, bar_label)
     plt.show()
+
 
 # noinspection PyTypeChecker
 @cuda.jit(device=True)

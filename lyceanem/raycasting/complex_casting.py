@@ -12,7 +12,8 @@ from numba import cuda, from_dtype, float32, jit, njit, guvectorize, prange
 from numpy.linalg import norm
 from scipy.spatial import distance
 
-import lyceanem.base as base
+import lyceanem.base_classes as base_classes
+import lyceanem.base_types as base_types
 import lyceanem.electromagnetics.empropagation as EM
 
 # A numpy record array (like a struct) to record triangle
@@ -35,7 +36,7 @@ complex_triangle = np.dtype(
         # ('diffuse_c', np.float64),
         # ('specular_c', np.float64),
         # interaction type
-        ("interaction","i4")
+        ("interaction", "i4"),
     ],
     align=True,
 )
@@ -54,25 +55,27 @@ complex_ray = np.dtype(
         ("dz", "f4"),
         # target
         # efield vector (volts/m)
-        ('ex','f4'),
-        ('ey','f4'),
-        ('ez','f4'),
+        ("ex", "f4"),
+        ("ey", "f4"),
+        ("ez", "f4"),
         # distance traveled
         ("dist", "f4"),
         # time taken
         ("time", "f4"),
         # reflections, if zero this must be cast at the sinks, nowhere else
-        ("reflections","i4")
+        ("reflections", "i4"),
     ],
     align=True,
 )
 ray_t = from_dtype(complex_ray)  # Create a type that numba can recognize!
+
 
 class environment:
     """
     cuda class for the environment, hosting the triangles making up the environment, and the different interaction
     programs.
     """
+
     def __init__(self, triangles):
         # triangles is a list of triangles in the complex triangle format, with different interaction switches
         self.triangles = []
@@ -82,7 +85,7 @@ class environment:
         # for item in material_characteristics:
         #    self.materials.append(item)
 
-    def ray_check(self,ray):
+    def ray_check(self, ray):
         """
         Check ray for interaction with stored triangles
 
@@ -97,7 +100,7 @@ class environment:
 
         """
 
-    def interaction(self,triangle_index,ray):
+    def interaction(self, triangle_index, ray):
         """
         calculates the interaction between the ray and triangle indexed
         This will depend on the interaction type specified by the triangle, and could terminate the ray

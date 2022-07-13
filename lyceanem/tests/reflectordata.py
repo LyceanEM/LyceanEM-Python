@@ -56,7 +56,7 @@ def exampleUAV(frequency):
     array.translate(np.array([-0.18, 0, 0.0125]), relative=True)
     body.translate(np.array([-0.18, 0, 0.0125]), relative=True)
     array.compute_vertex_normals()
-    array.paint_uniform_color(np.array([0,1.0,1.0]))
+    array.paint_uniform_color(np.array([0, 1.0, 1.0]))
     body.compute_vertex_normals()
     body.paint_uniform_color(np.array([0, 0.259, 0.145]))
 
@@ -64,49 +64,80 @@ def exampleUAV(frequency):
     mesh_sep = wavelength * 0.5
 
     # define UAV array, a line, a circle, then a line with reference to the array solid
-    array_vertices=np.asarray(array.vertices)
-    array_height=np.max(array_vertices[:,2])-np.min(array_vertices[:,2])
-    top_index=array_vertices[:,2]>=np.max(array_vertices[:,2])-1e-4 #pick only vertices on the top of the array
-    lower_index=array_vertices[:,2]<=np.min(array_vertices[:,2])+1e-4 #pick only vertices on the bottom of the surface
+    array_vertices = np.asarray(array.vertices)
+    array_height = np.max(array_vertices[:, 2]) - np.min(array_vertices[:, 2])
+    top_index = (
+        array_vertices[:, 2] >= np.max(array_vertices[:, 2]) - 1e-4
+    )  # pick only vertices on the top of the array
+    lower_index = (
+        array_vertices[:, 2] <= np.min(array_vertices[:, 2]) + 1e-4
+    )  # pick only vertices on the bottom of the surface
     array_top_points = array_vertices[top_index, :]
-    array_bottom_points=array_vertices[lower_index,:]
-    r1 = np.max(array_bottom_points[:,1])
-    r2 = np.mean(np.asarray([np.max(array_vertices[:,1]),np.abs(np.min(array_vertices[:,1]))]))
-    top_length=np.abs(np.min(array_top_points[:,0])-np.max(array_top_points[:,0]))
-    bottom_length=np.abs(np.min(array_bottom_points[:,0])-np.max(array_bottom_points[:,0]))
-    slant_adjustment=(top_length-r2)-(bottom_length-r1)
+    array_bottom_points = array_vertices[lower_index, :]
+    r1 = np.max(array_bottom_points[:, 1])
+    r2 = np.mean(
+        np.asarray([np.max(array_vertices[:, 1]), np.abs(np.min(array_vertices[:, 1]))])
+    )
+    top_length = np.abs(np.min(array_top_points[:, 0]) - np.max(array_top_points[:, 0]))
+    bottom_length = np.abs(
+        np.min(array_bottom_points[:, 0]) - np.max(array_bottom_points[:, 0])
+    )
+    slant_adjustment = (top_length - r2) - (bottom_length - r1)
     # r2 center is 25mm further forward than r1
-    l = bottom_length-r1
+    l = bottom_length - r1
 
-    slant_angle = np.arctan2(r2-r1, array_height)
-    slant_h = (array_height**2+(r2-r1)**2)**0.5
+    slant_angle = np.arctan2(r2 - r1, array_height)
+    slant_h = (array_height ** 2 + (r2 - r1) ** 2) ** 0.5
     rows = math.ceil((slant_h) / (mesh_sep) + 1)
     heights = np.linspace(0, slant_h, rows)
     centers = np.linspace(l + 0, l + slant_adjustment, rows)
     rad_sep = np.linspace(r1, r2, rows)
-    nose_distances = np.linspace(0, rad_sep[0] * np.pi, math.ceil((rad_sep[0] * np.pi) / (mesh_sep) + 1))
+    nose_distances = np.linspace(
+        0, rad_sep[0] * np.pi, math.ceil((rad_sep[0] * np.pi) / (mesh_sep) + 1)
+    )
     nose_side1 = np.empty((0, 3), dtype=np.float32)
     nose_side2 = np.empty((0, 3), dtype=np.float32)
     nose_circ = np.empty((0, 3), dtype=np.float32)
     nose_circ_normals = np.empty((0, 3), dtype=np.float32)
     for nose_inc in range(rows):
-        nose_x = np.linspace(l, centers[nose_inc], math.ceil(((centers[nose_inc] - l) / mesh_sep + 1)))[1:]
-        nose_y = np.zeros((len(nose_x.ravel())), dtype=np.float32) + heights[nose_inc] * np.sin(slant_angle) + r1
-        nose_z = np.zeros((len(nose_x.ravel())), dtype=np.float32) + heights[nose_inc] * np.cos(slant_angle)
-        nose_side1 = np.append(nose_side1, np.array([nose_x, nose_y, nose_z]).transpose(), axis=0)
-        nose_side2 = np.append(nose_side2, np.array([nose_x, -nose_y, nose_z]).transpose(), axis=0)
+        nose_x = np.linspace(
+            l, centers[nose_inc], math.ceil(((centers[nose_inc] - l) / mesh_sep + 1))
+        )[1:]
+        nose_y = (
+            np.zeros((len(nose_x.ravel())), dtype=np.float32)
+            + heights[nose_inc] * np.sin(slant_angle)
+            + r1
+        )
+        nose_z = np.zeros((len(nose_x.ravel())), dtype=np.float32) + heights[
+            nose_inc
+        ] * np.cos(slant_angle)
+        nose_side1 = np.append(
+            nose_side1, np.array([nose_x, nose_y, nose_z]).transpose(), axis=0
+        )
+        nose_side2 = np.append(
+            nose_side2, np.array([nose_x, -nose_y, nose_z]).transpose(), axis=0
+        )
         angle_inc = np.pi
-        nose_angles = np.linspace(0, np.pi, math.ceil((rad_sep[nose_inc] * np.pi) / (mesh_sep) + 1))
+        nose_angles = np.linspace(
+            0, np.pi, math.ceil((rad_sep[nose_inc] * np.pi) / (mesh_sep) + 1)
+        )
         tempx = rad_sep[nose_inc] * np.sin(nose_angles)[1:-1] + centers[nose_inc]
         tempy = rad_sep[nose_inc] * np.cos(nose_angles)[1:-1]
-        tempz = np.zeros((len(tempx.ravel())), dtype=np.float32) + heights[nose_inc] * np.cos(slant_angle)
+        tempz = np.zeros((len(tempx.ravel())), dtype=np.float32) + heights[
+            nose_inc
+        ] * np.cos(slant_angle)
         testnose = np.array([tempx, tempy, tempz]).transpose()
         nose_circ = np.append(nose_circ, testnose, axis=0)
         tempnormx = np.cos(nose_angles[1:-1] - np.pi / 2)
         tempnormy = -np.sin(nose_angles[1:-1] - np.pi / 2)
-        tempnormz = np.ones((len(nose_angles[1:-1])), dtype=np.float32) * np.sin(slant_angle + np.pi / 2 + np.pi / 2)
-        nose_circ_normals = np.append(nose_circ_normals, np.array([tempnormx, tempnormy, tempnormz]).transpose(),
-                                      axis=0)
+        tempnormz = np.ones((len(nose_angles[1:-1])), dtype=np.float32) * np.sin(
+            slant_angle + np.pi / 2 + np.pi / 2
+        )
+        nose_circ_normals = np.append(
+            nose_circ_normals,
+            np.array([tempnormx, tempnormy, tempnormz]).transpose(),
+            axis=0,
+        )
 
     nose_side1_normals = np.zeros((len(nose_side1), 3), dtype=np.float32)
     nose_side2_normals = np.zeros((len(nose_side2), 3), dtype=np.float32)
@@ -135,11 +166,27 @@ def exampleUAV(frequency):
     side2[:, 2] = yy.ravel() * np.cos(-slant_angle)
 
     total_array = np.append(
-        np.append(np.append(np.append(side1, side2, axis=0), nose_circ, axis=0), nose_side1, axis=0), nose_side2,
-        axis=0) + np.array([0.1025, 0, -0.025])
+        np.append(
+            np.append(np.append(side1, side2, axis=0), nose_circ, axis=0),
+            nose_side1,
+            axis=0,
+        ),
+        nose_side2,
+        axis=0,
+    ) + np.array([0.1025, 0, -0.025])
     total_array_normals = np.append(
-        np.append(np.append(np.append(side1_normals, side2_normals, axis=0), nose_circ_normals, axis=0),
-                  nose_side1_normals, axis=0), nose_side2_normals, axis=0) + np.array([0.1025, 0, -0.025])
+        np.append(
+            np.append(
+                np.append(side1_normals, side2_normals, axis=0),
+                nose_circ_normals,
+                axis=0,
+            ),
+            nose_side1_normals,
+            axis=0,
+        ),
+        nose_side2_normals,
+        axis=0,
+    ) + np.array([0.1025, 0, -0.025])
     source_pcd = RF.points2pointcloud(total_array)
     source_pcd.normals = o3d.utility.Vector3dVector(total_array_normals)
     source_pcd.translate(np.array([-0.18, 0, 0.0125]), relative=True)

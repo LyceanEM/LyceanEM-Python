@@ -7,204 +7,12 @@ from scipy import interpolate as sp
 from scipy.spatial.transform import Rotation as R
 
 import open3d as o3d
+from . import base_types as base_types
 from .electromagnetics import beamforming as BM
 from .electromagnetics import empropagation as EM
 from .geometry import geometryfunctions as GF
 from .raycasting import rayfunctions as RF
-
-from glob import glob
-import shutil
-import os
-from sphinx_gallery.scrapers import figure_rst
-
-# A numpy record array (like a struct) to record triangle
-point_data = np.dtype(
-    [
-        # conductivity, permittivity and permiability
-        # free space values should be
-        # permittivity of free space 8.8541878176e-12F/m
-        # permeability of free space 1.25663706212e-6H/m
-        ("permittivity", "c8"),
-        ("permeability", "c8"),
-        # electric or magnetic current sources? E if True
-        ("Electric", "?"),
-    ],
-    align=True,
-)
-point_t = from_dtype(point_data)  # Create a type that numba can recognize!
-
-# A numpy record array (like a struct) to record triangle
-triangle_data = np.dtype(
-    [
-        # v0 data
-        ("v0x", "f4"),
-        ("v0y", "f4"),
-        ("v0z", "f4"),
-        # v1 data
-        ("v1x", "f4"),
-        ("v1y", "f4"),
-        ("v1z", "f4"),
-        # v2 data
-        ("v2x", "f4"),
-        ("v2y", "f4"),
-        ("v2z", "f4"),
-        # normal vector
-        # ('normx', 'f4'),  ('normy', 'f4'), ('normz', 'f4'),
-        # ('reflection', np.float64),
-        # ('diffuse_c', np.float64),
-        # ('specular_c', np.float64),
-    ],
-    align=True,
-)
-triangle_t = from_dtype(triangle_data)  # Create a type that numba can recognize!
-
-# ray class, to hold the ray origin, direction, and eventuall other data.
-ray_data = np.dtype(
-    [
-        # origin data
-        ("ox", "f4"),
-        ("oy", "f4"),
-        ("oz", "f4"),
-        # direction vector
-        ("dx", "f4"),
-        ("dy", "f4"),
-        ("dz", "f4"),
-        # target
-        # direction vector
-        # ('tx','f4'),('ty','f4'),('tz','f4'),
-        # distance traveled
-        ("dist", "f4"),
-        # intersection
-        ("intersect", "?"),
-    ],
-    align=True,
-)
-ray_t = from_dtype(ray_data)  # Create a type that numba can recognize!
-# We can use that type in our device functions and later the kernel!
-
-scattering_point = np.dtype(
-    [
-        # position data
-        ("px", "f4"),
-        ("py", "f4"),
-        ("pz", "f4"),
-        # velocity
-        ("vx", "f4"),
-        ("vy", "f4"),
-        ("vz", "f4"),
-        # normal
-        ("nx", "f4"),
-        ("ny", "f4"),
-        ("nz", "f4"),
-        # weights
-        ("ex", "c8"),
-        ("ey", "c8"),
-        ("ez", "c8"),
-        # conductivity, permittivity and permiability
-        # free space values should be
-        # permittivity of free space 8.8541878176e-12F/m
-        # permeability of free space 1.25663706212e-6H/m
-        ("permittivity", "c8"),
-        ("permeability", "c8"),
-        # electric or magnetic current sources? E if True
-        ("Electric", "?"),
-    ],
-    align=True,
-)
-
-scattering_t = from_dtype(scattering_point)  # Create a type that numba can recognize!
-
-
-@njit
-def cart2pol(x, y):
-    rho = np.sqrt(x ** 2 + y ** 2)
-    phi = np.arctan2(y, x)
-    return (rho, phi)
-
-
-@njit
-def pol2cart(rho, phi):
-    x = rho * np.cos(phi)
-    y = rho * np.sin(phi)
-    return (x, y)
-
-
-@njit
-def cart2sph(x, y, z):
-    # radians
-    hxy = np.hypot(x, y)
-    r = np.hypot(hxy, z)
-    el = np.arctan2(z, hxy)
-    az = np.arctan2(y, x)
-    return az, el, r
-
-
-@njit
-def sph2cart(az, el, r):
-    # radians
-    rcos_theta = r * np.cos(el)
-    x = rcos_theta * np.cos(az)
-    y = rcos_theta * np.sin(az)
-    z = r * np.sin(el)
-    return x, y, z
-
-
-@njit
-def calc_normals(T):
-    # calculate triangle norm
-    e1x = T["v1x"] - T["v0x"]
-    e1y = T["v1y"] - T["v0y"]
-    e1z = T["v1z"] - T["v0z"]
-
-    e2x = T["v2x"] - T["v0x"]
-    e2y = T["v2y"] - T["v0y"]
-    e2z = T["v2z"] - T["v0z"]
-
-    dirx = e1y * e2z - e1z * e2y
-    diry = e1z * e2x - e1x * e2z
-    dirz = e1x * e2y - e1y * e2x
-
-    normconst = math.sqrt(dirx ** 2 + diry ** 2 + dirz ** 2)
-
-    T["normx"] = dirx / normconst
-    T["normy"] = diry / normconst
-    T["normz"] = dirz / normconst
-
-    return T
-
-
-@guvectorize(
-    [(float32[:], float32[:], float32[:], float32)],
-    "(n),(n)->(n),()",
-    target="parallel",
-)
-def fast_calc_dv(source, target, dv, normconst):
-    dirx = target[0] - source[0]
-    diry = target[1] - source[1]
-    dirz = target[2] - source[2]
-    normconst = math.sqrt(dirx ** 2 + diry ** 2 + dirz ** 2)
-    dv = np.array([dirx, diry, dirz]) / normconst
-
-
-@njit
-def calc_dv(source, target):
-    dirx = target[0] - source[0]
-    diry = target[1] - source[1]
-    dirz = target[2] - source[2]
-    normconst = np.sqrt(dirx ** 2 + diry ** 2 + dirz ** 2)
-    dv = np.array([dirx, diry, dirz]) / normconst
-    return dv[0], dv[1], dv[2], normconst
-
-
-@njit
-def calc_dv_norm(source, target, direction, length):
-    length[:, 0] = np.sqrt(
-        (target[:, 0] - source[:, 0]) ** 2
-        + (target[:, 1] - source[:, 1]) ** 2
-        + (target[:, 2] - source[:, 2]) ** 2
-    )
-    direction = (target - source) / length
-    return direction, length
+from .models.frequency_domain import calculate_farfield, calculate_scattering
 
 class points:
     """
@@ -308,11 +116,12 @@ class points:
         -------
         combined points
         """
-        combined_points=o3d.geometry.PointCloud()
+        combined_points = o3d.geometry.PointCloud()
         for item in range(len(self.points)):
-            combined_points=combined_points+self.points[item]
+            combined_points = combined_points + self.points[item]
 
         return combined_points
+
 
 class structures:
     """
@@ -407,7 +216,7 @@ class structures:
         for item in range(len(self.solids)):
             self.solids[item].translate(vector)
 
-    def export_vertices(self,structure_index=None):
+    def export_vertices(self, structure_index=None):
         """
         Exports the vertices for either all
 
@@ -420,27 +229,27 @@ class structures:
         -------
         point_cloud :
         """
-        point_cloud=o3d.geometry.PointCloud()
-        if structure_index==None:
-            #if no structure index is provided, then generate an index including all items in the class
-            structure_index=[]
+        point_cloud = o3d.geometry.PointCloud()
+        if structure_index == None:
+            # if no structure index is provided, then generate an index including all items in the class
+            structure_index = []
             for item in range(len(self.solids)):
                 structure_index.append(item)
 
         for item in structure_index:
-            if self.solids[item]==None:
-                #do nothing
+            if self.solids[item] == None:
+                # do nothing
                 temp_cloud = o3d.geometry.PointCloud()
             else:
                 temp_cloud = o3d.geometry.PointCloud()
-                temp_cloud.points=self.solids[item].vertices
+                temp_cloud.points = self.solids[item].vertices
                 if self.solids[item].has_vertex_normals():
-                    temp_cloud.normals=self.solids[item].vertex_normals
+                    temp_cloud.normals = self.solids[item].vertex_normals
                 else:
                     self.solids[item].compute_vertex_normals()
                     temp_cloud.normals = self.solids[item].vertex_normals
 
-                point_cloud=point_cloud+temp_cloud
+                point_cloud = point_cloud + temp_cloud
 
         return point_cloud
 
@@ -458,7 +267,7 @@ class structures:
         triangles : N by 1 numpy array of triangle_t triangles
             a continuous array of all the triangles in the structure
         """
-        triangles = np.empty((0), dtype=triangle_t)
+        triangles = np.empty((0), dtype=base_types.triangle_t)
         for item in self.solids:
             triangles = np.append(triangles, RF.convertTriangles(copy.deepcopy(item)))
 
@@ -482,8 +291,15 @@ class antenna_structures:
 
         self.structures = structures
         self.points = points
+        self.antenna_origin=np.zeros((3,1))
+        self.antenna_axes=np.eye(3)
+        self.antenna_xyz=o3d.geometry.TriangleMesh.create_coordinate_frame(
+    size=1, origin=[0, 0, 0]
+)
 
-    def rotate_antenna(self,rotation_matrix, rotation_centre=np.zeros((3, 1), dtype=np.float32)
+
+    def rotate_antenna(
+        self, rotation_matrix, rotation_centre=np.zeros((3, 1), dtype=np.float32)
     ):
         """
         rotates the components of the structure around a common point, default is the origin
@@ -499,17 +315,25 @@ class antenna_structures:
         --------
         None
         """
-
+        self.antenna_xyz=GF.open3drotate(self.antenna_xyz,rotation_matrix, rotation_centre
+                )
+        #translate to the rotation centre, then rotate around origin
+        temp_origin=self.antenna_origin-rotation_centre
+        temp_origin=np.matmul(rotation_matrix,temp_origin)
+        self.antenna_origin=temp_origin+rotation_centre
+        self.antenna_axes=np.matmul(rotation_matrix,self.antenna_axes)
         for item in range(len(self.structures.solids)):
-            self.structures.solids[item] = GF.open3drotate(
-                self.structures.solids[item], rotation_matrix, rotation_centre
-            )
+            if (self.structures.solids[item] is not None):
+                self.structures.solids[item] = GF.open3drotate(
+                    self.structures.solids[item], rotation_matrix, rotation_centre
+                )
         for item in range(len(self.points.points)):
-            self.points.points[item] = GF.open3drotate(
-                self.points.points[item], rotation_matrix, rotation_centre
-            )
+            if (self.points.points[item] is not None):
+                self.points.points[item] = GF.open3drotate(
+                    self.points.points[item], rotation_matrix, rotation_centre
+                )
 
-    def translate_antenna(self,vector):
+    def translate_antenna(self, vector):
         """
         translates the structures and points in the class by the given cartesian vector (x,y,z)
 
@@ -522,6 +346,8 @@ class antenna_structures:
         --------
         None
         """
+        self.antenna_xyz.translate(vector)
+        self.antenna_origin=self.antenna_origin+vector
         for item in self.structures.solids:
             self.structures.solids[item].translate(vector)
         for item in self.points.points:
@@ -529,13 +355,13 @@ class antenna_structures:
 
     def export_all_points(self):
 
-        point_cloud=self.points.export_points()
-        point_cloud=point_cloud+self.structures.export_vertices()
+        point_cloud = self.points.export_points()
+        point_cloud = point_cloud + self.structures.export_vertices()
 
         return point_cloud
 
-    def farfield_distance(self,freq):
-        #calculate farfield distance for the antenna, based upon the Fraunhofer distance
+    def farfield_distance(self, freq):
+        # calculate farfield distance for the antenna, based upon the Fraunhofer distance
         total_points = self.export_all_points()
         # calculate bounding box
         bounding_box = total_points.get_oriented_bounding_box()
@@ -543,17 +369,23 @@ class antenna_structures:
         min_points = bounding_box.get_min_bound()
         center = bounding_box.get_center()
         max_dist = np.sqrt(
-            (max_points[0] - center[0]) ** 2 + (max_points[1] - center[1]) ** 2 + (max_points[2] - center[2]) ** 2)
+            (max_points[0] - center[0]) ** 2
+            + (max_points[1] - center[1]) ** 2
+            + (max_points[2] - center[2]) ** 2
+        )
         min_dist = np.sqrt(
-            (center[0] - min_points[0]) ** 2 + (center[1] - min_points[1]) ** 2 + (center[2] - min_points[2]) ** 2)
+            (center[0] - min_points[0]) ** 2
+            + (center[1] - min_points[1]) ** 2
+            + (center[2] - min_points[2]) ** 2
+        )
         a = np.mean([max_dist, min_dist])
         wavelength = 3e8 / freq
-        farfield_distance=(2*(2*a)**2)/wavelength
+        farfield_distance = (2 * (2 * a) ** 2) / wavelength
 
         return farfield_distance
 
-    def estimate_maximum_directivity(self,freq):
-        #estimate the maximum possible directivity based upon the smallest enclosing sphere and Hannan's relation between projected area and directivity
+    def estimate_maximum_directivity(self, freq):
+        # estimate the maximum possible directivity based upon the smallest enclosing sphere and Hannan's relation between projected area and directivity
         total_points = self.export_all_points()
         # calculate bounding box
         bounding_box = total_points.get_oriented_bounding_box()
@@ -561,17 +393,23 @@ class antenna_structures:
         min_points = bounding_box.get_min_bound()
         center = bounding_box.get_center()
         max_dist = np.sqrt(
-            (max_points[0] - center[0]) ** 2 + (max_points[1] - center[1]) ** 2 + (max_points[2] - center[2]) ** 2)
+            (max_points[0] - center[0]) ** 2
+            + (max_points[1] - center[1]) ** 2
+            + (max_points[2] - center[2]) ** 2
+        )
         min_dist = np.sqrt(
-            (center[0] - min_points[0]) ** 2 + (center[1] - min_points[1]) ** 2 + (center[2] - min_points[2]) ** 2)
+            (center[0] - min_points[0]) ** 2
+            + (center[1] - min_points[1]) ** 2
+            + (center[2] - min_points[2]) ** 2
+        )
         a = np.mean([max_dist, min_dist])
-        projected_area=np.pi*(a**2)
+        projected_area = np.pi * (a ** 2)
         wavelength = 3e8 / freq
-        directivity=(4*np.pi*projected_area)/(wavelength**2)
+        directivity = (4 * np.pi * projected_area) / (wavelength ** 2)
         return directivity
 
     def visualise_antenna(self):
-        #use open3d to display the
+        # use open3d to display the
         total_points = self.export_all_points()
         # calculate bounding box
         bounding_box = total_points.get_oriented_bounding_box()
@@ -579,13 +417,42 @@ class antenna_structures:
         min_points = bounding_box.get_min_bound()
         center = bounding_box.get_center()
         max_dist = np.sqrt(
-            (max_points[0] - center[0]) ** 2 + (max_points[1] - center[1]) ** 2 + (max_points[2] - center[2]) ** 2)
+            (max_points[0] - center[0]) ** 2
+            + (max_points[1] - center[1]) ** 2
+            + (max_points[2] - center[2]) ** 2
+        )
         min_dist = np.sqrt(
-            (center[0] - min_points[0]) ** 2 + (center[1] - min_points[1]) ** 2 + (center[2] - min_points[2]) ** 2)
+            (center[0] - min_points[0]) ** 2
+            + (center[1] - min_points[1]) ** 2
+            + (center[2] - min_points[2]) ** 2
+        )
         a = np.mean([max_dist, min_dist])
         #
-        mesh_frame = [o3d.geometry.TriangleMesh.create_coordinate_frame(size=a, origin=[0, 0, 0])]
-        o3d.visualization.draw_geometries(self.points.points+self.structures.solids+mesh_frame)
+
+        o3d.visualization.draw_geometries(
+            self.points.points + self.structures.solids + [self.antenna_xyz]
+        )
+
+    def calculate_farfield(self,excitation_vector,wavelength):
+
+        resultant_pattern=antenna_pattern()
+        resultant_pattern.pattern[:,:,0], resultant_pattern.pattern[:,:,1] =calculate_farfield(self.points.export_points(),
+                                             self.structures,
+                                             excitation_vector,
+                                             az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
+                                             el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
+                                             wavelength=wavelength,
+                                             farfield_distance=20,
+                                             project_vectors=True,
+                                             antenna_axes=self.antenna_axes)
+
+        return resultant_pattern
+
+    def calculate_scattering(self,sink_coords,excitation_function,wavelength=1.0,scatter_points=None,scattering=1,elements=True,):
+
+        Ex,Ey,Ez=calculate_scattering(self.points.export_points(),
+                                      sink_coords,self.structures,excitation_function,scatter_points,wavelength,scattering,elements,project_vectors=True,antenna_axes=self.antenna_axes)
+        return Ex,Ey,Ez
 
 class antenna_pattern:
     """
@@ -816,7 +683,9 @@ class antenna_pattern:
         outputarray = np.concatenate((infoarray, dataarray), axis=0)
         np.savetxt(file_location, outputarray, delimiter=",", fmt="%.2e")
 
-    def display_pattern(self, plottype='Polar',desired_pattern="both", pattern_min=-40):
+    def display_pattern(
+        self, plottype="Polar", desired_pattern="both", pattern_min=-40
+    ):
         """
         Displays the Antenna Pattern using :func:`lyceanem.electromagnetics.beamforming.PatterPlot`
 
@@ -852,7 +721,7 @@ class antenna_pattern:
                     plottype=plottype,
                     title_text="Ephi",
                 )
-            elif desired_pattern == 'Etheta':
+            elif desired_pattern == "Etheta":
                 BM.PatternPlot(
                     self.pattern[:, :, 0],
                     self.az_mesh,
@@ -861,7 +730,7 @@ class antenna_pattern:
                     plottype=plottype,
                     title_text="Etheta",
                 )
-            elif desired_pattern == 'Ephi':
+            elif desired_pattern == "Ephi":
                 BM.PatternPlot(
                     self.pattern[:, :, 1],
                     self.az_mesh,
@@ -869,6 +738,15 @@ class antenna_pattern:
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Ephi",
+                )
+            elif desired_pattern =="Power":
+                BM.PatternPlot(
+                    self.pattern[:, :, 0]**2+self.pattern[:, :, 1]**2,
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Power Pattern",
                 )
         elif self.arbitary_pattern_format == "ExEyEz":
             if desired_pattern == "both":
@@ -896,7 +774,7 @@ class antenna_pattern:
                     plottype=plottype,
                     title_text="Ez",
                 )
-            elif desired_pattern == 'Ex':
+            elif desired_pattern == "Ex":
                 BM.PatternPlot(
                     self.pattern[:, :, 0],
                     self.az_mesh,
@@ -905,7 +783,7 @@ class antenna_pattern:
                     plottype=plottype,
                     title_text="Ex",
                 )
-            elif desired_pattern == 'Ey':
+            elif desired_pattern == "Ey":
                 BM.PatternPlot(
                     self.pattern[:, :, 1],
                     self.az_mesh,
@@ -914,7 +792,7 @@ class antenna_pattern:
                     plottype=plottype,
                     title_text="Ey",
                 )
-            elif desired_pattern == 'Ez':
+            elif desired_pattern == "Ez":
                 BM.PatternPlot(
                     self.pattern[:, :, 2],
                     self.az_mesh,
