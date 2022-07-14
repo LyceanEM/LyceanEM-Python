@@ -83,7 +83,7 @@ Etheta,Ephi=calculate_farfield(source_coords,
 from lyceanem.electromagnetics.beamforming import MaximumDirectivityMap
 az_range=np.linspace(-180,180,az_res)
 el_range=np.linspace(-90,90,elev_res)
-directivity_map=MaximumDirectivityMap(Etheta,Ephi,source_coords,wavelength,az_res,elev_res,az_range,el_range)
+directivity_map=MaximumDirectivityMap(Etheta,Ephi,source_coords,wavelength,az_range,el_range)
 
 from lyceanem.electromagnetics.beamforming import PatternPlot
 

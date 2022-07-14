@@ -105,7 +105,7 @@ sphinx_gallery_conf = {
          # The module you locally document uses None
         'sphinx_gallery': None,
     },
-    'plot_gallery': False,
+    'plot_gallery': True,
 }
 
 # -- Options for HTML output -------------------------------------------------

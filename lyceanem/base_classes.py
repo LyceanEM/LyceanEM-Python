@@ -687,7 +687,7 @@ class antenna_pattern:
         self, plottype="Polar", desired_pattern="both", pattern_min=-40
     ):
         """
-        Displays the Antenna Pattern using :func:`lyceanem.electromagnetics.beamforming.PatterPlot`
+        Displays the Antenna Pattern using :func:`lyceanem.electromagnetics.beamforming.PatternPlot`
 
         Parameters
         ----------

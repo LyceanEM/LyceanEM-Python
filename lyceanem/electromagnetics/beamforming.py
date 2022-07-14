@@ -11,6 +11,7 @@ from numba import cuda, float32, njit, prange
 from scipy.spatial import distance
 
 from ..raycasting import rayfunctions as RF
+from ..utility import math_functions
 
 
 def Steering_Efficiency(
@@ -194,7 +195,7 @@ def OAMFourierCartesian(Ex, Ey, Ez, coordinates, mode_limit):
     """
     mode_index = np.linspace(-mode_limit, mode_limit, mode_limit * 2 + 1)
     mode_coefficients = np.zeros((mode_index.shape[0], 3), dtype=np.complex64)
-    az, el, r = RF.cart2sph(coordinates[:, 0], coordinates[:, 1], coordinates[:, 2])
+    az, el, r = math_functions.cart2sph(coordinates[:, 0], coordinates[:, 1], coordinates[:, 2])
     # a coefficient of mode m, at angle theta is defined in terms of the
     # integral of the phi dimension in the range 0 to 2pi.
     for oam_m in range(len(mode_index)):
@@ -330,7 +331,7 @@ def MaximumDirectivityMap(
                 steering_vector[0, 0],
                 steering_vector[0, 1],
                 steering_vector[0, 2],
-            ) = RF.sph2cart(
+            ) = math_functions.sph2cart(
                 np.radians(command_angles[0]), np.radians(command_angles[1]), 1
             )
             WS_weights = WavefrontWeights(source_points, steering_vector, wavelength)
@@ -506,7 +507,7 @@ def MaximumDirectivityMapDiscrete(
                     steering_vector[0, 0],
                     steering_vector[0, 1],
                     steering_vector[0, 2],
-                ) = RF.sph2cart(
+                ) = math_functions.sph2cart(
                     np.radians(command_angles[0]), np.radians(command_angles[1]), 1
                 )
                 WS_weights = WavefrontWeights(
@@ -664,7 +665,7 @@ def MaximumfieldMapDiscrete(
                     steering_vector[0, 0],
                     steering_vector[0, 1],
                     steering_vector[0, 2],
-                ) = RF.sph2cart(
+                ) = math_functions.sph2cart(
                     np.radians(command_angles[0]), np.radians(command_angles[1]), 1
                 )
                 WS_weights = WavefrontWeights(

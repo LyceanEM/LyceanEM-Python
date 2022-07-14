@@ -5,16 +5,18 @@
 
 Computation times
 =================
-**04:20.440** total execution time for **auto_examples** files:
+**00:46.041** total execution time for **auto_examples** files:
 
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_05_array_beamforming.py` (``05_array_beamforming.py``)                                   | 04:04.593 | 0.0 MB |
-+-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_02_coherently_polarised_array.py` (``02_coherently_polarised_array.py``)                 | 00:15.847 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_06_farfield_polarisation.py` (``06_farfield_polarisation.py``)                           | 00:46.041 | 0.0 MB |
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
 | :ref:`sphx_glr_auto_examples_01_aperture_projection.py` (``01_aperture_projection.py``)                               | 00:00.000 | 0.0 MB |
++-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
+| :ref:`sphx_glr_auto_examples_02_coherently_polarised_array.py` (``02_coherently_polarised_array.py``)                 | 00:00.000 | 0.0 MB |
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
 | :ref:`sphx_glr_auto_examples_03_frequency_domain_channel_modelling.py` (``03_frequency_domain_channel_modelling.py``) | 00:00.000 | 0.0 MB |
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
 | :ref:`sphx_glr_auto_examples_04_time_domain_channel_modelling.py` (``04_time_domain_channel_modelling.py``)           | 00:00.000 | 0.0 MB |
++-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
+| :ref:`sphx_glr_auto_examples_05_array_beamforming.py` (``05_array_beamforming.py``)                                   | 00:00.000 | 0.0 MB |
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+

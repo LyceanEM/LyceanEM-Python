@@ -35,6 +35,12 @@ The Steering Efficiency can then be evaluated using :func:`lyceanem.electromagne
     import copy
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 19-28
 
 Setting Farfield Resolution and Wavelength
@@ -57,6 +63,12 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 34-38
 
 Geometries
@@ -71,6 +83,12 @@ In order to make things easy to start, an example geometry has been included wit
     import lyceanem.tests.reflectordata as data
 
     body, array,source_coords = data.exampleUAV(10e9)
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 43-47
@@ -89,6 +107,12 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
     o3d.visualization.draw_geometries([body, array,source_coords,mesh_frame])
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 52-53
 
 .. image:: ../_static/UAVArraywithPoints.png
@@ -99,9 +123,15 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
 
 
 
-    from lyceanem.base import structures
+    from lyceanem.base_classes import structures
 
     blockers = structures([body,array])
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 60-67
@@ -137,13 +167,41 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
     from lyceanem.electromagnetics.beamforming import MaximumDirectivityMap
     az_range=np.linspace(-180,180,az_res)
     el_range=np.linspace(-90,90,elev_res)
-    directivity_map=MaximumDirectivityMap(Etheta,Ephi,source_coords,wavelength,az_res,elev_res,az_range,el_range)
+    directivity_map=MaximumDirectivityMap(Etheta,Ephi,source_coords,wavelength,az_range,el_range)
 
     from lyceanem.electromagnetics.beamforming import PatternPlot
 
     az_mesh,elev_mesh=np.meshgrid(az_range,el_range)
 
     PatternPlot(directivity_map[:,:,2], az_mesh, elev_mesh,logtype='power',plottype='Contour')
+
+
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_001.png
+   :alt: 05 array beamforming
+   :srcset: /auto_examples/images/sphx_glr_05_array_beamforming_001.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/empropagation.py:3604: ComplexWarning: Casting complex values to real discards the imaginary part
+      global_vector[0] = (
+    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/empropagation.py:3609: ComplexWarning: Casting complex values to real discards the imaginary part
+      global_vector[1] = (
+    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/empropagation.py:3614: ComplexWarning: Casting complex values to real discards the imaginary part
+      global_vector[2] = (
+    /home/timtitan/anaconda3/envs/EMDevelopment/lib/python3.8/site-packages/numba/cuda/cudadrv/devicearray.py:885: NumbaPerformanceWarning: Host array used in CUDA kernel will incur copy overhead to/from device.
+      warn(NumbaPerformanceWarning(msg))
+    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1080: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 95-96
@@ -172,9 +230,26 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
     )
 
 
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Steering Effciency of 9.1%
+    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/docs/examples/05_array_beamforming.py:109: RuntimeWarning: divide by zero encountered in log10
+      np.max(10 * np.log10(directivity_map[:,:,2]))
+    Maximum Directivity of 23.0 dBi
+
+
+
+
+
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 4 minutes  17.447 seconds)
 
 
 .. _sphx_glr_download_auto_examples_05_array_beamforming.py:

@@ -494,35 +494,34 @@ def calculate_scattering(
     num_sinks = len(np.asarray(sink_coords.points))
 
     environment_triangles = antenna_solid.triangles_base_raycaster()
+    if not multiE:
+        if project_vectors:
+            conformal_E_vectors = EM.calculate_conformalVectors(
+                desired_E_axis, np.asarray(aperture_coords.normals), antenna_axes
+            )
+        else:
+            if desired_E_axis.shape[0] == np.asarray(aperture_coords.normals).shape[0]:
+                conformal_E_vectors = copy.deepcopy(desired_E_axis)
+            else:
+                conformal_E_vectors = np.repeat(
+                    desired_E_axis.reshape(1, 3).astype(np.complex64), num_sources, axis=0
+                )
+    else:
+        if project_vectors:
+            conformal_E_vectors = EM.calculate_conformalVectors(
+                desired_E_axis, np.asarray(aperture_coords.normals), antenna_axes
+            )
+        else:
+            if desired_E_axis.size == 3:
+                conformal_E_vectors = np.repeat(
+                    desired_E_axis[0, :].astype(np.float32), num_sources, axis=0
+                ).reshape(num_sources, 3)
+            else:
+                conformal_E_vectors = desired_E_axis.reshape(num_sources, 3)
 
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
         scatter_points = o3d.geometry.PointCloud()
-
-        if not multiE:
-            if project_vectors:
-                conformal_E_vectors = EM.calculate_conformalVectors(
-                    desired_E_axis, np.asarray(aperture_coords.normals), antenna_axes
-                )
-            else:
-                if desired_E_axis.shape[0] == np.asarray(aperture_coords.normals).shape[0]:
-                    conformal_E_vectors = copy.deepcopy(desired_E_axis)
-                else:
-                    conformal_E_vectors = np.repeat(
-                        desired_E_axis.reshape(1, 3).astype(np.complex64), num_sources, axis=0
-                    )
-        else:
-            if project_vectors:
-                conformal_E_vectors = EM.calculate_conformalVectors(
-                    desired_E_axis, np.asarray(aperture_coords.normals), antenna_axes
-                )
-            else:
-                if desired_E_axis.size == 3:
-                    conformal_E_vectors = np.repeat(
-                        desired_E_axis[0, :].astype(np.float32), num_sources, axis=0
-                    ).reshape(num_sources, 3)
-                else:
-                    conformal_E_vectors = desired_E_axis.reshape(num_sources, 3)
 
         unified_model = np.append(
             np.asarray(aperture_coords.points).astype(np.float32),

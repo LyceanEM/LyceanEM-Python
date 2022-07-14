@@ -111,7 +111,7 @@ open3d trianglemesh structures can be accessed by importing the data subpackage
 
 .. GENERATED FROM PYTHON SOURCE LINES 61-62
 
-.. image:: ../_static/open3d_structure.png
+# .. image:: ../_static/open3d_structure.png
 
 .. GENERATED FROM PYTHON SOURCE LINES 62-73
 
@@ -148,7 +148,7 @@ structures are created by calling the class, and passing it a list of the open3d
 
 .. code-block:: default
 
-    from lyceanem.base import structures
+    from lyceanem.base_classes import structures
 
     blockers = structures([body])
 
@@ -251,7 +251,7 @@ difficult to consider the full 3D space, and cannot be included in documentation
 can be used to generate contour plots with 3dB contours to give a more systematic understanding of the resultant
 maximum directivity envelope.
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-174
+.. GENERATED FROM PYTHON SOURCE LINES 127-175
 
 .. code-block:: default
 
@@ -305,6 +305,7 @@ maximum directivity envelope.
 
 
 
+
 .. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
    :alt: Maximum Directivity Envelope
    :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
@@ -314,14 +315,10 @@ maximum directivity envelope.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 175-176
-
-.. image:: ../_static/sphx_glr_01_aperture_projection_001.png
-
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  46.100 seconds)
+   **Total running time of the script:** ( 0 minutes  26.096 seconds)
 
 
 .. _sphx_glr_download_auto_examples_01_aperture_projection.py:
