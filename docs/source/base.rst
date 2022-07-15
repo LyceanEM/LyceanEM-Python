@@ -18,4 +18,4 @@ LyceanEM Base
     :members:
 
 .. autoclass:: lyceanem.base_classes.antenna_structures
-    :members:
+    :members: 

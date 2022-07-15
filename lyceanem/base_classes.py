@@ -348,9 +348,9 @@ class antenna_structures:
         """
         self.antenna_xyz.translate(vector)
         self.antenna_origin=self.antenna_origin+vector
-        for item in self.structures.solids:
+        for item in range(len(self.structures.solids)):
             self.structures.solids[item].translate(vector)
-        for item in self.points.points:
+        for item in range(len(self.points.points)):
             self.points.points[item].translate(vector)
 
     def export_all_points(self):
@@ -408,7 +408,7 @@ class antenna_structures:
         directivity = (4 * np.pi * projected_area) / (wavelength ** 2)
         return directivity
 
-    def visualise_antenna(self):
+    def visualise_antenna(self,extras=[]):
         # use open3d to display the
         total_points = self.export_all_points()
         # calculate bounding box
@@ -427,24 +427,42 @@ class antenna_structures:
             + (center[2] - min_points[2]) ** 2
         )
         a = np.mean([max_dist, min_dist])
-        #
+        #scale antenna xyz to the structures
+        self.antenna_xyz=o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5*a, origin=[0, 0, 0])
 
         o3d.visualization.draw_geometries(
-            self.points.points + self.structures.solids + [self.antenna_xyz]
+            self.points.points + self.structures.solids + [self.antenna_xyz] + extras
         )
 
-    def calculate_farfield(self,excitation_vector,wavelength):
+    def calculate_farfield(self,excitation_vector,wavelength,elements=False,azimuth_resolution=37,elevation_resolution=37):
 
-        resultant_pattern=antenna_pattern()
-        resultant_pattern.pattern[:,:,0], resultant_pattern.pattern[:,:,1] =calculate_farfield(self.points.export_points(),
-                                             self.structures,
-                                             excitation_vector,
-                                             az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
-                                             el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
-                                             wavelength=wavelength,
-                                             farfield_distance=20,
-                                             project_vectors=True,
-                                             antenna_axes=self.antenna_axes)
+
+        if elements==False:
+            resultant_pattern=antenna_pattern(azimuth_resolution=azimuth_resolution,elevation_resolution=elevation_resolution)
+            resultant_pattern.pattern[:,:,0], resultant_pattern.pattern[:,:,1] =calculate_farfield(self.points.export_points(),
+                                                 self.structures,
+                                                 excitation_vector,
+                                                 az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
+                                                 el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
+                                                 wavelength=wavelength,
+                                                 farfield_distance=20,
+                                                 project_vectors=True,
+                                                 antenna_axes=self.antenna_axes,elements=elements)
+        else:
+            #generate antenna array pattern
+            array_points=self.points.export_points()
+            num_elements=np.asarray(np.asarray(array_points.points).shape[0])
+            resultant_pattern = array_pattern(elements=num_elements,azimuth_resolution=azimuth_resolution,elevation_resolution=elevation_resolution)
+            resultant_pattern.pattern[:,:, :, 0], resultant_pattern.pattern[:,:, :, 1] = calculate_farfield(
+                self.points.export_points(),
+                self.structures,
+                excitation_vector,
+                az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
+                el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
+                wavelength=wavelength,
+                farfield_distance=20,
+                project_vectors=True,
+                antenna_axes=self.antenna_axes, elements=elements)
 
         return resultant_pattern
 
@@ -494,15 +512,19 @@ class antenna_pattern:
         self.az_mesh = az_mesh
         self.elev_mesh = elev_mesh
         if self.arbitary_pattern_format == "Etheta/Ephi":
+
             self.pattern = np.zeros(
                 (self.elevation_resolution, self.azimuth_resolution, 2),
                 dtype=np.complex64,
             )
+
         elif self.arbitary_pattern_format == "ExEyEz":
+
             self.pattern = np.zeros(
                 (self.elevation_resolution, self.azimuth_resolution, 3),
                 dtype=np.complex64,
             )
+
         if arbitary_pattern == True:
             self.initilise_pattern()
 
@@ -551,6 +573,8 @@ class antenna_pattern:
             elev_angles = self.elev_mesh[:, 0]
             elev_index = np.where(elev_angles > 0)
             self.pattern[elev_index, :, 0] = 1.0
+
+
 
     def import_pattern(self, file_location):
         """
@@ -1036,6 +1060,265 @@ class antenna_pattern:
         Dtheta, Dphi, Dtotal, Dmax = BM.directivity_transformv2(
             self.pattern[:, :, 0],
             self.pattern[:, :, 1],
+            az_range=self.az_mesh[0, :],
+            elev_range=self.elev_mesh[:, 0],
+        )
+        return Dtheta, Dphi, Dtotal, Dmax
+
+class array_pattern:
+    """
+    Antenna Pattern class which allows for patterns to be handled consistently
+    across LyceanEM and other modules. The definitions assume that the pattern axes
+    are consistent with the global axes set. If a different orientation is required,
+    such as a premeasured antenna in a new orientation then the pattern rotate_function
+    must be used.
+
+    Antenna Pattern Frequency is in Hz
+    Rotation Offset is Specified in terms of rotations around the x, y, and z axes as roll,pitch/elevation, and azimuth
+    in radians.
+    """
+
+    def __init__(
+        self,
+        azimuth_resolution=37,
+        elevation_resolution=37,
+        pattern_frequency=1e9,
+        arbitary_pattern=False,
+        arbitary_pattern_type="isotropic",
+        arbitary_pattern_format="Etheta/Ephi",
+        position_mapping=np.zeros((3), dtype=np.float32),
+        rotation_offset=np.zeros((3), dtype=np.float32),
+        elements=2,
+    ):
+
+        self.azimuth_resolution = azimuth_resolution
+        self.elevation_resolution = elevation_resolution
+        self.pattern_frequency = pattern_frequency
+        self.arbitary_pattern_type = arbitary_pattern_type
+        self.arbitary_pattern_format = arbitary_pattern_format
+        self.position_mapping = position_mapping
+        self.rotation_offset = rotation_offset
+        self.field_radius = 1.0
+        self.elements=elements
+        self.beamforming_weights=np.ones((self.elements),dtype=np.complex64)
+        az_mesh, elev_mesh = np.meshgrid(
+            np.linspace(-180, 180, self.azimuth_resolution),
+            np.linspace(-90, 90, self.elevation_resolution),
+        )
+        self.az_mesh = az_mesh
+        self.elev_mesh = elev_mesh
+        if self.arbitary_pattern_format == "Etheta/Ephi":
+            self.pattern = np.zeros(
+                ( elements,self.elevation_resolution, self.azimuth_resolution, 2),
+                dtype=np.complex64,
+            )
+        elif self.arbitary_pattern_format == "ExEyEz":
+
+            self.pattern = np.zeros(
+                ( elements,self.elevation_resolution, self.azimuth_resolution, 3),
+                dtype=np.complex64,
+            )
+        if arbitary_pattern == True:
+            self.initilise_pattern()
+
+    def _rotation_matrix(self):
+        """_rotation_matrix getter method
+
+        Calculates and returns the (3D) axis rotation matrix.
+
+        Returns
+        -------
+        : :class:`numpy.ndarray` of shape (3, 3)
+            The model (3D) rotation matrix.
+        """
+        x_rot = R.from_euler("X", self.rotation_offset[0], degrees=True).as_matrix()
+        y_rot = R.from_euler("Y", self.rotation_offset[1], degrees=True).as_matrix()
+        z_rot = R.from_euler("Z", self.rotation_offset[2], degrees=True).as_matrix()
+
+        # x_rot=np.array([[1,0,0],
+        #                [0,np.cos(np.deg2rad(self.rotation_offset[0])),-np.sin(np.deg2rad(self.rotation_offset[0]))],
+        #                [0,np.sin(np.deg2rad(self.rotation_offset[0])),np.cos(np.deg2rad(self.rotation_offset[0]))]])
+
+        total_rotation = np.dot(np.dot(z_rot, y_rot), x_rot)
+        return total_rotation
+
+    def initilise_pattern(self):
+        """
+        pattern initialisation function, providing an isotopic pattern
+        or quasi-isotropic pattern
+
+        Returns
+        -------
+        Populated antenna pattern
+        """
+        if self.arbitary_pattern_type == "isotropic":
+            self.pattern[:, :,:, 0] = 1.0
+        elif self.arbitary_pattern_type == "xhalfspace":
+            az_angles = self.az_mesh[0, :]
+            az_index = np.where(np.abs(az_angles) < 90)
+            self.pattern[:, az_index,:, 0] = 1.0
+        elif self.arbitary_pattern_type == "yhalfspace":
+            az_angles = self.az_mesh[0, :]
+            az_index = np.where(az_angles > 90)
+            self.pattern[:, az_index, :,0] = 1.0
+        elif self.arbitary_pattern_type == "zhalfspace":
+            elev_angles = self.elev_mesh[:, 0]
+            elev_index = np.where(elev_angles > 0)
+            self.pattern[elev_index, :, :,0] = 1.0
+
+    def display_pattern(
+        self, plottype="Polar", desired_pattern="both", pattern_min=-40
+    ):
+        """
+        Displays the Antenna Array Pattern using :func:`lyceanem.electromagnetics.beamforming.PatternPlot` and the stored weights
+
+        Parameters
+        ----------
+        plottype : str
+            the plot type, either [Polar], [Cartesian-Surf], or [Contour]. The default is [Polar]
+        desired_pattern : str
+            the desired pattern, default is [both], but is Pattern format is 'Etheta/Ephi' then options are [Etheta] or [Ephi], and if Pattern format is 'ExEyEz', then options are [Ex], [Ey], or [Ez].
+        pattern_min : float
+            the desired scale minimum in dB, the default is [-40]
+
+        Returns
+        -------
+        None
+        """
+
+        if self.arbitary_pattern_format == "Etheta/Ephi":
+            if desired_pattern == "both":
+                BM.PatternPlot(
+                    self.beamforming_weights*self.pattern[:,:, :, 0],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Etheta",
+                )
+                BM.PatternPlot(
+                    self.beamforming_weights*self.pattern[:,:, :, 1],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Ephi",
+                )
+            elif desired_pattern == "Etheta":
+                BM.PatternPlot(
+                    self.beamforming_weights*self.pattern[:,:, :, 0],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Etheta",
+                )
+            elif desired_pattern == "Ephi":
+                BM.PatternPlot(
+                    self.beamforming_weights*self.pattern[:,:, :, 1],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Ephi",
+                )
+            elif desired_pattern =="Power":
+                BM.PatternPlot(
+                    (self.beamforming_weights*self.pattern[:,:, :, 0])**2+(self.beamforming_weights*self.pattern[:,:, :, 1])**2,
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Power Pattern",
+                )
+        elif self.arbitary_pattern_format == "ExEyEz":
+            if desired_pattern == "both":
+                BM.PatternPlot(
+                    self.beamforming_weights*self.pattern[:,:, :, 0],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Ex",
+                )
+                BM.PatternPlot(
+                    self.beamforming_weights*self.pattern[:,:, :, 1],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Ey",
+                )
+                BM.PatternPlot(
+                    self.beamforming_weights*self.pattern[:,:, :, 2],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Ez",
+                )
+            elif desired_pattern == "Ex":
+                BM.PatternPlot(
+                    self.beamforming_weights*self.pattern[:,:, :, 0],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Ex",
+                )
+            elif desired_pattern == "Ey":
+                BM.PatternPlot(
+                    self.beamforming_weights*self.pattern[:,:, :, 1],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Ey",
+                )
+            elif desired_pattern == "Ez":
+                BM.PatternPlot(
+                    self.beamforming_weights*self.pattern[:,:, :, 2],
+                    self.az_mesh,
+                    self.elev_mesh,
+                    pattern_min=pattern_min,
+                    plottype=plottype,
+                    title_text="Ez",
+                )
+
+
+    def cartesian_points(self):
+        """
+        exports the cartesian points for all pattern points.
+        """
+        x, y, z = RF.sph2cart(
+            np.deg2rad(self.az_mesh.ravel()),
+            np.deg2rad(self.elev_mesh.ravel()),
+            np.ones((self.pattern[:, :, 0].size)) * self.field_radius,
+        )
+        field_points = (
+            np.array([x, y, z]).transpose().astype(np.float32) + self.position_mapping
+        )
+
+        return field_points
+
+    def directivity(self):
+        """
+
+        Returns
+        -------
+        Dtheta : numpy array
+            directivity for Etheta farfield
+        Dphi : numpy array
+            directivity for Ephi farfield
+        Dtotal : numpy array
+            overall directivity pattern
+        Dmax : numpy array
+            the maximum directivity for each pattern
+
+        """
+        Dtheta, Dphi, Dtotal, Dmax = BM.directivity_transformv2(
+            self.beamforming_weights*self.pattern[:,:, :, 0],
+            self.beamforming_weights*self.pattern[:,:, :, 1],
             az_range=self.az_mesh[0, :],
             elev_range=self.elev_mesh[:, 0],
         )

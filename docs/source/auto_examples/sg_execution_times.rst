@@ -5,10 +5,10 @@
 
 Computation times
 =================
-**00:46.041** total execution time for **auto_examples** files:
+**00:53.195** total execution time for **auto_examples** files:
 
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_06_farfield_polarisation.py` (``06_farfield_polarisation.py``)                           | 00:46.041 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_07_aperture_farfield_polarisation.py` (``07_aperture_farfield_polarisation.py``)         | 00:53.195 | 0.0 MB |
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
 | :ref:`sphx_glr_auto_examples_01_aperture_projection.py` (``01_aperture_projection.py``)                               | 00:00.000 | 0.0 MB |
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
@@ -19,4 +19,6 @@ Computation times
 | :ref:`sphx_glr_auto_examples_04_time_domain_channel_modelling.py` (``04_time_domain_channel_modelling.py``)           | 00:00.000 | 0.0 MB |
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
 | :ref:`sphx_glr_auto_examples_05_array_beamforming.py` (``05_array_beamforming.py``)                                   | 00:00.000 | 0.0 MB |
++-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
+| :ref:`sphx_glr_auto_examples_06_farfield_polarisation.py` (``06_farfield_polarisation.py``)                           | 00:00.000 | 0.0 MB |
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+

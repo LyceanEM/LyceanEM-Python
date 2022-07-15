@@ -15,6 +15,27 @@ A selection of examples of LyceanEM features
 
 .. only:: html
 
+ .. figure:: /auto_examples/images/thumb/sphx_glr_07_aperture_farfield_polarisation_thumb.png
+     :alt: Modelling a Coherently Polarised Aperture
+
+     :ref:`sphx_glr_auto_examples_07_aperture_farfield_polarisation.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/07_aperture_farfield_polarisation
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example uses the frequency domain lyceanem.models.frequency_domain.calculate_farfield func...">
+
+.. only:: html
+
  .. figure:: /auto_examples/images/thumb/sphx_glr_05_array_beamforming_thumb.png
      :alt: Array Beamforming
 
