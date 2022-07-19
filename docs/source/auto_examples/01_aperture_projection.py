@@ -58,7 +58,7 @@ body, array,_ = data.exampleUAV(10e9)
 o3d.visualization.draw_geometries([body, array])
 
 # %%
-# .. image:: ../_static/open3d_structure.png
+## .. image:: ../_static/open3d_structure.png
 
 # crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to
 # the hidden surfaces, but correctly an aperture will only have an outer face.
@@ -77,7 +77,7 @@ surface_array.triangle_normals = o3d.utility.Vector3dVector(
 # is the class itself, and methods to allow translation and rotation of the trianglemesh solids. A structure can be
 # passed to the models to provide the environment to be considered as blockers.
 # structures are created by calling the class, and passing it a list of the open3d trianglemesh structures to be added.
-from lyceanem.base import structures
+from lyceanem.base_classes import structures
 
 blockers = structures([body])
 
@@ -171,5 +171,4 @@ ax.set_ylabel("Elevation (degrees)")
 ax.set_title("Maximum Directivity Envelope")
 fig.show()
 
-# %%
-# .. image:: ../_static/sphx_glr_01_aperture_projection_001.png
+

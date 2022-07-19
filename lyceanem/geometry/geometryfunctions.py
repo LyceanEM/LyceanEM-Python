@@ -117,3 +117,34 @@ def open3drotate(
         item.translate(rotation_centre)
 
     return item
+
+
+def get_cross_prod_mat(pVec_Arr):
+    # pVec_Arr shape (3)
+    qCross_prod_mat = np.array(
+        [
+            [0, -pVec_Arr[2], pVec_Arr[1]],
+            [pVec_Arr[2], 0, -pVec_Arr[0]],
+            [-pVec_Arr[1], pVec_Arr[0], 0],
+        ]
+    )
+    return qCross_prod_mat
+
+
+def calculate_align_mat(pVec_Arr):
+    scale = np.linalg.norm(pVec_Arr)
+    pVec_Arr = pVec_Arr / scale
+    # must ensure pVec_Arr is also a unit vec.
+    z_unit_Arr = np.array([0, 0, 1])
+    z_mat = get_cross_prod_mat(z_unit_Arr)
+
+    z_c_vec = np.matmul(z_mat, pVec_Arr)
+    z_c_vec_mat = get_cross_prod_mat(z_c_vec)
+
+    qTrans_Mat = (
+        np.eye(3, 3)
+        + z_c_vec_mat
+        + np.matmul(z_c_vec_mat, z_c_vec_mat) / (1 + np.dot(z_unit_Arr, pVec_Arr))
+    )
+    qTrans_Mat *= scale
+    return qTrans_Mat

@@ -60,7 +60,7 @@ surface_array.triangle_normals = o3d.utility.Vector3dVector(
     np.asarray(array.triangle_normals)[: len(array.triangle_normals) // 2, :]
 )
 
-from lyceanem.base import structures
+from lyceanem.base_classes import structures
 
 blockers = structures([body,array])
 
@@ -104,7 +104,7 @@ Etheta,Ephi=calculate_farfield(source_coords,
 # give a better view of the whole pattern, but if contour plots are required, then this can also be produced by passing
 # plottype='Contour' to the function.
 
-from lyceanem.base import antenna_pattern
+from lyceanem.base_classes import antenna_pattern
 
 UAV_Static_Pattern=antenna_pattern(azimuth_resolution=az_res,elevation_resolution=elev_res)
 UAV_Static_Pattern.pattern[:,:,0]=Etheta

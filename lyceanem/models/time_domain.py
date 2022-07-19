@@ -1,8 +1,9 @@
 import numpy as np
 import open3d as o3d
 import scipy.constants
+import copy
 
-from ..base import scattering_t
+from ..base_types import scattering_t
 from ..electromagnetics import empropagation as EM
 from ..geometry import targets as TL
 from ..raycasting import rayfunctions as RF
@@ -21,6 +22,8 @@ def calculate_scattering(
     sampling_freq=1e9,
     num_samples=10000,
     mesh_resolution=0.5,
+    antenna_axes=np.eye(3),
+    project_vectors=True
 ):
     """
     Based upon the parameters given, calculate the time domain scattering for the apertures and sinks.
@@ -32,7 +35,7 @@ def calculate_scattering(
         source coordinates
     sink_coords : :class:`open3d.geometry.TriangleMesh`
         sink coordinates
-    antenna_solid : :class:`lyceanem.base.structures`
+    antenna_solid : :class:`lyceanem.base_classes.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
     desired_E_axis : 1D numpy array of floats
         the desired excitation vector, can be a 1*3 array or a n*3 array if multiple different exciations are desired in one lauch
@@ -73,19 +76,35 @@ def calculate_scattering(
     num_sources = len(np.asarray(aperture_coords.points))
     num_sinks = len(np.asarray(sink_coords.points))
     environment_triangles = antenna_solid.triangles_base_raycaster()
+
+    if not multiE:
+        if project_vectors:
+            conformal_E_vectors = EM.calculate_conformalVectors(
+                desired_E_axis, np.asarray(aperture_coords.normals), antenna_axes
+            )
+        else:
+            if desired_E_axis.shape[0] == np.asarray(aperture_coords.normals).shape[0]:
+                conformal_E_vectors = copy.deepcopy(desired_E_axis)
+            else:
+                conformal_E_vectors = np.repeat(
+                    desired_E_axis.reshape(1, 3).astype(np.complex64), num_sources, axis=0
+                )
+    else:
+        if project_vectors:
+            conformal_E_vectors = EM.calculate_conformalVectors(
+                desired_E_axis, np.asarray(aperture_coords.normals), antenna_axes
+            )
+        else:
+            if desired_E_axis.size == 3:
+                conformal_E_vectors = np.repeat(
+                    desired_E_axis[0, :].astype(np.float32), num_sources, axis=0
+                ).reshape(num_sources, 3)
+            else:
+                conformal_E_vectors = desired_E_axis.reshape(num_sources, 3)
+
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
         scatter_points = o3d.geometry.PointCloud()
-
-        if ~multiE:
-            conformal_E_vectors = EM.calculate_conformalVectors(
-                desired_E_axis, np.asarray(aperture_coords.normals).astype(np.float32)
-            )
-        else:
-            conformal_E_vectors = EM.calculate_conformalVectors(
-                desired_E_axis[0, :],
-                np.asarray(aperture_coords.normals).astype(np.float32),
-            )
 
         unified_model = np.append(
             np.asarray(aperture_coords.points).astype(np.float32),
@@ -160,16 +179,6 @@ def calculate_scattering(
         if scatter_points is None:
             scatter_points, areas = TL.source_cloud_from_shape(
                 antenna_solid, 1e-6, (wavelength * mesh_resolution) ** 2
-            )
-
-        if ~multiE:
-            conformal_E_vectors = EM.calculate_conformalVectors(
-                desired_E_axis, np.asarray(aperture_coords.normals).astype(np.float32)
-            )
-        else:
-            conformal_E_vectors = EM.calculate_conformalVectors(
-                desired_E_axis[0, :],
-                np.asarray(aperture_coords.normals).astype(np.float32),
             )
 
         unified_model = np.append(
@@ -390,7 +399,7 @@ def calculate_scattering(
             for e_inc in range(desired_E_axis.shape[1]):
                 conformal_E_vectors = EM.calculate_conformalVectors(
                     desired_E_axis[e_inc, :],
-                    np.asarray(aperture_coords.normals).astype(np.float32),
+                    np.asarray(aperture_coords.normals).astype(np.float32),antenna_axes
                 )
                 for element in range(num_sources):
                     point_informationv2[0:num_sources]["ex"] = 0.0

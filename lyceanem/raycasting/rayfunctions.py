@@ -12,7 +12,8 @@ from numba import cuda, float32, jit, njit, guvectorize, prange
 from numpy.linalg import norm
 from scipy.spatial import distance
 
-import lyceanem.base as base
+import lyceanem.base_types as base_types
+from ..utility import math_functions as math_functions
 import lyceanem.electromagnetics.empropagation as EM
 
 EPSILON = 1e-6  # how close to zero do we consider zero? example used 1e-7
@@ -81,86 +82,86 @@ EPSILON = 1e-6  # how close to zero do we consider zero? example used 1e-7
 #     ], align=True)
 # scattering_t = from_dtype(scattering_point) # Create a type that numba can recognize!
 
-
-@njit
-def cart2pol(x, y):
-    rho = np.sqrt(x ** 2 + y ** 2)
-    phi = np.arctan2(y, x)
-    return (rho, phi)
-
-
-@njit
-def pol2cart(rho, phi):
-    x = rho * np.cos(phi)
-    y = rho * np.sin(phi)
-    return (x, y)
-
-
-@njit
-def cart2sph(x, y, z):
-    # radians
-    hxy = np.hypot(x, y)
-    r = np.hypot(hxy, z)
-    el = np.arctan2(z, hxy)
-    az = np.arctan2(y, x)
-    return az, el, r
-
-
-@njit
-def sph2cart(az, el, r):
-    # radians
-    rcos_theta = r * np.cos(el)
-    x = rcos_theta * np.cos(az)
-    y = rcos_theta * np.sin(az)
-    z = r * np.sin(el)
-    return x, y, z
-
-
-@njit
-def calc_normals(T):
-    # calculate triangle norm
-    e1x = T["v1x"] - T["v0x"]
-    e1y = T["v1y"] - T["v0y"]
-    e1z = T["v1z"] - T["v0z"]
-
-    e2x = T["v2x"] - T["v0x"]
-    e2y = T["v2y"] - T["v0y"]
-    e2z = T["v2z"] - T["v0z"]
-
-    dirx = e1y * e2z - e1z * e2y
-    diry = e1z * e2x - e1x * e2z
-    dirz = e1x * e2y - e1y * e2x
-
-    normconst = math.sqrt(dirx ** 2 + diry ** 2 + dirz ** 2)
-
-    T["normx"] = dirx / normconst
-    T["normy"] = diry / normconst
-    T["normz"] = dirz / normconst
-
-    return T
-
-
-@guvectorize(
-    [(float32[:], float32[:], float32[:], float32)],
-    "(n),(n)->(n),()",
-    target="parallel",
-)
-def fast_calc_dv(source, target, dv, normconst):
-    dirx = target[0] - source[0]
-    diry = target[1] - source[1]
-    dirz = target[2] - source[2]
-    normconst = math.sqrt(dirx ** 2 + diry ** 2 + dirz ** 2)
-    dv = np.array([dirx, diry, dirz]) / normconst
-
-
-@njit
-def calc_dv(source, target):
-    dirx = target[0] - source[0]
-    diry = target[1] - source[1]
-    dirz = target[2] - source[2]
-    normconst = np.sqrt(dirx ** 2 + diry ** 2 + dirz ** 2)
-    dv = np.array([dirx, diry, dirz]) / normconst
-    return dv[0], dv[1], dv[2], normconst
+#
+# @njit
+# def cart2pol(x, y):
+#     rho = np.sqrt(x ** 2 + y ** 2)
+#     phi = np.arctan2(y, x)
+#     return (rho, phi)
+#
+#
+# @njit
+# def pol2cart(rho, phi):
+#     x = rho * np.cos(phi)
+#     y = rho * np.sin(phi)
+#     return (x, y)
+#
+#
+# @njit
+# def cart2sph(x, y, z):
+#     # radians
+#     hxy = np.hypot(x, y)
+#     r = np.hypot(hxy, z)
+#     el = np.arctan2(z, hxy)
+#     az = np.arctan2(y, x)
+#     return az, el, r
+#
+#
+# @njit
+# def sph2cart(az, el, r):
+#     # radians
+#     rcos_theta = r * np.cos(el)
+#     x = rcos_theta * np.cos(az)
+#     y = rcos_theta * np.sin(az)
+#     z = r * np.sin(el)
+#     return x, y, z
+#
+#
+# @njit
+# def calc_normals(T):
+#     # calculate triangle norm
+#     e1x = T["v1x"] - T["v0x"]
+#     e1y = T["v1y"] - T["v0y"]
+#     e1z = T["v1z"] - T["v0z"]
+#
+#     e2x = T["v2x"] - T["v0x"]
+#     e2y = T["v2y"] - T["v0y"]
+#     e2z = T["v2z"] - T["v0z"]
+#
+#     dirx = e1y * e2z - e1z * e2y
+#     diry = e1z * e2x - e1x * e2z
+#     dirz = e1x * e2y - e1y * e2x
+#
+#     normconst = math.sqrt(dirx ** 2 + diry ** 2 + dirz ** 2)
+#
+#     T["normx"] = dirx / normconst
+#     T["normy"] = diry / normconst
+#     T["normz"] = dirz / normconst
+#
+#     return T
+#
+#
+# @guvectorize(
+#     [(float32[:], float32[:], float32[:], float32)],
+#     "(n),(n)->(n),()",
+#     target="parallel",
+# )
+# def fast_calc_dv(source, target, dv, normconst):
+#     dirx = target[0] - source[0]
+#     diry = target[1] - source[1]
+#     dirz = target[2] - source[2]
+#     normconst = math.sqrt(dirx ** 2 + diry ** 2 + dirz ** 2)
+#     dv = np.array([dirx, diry, dirz]) / normconst
+#
+#
+# @njit
+# def calc_dv(source, target):
+#     dirx = target[0] - source[0]
+#     diry = target[1] - source[1]
+#     dirz = target[2] - source[2]
+#     normconst = np.sqrt(dirx ** 2 + diry ** 2 + dirz ** 2)
+#     dv = np.array([dirx, diry, dirz]) / normconst
+#     return dv[0], dv[1], dv[2], normconst
 
 
 # @njit
@@ -270,7 +271,7 @@ def integratedkernal(ray_index, point_information, environment, ray_flag):
                 #     #print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
                 #     #convert source point field to ray
 
-                ray = cuda.local.array(shape=(1), dtype=base.ray_t)
+                ray = cuda.local.array(shape=(1), dtype=base_types.ray_t)
                 point1 = point_information[ray_index[cu_ray_num, i] - 1]
                 point2 = point_information[ray_index[cu_ray_num, i + 1] - 1]
                 ray[0]["ox"] = point1["px"]
@@ -407,7 +408,7 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
     chunk_size = 2 ** 11
     threads_in_block = 1024
     # for idx in range(len(triangle_chunk)-1):
-    d_environment = cuda.device_array(len(environment_local), dtype=base.triangle_t)
+    d_environment = cuda.device_array(len(environment_local), dtype=base_types.triangle_t)
     d_ray_index = cuda.device_array(
         (ray_index.shape[0], ray_index.shape[1]), dtype=np.int32
     )
@@ -417,7 +418,7 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
     d_ray_flag = cuda.to_device(ray_flags)
     cuda.to_device(environment_local, to=d_environment)
     d_point_information = cuda.device_array(
-        scattering_points.shape[0], dtype=base.scattering_t
+        scattering_points.shape[0], dtype=base_types.scattering_t
     )
     d_point_information = cuda.to_device(scattering_points)
     grids = math.ceil(ray_index.shape[0] / threads_in_block)
@@ -464,7 +465,7 @@ def visiblespace(
         xyz coordinates of the sources
     source_normals : n by 3 numpy array of floats
         normal vectors for each source point
-    environment : :class:`lyceanem.base.triangles`
+    environment : :class:`lyceanem.base_classes.triangles`
         blocking environment
     vertex_area : float or array of floats
         the area associated with each source point, defaults to 0, but can also be specified for each source
@@ -507,7 +508,7 @@ def visiblespace(
     # filtered_network2,final_network2,filtered_index2,final_index2,shadow_rays
     directions = np.zeros((len(hit_index), 3), dtype=np.float32)
     norm_length = np.zeros((len(hit_index), 1), dtype=np.float32)
-    hit_directions, hit_norms = base.calc_dv_norm(
+    hit_directions, hit_norms = math_functions.calc_dv_norm(
         unified_model[hit_index[:, 0].astype(int) - 1, :],
         unified_model[hit_index[:, 1].astype(int) - 1, :],
         directions,
@@ -673,23 +674,26 @@ def convertTriangles(triangle_object):
     """
     convert o3d triangle object to ray tracer triangle class
     """
-    vertices = np.asarray(triangle_object.vertices)
-    tri_index = np.asarray(triangle_object.triangles)
-    normals = np.asarray(triangle_object.triangle_normals)
-    triangles = np.empty(len(tri_index), dtype=base.triangle_t)
-    for idx in range(len(tri_index)):
-        triangles[idx]["v0x"] = np.single(vertices[tri_index[idx, 0], 0])
-        triangles[idx]["v0y"] = np.single(vertices[tri_index[idx, 0], 1])
-        triangles[idx]["v0z"] = np.single(vertices[tri_index[idx, 0], 2])
-        triangles[idx]["v1x"] = np.single(vertices[tri_index[idx, 1], 0])
-        triangles[idx]["v1y"] = np.single(vertices[tri_index[idx, 1], 1])
-        triangles[idx]["v1z"] = np.single(vertices[tri_index[idx, 1], 2])
-        triangles[idx]["v2x"] = np.single(vertices[tri_index[idx, 2], 0])
-        triangles[idx]["v2y"] = np.single(vertices[tri_index[idx, 2], 1])
-        triangles[idx]["v2z"] = np.single(vertices[tri_index[idx, 2], 2])
-        # triangles[idx]['normx']=np.single(normals[idx,0])
-        # triangles[idx]['normy']=np.single(normals[idx,1])
-        # triangles[idx]['normz']=np.single(normals[idx,2])
+    if triangle_object == None:
+        triangles = np.empty(0, dtype=base_types.triangle_t)
+    else:
+        vertices = np.asarray(triangle_object.vertices)
+        tri_index = np.asarray(triangle_object.triangles)
+        normals = np.asarray(triangle_object.triangle_normals)
+        triangles = np.empty(len(tri_index), dtype=base_types.triangle_t)
+        for idx in range(len(tri_index)):
+            triangles[idx]["v0x"] = np.single(vertices[tri_index[idx, 0], 0])
+            triangles[idx]["v0y"] = np.single(vertices[tri_index[idx, 0], 1])
+            triangles[idx]["v0z"] = np.single(vertices[tri_index[idx, 0], 2])
+            triangles[idx]["v1x"] = np.single(vertices[tri_index[idx, 1], 0])
+            triangles[idx]["v1y"] = np.single(vertices[tri_index[idx, 1], 1])
+            triangles[idx]["v1z"] = np.single(vertices[tri_index[idx, 1], 2])
+            triangles[idx]["v2x"] = np.single(vertices[tri_index[idx, 2], 0])
+            triangles[idx]["v2y"] = np.single(vertices[tri_index[idx, 2], 1])
+            triangles[idx]["v2z"] = np.single(vertices[tri_index[idx, 2], 2])
+            # triangles[idx]['normx']=np.single(normals[idx,0])
+            # triangles[idx]['normy']=np.single(normals[idx,1])
+            # triangles[idx]['normz']=np.single(normals[idx,2])
 
     return triangles
 
@@ -2006,7 +2010,7 @@ def charge_rays_environment1Dv2(sources, sinks, environment_points, point_indexi
     unified_model = np.append(
         np.append(sources, sinks, axis=0), environment_points, axis=0
     )
-    temp_ray_payload = np.empty(point_indexing.shape[0], dtype=base.ray_t)
+    temp_ray_payload = np.empty(point_indexing.shape[0], dtype=base_types.ray_t)
     local_sources = unified_model[point_indexing[:, 0] - 1, :]
     directions = np.zeros(
         (len(unified_model[point_indexing[:, 1] - 1, :]), 3), dtype=np.float32
@@ -2014,7 +2018,7 @@ def charge_rays_environment1Dv2(sources, sinks, environment_points, point_indexi
     norm_length = np.zeros(
         (len(unified_model[point_indexing[:, 1] - 1, :]), 1), dtype=np.float32
     )
-    directions, norm_length = base.calc_dv_norm(
+    directions, norm_length = math_functions.calc_dv_norm(
         unified_model[point_indexing[:, -2] - 1, :],
         unified_model[point_indexing[:, -1] - 1, :],
         directions,
@@ -2093,12 +2097,12 @@ def launchRaycaster1Dv2(
         0, ray_num, math.ceil(ray_num / chunk_size) + 1, dtype=np.int32
     )
     # for idx in range(len(triangle_chunk)-1):
-    d_environment = cuda.device_array(len(environment_local), dtype=base.triangle_t)
+    d_environment = cuda.device_array(len(environment_local), dtype=base_types.triangle_t)
     cuda.to_device(environment_local, to=d_environment)
     for n in range(len(ray_chunks) - 1):
         chunk_payload = first_ray_payload[ray_chunks[n] : ray_chunks[n + 1]]
         chunk_ray_size = len(chunk_payload)
-        d_chunk_payload = cuda.device_array([chunk_ray_size], dtype=base.ray_t)
+        d_chunk_payload = cuda.device_array([chunk_ray_size], dtype=base_types.ray_t)
         cuda.to_device(chunk_payload, to=d_chunk_payload)
         #
         # ray_temp=np.empty((chunk_ray_size),dtype=np.bool)
@@ -2160,10 +2164,10 @@ def launchRaycaster1Dv3(
     threads_in_block = 256
     # ray_chunks=np.linspace(0,ray_num,math.ceil(ray_num/chunk_size)+1,dtype=np.int32)
     # for idx in range(len(triangle_chunk)-1):
-    d_environment = cuda.device_array(len(environment_local), dtype=base.triangle_t)
+    d_environment = cuda.device_array(len(environment_local), dtype=base_types.triangle_t)
     cuda.to_device(environment_local, to=d_environment)
 
-    d_chunk_payload = cuda.device_array([ray_num], dtype=base.ray_t)
+    d_chunk_payload = cuda.device_array([ray_num], dtype=base_types.ray_t)
     cuda.to_device(first_ray_payload, to=d_chunk_payload)
     #
     # ray_temp=np.empty((chunk_ray_size),dtype=np.bool)
@@ -2244,7 +2248,7 @@ def chunkingRaycaster1Dv2(
         0, ray_num, math.ceil(ray_num / chunk_size) + 1, dtype=np.int32
     )
     # for idx in range(len(triangle_chunk)-1):
-    d_environment = cuda.device_array(len(environment_local), dtype=base.triangle_t)
+    d_environment = cuda.device_array(len(environment_local), dtype=base_types.triangle_t)
     cuda.to_device(environment_local, to=d_environment)
     for n in range(len(ray_chunks) - 1):
         chunk_payload = second_ray_payload[ray_chunks[n] : ray_chunks[n + 1]]
@@ -2256,7 +2260,7 @@ def chunkingRaycaster1Dv2(
         # dist_list=cuda.to_device(distance_temp)
         # d_ray_flag=cuda.to_device(ray_temp)
         # d_chunk_payload = cuda.device_array([chunk_ray_size], dtype=ray_t)
-        d_chunk_payload = cuda.device_array([chunk_ray_size], dtype=base.ray_t)
+        d_chunk_payload = cuda.device_array([chunk_ray_size], dtype=base_types.ray_t)
         cuda.to_device(chunk_payload, to=d_chunk_payload)
         # Here, we choose the granularity of the threading on our device. We want
         # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
@@ -2313,7 +2317,7 @@ def chunkingRaycaster1Dv3(
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.5).astype(int)
     ray_limit = (
-        np.floor(np.floor((max_mem - environment_local.nbytes) / base.ray_t.size) / 1e7)
+        np.floor(np.floor((max_mem - environment_local.nbytes) / base_types.ray_t.size) / 1e7)
         * 1e7
     ).astype(int)
     if target_indexing.shape[0] >= ray_limit:
@@ -2334,11 +2338,11 @@ def chunkingRaycaster1Dv3(
             # ray_chunks=np.linspace(0,ray_num,math.ceil(ray_num/chunk_size)+1,dtype=np.int32)
             # for idx in range(len(triangle_chunk)-1):
             d_environment = cuda.device_array(
-                len(environment_local), dtype=base.triangle_t
+                len(environment_local), dtype=base_types.triangle_t
             )
             cuda.to_device(environment_local, to=d_environment)
             d_chunk_payload = cuda.device_array(
-                [second_ray_payload.shape[0]], dtype=base.ray_t
+                [second_ray_payload.shape[0]], dtype=base_types.ray_t
             )
             cuda.to_device(second_ray_payload, to=d_chunk_payload)
             #
@@ -2389,10 +2393,10 @@ def chunkingRaycaster1Dv3(
         threads_in_block = 256
         # ray_chunks=np.linspace(0,ray_num,math.ceil(ray_num/chunk_size)+1,dtype=np.int32)
         # for idx in range(len(triangle_chunk)-1):
-        d_environment = cuda.device_array(len(environment_local), dtype=base.triangle_t)
+        d_environment = cuda.device_array(len(environment_local), dtype=base_types.triangle_t)
         cuda.to_device(environment_local, to=d_environment)
         d_chunk_payload = cuda.device_array(
-            [second_ray_payload.shape[0]], dtype=base.ray_t
+            [second_ray_payload.shape[0]], dtype=base_types.ray_t
         )
         cuda.to_device(second_ray_payload, to=d_chunk_payload)
         #
@@ -2458,7 +2462,7 @@ def charge_shadow_rays1D(sources, sinks, point_indexing, target_indexing):
     source_num, origin_width = np.shape(sources)
     origins = np.zeros((source_num * target_num, origin_width), dtype=np.float32)
     source_sink_index = np.full((source_num * target_num, 2), np.nan, dtype=np.int32)
-    temp_ray_payload = np.empty([source_num * target_num], dtype=base.ray_t)
+    temp_ray_payload = np.empty([source_num * target_num], dtype=base_types.ray_t)
     temp_ray_payload, origins, source_sink_index = ray_charge_core_final_vector(
         temp_ray_payload,
         origins,
@@ -2496,7 +2500,7 @@ def ray_charge_core_final_vector(
     )
     for n in range(len(source_chunking) - 1):
         local_sources[:, -origin_width:] = sources[n, :]
-        directions, norm_length = base.calc_dv_norm(
+        directions, norm_length = math_functions.calc_dv_norm(
             local_sources[:, -3:], targets, directions, norm_length
         )
         temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
@@ -2564,7 +2568,7 @@ def shadowRaycaster(filtered_network, sinks, filtered_index, environment_local):
     for idx in range(len(triangle_chunk) - 1):
         d_environment = cuda.device_array(
             len(environment_local[triangle_chunk[idx] : triangle_chunk[idx + 1]]),
-            dtype=base.triangle_t,
+            dtype=base_types.triangle_t,
         )
         cuda.to_device(
             environment_local[triangle_chunk[idx] : triangle_chunk[idx + 1]],
@@ -2580,7 +2584,7 @@ def shadowRaycaster(filtered_network, sinks, filtered_index, environment_local):
             dist_list = cuda.to_device(distance_temp)
             d_ray_flag = cuda.to_device(ray_temp)
             # d_chunk_payload = cuda.device_array([chunk_ray_size], dtype=ray_t)
-            d_chunk_payload = cuda.device_array([chunk_ray_size], dtype=base.ray_t)
+            d_chunk_payload = cuda.device_array([chunk_ray_size], dtype=base_types.ray_t)
             cuda.to_device(chunk_payload, to=d_chunk_payload)
             # Here, we choose the granularity of the threading on our device. We want
             # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
@@ -2775,7 +2779,7 @@ def workchunkingv2(
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.8).astype(int)
     ray_limit = (
-        np.floor(np.floor((max_mem - environment.nbytes) / base.ray_t.size) / 1e7) * 1e7
+        np.floor(np.floor((max_mem - environment.nbytes) / base_types.ray_t.size) / 1e7) * 1e7
     ).astype(int)
     # establish index boundaries
     source_index = np.arange(1, sources.shape[0] + 1).reshape(

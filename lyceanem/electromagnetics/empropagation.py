@@ -14,7 +14,7 @@ from numba import cuda, float32, float64, complex64, njit, guvectorize, prange
 from numpy.linalg import norm
 from scipy.spatial import distance
 
-import lyceanem.base as base
+import lyceanem.base_types as base_types
 import lyceanem.raycasting.rayfunctions as RF
 import lyceanem.geometry.geometryfunctions as GF
 
@@ -2069,7 +2069,7 @@ def EMGPUJointPathLengthandPolar(source_num, sink_num, full_index, point_informa
     path_lengths = np.zeros((ray_num), dtype=np.float32)
     polar_coefficients = np.ones((ray_num, 3), dtype=np.complex64)
     d_point_information = cuda.device_array(
-        point_information.shape[0], dtype=base.scattering_t
+        point_information.shape[0], dtype=base_types.scattering_t
     )
     d_point_information = cuda.to_device(point_information)
     # divide in terms of a block for each source, then
@@ -2121,7 +2121,7 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
         the number of sink points
     full_index : (2D numpy array of ints)
         index of all successful rays
-    point_information : :type:`lyceanem.base.scattering_point`
+    point_information : :type:`lyceanem.base_types.scattering_point`
         the point information contains the amplitude exciation for the sources, and the positions and normal vectors for
          all points, together with electromangetic properties, however, the general assumption of this model is that
          there is only freespace and metal interacting.
@@ -2134,8 +2134,9 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
         the resultant scattering network for the provided ray paths
 
     """
-    # cuda.select_device(0)
-    # network_index,point_information,ray_components
+    free_mem, total_mem = cuda.current_context().get_memory_info()
+    max_mem = np.ceil(free_mem * 0.5).astype(int)
+
     ray_num = full_index.shape[0]
     threads_in_block = 256
     max_blocks = 65535
@@ -2152,7 +2153,7 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
     )
     d_scattering_network = cuda.to_device(scattering_network)
     d_point_information = cuda.device_array(
-        point_information.shape[0], dtype=base.scattering_t
+        point_information.shape[0], dtype=base_types.scattering_t
     )
     d_point_information = cuda.to_device(point_information)
     d_wavelength = cuda.device_array((1), dtype=np.complex64)
@@ -2248,7 +2249,7 @@ def IsoGPUFreqDomain(source_num, sink_num, full_index, point_information, wavele
     )
     d_scattering_network = cuda.to_device(scattering_network)
     d_point_information = cuda.device_array(
-        point_information.shape[0], dtype=base.scattering_t
+        point_information.shape[0], dtype=base_types.scattering_t
     )
     d_point_information = cuda.to_device(point_information)
     d_wavelength = cuda.device_array((1), dtype=np.complex64)
@@ -2643,7 +2644,7 @@ def TimeDomainv2(
     )
     d_time_map = cuda.to_device(time_map)
     d_point_information = cuda.device_array(
-        point_informationv2.shape[0], dtype=base.scattering_t
+        point_informationv2.shape[0], dtype=base_types.scattering_t
     )
     d_point_information = cuda.to_device(point_informationv2)
     d_excitation = cuda.device_array(excitation_signal.shape[0], dtype=np.float64)
@@ -2782,7 +2783,7 @@ def TimeDomainv3(
                 time_map[source_chunking[n] : source_chunking[n + 1], :, :, :]
             )
             d_point_information = cuda.device_array(
-                point_informationv2.shape[0], dtype=base.scattering_t
+                point_informationv2.shape[0], dtype=base_types.scattering_t
             )
             d_point_information = cuda.to_device(point_informationv2)
             d_excitation = cuda.device_array(
@@ -2864,7 +2865,7 @@ def TimeDomainv3(
         )
         d_time_map = cuda.to_device(time_map)
         d_point_information = cuda.device_array(
-            point_informationv2.shape[0], dtype=base.scattering_t
+            point_informationv2.shape[0], dtype=base_types.scattering_t
         )
         d_point_information = cuda.to_device(point_informationv2)
         d_excitation = cuda.device_array(excitation_signal.shape[0], dtype=np.float64)
@@ -3032,7 +3033,7 @@ def TimeDomainThetaPhi(
                 time_map[source_chunking[n] : source_chunking[n + 1], :, :, :]
             )
             d_point_information = cuda.device_array(
-                point_informationv2.shape[0], dtype=base.scattering_t
+                point_informationv2.shape[0], dtype=base_types.scattering_t
             )
             d_point_information = cuda.to_device(point_informationv2)
             d_excitation = cuda.device_array(
@@ -3113,7 +3114,7 @@ def TimeDomainThetaPhi(
         )
         d_time_map = cuda.to_device(time_map)
         d_point_information = cuda.device_array(
-            point_informationv2.shape[0], dtype=base.scattering_t
+            point_informationv2.shape[0], dtype=base_types.scattering_t
         )
         d_point_information = cuda.to_device(point_informationv2)
         d_excitation = cuda.device_array(excitation_signal.shape[0], dtype=np.float64)
@@ -3362,7 +3363,7 @@ def EMGPUScatteringWrapper(
     d_wavelength = cuda.device_array((1), dtype=np.float64)
     d_wavelength = cuda.to_device(np.ones((1), dtype=np.float32) * wavelength)
     d_point_information = cuda.device_array(
-        point_information.shape[0], dtype=base.scattering_t
+        point_information.shape[0], dtype=base_types.scattering_t
     )
     d_point_information = cuda.to_device(point_information)
     for source_index in range(source_num):
@@ -3447,7 +3448,7 @@ def EMGPUWrapper(source_num, sink_num, full_index, point_information, wavelength
     d_wavelength = cuda.device_array((1), dtype=np.float64)
     d_wavelength = cuda.to_device(np.ones((1), dtype=np.float32) * wavelength)
     d_point_information = cuda.device_array(
-        point_information.shape[0], dtype=base.scattering_t
+        point_information.shape[0], dtype=base_types.scattering_t
     )
     d_point_information = cuda.to_device(point_information)
     for n in range(ray_chunks.shape[0] - 1):
@@ -3493,7 +3494,7 @@ def DisplayESources(
         cylinder_height=0.8 * arrow_length,
         cylinder_radius=0.04 * arrow_length,
     )
-    rot_mat = caculate_align_mat(E_vectors[0, :])
+    rot_mat = GF.caculate_align_mat(E_vectors[0, :])
     quiver_set = GF.open3drotate(quiver_set, rot_mat)
     quiver_set.translate(
         source_display_coords[0, :] + E_vectors[0, :] * (-0.5 * arrow_length)
@@ -3508,7 +3509,7 @@ def DisplayESources(
             cylinder_height=0.8 * arrow_length,
             cylinder_radius=0.04 * arrow_length,
         )
-        rot_mat = caculate_align_mat(E_vectors[arrow_num, :])
+        rot_mat = GF.caculate_align_mat(E_vectors[arrow_num, :])
         mesh_arrow = GF.open3drotate(mesh_arrow, rot_mat)
         mesh_arrow.translate(
             source_display_coords[arrow_num]
@@ -3521,44 +3522,116 @@ def DisplayESources(
     return quiver_set
 
 
-def get_cross_prod_mat(pVec_Arr):
-    # pVec_Arr shape (3)
-    qCross_prod_mat = np.array(
-        [
-            [0, -pVec_Arr[2], pVec_Arr[1]],
-            [pVec_Arr[2], 0, -pVec_Arr[0]],
-            [-pVec_Arr[1], pVec_Arr[0], 0],
-        ]
+#@njit(cache=True, nogil=True)
+def vector_mapping(local_E_vector, point_normal, antenna_axes):
+    """
+    Function to transform local vectors to the global coordinate set. This is intended to allow for transforming from
+    antennas with horizontal, vertical, circular polarization to be specified with reference to antenna face normal
+    vector, and then projected onto the global axes with phase and amplitude information preserved.
+
+    The first step is to programmatically define the face u and v vectors in terms of the point normal. Once this is
+    done, the global electromagnetic vector can then be defined in terms of the uv and normal vectors and the
+    local vector.
+
+    Parameters
+    ----------
+    local_vector
+
+    point_normal
+
+    antenna_axes
+
+    Returns
+    -------
+    global_vector
+
+    """
+    point_vector = point_normal.astype(local_E_vector.dtype)
+    point_E_vector = np.zeros((3), dtype=local_E_vector.dtype)
+    global_vector = np.zeros((3), dtype=local_E_vector.dtype)
+    x_vec = np.zeros((3), dtype=local_E_vector.dtype)
+    y_vec = np.zeros((3), dtype=local_E_vector.dtype)
+    z_vec = np.zeros((3), dtype=local_E_vector.dtype)
+    x_vec[0] = 1.0
+    y_vec[1] = 1.0
+    z_vec[2] = 1.0
+    # # make sure point vectors are locked on appropriate antenna axes
+    x_orth = np.linalg.norm(np.cross(antenna_axes[:, 0], point_vector))
+    y_orth = np.linalg.norm(np.cross(antenna_axes[:, 1], point_vector))
+    z_orth = np.linalg.norm(np.cross(antenna_axes[:, 2], point_vector))
+    #print('check values',x_orth,y_orth,z_orth)
+    #if antenna_axes[:,2] is aligned with point_vector then the cross product will be NaN, and another axes will be
+    # needed to defined the polarisation axes consistently.
+    if abs(z_orth)==0:
+        # cannot use z axis as reference, so point normal is aligned with z axis, therefore face_u should be the on the
+        # antenna y_axis, therefore face_v can be used to define backwards.
+        face_u=np.cross(point_vector,antenna_axes[:, 0]) / np.linalg.norm(
+           np.cross(antenna_axes[:, 0], point_vector)
+        )
+
+    else:
+        face_u = np.cross(antenna_axes[:, 2], point_vector) / np.linalg.norm(
+            np.cross(antenna_axes[:, 2], point_vector)
+        )
+    # if (abs(x_orth) > abs(y_orth)) and (abs(x_orth) > abs(z_orth)):
+    #      # use x-axis to establish face uv axes
+    #      face_u = np.cross(antenna_axes[:, 0], point_vector) / np.linalg.norm(
+    #          np.cross(antenna_axes[:, 0], point_vector)
+    #      )
+    #
+    # elif (abs(y_orth) >= abs(x_orth)) and (abs(y_orth) > abs(z_orth)):
+    #      # use y-axis to establish face uv axes
+    #      face_u = np.cross(antenna_axes[:, 1], point_vector) / np.linalg.norm(
+    #          np.cross(antenna_axes[:, 1], point_vector)
+    #      )
+    #
+    # elif (abs(z_orth) >= abs(x_orth)) and (abs(z_orth) >= abs(y_orth)):
+    #      # use z-axis
+    #      face_u = np.cross(antenna_axes[:, 2], point_vector) / np.linalg.norm(
+    #          np.cross(antenna_axes[:, 2], point_vector)
+    #      )
+
+    face_v = np.cross(point_vector,face_u) / np.linalg.norm(
+       np.cross(face_u, point_vector)
     )
-    return qCross_prod_mat
+    # convert from antenna axes to global coordinate set
+    #local polarisation vectors are then defined in terms of face_u - x, face_v - y, and face_normal - z
+    #print('antenna z',antenna_axes[:,2])
+    #print('face u',face_u)
+    #print('face v', face_v)
+    #print('face_normal',point_vector)
 
-
-def caculate_align_mat(pVec_Arr):
-    scale = np.linalg.norm(pVec_Arr)
-    pVec_Arr = pVec_Arr / scale
-    # must ensure pVec_Arr is also a unit vec.
-    z_unit_Arr = np.array([0, 0, 1])
-    z_mat = get_cross_prod_mat(z_unit_Arr)
-
-    z_c_vec = np.matmul(z_mat, pVec_Arr)
-    z_c_vec_mat = get_cross_prod_mat(z_c_vec)
-
-    qTrans_Mat = (
-        np.eye(3, 3)
-        + z_c_vec_mat
-        + np.matmul(z_c_vec_mat, z_c_vec_mat) / (1 + np.dot(z_unit_Arr, pVec_Arr))
+    global_vector[0] = (
+        local_E_vector[0] * np.dot(x_vec, face_u)
+        + local_E_vector[1] * np.dot(x_vec, face_v)
+        + local_E_vector[2] * np.dot(x_vec, point_vector)
     )
-    qTrans_Mat *= scale
-    return qTrans_Mat
+    global_vector[1] = (
+        local_E_vector[0] * np.dot(y_vec, face_u)
+        + local_E_vector[1] * np.dot(y_vec, face_v)
+        + local_E_vector[2] * np.dot(y_vec, point_vector)
+    )
+    global_vector[2] = (
+        local_E_vector[0] * np.dot(z_vec, face_u)
+        + local_E_vector[1] * np.dot(z_vec, face_v)
+        + local_E_vector[2] * np.dot(z_vec, point_vector)
+    )
+    # global_vector[0]=local_E_vector[0]*np.dot(x_vec,face_u)+local_E_vector[1]*np.dot(x_vec,face_v)+local_E_vector[2]*np.dot(x_vec,point_vector)
+    # global_vector[1] = local_E_vector[0] * np.dot(y_vec, face_u) + local_E_vector[1] * np.dot(y_vec, face_v) + local_E_vector[
+    #    2] * np.dot(y_vec, point_vector)
+    # global_vector[2] = local_E_vector[0] * np.dot(z_vec, face_u) + local_E_vector[1] * np.dot(z_vec, face_v) + local_E_vector[
+    #    2] * np.dot(z_vec, point_vector)
+
+    return global_vector
 
 
 @njit(cache=True, nogil=True)
 def orthconformalvector(desired_axis, point_normal):
-    ray_u = np.zeros((3), dtype=np.float32)
-    ray_v = np.zeros((3), dtype=np.float32)
-    x_vec = np.zeros((3), dtype=np.float32)
-    y_vec = np.zeros((3), dtype=np.float32)
-    z_vec = np.zeros((3), dtype=np.float32)
+    ray_u = np.zeros((3), dtype=np.complex64)
+    ray_v = np.zeros((3), dtype=np.complex64)
+    x_vec = np.zeros((3), dtype=np.complex64)
+    y_vec = np.zeros((3), dtype=np.complex64)
+    z_vec = np.zeros((3), dtype=np.complex64)
     x_vec[0] = 1
     y_vec[1] = 1
     z_vec[2] = 1
@@ -3585,33 +3658,53 @@ def orthconformalvector(desired_axis, point_normal):
         )
 
     # ray_v=np.cross(desired_axis,ray_u)
-    conformal_vector = ray_u
-    return conformal_vector
+    # ray_u
+
+    return ray_u
 
 
 # @njit(cache=True, nogil=True)
-def calculate_conformalVectors(desired_E_axis, source_normals):
+def calculate_conformalVectors(desired_E_vector, source_normals, antenna_axes):
     # based upon the provided source normal vectors and the desired polrization axis, calculate the conformal E vectors required for conformal current sources.
-    conformal_E_vectors = np.zeros((source_normals.shape[0], 3), dtype=np.float32)
-    temp_axis = np.zeros((source_normals.shape[0], 3), dtype=np.float32)
-    for normal_inc in range(len(source_normals)):
-        # generate a normalised orthogonal vector
-
-        if (
-            np.linalg.norm(np.cross(desired_E_axis, source_normals[normal_inc, :]))
-        ) == 0:
-            conformal_E_vectors[normal_inc, :] = orthconformalvector(
-                desired_E_axis, source_normals[normal_inc, :]
+    #
+    conformal_E_vectors = np.zeros((source_normals.shape[0], 3), dtype=np.complex64)
+    temp_axis = np.zeros((source_normals.shape[0], 3), dtype=np.complex64)
+    if desired_E_vector.shape[0] == source_normals.shape[0]:
+        # project desired E vector across whole aperture
+        for normal_inc in range(len(source_normals)):
+            # generate a normalised orthogonal vector
+            conformal_E_vectors[normal_inc, :] = vector_mapping(
+                desired_E_vector[normal_inc, :],
+                source_normals[normal_inc, :],
+                antenna_axes.astype(np.complex64),
             )
-        else:
-            temp_axis[normal_inc, :] = np.cross(
-                desired_E_axis, source_normals[normal_inc, :]
-            ) / np.linalg.norm(np.cross(desired_E_axis, source_normals[normal_inc, :]))
-            conformal_E_vectors[normal_inc, :] = np.cross(
-                -1 * temp_axis[normal_inc, :], source_normals[normal_inc, :]
-            ) / np.linalg.norm(
-                np.cross(-1 * temp_axis[normal_inc, :], source_normals[normal_inc, :])
+    else:
+        for normal_inc in range(len(source_normals)):
+            # generate a normalised orthogonal vector
+            conformal_E_vectors[normal_inc, :] = vector_mapping(
+                desired_E_vector.ravel(),
+                source_normals[normal_inc, :],
+                antenna_axes.astype(np.complex64),
             )
+        # if (
+        #     np.linalg.norm(np.cross(desired_E_vector, source_normals[normal_inc, :]))
+        # ) == 0:
+        #     conformal_E_vectors[normal_inc, :] = vector_mapping(
+        #         desired_E_vector, source_normals[normal_inc, :]
+        #     )
+        # else:
+        #     temp_axis[normal_inc, :] = np.cross(
+        #         desired_E_vector, source_normals[normal_inc, :]
+        #     ) / np.linalg.norm(
+        #         np.cross(
+        #             desired_E_vector.astype(np.complex64), source_normals[normal_inc, :]
+        #         )
+        #     )
+        #     conformal_E_vectors[normal_inc, :] = np.cross(
+        #         -1 * temp_axis[normal_inc, :], source_normals[normal_inc, :]
+        #     ) / np.linalg.norm(
+        #         np.cross(-1 * temp_axis[normal_inc, :], source_normals[normal_inc, :])
+        #     )
 
     return conformal_E_vectors
 
@@ -3691,6 +3784,7 @@ def importDat(fileaddress):
         (10 ** (temp[1:, 3] / 20)) * np.exp(-1j * np.radians(temp[1:, 4]))
     ).reshape(len(phi_values), len(theta_values))
     return Ea, Eb, freq, norm, theta_values, phi_values
+
 
 @njit(cache=True, nogil=True)
 def pathloss(lengths, wavelength):
