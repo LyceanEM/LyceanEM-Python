@@ -11,4 +11,4 @@ sphinx
 sphinxcontrib-bibtex
 sphinx_rtd_theme
 sphinx_gallery
-importlib
+importlib.metadata
