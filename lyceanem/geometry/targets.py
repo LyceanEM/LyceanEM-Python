@@ -11,8 +11,9 @@ from importlib_resources import files
 from numpy.linalg import norm
 from scipy.spatial.transform import Rotation as R
 
-import lyceanem.geometry.geometryfunctions as GF
-import lyceanem.raycasting.rayfunctions as RF
+from ..geometry import geometryfunctions as GF
+from ..raycasting import rayfunctions as RF
+from ..base_classes import antenna_structures, structures, points
 
 EPSILON = 1e-6  # how close to zero do we consider zero?
 
@@ -246,7 +247,11 @@ def parabola(radius, focal_length, thickness, mesh_length, mesh="all"):
     parabola_mesh.compute_vertex_normals()
     parabola_mesh.compute_triangle_normals()
     _, parabola_scatter_cloud = GF.tri_centroids(parabola_mesh)
-    return parabola_mesh, parabola_scatter_cloud
+
+    parabola_structures=structures([parabola_mesh])
+    parabola_points=points([parabola_scatter_cloud])
+    parabola=antenna_structures(parabola_structures,parabola_points)
+    return parabola
 
 
 def meshed_pipe(

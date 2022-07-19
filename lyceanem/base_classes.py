@@ -1067,7 +1067,7 @@ class antenna_pattern:
 
 class array_pattern:
     """
-    Antenna Pattern class which allows for patterns to be handled consistently
+    Array Pattern class which allows for patterns to be handled consistently
     across LyceanEM and other modules. The definitions assume that the pattern axes
     are consistent with the global axes set. If a different orientation is required,
     such as a premeasured antenna in a new orientation then the pattern rotate_function
