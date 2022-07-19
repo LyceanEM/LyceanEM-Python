@@ -17,10 +17,15 @@ from glob import glob
 import shutil
 from sphinx_gallery.scrapers import figure_rst
 
-import lyceanem
-release = lyceanem.__version__
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("lyceanem")
+except PackageNotFoundError:
+    # package is not installed
+    pass
 # for example take major/minor
-version = '.'.join(release.split('.')[:2])
+version = '.'.join(__version__.split('.')[:2])
 
 class PNGScraper(object):
     def __init__(self):
