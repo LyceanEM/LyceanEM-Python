@@ -18,7 +18,7 @@ import shutil
 from sphinx_gallery.scrapers import figure_rst
 
 from importlib.metadata import version
-release = version('myproject')
+release = version('lyceanem')
 # for example take major/minor
 version = '.'.join(release.split('.')[:2])
 
