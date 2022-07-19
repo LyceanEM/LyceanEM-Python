@@ -52,7 +52,7 @@ wavelength = 3e8 / 10e9
 # open3d trianglemesh structures can be accessed by importing the data subpackage
 import lyceanem.tests.reflectordata as data
 
-body, array,_ = data.exampleUAV(10e9)
+body, array, _ = data.exampleUAV(10e9)
 
 # visualise UAV and Array
 o3d.visualization.draw_geometries([body, array])
@@ -170,5 +170,3 @@ ax.set_xlabel("Azimuth (degrees)")
 ax.set_ylabel("Elevation (degrees)")
 ax.set_title("Maximum Directivity Envelope")
 fig.show()
-
-

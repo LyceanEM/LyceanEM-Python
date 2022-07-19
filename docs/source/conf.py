@@ -17,6 +17,11 @@ from glob import glob
 import shutil
 from sphinx_gallery.scrapers import figure_rst
 
+from importlib.metadata import version
+release = version('myproject')
+# for example take major/minor
+version = '.'.join(release.split('.')[:2])
+
 class PNGScraper(object):
     def __init__(self):
         self.seen = set()
@@ -50,7 +55,7 @@ copyright = '2022, Timothy Pelham'
 author = 'Timothy Pelham'
 
 # The full version, including alpha/beta/rc tags
-release = '0.01'
+release = version#'0.01'
 
 
 # -- General configuration ---------------------------------------------------

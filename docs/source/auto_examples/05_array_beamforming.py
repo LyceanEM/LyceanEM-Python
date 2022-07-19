@@ -37,7 +37,7 @@ wavelength = 3e8 / 10e9
 # :class:`open3d.geometry.TriangleMesh` structures can be accessed by importing the data subpackage
 import lyceanem.tests.reflectordata as data
 
-body, array,source_coords = data.exampleUAV(10e9)
+body, array, source_coords = data.exampleUAV(10e9)
 
 # %%
 # Visualise the Resultant UAV and Array
@@ -45,8 +45,10 @@ body, array,source_coords = data.exampleUAV(10e9)
 # :func:`open3d.visualization.draw_geometries` can be used to visualise the open3d data
 # structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.PointCloud`
 
-mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5, origin=[0, 0, 0])
-o3d.visualization.draw_geometries([body, array,source_coords,mesh_frame])
+mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
+    size=0.5, origin=[0, 0, 0]
+)
+o3d.visualization.draw_geometries([body, array, source_coords, mesh_frame])
 
 # %%
 # .. image:: ../_static/UAVArraywithPoints.png
@@ -54,7 +56,7 @@ o3d.visualization.draw_geometries([body, array,source_coords,mesh_frame])
 
 from lyceanem.base_classes import structures
 
-blockers = structures([body,array])
+blockers = structures([body, array])
 
 # %%
 # Model Farfield Array Patterns
@@ -69,43 +71,54 @@ from lyceanem.models.frequency_domain import calculate_farfield
 desired_E_axis = np.zeros((1, 3), dtype=np.float32)
 desired_E_axis[0, 2] = 1.0
 
-Etheta,Ephi=calculate_farfield(source_coords,
-                               blockers,
-                               desired_E_axis,
-                               az_range=np.linspace(-180,180,az_res),
-                               el_range=np.linspace(-90,90,elev_res),
-                               wavelength=wavelength,
-                               farfield_distance=20,
-                               elements=True,
-                               project_vectors=True)
+Etheta, Ephi = calculate_farfield(
+    source_coords,
+    blockers,
+    desired_E_axis,
+    az_range=np.linspace(-180, 180, az_res),
+    el_range=np.linspace(-90, 90, elev_res),
+    wavelength=wavelength,
+    farfield_distance=20,
+    elements=True,
+    project_vectors=True,
+)
 
 
 from lyceanem.electromagnetics.beamforming import MaximumDirectivityMap
-az_range=np.linspace(-180,180,az_res)
-el_range=np.linspace(-90,90,elev_res)
-directivity_map=MaximumDirectivityMap(Etheta,Ephi,source_coords,wavelength,az_range,el_range)
+
+az_range = np.linspace(-180, 180, az_res)
+el_range = np.linspace(-90, 90, elev_res)
+directivity_map = MaximumDirectivityMap(
+    Etheta, Ephi, source_coords, wavelength, az_range, el_range
+)
 
 from lyceanem.electromagnetics.beamforming import PatternPlot
 
-az_mesh,elev_mesh=np.meshgrid(az_range,el_range)
+az_mesh, elev_mesh = np.meshgrid(az_range, el_range)
 
-PatternPlot(directivity_map[:,:,2], az_mesh, elev_mesh,logtype='power',plottype='Contour')
+PatternPlot(
+    directivity_map[:, :, 2], az_mesh, elev_mesh, logtype="power", plottype="Contour"
+)
 
 # %%
 # .. image:: ../_static/sphx_glr_05_array_beamforming_001.png
 
 from lyceanem.electromagnetics.beamforming import Steering_Efficiency
 
-setheta,sephi,setot=Steering_Efficiency(directivity_map[:,:,0], directivity_map[:,:,1], directivity_map[:,:,2], np.radians(np.diff(el_range)[0]), np.radians(np.diff(az_range)[0]), 4*np.pi)
+setheta, sephi, setot = Steering_Efficiency(
+    directivity_map[:, :, 0],
+    directivity_map[:, :, 1],
+    directivity_map[:, :, 2],
+    np.radians(np.diff(el_range)[0]),
+    np.radians(np.diff(az_range)[0]),
+    4 * np.pi,
+)
 
-print(
-    "Steering Effciency of {:3.1f}%".format(
-        setot)
-    )
+print("Steering Effciency of {:3.1f}%".format(setot))
 
 
 print(
     "Maximum Directivity of {:3.1f} dBi".format(
-        np.max(10 * np.log10(directivity_map[:,:,2]))
+        np.max(10 * np.log10(directivity_map[:, :, 2]))
     )
 )

@@ -36,7 +36,7 @@ wavelength = 3e8 / 10e9
 # :class:`open3d.geometry.TriangleMesh` structures can be accessed by importing the data subpackage
 import lyceanem.tests.reflectordata as data
 
-body, array,source_coords = data.exampleUAV(10e9)
+body, array, source_coords = data.exampleUAV(10e9)
 
 # %%
 # Visualise the Resultant UAV and Array
@@ -44,8 +44,10 @@ body, array,source_coords = data.exampleUAV(10e9)
 # :func:`open3d.visualization.draw_geometries` can be used to visualise the open3d data
 # structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.PointCloud`
 
-mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5, origin=[0, 0, 0])
-o3d.visualization.draw_geometries([body, array,source_coords,mesh_frame])
+mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
+    size=0.5, origin=[0, 0, 0]
+)
+o3d.visualization.draw_geometries([body, array, source_coords, mesh_frame])
 
 # %%
 # .. image:: ../_static/UAVArraywithPoints.png
@@ -62,15 +64,15 @@ surface_array.triangle_normals = o3d.utility.Vector3dVector(
 
 from lyceanem.base_classes import structures
 
-blockers = structures([body,array])
+blockers = structures([body, array])
 
 from lyceanem.models.frequency_domain import calculate_farfield
 
 from lyceanem.geometry.targets import source_cloud_from_shape
 
-source_points,_ = source_cloud_from_shape(surface_array, wavelength * 0.5)
+source_points, _ = source_cloud_from_shape(surface_array, wavelength * 0.5)
 
-o3d.visualization.draw_geometries([body, array,source_points])
+o3d.visualization.draw_geometries([body, array, source_points])
 
 # %%
 # .. image:: ../_static/sourcecloudfromshapeuav.png
@@ -85,14 +87,16 @@ o3d.visualization.draw_geometries([body, array,source_points])
 desired_E_axis = np.zeros((1, 3), dtype=np.float32)
 desired_E_axis[0, 2] = 1.0
 
-Etheta,Ephi=calculate_farfield(source_coords,
-                               blockers,
-                               desired_E_axis,
-                               az_range=np.linspace(-180,180,az_res),
-                               el_range=np.linspace(-90,90,elev_res),
-                               wavelength=wavelength,
-                               farfield_distance=20,
-                               project_vectors=True)
+Etheta, Ephi = calculate_farfield(
+    source_coords,
+    blockers,
+    desired_E_axis,
+    az_range=np.linspace(-180, 180, az_res),
+    el_range=np.linspace(-90, 90, elev_res),
+    wavelength=wavelength,
+    farfield_distance=20,
+    project_vectors=True,
+)
 
 # %%
 # Storing and Manipulating Antenna Patterns
@@ -106,9 +110,11 @@ Etheta,Ephi=calculate_farfield(source_coords,
 
 from lyceanem.base_classes import antenna_pattern
 
-UAV_Static_Pattern=antenna_pattern(azimuth_resolution=az_res,elevation_resolution=elev_res)
-UAV_Static_Pattern.pattern[:,:,0]=Etheta
-UAV_Static_Pattern.pattern[:,:,0]=Ephi
+UAV_Static_Pattern = antenna_pattern(
+    azimuth_resolution=az_res, elevation_resolution=elev_res
+)
+UAV_Static_Pattern.pattern[:, :, 0] = Etheta
+UAV_Static_Pattern.pattern[:, :, 0] = Ephi
 
 UAV_Static_Pattern.display_pattern()
 
@@ -116,10 +122,8 @@ UAV_Static_Pattern.display_pattern()
 # .. image:: ../_static/sphx_glr_02_coherently_polarised_array_001.png
 # .. image:: ../_static/sphx_glr_02_coherently_polarised_array_002.png
 
-UAV_Static_Pattern.display_pattern(plottype='Contour')
+UAV_Static_Pattern.display_pattern(plottype="Contour")
 
 # %%
 # .. image:: ../_static/sphx_glr_02_coherently_polarised_array_003.png
 # .. image:: ../_static/sphx_glr_02_coherently_polarised_array_004.png
-
-

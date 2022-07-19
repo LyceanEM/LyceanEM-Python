@@ -2806,10 +2806,10 @@ def CASSIOPeiA_Array(
     offset_angle=0.0,
     total_twist_angle=180,
 ):
-
+    adjusted_twist_angle=(total_twist_angle/(num_rows+1))*num_rows
     outer_row = ((num_rows - 1) / 2) * row_spacing
     row_centres = np.linspace(-outer_row, outer_row, num_rows)
-    angle_offsets = np.linspace(-total_twist_angle / 2, total_twist_angle / 2, num_rows)
+    angle_offsets = np.linspace(-adjusted_twist_angle / 2, adjusted_twist_angle / 2, num_rows)
     array_points = o3d.geometry.PointCloud()
     array_structure = o3d.geometry.TriangleMesh()
     # create row of triplet clusters

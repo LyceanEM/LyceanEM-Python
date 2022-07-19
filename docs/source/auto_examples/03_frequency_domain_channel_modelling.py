@@ -263,4 +263,3 @@ ax.set_yticks(np.linspace(-60, 0.0, 21))
 legend = ax.legend(loc="upper right", shadow=True)
 plt.grid()
 plt.show()
-

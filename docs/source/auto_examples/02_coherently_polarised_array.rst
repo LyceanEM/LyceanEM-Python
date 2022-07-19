@@ -81,7 +81,7 @@ In order to make things easy to start, an example geometry has been included wit
 
     import lyceanem.tests.reflectordata as data
 
-    body, array,source_coords = data.exampleUAV(10e9)
+    body, array, source_coords = data.exampleUAV(10e9)
 
 
 
@@ -97,13 +97,15 @@ Visualise the Resultant UAV and Array
 :func:`open3d.visualization.draw_geometries` can be used to visualise the open3d data
 structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.PointCloud`
 
-.. GENERATED FROM PYTHON SOURCE LINES 46-50
+.. GENERATED FROM PYTHON SOURCE LINES 46-52
 
 .. code-block:: default
 
 
-    mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5, origin=[0, 0, 0])
-    o3d.visualization.draw_geometries([body, array,source_coords,mesh_frame])
+    mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
+        size=0.5, origin=[0, 0, 0]
+    )
+    o3d.visualization.draw_geometries([body, array, source_coords, mesh_frame])
 
 
 
@@ -112,11 +114,11 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-52
+.. GENERATED FROM PYTHON SOURCE LINES 53-54
 
 .. image:: ../_static/UAVArraywithPoints.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-75
+.. GENERATED FROM PYTHON SOURCE LINES 54-77
 
 .. code-block:: default
 
@@ -133,15 +135,15 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
 
     from lyceanem.base_classes import structures
 
-    blockers = structures([body,array])
+    blockers = structures([body, array])
 
     from lyceanem.models.frequency_domain import calculate_farfield
 
     from lyceanem.geometry.targets import source_cloud_from_shape
 
-    source_points,_ = source_cloud_from_shape(surface_array, wavelength * 0.5)
+    source_points, _ = source_cloud_from_shape(surface_array, wavelength * 0.5)
 
-    o3d.visualization.draw_geometries([body, array,source_points])
+    o3d.visualization.draw_geometries([body, array, source_points])
 
 
 
@@ -153,24 +155,24 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
 
  .. code-block:: none
 
-    0.8595524175876635
-    0.6201204184750856
-    0.37338506240760483
-    0.19680063742532733
-    0.10964269953990884
-    0.015629169279218758
-    -0.03933383895021794
-    0.030647004277359335
-    0.01962567774632431
+    0.8591429317393232
+    0.6272972987954387
+    0.36192805659765404
+    0.17838504595708027
+    0.10434700271316454
+    0.041462622887157
+    0.021935841617988276
+    0.03132353920963898
+    -0.06084437236128273
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 76-77
+.. GENERATED FROM PYTHON SOURCE LINES 78-79
 
 .. image:: ../_static/sourcecloudfromshapeuav.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-84
+.. GENERATED FROM PYTHON SOURCE LINES 81-86
 
 Drawbacks of :func:`lyceanem.geometry.geometryfunctions.sourcecloudfromshape`
 ------------------------------------------------------------------------------
@@ -178,7 +180,7 @@ As can be seen by comparing the two source point sets, :func:`lyceanem.geometry.
 has a significant drawback when used for complex sharply curved antenna arrays, as the poisson disk sampling method
 does not produce consistently spaced results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-97
+.. GENERATED FROM PYTHON SOURCE LINES 86-101
 
 .. code-block:: default
 
@@ -186,14 +188,16 @@ does not produce consistently spaced results.
     desired_E_axis = np.zeros((1, 3), dtype=np.float32)
     desired_E_axis[0, 2] = 1.0
 
-    Etheta,Ephi=calculate_farfield(source_coords,
-                                   blockers,
-                                   desired_E_axis,
-                                   az_range=np.linspace(-180,180,az_res),
-                                   el_range=np.linspace(-90,90,elev_res),
-                                   wavelength=wavelength,
-                                   farfield_distance=20,
-                                   project_vectors=True)
+    Etheta, Ephi = calculate_farfield(
+        source_coords,
+        blockers,
+        desired_E_axis,
+        az_range=np.linspace(-180, 180, az_res),
+        el_range=np.linspace(-90, 90, elev_res),
+        wavelength=wavelength,
+        farfield_distance=20,
+        project_vectors=True,
+    )
 
 
 
@@ -217,7 +221,7 @@ does not produce consistently spaced results.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-106
+.. GENERATED FROM PYTHON SOURCE LINES 102-110
 
 Storing and Manipulating Antenna Patterns
 ---------------------------------------------
@@ -228,16 +232,18 @@ to :func:`lyceanem.base.antenna_pattern.display_pattern`. This produces 3D polar
 give a better view of the whole pattern, but if contour plots are required, then this can also be produced by passing
 plottype='Contour' to the function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-115
+.. GENERATED FROM PYTHON SOURCE LINES 110-121
 
 .. code-block:: default
 
 
     from lyceanem.base_classes import antenna_pattern
 
-    UAV_Static_Pattern=antenna_pattern(azimuth_resolution=az_res,elevation_resolution=elev_res)
-    UAV_Static_Pattern.pattern[:,:,0]=Etheta
-    UAV_Static_Pattern.pattern[:,:,0]=Ephi
+    UAV_Static_Pattern = antenna_pattern(
+        azimuth_resolution=az_res, elevation_resolution=elev_res
+    )
+    UAV_Static_Pattern.pattern[:, :, 0] = Etheta
+    UAV_Static_Pattern.pattern[:, :, 0] = Ephi
 
     UAV_Static_Pattern.display_pattern()
 
@@ -268,27 +274,27 @@ plottype='Contour' to the function.
 
  .. code-block:: none
 
-    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1082: RuntimeWarning: divide by zero encountered in log10
+    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1083: RuntimeWarning: divide by zero encountered in log10
       logdata = 20 * np.log10(data)
-    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1085: RuntimeWarning: invalid value encountered in subtract
+    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1086: RuntimeWarning: invalid value encountered in subtract
       logdata -= np.nanmax(logdata)
-    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1137: UserWarning: Z contains NaN values. This may result in rendering artifacts.
+    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1138: UserWarning: Z contains NaN values. This may result in rendering artifacts.
       plot_handle = ax.plot_surface(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 116-118
+.. GENERATED FROM PYTHON SOURCE LINES 122-124
 
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_001.png
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_002.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-121
+.. GENERATED FROM PYTHON SOURCE LINES 124-127
 
 .. code-block:: default
 
 
-    UAV_Static_Pattern.display_pattern(plottype='Contour')
+    UAV_Static_Pattern.display_pattern(plottype="Contour")
 
 
 
@@ -317,21 +323,21 @@ plottype='Contour' to the function.
 
  .. code-block:: none
 
-    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1082: RuntimeWarning: divide by zero encountered in log10
+    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1083: RuntimeWarning: divide by zero encountered in log10
       logdata = 20 * np.log10(data)
-    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1085: RuntimeWarning: invalid value encountered in subtract
+    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1086: RuntimeWarning: invalid value encountered in subtract
       logdata -= np.nanmax(logdata)
     /home/timtitan/.local/lib/python3.8/site-packages/matplotlib/contour.py:1430: UserWarning: Warning: converting a masked element to nan.
       self.zmax = float(z.max())
     /home/timtitan/.local/lib/python3.8/site-packages/matplotlib/contour.py:1431: UserWarning: Warning: converting a masked element to nan.
       self.zmin = float(z.min())
-    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1204: UserWarning: No contour levels were found within the data range.
+    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1205: UserWarning: No contour levels were found within the data range.
       CS4 = ax.contour(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 122-124
+.. GENERATED FROM PYTHON SOURCE LINES 128-130
 
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_003.png
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_004.png
@@ -339,7 +345,7 @@ plottype='Contour' to the function.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  19.607 seconds)
+   **Total running time of the script:** ( 0 minutes  17.759 seconds)
 
 
 .. _sphx_glr_download_auto_examples_02_coherently_polarised_array.py:

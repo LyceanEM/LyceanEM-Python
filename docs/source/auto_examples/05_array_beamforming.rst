@@ -82,7 +82,7 @@ In order to make things easy to start, an example geometry has been included wit
 
     import lyceanem.tests.reflectordata as data
 
-    body, array,source_coords = data.exampleUAV(10e9)
+    body, array, source_coords = data.exampleUAV(10e9)
 
 
 
@@ -98,13 +98,15 @@ Visualise the Resultant UAV and Array
 :func:`open3d.visualization.draw_geometries` can be used to visualise the open3d data
 structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.PointCloud`
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-51
+.. GENERATED FROM PYTHON SOURCE LINES 47-53
 
 .. code-block:: default
 
 
-    mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5, origin=[0, 0, 0])
-    o3d.visualization.draw_geometries([body, array,source_coords,mesh_frame])
+    mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
+        size=0.5, origin=[0, 0, 0]
+    )
+    o3d.visualization.draw_geometries([body, array, source_coords, mesh_frame])
 
 
 
@@ -113,11 +115,11 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-53
+.. GENERATED FROM PYTHON SOURCE LINES 54-55
 
 .. image:: ../_static/UAVArraywithPoints.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-59
+.. GENERATED FROM PYTHON SOURCE LINES 55-61
 
 .. code-block:: default
 
@@ -125,7 +127,7 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
 
     from lyceanem.base_classes import structures
 
-    blockers = structures([body,array])
+    blockers = structures([body, array])
 
 
 
@@ -134,7 +136,7 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 60-67
+.. GENERATED FROM PYTHON SOURCE LINES 62-69
 
 Model Farfield Array Patterns
 -------------------------------
@@ -144,7 +146,7 @@ elevation points, and azimuth points. These can then be beamformed using the des
 currently includes two open loop algorithms for phase weights :func:`lyceanem.electromagnetics.beamforming.EGCWeights`,
 and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-94
+.. GENERATED FROM PYTHON SOURCE LINES 69-103
 
 .. code-block:: default
 
@@ -153,27 +155,34 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
     desired_E_axis = np.zeros((1, 3), dtype=np.float32)
     desired_E_axis[0, 2] = 1.0
 
-    Etheta,Ephi=calculate_farfield(source_coords,
-                                   blockers,
-                                   desired_E_axis,
-                                   az_range=np.linspace(-180,180,az_res),
-                                   el_range=np.linspace(-90,90,elev_res),
-                                   wavelength=wavelength,
-                                   farfield_distance=20,
-                                   elements=True,
-                                   project_vectors=True)
+    Etheta, Ephi = calculate_farfield(
+        source_coords,
+        blockers,
+        desired_E_axis,
+        az_range=np.linspace(-180, 180, az_res),
+        el_range=np.linspace(-90, 90, elev_res),
+        wavelength=wavelength,
+        farfield_distance=20,
+        elements=True,
+        project_vectors=True,
+    )
 
 
     from lyceanem.electromagnetics.beamforming import MaximumDirectivityMap
-    az_range=np.linspace(-180,180,az_res)
-    el_range=np.linspace(-90,90,elev_res)
-    directivity_map=MaximumDirectivityMap(Etheta,Ephi,source_coords,wavelength,az_range,el_range)
+
+    az_range = np.linspace(-180, 180, az_res)
+    el_range = np.linspace(-90, 90, elev_res)
+    directivity_map = MaximumDirectivityMap(
+        Etheta, Ephi, source_coords, wavelength, az_range, el_range
+    )
 
     from lyceanem.electromagnetics.beamforming import PatternPlot
 
-    az_mesh,elev_mesh=np.meshgrid(az_range,el_range)
+    az_mesh, elev_mesh = np.meshgrid(az_range, el_range)
 
-    PatternPlot(directivity_map[:,:,2], az_mesh, elev_mesh,logtype='power',plottype='Contour')
+    PatternPlot(
+        directivity_map[:, :, 2], az_mesh, elev_mesh, logtype="power", plottype="Contour"
+    )
 
 
 
@@ -204,28 +213,32 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-96
+.. GENERATED FROM PYTHON SOURCE LINES 104-105
 
 .. image:: ../_static/sphx_glr_05_array_beamforming_001.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-112
+.. GENERATED FROM PYTHON SOURCE LINES 105-125
 
 .. code-block:: default
 
 
     from lyceanem.electromagnetics.beamforming import Steering_Efficiency
 
-    setheta,sephi,setot=Steering_Efficiency(directivity_map[:,:,0], directivity_map[:,:,1], directivity_map[:,:,2], np.radians(np.diff(el_range)[0]), np.radians(np.diff(az_range)[0]), 4*np.pi)
+    setheta, sephi, setot = Steering_Efficiency(
+        directivity_map[:, :, 0],
+        directivity_map[:, :, 1],
+        directivity_map[:, :, 2],
+        np.radians(np.diff(el_range)[0]),
+        np.radians(np.diff(az_range)[0]),
+        4 * np.pi,
+    )
 
-    print(
-        "Steering Effciency of {:3.1f}%".format(
-            setot)
-        )
+    print("Steering Effciency of {:3.1f}%".format(setot))
 
 
     print(
         "Maximum Directivity of {:3.1f} dBi".format(
-            np.max(10 * np.log10(directivity_map[:,:,2]))
+            np.max(10 * np.log10(directivity_map[:, :, 2]))
         )
     )
 
@@ -239,8 +252,8 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
  .. code-block:: none
 
     Steering Effciency of 9.1%
-    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/docs/examples/05_array_beamforming.py:109: RuntimeWarning: divide by zero encountered in log10
-      np.max(10 * np.log10(directivity_map[:,:,2]))
+    /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/docs/examples/05_array_beamforming.py:122: RuntimeWarning: divide by zero encountered in log10
+      np.max(10 * np.log10(directivity_map[:, :, 2]))
     Maximum Directivity of 23.0 dBi
 
 
@@ -249,7 +262,7 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 4 minutes  17.447 seconds)
+   **Total running time of the script:** ( 4 minutes  14.648 seconds)
 
 
 .. _sphx_glr_download_auto_examples_05_array_beamforming.py:

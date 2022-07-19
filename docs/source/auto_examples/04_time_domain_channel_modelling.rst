@@ -326,7 +326,7 @@ Time Domain Scattering
 ----------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-259
+.. GENERATED FROM PYTHON SOURCE LINES 171-261
 
 .. code-block:: default
 
@@ -372,7 +372,9 @@ Time Domain Scattering
             reflectorplate,
             o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
         )
-        blockers = structures([reflectorplate,transmit_horn_structure,receive_horn_structure])
+        blockers = structures(
+            [reflectorplate, transmit_horn_structure, receive_horn_structure]
+        )
         pulse_time = 5e-9
         output_power = 0.01  # dBwatts
         powerdbm = 10 * np.log10(output_power) + 30
@@ -434,24 +436,24 @@ Time Domain Scattering
       global_vector[1] = (
     /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/empropagation.py:3614: ComplexWarning: Casting complex values to real discards the imaginary part
       global_vector[2] = (
-      1%|1         | 1/91 [00:13<19:37, 13.08s/it]/home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/empropagation.py:3604: ComplexWarning: Casting complex values to real discards the imaginary part
+      1%|1         | 1/91 [00:10<16:29, 11.00s/it]/home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/empropagation.py:3604: ComplexWarning: Casting complex values to real discards the imaginary part
       global_vector[0] = (
     /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/empropagation.py:3609: ComplexWarning: Casting complex values to real discards the imaginary part
       global_vector[1] = (
     /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/empropagation.py:3614: ComplexWarning: Casting complex values to real discards the imaginary part
       global_vector[2] = (
-      2%|2         | 2/91 [00:17<11:37,  7.84s/it]      3%|3         | 3/91 [00:20<08:29,  5.79s/it]      4%|4         | 4/91 [00:24<07:10,  4.95s/it]      5%|5         | 5/91 [00:27<06:17,  4.39s/it]      7%|6         | 6/91 [00:31<05:44,  4.06s/it]      8%|7         | 7/91 [00:34<05:17,  3.78s/it]      9%|8         | 8/91 [00:37<04:59,  3.61s/it]     10%|9         | 9/91 [00:40<04:45,  3.48s/it]     11%|#         | 10/91 [00:44<04:36,  3.42s/it]     12%|#2        | 11/91 [00:47<04:32,  3.40s/it]     13%|#3        | 12/91 [00:50<04:28,  3.40s/it]     14%|#4        | 13/91 [00:54<04:22,  3.36s/it]     15%|#5        | 14/91 [00:57<04:13,  3.29s/it]     16%|#6        | 15/91 [01:00<04:14,  3.35s/it]     18%|#7        | 16/91 [01:03<04:08,  3.31s/it]     19%|#8        | 17/91 [01:07<04:05,  3.31s/it]     20%|#9        | 18/91 [01:10<04:05,  3.36s/it]     21%|##        | 19/91 [01:14<04:03,  3.39s/it]     22%|##1       | 20/91 [01:17<03:59,  3.38s/it]     23%|##3       | 21/91 [01:21<04:00,  3.44s/it]     24%|##4       | 22/91 [01:24<03:54,  3.40s/it]     25%|##5       | 23/91 [01:27<03:44,  3.30s/it]     26%|##6       | 24/91 [01:30<03:36,  3.23s/it]     27%|##7       | 25/91 [01:33<03:29,  3.17s/it]     29%|##8       | 26/91 [01:36<03:25,  3.17s/it]     30%|##9       | 27/91 [01:39<03:20,  3.14s/it]     31%|###       | 28/91 [01:42<03:17,  3.13s/it]     32%|###1      | 29/91 [01:46<03:14,  3.14s/it]     33%|###2      | 30/91 [01:49<03:10,  3.12s/it]     34%|###4      | 31/91 [01:52<03:08,  3.14s/it]     35%|###5      | 32/91 [01:55<03:02,  3.10s/it]     36%|###6      | 33/91 [01:58<02:59,  3.10s/it]     37%|###7      | 34/91 [02:01<02:54,  3.05s/it]     38%|###8      | 35/91 [02:04<02:53,  3.09s/it]     40%|###9      | 36/91 [02:07<02:49,  3.08s/it]     41%|####      | 37/91 [02:10<02:44,  3.05s/it]     42%|####1     | 38/91 [02:13<02:41,  3.04s/it]     43%|####2     | 39/91 [02:16<02:35,  3.00s/it]     44%|####3     | 40/91 [02:19<02:30,  2.96s/it]     45%|####5     | 41/91 [02:22<02:27,  2.96s/it]     46%|####6     | 42/91 [02:25<02:24,  2.96s/it]     47%|####7     | 43/91 [02:28<02:21,  2.95s/it]     48%|####8     | 44/91 [02:31<02:17,  2.94s/it]     49%|####9     | 45/91 [02:34<02:17,  2.99s/it]     51%|#####     | 46/91 [02:37<02:13,  2.97s/it]     52%|#####1    | 47/91 [02:40<02:10,  2.96s/it]     53%|#####2    | 48/91 [02:42<02:06,  2.94s/it]     54%|#####3    | 49/91 [02:45<02:03,  2.95s/it]     55%|#####4    | 50/91 [02:48<01:59,  2.92s/it]     56%|#####6    | 51/91 [02:51<01:58,  2.95s/it]     57%|#####7    | 52/91 [02:54<01:54,  2.94s/it]     58%|#####8    | 53/91 [02:57<01:52,  2.97s/it]     59%|#####9    | 54/91 [03:00<01:49,  2.96s/it]     60%|######    | 55/91 [03:03<01:45,  2.92s/it]     62%|######1   | 56/91 [03:06<01:41,  2.89s/it]     63%|######2   | 57/91 [03:09<01:39,  2.93s/it]     64%|######3   | 58/91 [03:12<01:37,  2.96s/it]     65%|######4   | 59/91 [03:15<01:32,  2.90s/it]     66%|######5   | 60/91 [03:18<01:30,  2.91s/it]     67%|######7   | 61/91 [03:20<01:25,  2.86s/it]     68%|######8   | 62/91 [03:23<01:22,  2.83s/it]     69%|######9   | 63/91 [03:26<01:18,  2.81s/it]     70%|#######   | 64/91 [03:29<01:15,  2.80s/it]     71%|#######1  | 65/91 [03:31<01:12,  2.79s/it]     73%|#######2  | 66/91 [03:34<01:09,  2.79s/it]     74%|#######3  | 67/91 [03:37<01:06,  2.76s/it]     75%|#######4  | 68/91 [03:40<01:03,  2.77s/it]     76%|#######5  | 69/91 [03:43<01:01,  2.79s/it]     77%|#######6  | 70/91 [03:45<00:58,  2.80s/it]     78%|#######8  | 71/91 [03:49<00:59,  2.97s/it]     79%|#######9  | 72/91 [03:52<00:57,  3.02s/it]     80%|########  | 73/91 [03:55<00:54,  3.03s/it]     81%|########1 | 74/91 [03:58<00:51,  3.05s/it]     82%|########2 | 75/91 [04:01<00:48,  3.05s/it]     84%|########3 | 76/91 [04:04<00:45,  3.07s/it]     85%|########4 | 77/91 [04:07<00:42,  3.04s/it]     86%|########5 | 78/91 [04:10<00:39,  3.03s/it]     87%|########6 | 79/91 [04:13<00:36,  3.05s/it]     88%|########7 | 80/91 [04:17<00:34,  3.12s/it]     89%|########9 | 81/91 [04:20<00:30,  3.09s/it]     90%|######### | 82/91 [04:23<00:27,  3.06s/it]     91%|#########1| 83/91 [04:25<00:24,  3.01s/it]     92%|#########2| 84/91 [04:28<00:21,  3.01s/it]     93%|#########3| 85/91 [04:32<00:18,  3.04s/it]     95%|#########4| 86/91 [04:34<00:15,  3.00s/it]     96%|#########5| 87/91 [04:37<00:11,  2.99s/it]     97%|#########6| 88/91 [04:40<00:08,  2.83s/it]     98%|#########7| 89/91 [04:41<00:04,  2.31s/it]     99%|#########8| 90/91 [04:42<00:01,  1.86s/it]    100%|##########| 91/91 [04:43<00:00,  1.54s/it]    100%|##########| 91/91 [04:43<00:00,  3.11s/it]
+      2%|2         | 2/91 [00:14<09:24,  6.35s/it]      3%|3         | 3/91 [00:17<07:08,  4.87s/it]      4%|4         | 4/91 [00:21<06:41,  4.62s/it]      5%|5         | 5/91 [00:24<05:52,  4.10s/it]      7%|6         | 6/91 [00:27<05:20,  3.77s/it]      8%|7         | 7/91 [00:30<05:00,  3.57s/it]      9%|8         | 8/91 [00:34<04:46,  3.45s/it]     10%|9         | 9/91 [00:37<04:31,  3.31s/it]     11%|#         | 10/91 [00:40<04:21,  3.23s/it]     12%|#2        | 11/91 [00:43<04:12,  3.16s/it]     13%|#3        | 12/91 [00:46<04:09,  3.16s/it]     14%|#4        | 13/91 [00:49<04:03,  3.13s/it]     15%|#5        | 14/91 [00:52<03:58,  3.10s/it]     16%|#6        | 15/91 [00:55<03:55,  3.10s/it]     18%|#7        | 16/91 [00:58<03:50,  3.08s/it]     19%|#8        | 17/91 [01:01<03:45,  3.05s/it]     20%|#9        | 18/91 [01:04<03:44,  3.07s/it]     21%|##        | 19/91 [01:07<03:42,  3.09s/it]     22%|##1       | 20/91 [01:10<03:38,  3.08s/it]     23%|##3       | 21/91 [01:13<03:35,  3.07s/it]     24%|##4       | 22/91 [01:16<03:28,  3.02s/it]     25%|##5       | 23/91 [01:19<03:23,  2.99s/it]     26%|##6       | 24/91 [01:22<03:19,  2.98s/it]     27%|##7       | 25/91 [01:25<03:16,  2.97s/it]     29%|##8       | 26/91 [01:28<03:14,  2.99s/it]     30%|##9       | 27/91 [01:31<03:14,  3.04s/it]     31%|###       | 28/91 [01:34<03:08,  2.99s/it]     32%|###1      | 29/91 [01:38<03:14,  3.14s/it]     33%|###2      | 30/91 [01:41<03:13,  3.17s/it]     34%|###4      | 31/91 [01:44<03:11,  3.20s/it]     35%|###5      | 32/91 [01:47<03:04,  3.13s/it]     36%|###6      | 33/91 [01:50<02:59,  3.10s/it]     37%|###7      | 34/91 [01:54<03:04,  3.24s/it]     38%|###8      | 35/91 [01:57<03:10,  3.41s/it]     40%|###9      | 36/91 [02:01<03:03,  3.34s/it]     41%|####      | 37/91 [02:04<02:53,  3.21s/it]     42%|####1     | 38/91 [02:07<02:50,  3.22s/it]     43%|####2     | 39/91 [02:10<02:44,  3.17s/it]     44%|####3     | 40/91 [02:13<02:42,  3.19s/it]     45%|####5     | 41/91 [02:16<02:37,  3.15s/it]     46%|####6     | 42/91 [02:19<02:29,  3.05s/it]     47%|####7     | 43/91 [02:22<02:22,  2.96s/it]     48%|####8     | 44/91 [02:25<02:17,  2.92s/it]     49%|####9     | 45/91 [02:27<02:13,  2.89s/it]     51%|#####     | 46/91 [02:30<02:11,  2.91s/it]     52%|#####1    | 47/91 [02:33<02:06,  2.88s/it]     53%|#####2    | 48/91 [02:36<02:03,  2.86s/it]     54%|#####3    | 49/91 [02:39<02:00,  2.87s/it]     55%|#####4    | 50/91 [02:42<01:56,  2.85s/it]     56%|#####6    | 51/91 [02:45<01:53,  2.84s/it]     57%|#####7    | 52/91 [02:47<01:50,  2.83s/it]     58%|#####8    | 53/91 [02:50<01:46,  2.79s/it]     59%|#####9    | 54/91 [02:53<01:43,  2.79s/it]     60%|######    | 55/91 [02:56<01:40,  2.80s/it]     62%|######1   | 56/91 [02:58<01:37,  2.79s/it]     63%|######2   | 57/91 [03:01<01:34,  2.77s/it]     64%|######3   | 58/91 [03:04<01:30,  2.75s/it]     65%|######4   | 59/91 [03:07<01:28,  2.75s/it]     66%|######5   | 60/91 [03:09<01:25,  2.74s/it]     67%|######7   | 61/91 [03:12<01:22,  2.75s/it]     68%|######8   | 62/91 [03:15<01:20,  2.77s/it]     69%|######9   | 63/91 [03:18<01:18,  2.80s/it]     70%|#######   | 64/91 [03:21<01:15,  2.80s/it]     71%|#######1  | 65/91 [03:23<01:12,  2.79s/it]     73%|#######2  | 66/91 [03:26<01:10,  2.82s/it]     74%|#######3  | 67/91 [03:29<01:07,  2.81s/it]     75%|#######4  | 68/91 [03:32<01:04,  2.82s/it]     76%|#######5  | 69/91 [03:35<01:02,  2.83s/it]     77%|#######6  | 70/91 [03:38<01:00,  2.86s/it]     78%|#######8  | 71/91 [03:41<00:57,  2.87s/it]     79%|#######9  | 72/91 [03:43<00:54,  2.89s/it]     80%|########  | 73/91 [03:46<00:52,  2.93s/it]     81%|########1 | 74/91 [03:50<00:50,  2.96s/it]     82%|########2 | 75/91 [03:52<00:47,  2.95s/it]     84%|########3 | 76/91 [03:55<00:43,  2.93s/it]     85%|########4 | 77/91 [03:58<00:41,  2.94s/it]     86%|########5 | 78/91 [04:01<00:38,  2.93s/it]     87%|########6 | 79/91 [04:04<00:35,  2.94s/it]     88%|########7 | 80/91 [04:07<00:32,  2.95s/it]     89%|########9 | 81/91 [04:10<00:29,  2.97s/it]     90%|######### | 82/91 [04:13<00:27,  3.05s/it]     91%|#########1| 83/91 [04:16<00:24,  3.08s/it]     92%|#########2| 84/91 [04:19<00:21,  3.05s/it]     93%|#########3| 85/91 [04:22<00:17,  2.99s/it]     95%|#########4| 86/91 [04:25<00:14,  2.95s/it]     96%|#########5| 87/91 [04:28<00:11,  2.92s/it]     97%|#########6| 88/91 [04:30<00:08,  2.71s/it]     98%|#########7| 89/91 [04:31<00:04,  2.19s/it]     99%|#########8| 90/91 [04:32<00:01,  1.76s/it]    100%|##########| 91/91 [04:33<00:00,  1.45s/it]    100%|##########| 91/91 [04:33<00:00,  3.00s/it]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 260-263
+.. GENERATED FROM PYTHON SOURCE LINES 262-265
 
 Plot Normalised Response
 ----------------------------
 Using matplotlib, plot the results
 
-.. GENERATED FROM PYTHON SOURCE LINES 263-308
+.. GENERATED FROM PYTHON SOURCE LINES 265-324
 
 .. code-block:: default
 
@@ -459,46 +461,60 @@ Using matplotlib, plot the results
 
     import matplotlib.pyplot as plt
 
-    time_index=np.linspace(0,model_time*1e9,num_samples)
-    time,anglegrid=np.meshgrid(time_index[:1801],angle_values-45)
-    norm_max=np.nanmax(np.array([np.nanmax(10*np.log10((Ex**2)/receiver_impedence)),np.nanmax(10*np.log10((Ey**2)/receiver_impedence)),np.nanmax(10*np.log10((Ez**2)/receiver_impedence))]))
+    time_index = np.linspace(0, model_time * 1e9, num_samples)
+    time, anglegrid = np.meshgrid(time_index[:1801], angle_values - 45)
+    norm_max = np.nanmax(
+        np.array(
+            [
+                np.nanmax(10 * np.log10((Ex ** 2) / receiver_impedence)),
+                np.nanmax(10 * np.log10((Ey ** 2) / receiver_impedence)),
+                np.nanmax(10 * np.log10((Ez ** 2) / receiver_impedence)),
+            ]
+        )
+    )
 
     fig2, ax2 = plt.subplots(constrained_layout=True)
-    origin = 'lower'
+    origin = "lower"
     # Now make a contour plot with the levels specified,
     # and with the colormap generated automatically from a list
     # of colors.
 
-    levels = np.linspace(-80,0,41)
+    levels = np.linspace(-80, 0, 41)
 
-    CS = ax2.contourf(anglegrid,time, 10*np.log10((Ez[:,:1801]**2)/receiver_impedence)-norm_max, levels,
-                      origin=origin,
-                      extend='both')
+    CS = ax2.contourf(
+        anglegrid,
+        time,
+        10 * np.log10((Ez[:, :1801] ** 2) / receiver_impedence) - norm_max,
+        levels,
+        origin=origin,
+        extend="both",
+    )
     cbar = fig2.colorbar(CS)
-    cbar.ax.set_ylabel('Received Power (dBm)')
+    cbar.ax.set_ylabel("Received Power (dBm)")
 
-    ax2.set_ylim(0,30)
-    ax2.set_xlim(-45,45)
+    ax2.set_ylim(0, 30)
+    ax2.set_xlim(-45, 45)
 
     ax2.set_xticks(np.linspace(-45, 45, 7))
     ax2.set_yticks(np.linspace(0, 30, 16))
 
-    ax2.set_xlabel('Rotation Angle (degrees)')
-    ax2.set_ylabel('Time of Flight (ns)')
-    ax2.set_title('Received Power vs Time for rotating Plate (24GHz)')
+    ax2.set_xlabel("Rotation Angle (degrees)")
+    ax2.set_ylabel("Time of Flight (ns)")
+    ax2.set_title("Received Power vs Time for rotating Plate (24GHz)")
 
     from scipy.fft import fft, fftfreq
     import scipy
-    xf = fftfreq(len(time_index), 1/sampling_freq)[:len(time_index)//2]
-    input_signal=excitation_signal*(output_amplitude_peak)
-    inputfft=fft(input_signal)
-    input_freq=fftfreq(120,1/sampling_freq)[:60]
-    freqfuncabs=scipy.interpolate.interp1d(input_freq,np.abs(inputfft[:60]))
-    freqfuncangle=scipy.interpolate.interp1d(input_freq,np.angle(inputfft[:60]))
-    newinput=freqfuncabs(xf[1600])*np.exp(freqfuncangle(xf[1600]))
-    Exf=fft(Ex)
-    Eyf=fft(Ey)
-    Ezf=fft(Ez)
+
+    xf = fftfreq(len(time_index), 1 / sampling_freq)[: len(time_index) // 2]
+    input_signal = excitation_signal * (output_amplitude_peak)
+    inputfft = fft(input_signal)
+    input_freq = fftfreq(120, 1 / sampling_freq)[:60]
+    freqfuncabs = scipy.interpolate.interp1d(input_freq, np.abs(inputfft[:60]))
+    freqfuncangle = scipy.interpolate.interp1d(input_freq, np.angle(inputfft[:60]))
+    newinput = freqfuncabs(xf[1600]) * np.exp(freqfuncangle(xf[1600]))
+    Exf = fft(Ex)
+    Eyf = fft(Ey)
+    Ezf = fft(Ez)
 
 
 
@@ -512,11 +528,11 @@ Using matplotlib, plot the results
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 309-310
+.. GENERATED FROM PYTHON SOURCE LINES 325-326
 
 .. image:: ../_static/sphx_glr_04_time_domain_channel_modelling_001.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 312-317
+.. GENERATED FROM PYTHON SOURCE LINES 328-333
 
 Frequency Specific Results
 -------------------------------
@@ -524,19 +540,19 @@ The time of flight plot is useful to displaying the output of the model, giving 
 physically happening in the channel, but to get an idea of the behaviour in the frequency domain we need to use a
 fourier transform to move from time and voltages to frequency.
 
-.. GENERATED FROM PYTHON SOURCE LINES 317-337
+.. GENERATED FROM PYTHON SOURCE LINES 333-353
 
 .. code-block:: default
 
 
-    s21x=20*np.log10(np.abs(Exf[:,1600]/newinput))
-    s21y=20*np.log10(np.abs(Eyf[:,1600]/newinput))
-    s21z=20*np.log10(np.abs(Ezf[:,1600]/newinput))
-    tdangles=np.linspace(-45,45,91)
-    fig,ax=plt.subplots()
-    ax.plot(tdangles,s21x-np.max(s21z),label='Ex')
-    ax.plot(tdangles,s21y-np.max(s21z),label='Ey')
-    ax.plot(tdangles,s21z-np.max(s21z),label='Ez')
+    s21x = 20 * np.log10(np.abs(Exf[:, 1600] / newinput))
+    s21y = 20 * np.log10(np.abs(Eyf[:, 1600] / newinput))
+    s21z = 20 * np.log10(np.abs(Ezf[:, 1600] / newinput))
+    tdangles = np.linspace(-45, 45, 91)
+    fig, ax = plt.subplots()
+    ax.plot(tdangles, s21x - np.max(s21z), label="Ex")
+    ax.plot(tdangles, s21y - np.max(s21z), label="Ey")
+    ax.plot(tdangles, s21z - np.max(s21z), label="Ez")
     plt.xlabel("$\\theta_{N}$ (degrees)")
     plt.ylabel("Normalised Level (dB)")
     ax.set_ylim(-60.0, 0)
@@ -545,7 +561,7 @@ fourier transform to move from time and voltages to frequency.
     ax.set_yticks(np.linspace(-60, 0.0, 21))
     legend = ax.legend(loc="upper right", shadow=True)
     plt.grid()
-    plt.title('$S_{21}$ at 16GHz')
+    plt.title("$S_{21}$ at 16GHz")
     plt.show()
 
 
@@ -560,14 +576,14 @@ fourier transform to move from time and voltages to frequency.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 338-338
+.. GENERATED FROM PYTHON SOURCE LINES 354-355
 
 .. image:: ../_static/sphx_glr_04_time_domain_channel_modelling_002.png
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 4 minutes  52.477 seconds)
+   **Total running time of the script:** ( 4 minutes  43.360 seconds)
 
 
 .. _sphx_glr_download_auto_examples_04_time_domain_channel_modelling.py:

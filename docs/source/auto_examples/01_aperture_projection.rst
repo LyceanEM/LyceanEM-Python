@@ -97,7 +97,7 @@ open3d trianglemesh structures can be accessed by importing the data subpackage
 
     import lyceanem.tests.reflectordata as data
 
-    body, array,_ = data.exampleUAV(10e9)
+    body, array, _ = data.exampleUAV(10e9)
 
     # visualise UAV and Array
     o3d.visualization.draw_geometries([body, array])
@@ -207,6 +207,67 @@ also as an open3d point cloud. This allows easy visualisation using :func:`open3
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [Open3D INFO]   -- Mouse view control --
+    [Open3D INFO]     Left button + drag         : Rotate.
+    [Open3D INFO]     Ctrl + left button + drag  : Translate.
+    [Open3D INFO]     Wheel button + drag        : Translate.
+    [Open3D INFO]     Shift + left button + drag : Roll.
+    [Open3D INFO]     Wheel                      : Zoom in/out.
+    [Open3D INFO] 
+    [Open3D INFO]   -- Keyboard view control --
+    [Open3D INFO]     [/]          : Increase/decrease field of view.
+    [Open3D INFO]     R            : Reset view point.
+    [Open3D INFO]     Ctrl/Cmd + C : Copy current view status into the clipboard.
+    [Open3D INFO]     Ctrl/Cmd + V : Paste view status from clipboard.
+    [Open3D INFO] 
+    [Open3D INFO]   -- General control --
+    [Open3D INFO]     Q, Esc       : Exit window.
+    [Open3D INFO]     H            : Print help message.
+    [Open3D INFO]     P, PrtScn    : Take a screen capture.
+    [Open3D INFO]     D            : Take a depth capture.
+    [Open3D INFO]     O            : Take a capture of current rendering settings.
+    [Open3D INFO] 
+    [Open3D INFO]   -- Render mode control --
+    [Open3D INFO]     L            : Turn on/off lighting.
+    [Open3D INFO]     +/-          : Increase/decrease point size.
+    [Open3D INFO]     Ctrl + +/-   : Increase/decrease width of geometry::LineSet.
+    [Open3D INFO]     N            : Turn on/off point cloud normal rendering.
+    [Open3D INFO]     S            : Toggle between mesh flat shading and smooth shading.
+    [Open3D INFO]     W            : Turn on/off mesh wireframe.
+    [Open3D INFO]     B            : Turn on/off back face rendering.
+    [Open3D INFO]     I            : Turn on/off image zoom in interpolation.
+    [Open3D INFO]     T            : Toggle among image render:
+    [Open3D INFO]                    no stretch / keep ratio / freely stretch.
+    [Open3D INFO] 
+    [Open3D INFO]   -- Color control --
+    [Open3D INFO]     0..4,9       : Set point cloud color option.
+    [Open3D INFO]                    0 - Default behavior, render point color.
+    [Open3D INFO]                    1 - Render point color.
+    [Open3D INFO]                    2 - x coordinate as color.
+    [Open3D INFO]                    3 - y coordinate as color.
+    [Open3D INFO]                    4 - z coordinate as color.
+    [Open3D INFO]                    9 - normal as color.
+    [Open3D INFO]     Ctrl + 0..4,9: Set mesh color option.
+    [Open3D INFO]                    0 - Default behavior, render uniform gray color.
+    [Open3D INFO]                    1 - Render point color.
+    [Open3D INFO]                    2 - x coordinate as color.
+    [Open3D INFO]                    3 - y coordinate as color.
+    [Open3D INFO]                    4 - z coordinate as color.
+    [Open3D INFO]                    9 - normal as color.
+    [Open3D INFO]     Shift + 0..4 : Color map options.
+    [Open3D INFO]                    0 - Gray scale color.
+    [Open3D INFO]                    1 - JET color map.
+    [Open3D INFO]                    2 - SUMMER color map.
+    [Open3D INFO]                    3 - WINTER color map.
+    [Open3D INFO]                    4 - HOT color map.
+    [Open3D INFO] 
+
 
 
 
@@ -251,7 +312,7 @@ difficult to consider the full 3D space, and cannot be included in documentation
 can be used to generate contour plots with 3dB contours to give a more systematic understanding of the resultant
 maximum directivity envelope.
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-175
+.. GENERATED FROM PYTHON SOURCE LINES 127-173
 
 .. code-block:: default
 
@@ -304,8 +365,6 @@ maximum directivity envelope.
 
 
 
-
-
 .. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
    :alt: Maximum Directivity Envelope
    :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
@@ -318,7 +377,7 @@ maximum directivity envelope.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  26.096 seconds)
+   **Total running time of the script:** ( 0 minutes  31.312 seconds)
 
 
 .. _sphx_glr_download_auto_examples_01_aperture_projection.py:
