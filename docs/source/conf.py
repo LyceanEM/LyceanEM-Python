@@ -17,7 +17,7 @@ from glob import glob
 import shutil
 from sphinx_gallery.scrapers import figure_rst
 
-from importlib.metadata import version
+from lyceanem import version
 release = version('lyceanem')
 # for example take major/minor
 version = '.'.join(release.split('.')[:2])
@@ -55,7 +55,7 @@ copyright = '2022, Timothy Pelham'
 author = 'Timothy Pelham'
 
 # The full version, including alpha/beta/rc tags
-release = version#'0.01'
+#release = version#'0.01'
 
 
 # -- General configuration ---------------------------------------------------

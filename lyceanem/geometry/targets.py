@@ -2832,3 +2832,17 @@ def CASSIOPeiA_Array(
 
     array_efield_vectors = np.tile(efield_vectors, [num_rows, 1])
     return array_points, array_structure, array_efield_vectors
+
+def chain_home_transmitter():
+    """
+    This function generates the required antenna geometry to model the Chain Home transmitter, which operated at 20MHz.
+
+    Returns
+    -------
+    chain_home_transmit
+
+    """
+    wavelength=3e8/20e6
+
+    chain_home_transmit=antenna_structures()
+    return chain_home_transmit
