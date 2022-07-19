@@ -17,8 +17,8 @@ from glob import glob
 import shutil
 from sphinx_gallery.scrapers import figure_rst
 
-from lyceanem import version
-release = version('lyceanem')
+import lyceanem
+release = lyceanem.__version__
 # for example take major/minor
 version = '.'.join(release.split('.')[:2])
 

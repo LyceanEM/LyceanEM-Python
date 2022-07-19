@@ -2836,13 +2836,14 @@ def CASSIOPeiA_Array(
 def chain_home_transmitter():
     """
     This function generates the required antenna geometry to model the Chain Home transmitter, which operated at 20MHz.
-
+    This model is based upon the information at http://www.johnhearfield.com/Radar/Magnetron.htm
     Returns
     -------
     chain_home_transmit
 
     """
     wavelength=3e8/20e6
-
+    #eight dipoles vertically stacked half wavelength spacing, with reflectors behind each, seperated by 0.18 wavelengths horizontally, a stack for each pair of towers? So three stacks for the early quad arrangements, and two stacks for the later triple towers?
+    #mean height of the array is 215 feet, and claimed main lobe at 2.6 degrees in elevation due to ground reflection, first null at 5.2 degrees, and a horizontal beamwidth of 100 degrees
     chain_home_transmit=antenna_structures()
     return chain_home_transmit
