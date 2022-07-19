@@ -14,3 +14,4 @@ numba~=0.52.0
 solidpython~=1.1.1
 cupy~=8.3.0
 setuptools~=52.0.0
+importlib.metadata
