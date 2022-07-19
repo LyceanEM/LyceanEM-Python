@@ -6,7 +6,7 @@ Modelling a Coherently Polarised Aperture using the Antenna Structure Class
 
 This example uses the frequency domain :func:`lyceanem.models.frequency_domain.calculate_farfield` function to predict
 the farfield pattern for a linearly polarised aperture. This could represent an antenna array without any beamforming
-weights.
+weights. This example differs from 02 by using the antenna structure class as a container for both the antenna points and structure, and also by calling the calculate farfield function using the class.
 
 
 """

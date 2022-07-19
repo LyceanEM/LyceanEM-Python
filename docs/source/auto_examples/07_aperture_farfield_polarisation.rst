@@ -18,12 +18,12 @@
 .. _sphx_glr_auto_examples_07_aperture_farfield_polarisation.py:
 
 
-Modelling a Coherently Polarised Aperture
-======================================================
+Modelling a Coherently Polarised Aperture using the Antenna Structure Class
+============================================================================
 
 This example uses the frequency domain :func:`lyceanem.models.frequency_domain.calculate_farfield` function to predict
 the farfield pattern for a linearly polarised aperture. This could represent an antenna array without any beamforming
-weights.
+weights. This example differs from 02 by using the antenna structure class as a container for both the antenna points and structure, and also by calling the calculate farfield function using the class.
 
 .. GENERATED FROM PYTHON SOURCE LINES 13-17
 
@@ -397,7 +397,7 @@ Generate N-normal directed electric current source
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  10.545 seconds)
+   **Total running time of the script:** ( 1 minutes  21.755 seconds)
 
 
 .. _sphx_glr_download_auto_examples_07_aperture_farfield_polarisation.py:

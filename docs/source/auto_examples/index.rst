@@ -58,7 +58,7 @@ A selection of examples of LyceanEM features
 .. only:: html
 
  .. figure:: /auto_examples/images/thumb/sphx_glr_07_aperture_farfield_polarisation_thumb.png
-     :alt: Modelling a Coherently Polarised Aperture
+     :alt: Modelling a Coherently Polarised Aperture using the Antenna Structure Class
 
      :ref:`sphx_glr_auto_examples_07_aperture_farfield_polarisation.py`
 
