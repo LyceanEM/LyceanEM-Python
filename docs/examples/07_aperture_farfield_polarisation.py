@@ -45,6 +45,8 @@ blockers = structures([horn_body])
 horn_antenna = antenna_structures(blockers, aperture)
 
 horn_antenna.visualise_antenna()
+# %%
+# .. image:: ../auto_examples/images/07_aperture_open3d.png
 
 # %%
 # Generate U directed electric current source
@@ -87,7 +89,8 @@ horn_antenna.rotate_antenna(
     )
 )
 horn_antenna.visualise_antenna()
-
+# %%
+# .. image:: ../auto_examples/images/07_aperture_rotated_open3d.png
 # %%
 # Generate U directed electric current source
 #

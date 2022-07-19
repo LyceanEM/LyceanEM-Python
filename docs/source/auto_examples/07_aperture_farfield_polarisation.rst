@@ -73,7 +73,7 @@ an X band aperture.
 Generating consistent Horn Antenna and
 -------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 35-49
+.. GENERATED FROM PYTHON SOURCE LINES 35-48
 
 .. code-block:: default
 
@@ -97,13 +97,16 @@ Generating consistent Horn Antenna and
 
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 49-50
 
-.. GENERATED FROM PYTHON SOURCE LINES 50-52
+.. image:: ../auto_examples/images/07_aperture_open3d.png
+
+.. GENERATED FROM PYTHON SOURCE LINES 52-54
 
 Generate U directed electric current source
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-60
+.. GENERATED FROM PYTHON SOURCE LINES 54-62
 
 .. code-block:: default
 
@@ -157,12 +160,12 @@ Generate U directed electric current source
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-63
+.. GENERATED FROM PYTHON SOURCE LINES 63-65
 
 Generate V directed electric current source
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-70
+.. GENERATED FROM PYTHON SOURCE LINES 65-72
 
 .. code-block:: default
 
@@ -196,12 +199,12 @@ Generate V directed electric current source
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-73
+.. GENERATED FROM PYTHON SOURCE LINES 73-75
 
 Generate N-normal directed electric current source
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-80
+.. GENERATED FROM PYTHON SOURCE LINES 75-82
 
 .. code-block:: default
 
@@ -235,12 +238,12 @@ Generate N-normal directed electric current source
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-83
+.. GENERATED FROM PYTHON SOURCE LINES 83-85
 
 Rotate point source and calculate new patterns. The important thing to understand here is that the polarisation is consitent with both the farfield and global axes, and the local antenna orientation, so that if you rotate the antenna and generate the pattern it is consistent with the way the polarisation would change if you rotated a physical antenna in this way. This has been written this way to make modelling antennas and antenna arrays on moving platforms easier, so the local axes and motion relative to the global reference frame can be accounted for in a consistent manner.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 83-91
+.. GENERATED FROM PYTHON SOURCE LINES 85-92
 
 .. code-block:: default
 
@@ -258,13 +261,14 @@ Rotate point source and calculate new patterns. The important thing to understan
 
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 93-97
 
-.. GENERATED FROM PYTHON SOURCE LINES 92-94
-
+.. image:: ../auto_examples/images/07_aperture_rotated_open3d.png
+%%
 Generate U directed electric current source
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 94-102
+.. GENERATED FROM PYTHON SOURCE LINES 97-105
 
 .. code-block:: default
 
@@ -318,12 +322,12 @@ Generate U directed electric current source
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-105
+.. GENERATED FROM PYTHON SOURCE LINES 106-108
 
 Generate V directed electric current source
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-112
+.. GENERATED FROM PYTHON SOURCE LINES 108-115
 
 .. code-block:: default
 
@@ -357,12 +361,12 @@ Generate V directed electric current source
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 113-115
+.. GENERATED FROM PYTHON SOURCE LINES 116-118
 
 Generate N-normal directed electric current source
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-120
+.. GENERATED FROM PYTHON SOURCE LINES 118-123
 
 .. code-block:: default
 
@@ -397,7 +401,7 @@ Generate N-normal directed electric current source
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  21.755 seconds)
+   **Total running time of the script:** ( 0 minutes  52.698 seconds)
 
 
 .. _sphx_glr_download_auto_examples_07_aperture_farfield_polarisation.py:

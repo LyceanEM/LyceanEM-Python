@@ -5,10 +5,10 @@
 
 Computation times
 =================
-**01:21.755** total execution time for **auto_examples** files:
+**00:52.698** total execution time for **auto_examples** files:
 
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_07_aperture_farfield_polarisation.py` (``07_aperture_farfield_polarisation.py``)         | 01:21.755 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_07_aperture_farfield_polarisation.py` (``07_aperture_farfield_polarisation.py``)         | 00:52.698 | 0.0 MB |
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
 | :ref:`sphx_glr_auto_examples_01_aperture_projection.py` (``01_aperture_projection.py``)                               | 00:00.000 | 0.0 MB |
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
