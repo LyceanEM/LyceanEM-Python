@@ -1,3 +1,4 @@
+python==3.8
 setuptools==63.2.0
 numpy
 open3d
@@ -7,8 +8,8 @@ numba
 solidpython
 scipy
 lyceanem
-sphinx==4.4.0
+sphinx
 sphinxcontrib-bibtex
-sphinx_rtd_theme==1.0.0
-sphinx_gallery==0.10.1
+sphinx_rtd_theme
+sphinx_gallery
 importlib_metadata
