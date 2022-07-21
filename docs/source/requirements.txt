@@ -7,7 +7,7 @@ numba
 solidpython
 scipy
 lyceanem
-sphinx
+sphinx==4.4.0
 sphinxcontrib-bibtex
 sphinx_rtd_theme
 sphinx_gallery
