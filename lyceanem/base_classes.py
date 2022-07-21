@@ -8,8 +8,9 @@ from scipy.spatial.transform import Rotation as R
 
 import open3d as o3d
 from . import base_types as base_types
-from .electromagnetics import beamforming as BM
+from .electromagnetics.beamforming import PatternPlot,PatternPlot2D,directivity_transformv2
 from .electromagnetics import empropagation as EM
+from .electromagnetics.sources import electriccurrentsource
 from .geometry import geometryfunctions as GF
 from .raycasting import rayfunctions as RF
 from .models.frequency_domain import calculate_farfield, calculate_scattering
@@ -434,7 +435,7 @@ class antenna_structures:
             self.points.points + self.structures.solids + [self.antenna_xyz] + extras
         )
 
-    def calculate_farfield(self,excitation_vector,wavelength,elements=False,azimuth_resolution=37,elevation_resolution=37):
+    def call_calculate_farfield(self,excitation_vector,wavelength,elements=False,azimuth_resolution=37,elevation_resolution=37):
 
 
         if elements==False:
@@ -466,7 +467,7 @@ class antenna_structures:
 
         return resultant_pattern
 
-    def calculate_scattering(self,sink_coords,excitation_function,wavelength=1.0,scatter_points=None,scattering=1,elements=True,):
+    def call_calculate_scattering(self,sink_coords,excitation_function,wavelength=1.0,scatter_points=None,scattering=1,elements=True,):
 
         Ex,Ey,Ez=calculate_scattering(self.points.export_points(),
                                       sink_coords,self.structures,excitation_function,scatter_points,wavelength,scattering,elements,project_vectors=True,antenna_axes=self.antenna_axes)
@@ -729,7 +730,7 @@ class antenna_pattern:
 
         if self.arbitary_pattern_format == "Etheta/Ephi":
             if desired_pattern == "both":
-                BM.PatternPlot(
+                PatternPlot(
                     self.pattern[:, :, 0],
                     self.az_mesh,
                     self.elev_mesh,
@@ -737,7 +738,7 @@ class antenna_pattern:
                     plottype=plottype,
                     title_text="Etheta",
                 )
-                BM.PatternPlot(
+                PatternPlot(
                     self.pattern[:, :, 1],
                     self.az_mesh,
                     self.elev_mesh,
@@ -746,7 +747,7 @@ class antenna_pattern:
                     title_text="Ephi",
                 )
             elif desired_pattern == "Etheta":
-                BM.PatternPlot(
+                PatternPlot(
                     self.pattern[:, :, 0],
                     self.az_mesh,
                     self.elev_mesh,
@@ -755,7 +756,7 @@ class antenna_pattern:
                     title_text="Etheta",
                 )
             elif desired_pattern == "Ephi":
-                BM.PatternPlot(
+                PatternPlot(
                     self.pattern[:, :, 1],
                     self.az_mesh,
                     self.elev_mesh,
@@ -764,7 +765,7 @@ class antenna_pattern:
                     title_text="Ephi",
                 )
             elif desired_pattern =="Power":
-                BM.PatternPlot(
+                PatternPlot(
                     self.pattern[:, :, 0]**2+self.pattern[:, :, 1]**2,
                     self.az_mesh,
                     self.elev_mesh,
@@ -774,7 +775,7 @@ class antenna_pattern:
                 )
         elif self.arbitary_pattern_format == "ExEyEz":
             if desired_pattern == "both":
-                BM.PatternPlot(
+                PatternPlot(
                     self.pattern[:, :, 0],
                     self.az_mesh,
                     self.elev_mesh,
@@ -782,7 +783,7 @@ class antenna_pattern:
                     plottype=plottype,
                     title_text="Ex",
                 )
-                BM.PatternPlot(
+                PatternPlot(
                     self.pattern[:, :, 1],
                     self.az_mesh,
                     self.elev_mesh,
@@ -790,7 +791,7 @@ class antenna_pattern:
                     plottype=plottype,
                     title_text="Ey",
                 )
-                BM.PatternPlot(
+                PatternPlot(
                     self.pattern[:, :, 2],
                     self.az_mesh,
                     self.elev_mesh,
@@ -799,7 +800,7 @@ class antenna_pattern:
                     title_text="Ez",
                 )
             elif desired_pattern == "Ex":
-                BM.PatternPlot(
+                PatternPlot(
                     self.pattern[:, :, 0],
                     self.az_mesh,
                     self.elev_mesh,
@@ -808,7 +809,7 @@ class antenna_pattern:
                     title_text="Ex",
                 )
             elif desired_pattern == "Ey":
-                BM.PatternPlot(
+                PatternPlot(
                     self.pattern[:, :, 1],
                     self.az_mesh,
                     self.elev_mesh,
@@ -817,7 +818,7 @@ class antenna_pattern:
                     title_text="Ey",
                 )
             elif desired_pattern == "Ez":
-                BM.PatternPlot(
+                PatternPlot(
                     self.pattern[:, :, 2],
                     self.az_mesh,
                     self.elev_mesh,
@@ -1057,7 +1058,7 @@ class antenna_pattern:
             the maximum directivity for each pattern
 
         """
-        Dtheta, Dphi, Dtotal, Dmax = BM.directivity_transformv2(
+        Dtheta, Dphi, Dtotal, Dmax = directivity_transformv2(
             self.pattern[:, :, 0],
             self.pattern[:, :, 1],
             az_range=self.az_mesh[0, :],
@@ -1188,7 +1189,7 @@ class array_pattern:
 
         if self.arbitary_pattern_format == "Etheta/Ephi":
             if desired_pattern == "both":
-                BM.PatternPlot(
+                PatternPlot(
                     self.beamforming_weights*self.pattern[:,:, :, 0],
                     self.az_mesh,
                     self.elev_mesh,
@@ -1196,7 +1197,7 @@ class array_pattern:
                     plottype=plottype,
                     title_text="Etheta",
                 )
-                BM.PatternPlot(
+                PatternPlot(
                     self.beamforming_weights*self.pattern[:,:, :, 1],
                     self.az_mesh,
                     self.elev_mesh,
@@ -1205,7 +1206,7 @@ class array_pattern:
                     title_text="Ephi",
                 )
             elif desired_pattern == "Etheta":
-                BM.PatternPlot(
+                PatternPlot(
                     self.beamforming_weights*self.pattern[:,:, :, 0],
                     self.az_mesh,
                     self.elev_mesh,
@@ -1214,7 +1215,7 @@ class array_pattern:
                     title_text="Etheta",
                 )
             elif desired_pattern == "Ephi":
-                BM.PatternPlot(
+                PatternPlot(
                     self.beamforming_weights*self.pattern[:,:, :, 1],
                     self.az_mesh,
                     self.elev_mesh,
@@ -1223,7 +1224,7 @@ class array_pattern:
                     title_text="Ephi",
                 )
             elif desired_pattern =="Power":
-                BM.PatternPlot(
+                PatternPlot(
                     (self.beamforming_weights*self.pattern[:,:, :, 0])**2+(self.beamforming_weights*self.pattern[:,:, :, 1])**2,
                     self.az_mesh,
                     self.elev_mesh,
@@ -1233,7 +1234,7 @@ class array_pattern:
                 )
         elif self.arbitary_pattern_format == "ExEyEz":
             if desired_pattern == "both":
-                BM.PatternPlot(
+                PatternPlot(
                     self.beamforming_weights*self.pattern[:,:, :, 0],
                     self.az_mesh,
                     self.elev_mesh,
@@ -1241,7 +1242,7 @@ class array_pattern:
                     plottype=plottype,
                     title_text="Ex",
                 )
-                BM.PatternPlot(
+                PatternPlot(
                     self.beamforming_weights*self.pattern[:,:, :, 1],
                     self.az_mesh,
                     self.elev_mesh,
@@ -1249,7 +1250,7 @@ class array_pattern:
                     plottype=plottype,
                     title_text="Ey",
                 )
-                BM.PatternPlot(
+                PatternPlot(
                     self.beamforming_weights*self.pattern[:,:, :, 2],
                     self.az_mesh,
                     self.elev_mesh,
@@ -1258,7 +1259,7 @@ class array_pattern:
                     title_text="Ez",
                 )
             elif desired_pattern == "Ex":
-                BM.PatternPlot(
+                PatternPlot(
                     self.beamforming_weights*self.pattern[:,:, :, 0],
                     self.az_mesh,
                     self.elev_mesh,
@@ -1267,7 +1268,7 @@ class array_pattern:
                     title_text="Ex",
                 )
             elif desired_pattern == "Ey":
-                BM.PatternPlot(
+                PatternPlot(
                     self.beamforming_weights*self.pattern[:,:, :, 1],
                     self.az_mesh,
                     self.elev_mesh,
@@ -1276,7 +1277,7 @@ class array_pattern:
                     title_text="Ey",
                 )
             elif desired_pattern == "Ez":
-                BM.PatternPlot(
+                PatternPlot(
                     self.beamforming_weights*self.pattern[:,:, :, 2],
                     self.az_mesh,
                     self.elev_mesh,
@@ -1316,10 +1317,68 @@ class array_pattern:
             the maximum directivity for each pattern
 
         """
-        Dtheta, Dphi, Dtotal, Dmax = BM.directivity_transformv2(
+        Dtheta, Dphi, Dtotal, Dmax = directivity_transformv2(
             self.beamforming_weights*self.pattern[:,:, :, 0],
             self.beamforming_weights*self.pattern[:,:, :, 1],
             az_range=self.az_mesh[0, :],
             elev_range=self.elev_mesh[:, 0],
         )
         return Dtheta, Dphi, Dtotal, Dmax
+
+def antenna_pattern_source(radius, import_antenna=False, antenna_file=None):
+    """
+    This function generates an antenna pattern and `opaque' sphere as the base, representing an inserted antenna with measured pattern.
+
+    This function is not yet complete
+    Parameters
+    ----------
+    radius : float
+        radius of the sphere, setting the minimum enclosing volume of the antenna
+    import_antenna : boolean,
+        if [True] the provided antenna_file location will be used to import an antenna file to populate the variable
+    antenna_file : PosixPath
+        a file location for the antenna file to be used. The initial set will be based upon the .dat files used by the University of Bristol Anechoic Chamber
+
+    Returns
+    --------
+    solid : :class:`open3d.geometry.TriangleMesh`
+        the enclosing sphere for the antenna
+    points : :class:`open3d.geometry.PointCloud`
+        the sample points for the antenna pattern, to be used as source points for the frequency domain model
+    pattern : 3 by N numpy array of complex
+        array of the sample points of the antenna pattern, specified as Ex,Ey,Ez components
+
+    """
+    if import_antenna:
+        # import antenna pattern
+        pattern = base_types.antenna_pattern()
+        pattern.import_pattern(antenna_file)
+        pattern.field_radius = radius
+    else:
+        print("arbitary pattern")
+        # generate an arbitary locally Z directed electric current source
+        prime_vector = np.zeros((3), dtype=np.float32)
+        prime_vector[2] = 1.0
+        az_res = 37
+        elev_res = 37
+        az_mesh, elev_mesh = np.meshgrid(
+            np.linspace(-180, 180, az_res), np.linspace(-90, 90, elev_res)
+        )
+        _, theta = np.meshgrid(
+            np.linspace(-180.0, 180.0, az_res),
+            GF.elevationtotheta(np.linspace(-90, 90, elev_res)),
+        )
+        etheta, ephi = electriccurrentsource(prime_vector, theta, az_mesh)
+        pattern = antenna_pattern()
+        pattern.pattern[:, :, 0] = etheta
+        pattern.pattern[:, :, 1] = ephi
+        pattern.field_radius = radius
+
+    field_points = pattern.cartesian_points()
+    points = o3d.geometry.PointCloud()
+    points.points = o3d.utility.Vector3dVector(field_points)
+    points.normals = o3d.utility.Vector3dVector(field_points)
+    points.normalize_normals()
+    solid = o3d.geometry.TriangleMesh.create_sphere(radius=radius, resolution=30)
+
+    return solid, points, pattern
