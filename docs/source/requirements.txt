@@ -10,5 +10,5 @@ lyceanem
 sphinx==4.4.0
 sphinxcontrib-bibtex
 sphinx_rtd_theme
-sphinx_gallery
+sphinx_gallery==0.10.1
 importlib_metadata
