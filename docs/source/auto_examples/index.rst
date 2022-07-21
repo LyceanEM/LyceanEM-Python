@@ -53,48 +53,6 @@ A selection of examples of LyceanEM features
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example uses the frequency domain lyceanem.models.frequency_domain.calculate_farfield func...">
-
-.. only:: html
-
- .. figure:: /auto_examples/images/thumb/sphx_glr_07_aperture_farfield_polarisation_thumb.png
-     :alt: Modelling a Coherently Polarised Aperture using the Antenna Structure Class
-
-     :ref:`sphx_glr_auto_examples_07_aperture_farfield_polarisation.py`
-
-.. raw:: html
-
-    </div>
-
-
-.. toctree::
-   :hidden:
-
-   /auto_examples/07_aperture_farfield_polarisation
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="This example uses the frequency domain lyceanem.models.frequency_domain.calculate_farfield func...">
-
-.. only:: html
-
- .. figure:: /auto_examples/images/thumb/sphx_glr_06_farfield_polarisation_thumb.png
-     :alt: Modelling Different Farfield Polarisations
-
-     :ref:`sphx_glr_auto_examples_06_farfield_polarisation.py`
-
-.. raw:: html
-
-    </div>
-
-
-.. toctree::
-   :hidden:
-
-   /auto_examples/06_farfield_polarisation
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="Aperture Projection as a technique is based upon Hannan&#x27;s formulation of the gain of an apertur...">
 
 .. only:: html
