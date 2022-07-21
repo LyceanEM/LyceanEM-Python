@@ -3,9 +3,9 @@ import numpy as np
 # provide idealised patterns to allow testing of the different models
 import open3d as o3d
 
-import lyceanem.base_classes as base_classes
+from lyceanem.base_classes import antenna_pattern
 import lyceanem.geometry.geometryfunctions as GF
-import lyceanem.raycasting.rayfunctions as RF
+
 
 
 def electriccurrentsource(prime_vector, theta, phi):
@@ -68,7 +68,7 @@ def antenna_pattern_source(radius, import_antenna=False, antenna_file=None):
     """
     if import_antenna:
         # import antenna pattern
-        pattern = base_types.antenna_pattern()
+        pattern = antenna_pattern()
         pattern.import_pattern(antenna_file)
         pattern.field_radius = radius
     else:
@@ -86,7 +86,7 @@ def antenna_pattern_source(radius, import_antenna=False, antenna_file=None):
             GF.elevationtotheta(np.linspace(-90, 90, elev_res)),
         )
         etheta, ephi = electriccurrentsource(prime_vector, theta, az_mesh)
-        pattern = base_classes.antenna_pattern()
+        pattern = antenna_pattern()
         pattern.pattern[:, :, 0] = etheta
         pattern.pattern[:, :, 1] = ephi
         pattern.field_radius = radius

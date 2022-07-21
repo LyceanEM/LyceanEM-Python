@@ -1,5 +1,4 @@
 import numpy as np
-from ..base_classes import antenna_structures
 import open3d as o3d
 
 

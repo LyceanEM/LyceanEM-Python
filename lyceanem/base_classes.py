@@ -12,7 +12,8 @@ from .electromagnetics import beamforming as BM
 from .electromagnetics import empropagation as EM
 from .geometry import geometryfunctions as GF
 from .raycasting import rayfunctions as RF
-from .models.frequency_domain import calculate_farfield, calculate_scattering
+#from .models.frequency_domain import calculate_farfield as farfield_generator
+#calculate_scattering
 
 class points:
     """
@@ -434,43 +435,43 @@ class antenna_structures:
             self.points.points + self.structures.solids + [self.antenna_xyz] + extras
         )
 
-    def calculate_farfield(self,excitation_vector,wavelength,elements=False,azimuth_resolution=37,elevation_resolution=37):
+    # def generate_farfield(self,excitation_vector,wavelength,elements=False,azimuth_resolution=37,elevation_resolution=37):
+    #
+    #
+    #      if elements==False:
+    #          resultant_pattern=antenna_pattern(azimuth_resolution=azimuth_resolution,elevation_resolution=elevation_resolution)
+    #          resultant_pattern.pattern[:,:,0], resultant_pattern.pattern[:,:,1] =farfield_generator(self.points.export_points(),
+    #                                               self.structures,
+    #                                               excitation_vector,
+    #                                               az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
+    #                                               el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
+    #                                               wavelength=wavelength,
+    #                                               farfield_distance=20,
+    #                                               project_vectors=True,
+    #                                               antenna_axes=self.antenna_axes,elements=elements)
+    #      else:
+    #          #generate antenna array pattern
+    #          array_points=self.points.export_points()
+    #          num_elements=np.asarray(np.asarray(array_points.points).shape[0])
+    #          resultant_pattern = array_pattern(elements=num_elements,azimuth_resolution=azimuth_resolution,elevation_resolution=elevation_resolution)
+    #          resultant_pattern.pattern[:,:, :, 0], resultant_pattern.pattern[:,:, :, 1] = farfield_generator(
+    #              self.points.export_points(),
+    #              self.structures,
+    #              excitation_vector,
+    #              az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
+    #              el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
+    #              wavelength=wavelength,
+    #              farfield_distance=20,
+    #              project_vectors=True,
+    #              antenna_axes=self.antenna_axes, elements=elements)
+    #
+    #      return resultant_pattern
 
-
-        if elements==False:
-            resultant_pattern=antenna_pattern(azimuth_resolution=azimuth_resolution,elevation_resolution=elevation_resolution)
-            resultant_pattern.pattern[:,:,0], resultant_pattern.pattern[:,:,1] =calculate_farfield(self.points.export_points(),
-                                                 self.structures,
-                                                 excitation_vector,
-                                                 az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
-                                                 el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
-                                                 wavelength=wavelength,
-                                                 farfield_distance=20,
-                                                 project_vectors=True,
-                                                 antenna_axes=self.antenna_axes,elements=elements)
-        else:
-            #generate antenna array pattern
-            array_points=self.points.export_points()
-            num_elements=np.asarray(np.asarray(array_points.points).shape[0])
-            resultant_pattern = array_pattern(elements=num_elements,azimuth_resolution=azimuth_resolution,elevation_resolution=elevation_resolution)
-            resultant_pattern.pattern[:,:, :, 0], resultant_pattern.pattern[:,:, :, 1] = calculate_farfield(
-                self.points.export_points(),
-                self.structures,
-                excitation_vector,
-                az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
-                el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
-                wavelength=wavelength,
-                farfield_distance=20,
-                project_vectors=True,
-                antenna_axes=self.antenna_axes, elements=elements)
-
-        return resultant_pattern
-
-    def calculate_scattering(self,sink_coords,excitation_function,wavelength=1.0,scatter_points=None,scattering=1,elements=True,):
-
-        Ex,Ey,Ez=calculate_scattering(self.points.export_points(),
-                                      sink_coords,self.structures,excitation_function,scatter_points,wavelength,scattering,elements,project_vectors=True,antenna_axes=self.antenna_axes)
-        return Ex,Ey,Ez
+    # def calculate_scattering(self,sink_coords,excitation_function,wavelength=1.0,scatter_points=None,scattering=1,elements=True,):
+    #
+    #     Ex,Ey,Ez=calculate_scattering(self.points.export_points(),
+    #                                   sink_coords,self.structures,excitation_function,scatter_points,wavelength,scattering,elements,project_vectors=True,antenna_axes=self.antenna_axes)
+    #     return Ex,Ey,Ez
 
 class antenna_pattern:
     """
