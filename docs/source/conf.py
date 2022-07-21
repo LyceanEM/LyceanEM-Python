@@ -16,12 +16,16 @@ import re
 from glob import glob
 import shutil
 from sphinx_gallery.scrapers import figure_rst
-
-from importlib.metadata import version, PackageNotFoundError
+try:
+    from importlib import metadata
+except ImportError: # for Python<3.8
+    import importlib_metadata as metadata
+#__version__ = metadata.version("jsonschema")
+#from importlib.metadata import version, PackageNotFoundError
 
 try:
-    __version__ = version("lyceanem")
-except PackageNotFoundError:
+    __version__ = metadata.version("lyceanem")
+except metadata.PackageNotFoundError:
     # package is not installed
     pass
 # for example take major/minor
