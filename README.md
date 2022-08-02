@@ -1,4 +1,6 @@
 # LyceanEM
+[![PyPI version](https://badge.fury.io/py/lyceanem.svg)](https://pypi.python.org/pypi/metawards)
+[![Downloads](https://static.pepy.tech/personalized-badge/lyceanem?period=total&units=international_system&left_color=black&right_color=brightgreen&left_text=Downloads)](https://pepy.tech/project/lyceanem)
 
 LyceanEM was conceived to enable rapid assesments of the suitability of difference antenna apertures for a wide range of platforms.
 This is based upon the use of ray tracing to determine the field of view of points of interest on the platform, whether building, train, plane, or mobile phone handset. Allowing the application of Wheelers formulation of the gain of an aperture.
