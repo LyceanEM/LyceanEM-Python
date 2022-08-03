@@ -1,8 +1,5 @@
 import copy
-import math
-from packaging import version
 import numpy as np
-from numba import float32, from_dtype, njit, guvectorize
 from scipy import interpolate as sp
 from scipy.spatial.transform import Rotation as R
 
@@ -13,9 +10,34 @@ from .electromagnetics import empropagation as EM
 from .geometry import geometryfunctions as GF
 from .raycasting import rayfunctions as RF
 #from .models.frequency_domain import calculate_farfield as farfield_generator
-#calculate_scattering
+#from .models.frequency_domain import calculate_scattering as frequency_domain_channel
 
-class points:
+class object3d:
+    def __init__(self):
+        #define object pose as rotation matrix from world frame using Denavit-Hartenbeg convention
+        self.pose=np.eye(4)
+    def rotate_euler(self,x,y,z,degrees=True,replace=True):
+        rot=R.from_euler('xyz',[x,y,z],degrees=degrees)
+        transform=np.eye(4)
+        transform[:3,:3]=rot.as_matrix()
+        if replace==True:
+            self.pose=transform
+        else:
+            self.pose=np.matmul(self.pose,transform)
+        return self.pose
+
+    def rotate_matrix(self,new_axes,replace=True):
+        rot=R.from_matrix(new_axes)
+        transform=np.eye(4)
+        transform[:3,:3]=rot.as_matrix()
+        if replace==True:
+            self.pose=transform
+        else:
+            self.pose=np.matmul(self.pose,transform)
+        return self.pose
+
+
+class points(object3d):
     """
     Structure class to store information about the geometry and materials in the environment, holding the seperate
     shapes as :class:`open3d.geometry.TriangleMesh` data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
@@ -27,6 +49,7 @@ class points:
     """
 
     def __init__(self, points):
+        super().__init__()
         # solids is a list of open3D :class:`open3d.geometry.TriangleMesh` structures
         self.points = []
         for item in points:
@@ -124,7 +147,7 @@ class points:
         return combined_points
 
 
-class structures:
+class structures(object3d):
     """
     Structure class to store information about the geometry and materials in the environment, holding the seperate
     shapes as :class:`open3d.geometry.TriangleMesh` data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
@@ -136,6 +159,7 @@ class structures:
     """
 
     def __init__(self, solids):
+        super().__init__()
         # solids is a list of open3D :class:`open3d.geometry.TriangleMesh` structures
         self.solids = []
         for item in range(len(solids)):
@@ -219,7 +243,7 @@ class structures:
 
     def export_vertices(self, structure_index=None):
         """
-        Exports the vertices for either all
+        Exports the vertices for either all or the indexed point clouds, transformed to the global coordinate frame.
 
         Parameters
         ----------
@@ -252,6 +276,7 @@ class structures:
 
                 point_cloud = point_cloud + temp_cloud
 
+        point_cloud.transform(self.pose)
         return point_cloud
 
     def triangles_base_raycaster(self):
@@ -269,13 +294,15 @@ class structures:
             a continuous array of all the triangles in the structure
         """
         triangles = np.empty((0), dtype=base_types.triangle_t)
-        for item in self.solids:
-            triangles = np.append(triangles, RF.convertTriangles(copy.deepcopy(item)))
+        for item in range(len(self.solids)):
+            temp_object = copy.deepcopy(self.solids[item])[0]
+            temp_object.transform(self.pose)
+            triangles = np.append(triangles, RF.convertTriangles(temp_object))
 
         return triangles
 
 
-class antenna_structures:
+class antenna_structures(object3d):
     """
     Dedicated class to store information on a specific antenna, including aperture points
     as :class:`open3d.geometry.PointCloud` data structures, and structure shapes
@@ -289,13 +316,11 @@ class antenna_structures:
     """
 
     def __init__(self, structures, points):
-
+        super().__init__()
         self.structures = structures
         self.points = points
-        self.antenna_origin=np.zeros((3,1))
-        self.antenna_axes=np.eye(3)
         self.antenna_xyz=o3d.geometry.TriangleMesh.create_coordinate_frame(
-    size=1, origin=[0, 0, 0]
+    size=1, origin=self.pose[:3,3]
 )
 
 
@@ -348,7 +373,7 @@ class antenna_structures:
         None
         """
         self.antenna_xyz.translate(vector)
-        self.antenna_origin=self.antenna_origin+vector
+        self.origin=self.origin+vector
         for item in range(len(self.structures.solids)):
             self.structures.solids[item].translate(vector)
         for item in range(len(self.points.points)):
@@ -358,9 +383,16 @@ class antenna_structures:
 
         point_cloud = self.points.export_points()
         point_cloud = point_cloud + self.structures.export_vertices()
-
+        point_cloud.transform(self.pose)
         return point_cloud
 
+    def export_all_structures(self):
+
+        objects = copy.deepcopy(self.structures.solids)
+        for item in range(len(objects)):
+            objects[item]=objects[item].transform(self.pose)
+
+        return objects
     def farfield_distance(self, freq):
         # calculate farfield distance for the antenna, based upon the Fraunhofer distance
         total_points = self.export_all_points()
@@ -410,7 +442,9 @@ class antenna_structures:
         return directivity
 
     def visualise_antenna(self,extras=[]):
-        # use open3d to display the
+        """
+        This function uses open3d to display the antenna structure in the local coordinate frame
+        """
         total_points = self.export_all_points()
         # calculate bounding box
         bounding_box = total_points.get_oriented_bounding_box()
@@ -438,42 +472,42 @@ class antenna_structures:
     # def generate_farfield(self,excitation_vector,wavelength,elements=False,azimuth_resolution=37,elevation_resolution=37):
     #
     #
-    #      if elements==False:
-    #          resultant_pattern=antenna_pattern(azimuth_resolution=azimuth_resolution,elevation_resolution=elevation_resolution)
-    #          resultant_pattern.pattern[:,:,0], resultant_pattern.pattern[:,:,1] =farfield_generator(self.points.export_points(),
-    #                                               self.structures,
-    #                                               excitation_vector,
-    #                                               az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
-    #                                               el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
-    #                                               wavelength=wavelength,
-    #                                               farfield_distance=20,
-    #                                               project_vectors=True,
-    #                                               antenna_axes=self.antenna_axes,elements=elements)
-    #      else:
-    #          #generate antenna array pattern
-    #          array_points=self.points.export_points()
-    #          num_elements=np.asarray(np.asarray(array_points.points).shape[0])
-    #          resultant_pattern = array_pattern(elements=num_elements,azimuth_resolution=azimuth_resolution,elevation_resolution=elevation_resolution)
-    #          resultant_pattern.pattern[:,:, :, 0], resultant_pattern.pattern[:,:, :, 1] = farfield_generator(
-    #              self.points.export_points(),
-    #              self.structures,
-    #              excitation_vector,
-    #              az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
-    #              el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
-    #              wavelength=wavelength,
-    #              farfield_distance=20,
-    #              project_vectors=True,
-    #              antenna_axes=self.antenna_axes, elements=elements)
+    #       if elements==False:
+    #           resultant_pattern=antenna_pattern(azimuth_resolution=azimuth_resolution,elevation_resolution=elevation_resolution)
+    #           resultant_pattern.pattern[:,:,0], resultant_pattern.pattern[:,:,1] =farfield_generator(self.points.export_points(),
+    #                                                self.structures,
+    #                                                excitation_vector,
+    #                                                az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
+    #                                                el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
+    #                                                wavelength=wavelength,
+    #                                                farfield_distance=20,
+    #                                                project_vectors=True,
+    #                                                antenna_axes=self.antenna_axes,elements=elements)
+    #       else:
+    #           #generate antenna array pattern
+    #           array_points=self.points.export_points()
+    #           num_elements=np.asarray(np.asarray(array_points.points).shape[0])
+    #           resultant_pattern = array_pattern(elements=num_elements,azimuth_resolution=azimuth_resolution,elevation_resolution=elevation_resolution)
+    #           resultant_pattern.pattern[:,:, :, 0], resultant_pattern.pattern[:,:, :, 1] = farfield_generator(
+    #               self.points.export_points(),
+    #               self.structures,
+    #               excitation_vector,
+    #               az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
+    #               el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
+    #               wavelength=wavelength,
+    #               farfield_distance=20,
+    #               project_vectors=True,
+    #               antenna_axes=self.antenna_axes, elements=elements)
     #
-    #      return resultant_pattern
-
-    # def calculate_scattering(self,sink_coords,excitation_function,wavelength=1.0,scatter_points=None,scattering=1,elements=True,):
+    #       return resultant_pattern
     #
-    #     Ex,Ey,Ez=calculate_scattering(self.points.export_points(),
-    #                                   sink_coords,self.structures,excitation_function,scatter_points,wavelength,scattering,elements,project_vectors=True,antenna_axes=self.antenna_axes)
-    #     return Ex,Ey,Ez
+    # def frequency_domain_channel(self,sink_coords,excitation_function,wavelength=1.0,scatter_points=None,scattering=1,elements=True,):
+    #
+    #      Ex,Ey,Ez=frequency_domain_channel(self.points.export_points(),
+    #                                    sink_coords,self.structures,excitation_function,scatter_points,wavelength,scattering,elements,project_vectors=True,antenna_axes=self.antenna_axes)
+    #      return Ex,Ey,Ez
 
-class antenna_pattern:
+class antenna_pattern(object3d):
     """
     Antenna Pattern class which allows for patterns to be handled consistently
     across LyceanEM and other modules. The definitions assume that the pattern axes
@@ -494,8 +528,6 @@ class antenna_pattern:
         arbitary_pattern=False,
         arbitary_pattern_type="isotropic",
         arbitary_pattern_format="Etheta/Ephi",
-        position_mapping=np.zeros((3), dtype=np.float32),
-        rotation_offset=np.zeros((3), dtype=np.float32),
     ):
 
         self.azimuth_resolution = azimuth_resolution
@@ -503,8 +535,6 @@ class antenna_pattern:
         self.pattern_frequency = pattern_frequency
         self.arbitary_pattern_type = arbitary_pattern_type
         self.arbitary_pattern_format = arbitary_pattern_format
-        self.position_mapping = position_mapping
-        self.rotation_offset = rotation_offset
         self.field_radius = 1.0
         az_mesh, elev_mesh = np.meshgrid(
             np.linspace(-180, 180, self.azimuth_resolution),
@@ -528,27 +558,6 @@ class antenna_pattern:
 
         if arbitary_pattern == True:
             self.initilise_pattern()
-
-    def _rotation_matrix(self):
-        """_rotation_matrix getter method
-
-        Calculates and returns the (3D) axis rotation matrix.
-
-        Returns
-        -------
-        : :class:`numpy.ndarray` of shape (3, 3)
-            The model (3D) rotation matrix.
-        """
-        x_rot = R.from_euler("X", self.rotation_offset[0], degrees=True).as_matrix()
-        y_rot = R.from_euler("Y", self.rotation_offset[1], degrees=True).as_matrix()
-        z_rot = R.from_euler("Z", self.rotation_offset[2], degrees=True).as_matrix()
-
-        # x_rot=np.array([[1,0,0],
-        #                [0,np.cos(np.deg2rad(self.rotation_offset[0])),-np.sin(np.deg2rad(self.rotation_offset[0]))],
-        #                [0,np.sin(np.deg2rad(self.rotation_offset[0])),np.cos(np.deg2rad(self.rotation_offset[0]))]])
-
-        total_rotation = np.dot(np.dot(z_rot, y_rot), x_rot)
-        return total_rotation
 
     def initilise_pattern(self):
         """
@@ -949,15 +958,10 @@ class antenna_pattern:
         else:
             desired_format = "ExEyEz"
 
-        if rotation_matrix == None:
-            rot_mat = self._rotation_matrix()
-        else:
-            rot_mat = rotation_matrix
-
-        rotated_points = np.dot(field_points, rot_mat)
+        rotated_points = np.dot(field_points, rotation_matrix)
         decomposed_fields = self.pattern.reshape(-1, 3)
         # rotation part
-        xyzfields = np.dot(decomposed_fields, rot_mat)
+        xyzfields = np.dot(decomposed_fields, rotation_matrix)
         # resample
         resampled_xyzfields = self.resample_pattern(
             rotated_points, xyzfields, field_points

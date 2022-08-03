@@ -3561,7 +3561,7 @@ def vector_mapping(local_E_vector, point_normal, antenna_axes):
     z_orth = np.linalg.norm(np.cross(antenna_axes[:, 2], point_vector))
     #print('check values',x_orth,y_orth,z_orth)
     #if antenna_axes[:,2] is aligned with point_vector then the cross product will be NaN, and another axes will be
-    # needed to defined the polarisation axes consistently.
+    # needed to define the polarisation axes consistently.
     if abs(z_orth)==0:
         # cannot use z axis as reference, so point normal is aligned with z axis, therefore face_u should be the on the
         # antenna y_axis, therefore face_v can be used to define backwards.

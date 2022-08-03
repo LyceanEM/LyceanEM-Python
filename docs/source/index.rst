@@ -57,11 +57,12 @@ Contents
 
    installation
    design
-   auto_examples/index
+   base
    models
    electromagnetics
    raycasting
    geometry
+   auto_examples/index
    contributing
    copyright
 
