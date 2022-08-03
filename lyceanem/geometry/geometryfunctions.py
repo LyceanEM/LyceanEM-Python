@@ -75,7 +75,7 @@ def elevationtotheta(el):
 
 @vectorize(["(float32(float32))", "(float64(float64))"])
 def thetatoelevation(theta):
-    # converting elevation in degrees to theta in degrees
+    # converting theta in degrees to elevation in degrees
     # elevation is in range -90 to 90 degrees
     # theta is in range 0 to 180 degrees
     if theta <= 90.0:
@@ -148,3 +148,42 @@ def calculate_align_mat(pVec_Arr):
     )
     qTrans_Mat *= scale
     return qTrans_Mat
+
+def axes_from_normal(boresight_vector):
+    """
+    Calculates the requried local axes within the global coordinate frame based upon the desired boresight, the standard
+    is that the x-axis will be pointed along the desired boresight_vector, while the z-axis will be aligned as closely
+    as possible to the global z-axis.
+
+    Parameters
+    ----------
+    boresight_vector
+
+    Returns
+    -------
+    rotation_matrix
+
+    """
+    #initially define the rotation matrix based inline with the global coordinate frame.
+    rotation_matrix = np.eye(3)
+    rotation_matrix[0, :] = boresight_vector / np.linalg.norm(boresight_vector)
+
+    # make sure ray vectors are locked on appropriate global axes
+    x_orth = np.linalg.norm(np.cross(rotation_matrix[0, :], rotation_matrix[0, :]))
+    y_orth = np.linalg.norm(np.cross(rotation_matrix[1, :], rotation_matrix[0, :]))
+    z_orth = np.linalg.norm(np.cross(rotation_matrix[2, :], rotation_matrix[0, :]))
+    if (abs(y_orth) >= abs(x_orth)) and (abs(y_orth) >= abs(z_orth)):
+        # use y-axis to establish ray uv axes
+        rotation_matrix[2, :] = np.cross(rotation_matrix[0, :], rotation_matrix[1, :]) / np.linalg.norm(
+            np.cross(rotation_matrix[0, :], rotation_matrix[1, :])
+        )
+    elif (abs(z_orth) >= abs(x_orth)) and (abs(z_orth) > abs(y_orth)):
+        # use z-axis
+        rotation_matrix[2, :] = np.cross(rotation_matrix[2, :], rotation_matrix[0, :]) / np.linalg.norm(
+            np.cross(rotation_matrix[2, :], rotation_matrix[0, :])
+        )
+
+    rotation_matrix[1, :] = np.cross(rotation_matrix[2, :], rotation_matrix[0, :]) / np.linalg.norm(
+    np.cross(rotation_matrix[2, :], rotation_matrix[0, :]))
+
+    return rotation_matrix

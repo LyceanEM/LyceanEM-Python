@@ -16,8 +16,4 @@ The basic class of LyceanEM for farfield patterns is the `antenna pattern`. This
 In order to handle solids in a consistent manner for raycasting, LyceanEM implements the class `structures` as a way to bundle multiple trianglemesh solids that are part of a whole. This enables not just packaging for the raycaster, but also further development for multimaterial modelling.
 
 
-
-.. toctree::
-    base
-
 .. footbibliography::
