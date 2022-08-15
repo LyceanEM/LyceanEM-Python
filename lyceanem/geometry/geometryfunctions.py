@@ -149,9 +149,10 @@ def calculate_align_mat(pVec_Arr):
     qTrans_Mat *= scale
     return qTrans_Mat
 
-def axes_from_normal(boresight_vector):
+
+def axes_from_normal(boresight_vector, boresight_along="x"):
     """
-    Calculates the requried local axes within the global coordinate frame based upon the desired boresight, the standard
+    Calculates the required local axes within the global coordinate frame based upon the desired boresight, the standard
     is that the x-axis will be pointed along the desired boresight_vector, while the z-axis will be aligned as closely
     as possible to the global z-axis.
 
@@ -164,26 +165,75 @@ def axes_from_normal(boresight_vector):
     rotation_matrix
 
     """
-    #initially define the rotation matrix based inline with the global coordinate frame.
+    # initially define the rotation matrix based inline with the global coordinate frame.
     rotation_matrix = np.eye(3)
-    rotation_matrix[0, :] = boresight_vector / np.linalg.norm(boresight_vector)
-
+    replacement_vector = boresight_vector / np.linalg.norm(boresight_vector)
     # make sure ray vectors are locked on appropriate global axes
-    x_orth = np.linalg.norm(np.cross(rotation_matrix[0, :], rotation_matrix[0, :]))
-    y_orth = np.linalg.norm(np.cross(rotation_matrix[1, :], rotation_matrix[0, :]))
-    z_orth = np.linalg.norm(np.cross(rotation_matrix[2, :], rotation_matrix[0, :]))
-    if (abs(y_orth) >= abs(x_orth)) and (abs(y_orth) >= abs(z_orth)):
-        # use y-axis to establish ray uv axes
-        rotation_matrix[2, :] = np.cross(rotation_matrix[0, :], rotation_matrix[1, :]) / np.linalg.norm(
-            np.cross(rotation_matrix[0, :], rotation_matrix[1, :])
-        )
-    elif (abs(z_orth) >= abs(x_orth)) and (abs(z_orth) > abs(y_orth)):
-        # use z-axis
-        rotation_matrix[2, :] = np.cross(rotation_matrix[2, :], rotation_matrix[0, :]) / np.linalg.norm(
-            np.cross(rotation_matrix[2, :], rotation_matrix[0, :])
-        )
+    x_orth = np.linalg.norm(np.cross(rotation_matrix[0, :], replacement_vector))
+    y_orth = np.linalg.norm(np.cross(rotation_matrix[1, :], replacement_vector))
+    z_orth = np.linalg.norm(np.cross(rotation_matrix[2, :], replacement_vector))
 
-    rotation_matrix[1, :] = np.cross(rotation_matrix[2, :], rotation_matrix[0, :]) / np.linalg.norm(
-    np.cross(rotation_matrix[2, :], rotation_matrix[0, :]))
+    if boresight_along == "x":
+        rotation_matrix[0, :] = replacement_vector
+    elif boresight_along == "y":
+        rotation_matrix[1, :] = replacement_vector
+    elif boresight_along == "z":
+        rotation_matrix[2, :] = replacement_vector
+
+    if boresight_along == "x":
+        # then u should be based on y, and v on z
+        rotation_matrix[1, :] = np.cross(
+            rotation_matrix[2, :], rotation_matrix[0, :]
+        ) / np.linalg.norm(np.cross(rotation_matrix[2, :], rotation_matrix[0, :]))
+        rotation_matrix[2, :] = np.cross(
+            rotation_matrix[0, :], rotation_matrix[1, :]
+        ) / np.linalg.norm(np.cross(rotation_matrix[0, :], rotation_matrix[1, :]))
+        if np.any(np.isnan(rotation_matrix)):
+            # nan in rotation_matrix, start again with different basis vector
+            rotation_matrix = np.eye(3)
+            rotation_matrix[0, :] = replacement_vector
+            rotation_matrix[2, :] = np.cross(
+                rotation_matrix[0, :], rotation_matrix[1, :]
+            ) / np.linalg.norm(np.cross(rotation_matrix[0, :], rotation_matrix[1, :]))
+            rotation_matrix[1, :] = np.cross(
+                rotation_matrix[2, :], rotation_matrix[0, :]
+            ) / np.linalg.norm(np.cross(rotation_matrix[2, :], rotation_matrix[0, :]))
+    elif boresight_along == "y":
+        # then u should be based on x, and v on z
+        rotation_matrix[0, :] = np.cross(
+            rotation_matrix[1, :], rotation_matrix[2, :]
+        ) / np.linalg.norm(np.cross(rotation_matrix[1, :], rotation_matrix[2, :]))
+        rotation_matrix[2, :] = np.cross(
+            rotation_matrix[0, :], rotation_matrix[1, :]
+        ) / np.linalg.norm(np.cross(rotation_matrix[0, :], rotation_matrix[1, :]))
+        if np.any(np.isnan(rotation_matrix)):
+            # nan in rotation_matrix, start again with different basis vector
+            rotation_matrix = np.eye(3)
+            rotation_matrix[1, :] = replacement_vector
+            rotation_matrix[2, :] = np.cross(
+                rotation_matrix[0, :], rotation_matrix[1, :]
+            ) / np.linalg.norm(np.cross(rotation_matrix[0, :], rotation_matrix[1, :]))
+            rotation_matrix[0, :] = np.cross(
+                rotation_matrix[1, :], rotation_matrix[2, :]
+            ) / np.linalg.norm(np.cross(rotation_matrix[1, :], rotation_matrix[2, :]))
+    elif boresight_along == "z":
+        # then u should be based on x, and v on y
+        rotation_matrix[0, :] = np.cross(
+            rotation_matrix[1, :], rotation_matrix[2, :]
+        ) / np.linalg.norm(np.cross(rotation_matrix[1, :], rotation_matrix[2, :]))
+        rotation_matrix[1, :] = np.cross(
+            rotation_matrix[2, :], rotation_matrix[0, :]
+        ) / np.linalg.norm(np.cross(rotation_matrix[2, :], rotation_matrix[0, :]))
+        if np.any(np.isnan(rotation_matrix)):
+            # nan in rotation_matrix, start again with different basis vector
+            print('nan')
+            rotation_matrix = np.eye(3)
+            rotation_matrix[2, :] = replacement_vector
+            rotation_matrix[1, :] = np.cross(
+                rotation_matrix[2, :], rotation_matrix[0, :]
+            ) / np.linalg.norm(np.cross(rotation_matrix[2, :], rotation_matrix[0, :]))
+            rotation_matrix[0, :] = np.cross(
+                rotation_matrix[1, :], rotation_matrix[2, :]
+            ) / np.linalg.norm(np.cross(rotation_matrix[1, :], rotation_matrix[2, :]))
 
     return rotation_matrix

@@ -5,24 +5,21 @@ package:
   name: {{ name|lower }}
   version: {{ version }}
 
-#source:
-#  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/LyceanEM-{{ version }}.tar.gz
-#  sha256: a12631f848174a177e0856e5099e34bfe0969bfe50ecc6439a0318206cdc0b8b
+source:
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/LyceanEM-{{ version }}.tar.gz
+  sha256: a12631f848174a177e0856e5099e34bfe0969bfe50ecc6439a0318206cdc0b8b
 
-#build:
-#  noarch: python
-#  script: {{ PYTHON }} -m pip install . -vv
-#  number: 0
+build:
+  noarch: python
+  script: {{ PYTHON }} -m pip install . -vv
+  number: 0
 
-channels:
-  - conda-forge
-  - nodefaults
-dependencies:
+requirements:
   - python>=3.6
   - pip
 
-  - cudatoolkit
-  - cupy
+  - conda-forge::cudatoolkit
+  - conda-forge::cupy
 
   - open3d-admin::open3d
 
