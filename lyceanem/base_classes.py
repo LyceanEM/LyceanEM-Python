@@ -328,7 +328,7 @@ class antenna_structures(object3d):
         self, rotation_matrix, rotation_centre=np.zeros((3, 1), dtype=np.float32)
     ):
         """
-        rotates the components of the structure around a common point, default is the origin
+        rotates the components of the structure around a common point, default is the origin within the local coordinate system
 
         Parameters
         ----------
@@ -361,7 +361,7 @@ class antenna_structures(object3d):
 
     def translate_antenna(self, vector):
         """
-        translates the structures and points in the class by the given cartesian vector (x,y,z)
+        translates the structures and points in the class by the given cartesian vector (x,y,z) within the local coordinate system
 
         Parameters
         -----------
@@ -382,9 +382,24 @@ class antenna_structures(object3d):
     def export_all_points(self):
 
         point_cloud = self.points.export_points()
-        point_cloud = point_cloud + self.structures.export_vertices()
+        point_cloud = point_cloud ##+ self.structures.export_vertices()
         point_cloud.transform(self.pose)
         return point_cloud
+
+    def excitation_function(self,desired_e_vector,transmit_power=1):
+        #generate the local excitation function and then convert into the global coordinate frame.
+        aperture_points=self.export_all_points()
+        aperture_weights = EM.calculate_conformalVectors(
+            desired_e_vector, np.asarray(aperture_points.normals), self.pose[:3,:3]
+        )
+        return aperture_weights*transmit_power
+
+    def receive_transform(self,aperture_polarisation,excitation_function,beamforming_weights):
+        #combine local aperture polarisation, received excitation function, and beamforming weights to calculate the received signal
+        #convert global polarisation functions to local ones
+        local_excitation_function=np.matmul(excitation_function,np.matrix.transpose(self.pose[:3,:3]))
+
+        return received_signal
 
     def export_all_structures(self):
 
