@@ -3523,7 +3523,7 @@ def DisplayESources(
 
 
 #@njit(cache=True, nogil=True)
-def vector_mapping(local_E_vector, point_normal, antenna_axes):
+def vector_mapping(local_E_vector, point_normal,rotation_matrix):
     """
     Function to transform local vectors to the global coordinate set. This is intended to allow for transforming from
     antennas with horizontal, vertical, circular polarization to be specified with reference to antenna face normal
@@ -3531,7 +3531,7 @@ def vector_mapping(local_E_vector, point_normal, antenna_axes):
 
     The first step is to programmatically define the face u and v vectors in terms of the point normal. Once this is
     done, the global electromagnetic vector can then be defined in terms of the uv and normal vectors and the
-    local vector.
+    local vector, using the rotation_matrix
 
     Parameters
     ----------
@@ -3539,7 +3539,7 @@ def vector_mapping(local_E_vector, point_normal, antenna_axes):
 
     point_normal
 
-    antenna_axes
+    rotation_matrix
 
     Returns
     -------
@@ -3547,32 +3547,30 @@ def vector_mapping(local_E_vector, point_normal, antenna_axes):
 
     """
     point_vector = point_normal.astype(local_E_vector.dtype)
-    point_E_vector = np.zeros((3), dtype=local_E_vector.dtype)
+    local_axes=np.eye(3)
+    uvn_axes=np.zeros((3,3),dtype=local_E_vector.dtype)
+    uvn_axes[2,:]=point_vector
     global_vector = np.zeros((3), dtype=local_E_vector.dtype)
-    x_vec = np.zeros((3), dtype=local_E_vector.dtype)
-    y_vec = np.zeros((3), dtype=local_E_vector.dtype)
-    z_vec = np.zeros((3), dtype=local_E_vector.dtype)
-    x_vec[0] = 1.0
-    y_vec[1] = 1.0
-    z_vec[2] = 1.0
     # # make sure point vectors are locked on appropriate antenna axes
-    x_orth = np.linalg.norm(np.cross(antenna_axes[:, 0], point_vector))
-    y_orth = np.linalg.norm(np.cross(antenna_axes[:, 1], point_vector))
-    z_orth = np.linalg.norm(np.cross(antenna_axes[:, 2], point_vector))
+    x_orth = np.linalg.norm(np.cross(local_axes[:, 0], point_vector))
+    y_orth = np.linalg.norm(np.cross(local_axes[:, 1], point_vector))
+    z_orth = np.linalg.norm(np.cross(local_axes[:, 2], point_vector))
     #print('check values',x_orth,y_orth,z_orth)
     #if antenna_axes[:,2] is aligned with point_vector then the cross product will be NaN, and another axes will be
     # needed to define the polarisation axes consistently.
     if abs(z_orth)==0:
         # cannot use z axis as reference, so point normal is aligned with z axis, therefore face_u should be the on the
         # antenna y_axis, therefore face_v can be used to define backwards.
-        face_u=np.cross(point_vector,antenna_axes[:, 0]) / np.linalg.norm(
-           np.cross(antenna_axes[:, 0], point_vector)
+        uvn_axes[0,:]=np.cross(point_vector,local_axes[0,:]) / np.linalg.norm(
+           np.cross(local_axes[0,:], point_vector)
         )
 
     else:
-        face_u = np.cross(antenna_axes[:, 2], point_vector) / np.linalg.norm(
-            np.cross(antenna_axes[:, 2], point_vector)
+        uvn_axes[0,:] = np.cross(local_axes[2,:], point_vector) / np.linalg.norm(
+            np.cross(local_axes[2,:], point_vector)
         )
+
+
     # if (abs(x_orth) > abs(y_orth)) and (abs(x_orth) > abs(z_orth)):
     #      # use x-axis to establish face uv axes
     #      face_u = np.cross(antenna_axes[:, 0], point_vector) / np.linalg.norm(
@@ -3591,37 +3589,14 @@ def vector_mapping(local_E_vector, point_normal, antenna_axes):
     #          np.cross(antenna_axes[:, 2], point_vector)
     #      )
 
-    face_v = np.cross(point_vector,face_u) / np.linalg.norm(
-       np.cross(face_u, point_vector)
+    uvn_axes[1,:] = np.cross(point_vector,uvn_axes[0,:]) / np.linalg.norm(
+       np.cross(uvn_axes[0,:], point_vector)
     )
-    # convert from antenna axes to global coordinate set
-    #local polarisation vectors are then defined in terms of face_u - x, face_v - y, and face_normal - z
-    #print('antenna z',antenna_axes[:,2])
-    #print('face u',face_u)
-    #print('face v', face_v)
-    #print('face_normal',point_vector)
+    #print('uvn',uvn_axes)
 
-    global_vector[0] = (
-        local_E_vector[0] * np.dot(x_vec, face_u)
-        + local_E_vector[1] * np.dot(x_vec, face_v)
-        + local_E_vector[2] * np.dot(x_vec, point_vector)
-    )
-    global_vector[1] = (
-        local_E_vector[0] * np.dot(y_vec, face_u)
-        + local_E_vector[1] * np.dot(y_vec, face_v)
-        + local_E_vector[2] * np.dot(y_vec, point_vector)
-    )
-    global_vector[2] = (
-        local_E_vector[0] * np.dot(z_vec, face_u)
-        + local_E_vector[1] * np.dot(z_vec, face_v)
-        + local_E_vector[2] * np.dot(z_vec, point_vector)
-    )
-    # global_vector[0]=local_E_vector[0]*np.dot(x_vec,face_u)+local_E_vector[1]*np.dot(x_vec,face_v)+local_E_vector[2]*np.dot(x_vec,point_vector)
-    # global_vector[1] = local_E_vector[0] * np.dot(y_vec, face_u) + local_E_vector[1] * np.dot(y_vec, face_v) + local_E_vector[
-    #    2] * np.dot(y_vec, point_vector)
-    # global_vector[2] = local_E_vector[0] * np.dot(z_vec, face_u) + local_E_vector[1] * np.dot(z_vec, face_v) + local_E_vector[
-    #    2] * np.dot(z_vec, point_vector)
 
+    #convert uvn vector to local axes, and then rotate into global axes
+    global_vector=np.matmul(np.matmul(local_E_vector, uvn_axes), rotation_matrix)
     return global_vector
 
 

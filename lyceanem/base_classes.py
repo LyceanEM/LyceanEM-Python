@@ -144,6 +144,7 @@ class points(object3d):
         for item in range(len(self.points)):
             combined_points = combined_points + self.points[item]
 
+        combined_points.transform(self.pose)
         return combined_points
 
 
@@ -383,7 +384,7 @@ class antenna_structures(object3d):
 
         point_cloud = self.points.export_points()
         point_cloud = point_cloud ##+ self.structures.export_vertices()
-        point_cloud.transform(self.pose)
+
         return point_cloud
 
     def excitation_function(self,desired_e_vector,transmit_power=1):
@@ -732,6 +733,33 @@ class antenna_pattern(object3d):
         outputarray = np.concatenate((infoarray, dataarray), axis=0)
         np.savetxt(file_location, outputarray, delimiter=",", fmt="%.2e")
 
+    def export_global_weights(self):
+        """
+        Calculates the global frame coordinates and xyz weightings of the antenna pattern using the pattern pose to translate and rotate into the correction position and orientation within the model environment.
+
+        Returns
+        -------
+        points :
+
+        weights :
+
+        """
+        xyz = self.cartesian_points()
+        points = o3d.geometry.PointCloud()
+        points.points = o3d.utility.Vector3dVector(xyz)
+        points.normals = o3d.utility.Vector3dVector(xyz)
+        points.transform(self.pose)
+        if self.arbitary_pattern_format == "Etheta/Ephi":
+            self.transmute_pattern()
+
+        #import to export the weights in cartesian format, then orientate correctly within global reference frame.
+        rotation_matrix = self.pose[:3, :3]
+
+        weightsx= self.pattern[:,:,0].ravel()
+        weightsy = self.pattern[:, :, 1].ravel()
+        weightsz = self.pattern[:, :, 2].ravel()
+        weights=np.concatenate(weightsx,weightsy,weightsz)
+        return points, weights
     def display_pattern(
         self, plottype="Polar", desired_pattern="both", pattern_min=-40
     ):
@@ -937,7 +965,7 @@ class antenna_pattern(object3d):
             np.ones((self.pattern[:, :, 0].size)) * self.field_radius,
         )
         field_points = (
-            np.array([x, y, z]).transpose().astype(np.float32) + self.position_mapping
+            np.array([x, y, z]).transpose().astype(np.float32)
         )
 
         return field_points
@@ -1316,7 +1344,7 @@ class array_pattern:
             np.ones((self.pattern[:, :, 0].size)) * self.field_radius,
         )
         field_points = (
-            np.array([x, y, z]).transpose().astype(np.float32) + self.position_mapping
+            np.array([x, y, z]).transpose().astype(np.float32)
         )
 
         return field_points
