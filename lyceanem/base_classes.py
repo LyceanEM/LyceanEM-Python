@@ -383,7 +383,7 @@ class antenna_structures(object3d):
     def export_all_points(self):
 
         point_cloud = self.points.export_points()
-        point_cloud = point_cloud ##+ self.structures.export_vertices()
+        point_cloud.transform(self.pose) ##+ self.structures.export_vertices()
 
         return point_cloud
 
