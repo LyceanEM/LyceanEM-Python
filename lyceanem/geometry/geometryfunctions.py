@@ -173,10 +173,16 @@ def axes_from_normal(boresight_vector, boresight_along="x"):
 
     if boresight_along == "x":
         alignment_vector=np.array([[1.0,0,0]])
+        u_vector=np.array([[0.0,1.0,0]])
+        v_vector=np.array([[0,0,1.0]])
     elif boresight_along == "y":
         alignment_vector=np.array([[0.0,1.0,0]])
+        u_vector = np.array([[1.0, 0.0, 0]])
+        v_vector = np.array([[0, 0, 1.0]])
     elif boresight_along == "z":
         alignment_vector=np.array([[0.0,0,1.0]])
+        u_vector = np.array([[1.0, 0.0, 0]])
+        v_vector = np.array([[0, 1.0, 0]])
     rotation,_=R.align_vectors(replacement_vector.reshape(1,3),alignment_vector)
     # if boresight_along == "x":
     #     # then u should be based on y, and v on z

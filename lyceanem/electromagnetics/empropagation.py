@@ -3592,11 +3592,11 @@ def vector_mapping(local_E_vector, point_normal,rotation_matrix):
     uvn_axes[1,:] = np.cross(point_vector,uvn_axes[0,:]) / np.linalg.norm(
        np.cross(uvn_axes[0,:], point_vector)
     )
-    #print('uvn',uvn_axes)
+    print('uvn',uvn_axes)
 
 
     #convert uvn vector to local axes, and then rotate into global axes
-    global_vector=np.matmul(np.matmul(local_E_vector, uvn_axes), rotation_matrix)
+    global_vector=np.matmul(local_E_vector, uvn_axes)
     return global_vector
 
 

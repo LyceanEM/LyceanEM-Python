@@ -28,16 +28,48 @@ def antenna():
 def standard_antenna():
     return antenna()
 
-def test_excitation_function_x(standard_antenna):
+def test_excitation_function_x_u(standard_antenna):
     #test that an unrotated antenna with u (horizontal-y) polarisation gives horizontal-y polarisation
     desired_E_vector=np.array([1,0,0],dtype=np.complex64)
     final_vector = np.array([[0, 1, 0]], dtype=np.complex64)
     assert_allclose(standard_antenna.excitation_function(desired_e_vector=desired_E_vector),final_vector,atol=1e-12)
 
-def test_excitation_function_x_y(standard_antenna):
+def test_excitation_function_x_v(standard_antenna):
+    #test that an unrotated antenna with u (horizontal-y) polarisation gives horizontal-y polarisation
+    desired_E_vector=np.array([0,1,0],dtype=np.complex64)
+    final_vector = np.array([[0, 0, 1]], dtype=np.complex64)
+    assert_allclose(standard_antenna.excitation_function(desired_e_vector=desired_E_vector),final_vector,atol=1e-12)
+
+def test_excitation_function_x_n(standard_antenna):
+    #test that an unrotated antenna with u (horizontal-y) polarisation gives horizontal-y polarisation
+    desired_E_vector=np.array([0,0,1],dtype=np.complex64)
+    final_vector = np.array([[1, 0, 0]], dtype=np.complex64)
+    assert_allclose(standard_antenna.excitation_function(desired_e_vector=desired_E_vector),final_vector,atol=1e-12)
+
+def test_excitation_function_x_y_u(standard_antenna):
     #test that a rotated antenna (about z, rotating x to y direction with u (horizontal-y) polarisation gives horizontal-x polarisation
     desired_E_vector=np.array([1,0,0],dtype=np.complex64)
     final_vector=np.array([[-1,0,0]],dtype=np.complex64)
-    standard_antenna.pose[:3,:3]= R.from_euler('z',-90,degrees=True).as_matrix()
+    standard_antenna.pose[:3,:3]= R.from_euler('z',90,degrees=True).as_matrix()
     assert_allclose(standard_antenna.excitation_function(desired_e_vector=desired_E_vector),final_vector,atol=1e-12)
 
+def test_excitation_function_x_mz_u(standard_antenna):
+    #test that a rotated antenna (about y, rotating x to z direction with u (horizontal-y) polarisation gives horizontal-x polarisation
+    desired_E_vector=np.array([1,0,0],dtype=np.complex64)
+    final_vector=np.array([[0,1,0]],dtype=np.complex64)
+    standard_antenna.pose[:3,:3]= R.from_euler('y',90,degrees=True).as_matrix()
+    assert_allclose(standard_antenna.excitation_function(desired_e_vector=desired_E_vector),final_vector,atol=1e-12)
+
+def test_excitation_function_x_mz_v(standard_antenna):
+    #test that a rotated antenna (about y, rotating x to z direction with u (horizontal-y) polarisation gives horizontal-x polarisation
+    desired_E_vector=np.array([0,1,0],dtype=np.complex64)
+    final_vector=np.array([[1,0,0]],dtype=np.complex64)
+    standard_antenna.pose[:3,:3]= R.from_euler('y',90,degrees=True).as_matrix()
+    assert_allclose(standard_antenna.excitation_function(desired_e_vector=desired_E_vector),final_vector,atol=1e-12)
+
+def test_excitation_function_x_mz_cp(standard_antenna):
+    #test that a rotated antenna (about y, rotating x to z direction with uv circular polarisation (xy) polarisation gives horizontal-x polarisation
+    desired_E_vector=np.array([1*np.exp(-1j*0),1*np.exp(-1j*(np.pi/2)),0],dtype=np.complex64)
+    final_vector=np.array([[1*np.exp(-1j*(np.pi/2)),1*np.exp(-1j*0),0]],dtype=np.complex64)
+    standard_antenna.pose[:3,:3]= R.from_euler('y',90,degrees=True).as_matrix()
+    assert_allclose(standard_antenna.excitation_function(desired_e_vector=desired_E_vector),final_vector,atol=1e-12)
