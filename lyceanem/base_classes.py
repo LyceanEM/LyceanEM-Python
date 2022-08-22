@@ -398,15 +398,15 @@ class antenna_structures(object3d):
     def receive_transform(self,aperture_polarisation,excitation_function,beamforming_weights):
         #combine local aperture polarisation, received excitation function, and beamforming weights to calculate the received signal
         #convert global polarisation functions to local ones
-        transform_R=R.from_matrix(self.pose[:3,:3])
-        transform_global_to_local=transform_R.inv()
-        local_signal=np.matmul(excitation_function,transform_global_to_local.as_matrix())
-        local_received_signal=np.zeros((beamforming_weights.shape[0],3))
-        received_signal=np.zeros((beamforming_weights.shape[0],3))
-        local_received_signal[:,0]=np.dot(beamforming_weights,local_signal[:,:,0])
+        transform_R = R.from_matrix(self.pose[:3, :3])
+        transform_global_to_local = transform_R.inv()
+        local_signal = np.matmul(excitation_function, transform_global_to_local.as_matrix())
+        local_received_signal = np.zeros((excitation_function.shape[1], 3))
+        received_signal = np.zeros((excitation_function.shape[1], 3))
+        local_received_signal[:, 0] = np.dot(beamforming_weights, local_signal[:, :, 0])
         local_received_signal[:, 1] = np.dot(beamforming_weights, local_signal[:, :, 1])
         local_received_signal[:, 2] = np.dot(beamforming_weights, local_signal[:, :, 2])
-        received_signal=np.dot(local_received_signal,aperture_polarisation)
+        received_signal = np.dot(local_received_signal, aperture_polarisation.ravel())
 
         return received_signal
 
