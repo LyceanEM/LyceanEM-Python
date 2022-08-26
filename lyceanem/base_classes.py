@@ -345,10 +345,10 @@ class antenna_structures(object3d):
         self.antenna_xyz=GF.open3drotate(self.antenna_xyz,rotation_matrix, rotation_centre
                 )
         #translate to the rotation centre, then rotate around origin
-        temp_origin=self.antenna_origin-rotation_centre
+        temp_origin=self.pose[:3,3].ravel()-rotation_centre.ravel()
         temp_origin=np.matmul(rotation_matrix,temp_origin)
-        self.antenna_origin=temp_origin+rotation_centre
-        self.antenna_axes=np.matmul(rotation_matrix,self.antenna_axes)
+        self.pose[:3,3]=temp_origin.ravel()+rotation_centre.ravel()
+        self.pose[:3,:3]=np.matmul(rotation_matrix,self.pose[:3,:3])
         for item in range(len(self.structures.solids)):
             if (self.structures.solids[item] is not None):
                 self.structures.solids[item] = GF.open3drotate(
@@ -374,7 +374,7 @@ class antenna_structures(object3d):
         None
         """
         self.antenna_xyz.translate(vector)
-        self.origin=self.origin+vector
+        self.pose[:3,3]=self.pose[:3,3].ravel()+vector.ravel()
         for item in range(len(self.structures.solids)):
             self.structures.solids[item].translate(vector)
         for item in range(len(self.points.points)):
@@ -387,13 +387,13 @@ class antenna_structures(object3d):
 
         return point_cloud
 
-    def excitation_function(self,desired_e_vector,transmit_power=1):
+    def excitation_function(self,desired_e_vector,transmit_amplitude=1):
         #generate the local excitation function and then convert into the global coordinate frame.
         aperture_points=self.export_all_points()
         aperture_weights = EM.calculate_conformalVectors(
             desired_e_vector, np.asarray(aperture_points.normals), self.pose[:3,:3]
         )
-        return aperture_weights*transmit_power
+        return aperture_weights*transmit_amplitude
 
     def receive_transform(self,aperture_polarisation,excitation_function,beamforming_weights):
         #combine local aperture polarisation, received excitation function, and beamforming weights to calculate the received signal
@@ -887,81 +887,87 @@ class antenna_pattern(object3d):
                     title_text="Ez",
                 )
 
-    def transmute_pattern(self):
+    def transmute_pattern(self,desired_format="Etheta/Ephi"):
         """
         convert the pattern from Etheta/Ephi format to Ex, Ey,Ez format, or back again
         """
         if self.arbitary_pattern_format == "Etheta/Ephi":
-            oldformat = self.pattern.reshape(-1, self.pattern.shape[2])
-            old_shape = oldformat.shape
-            self.arbitary_pattern_format = "ExEyEz"
-            self.pattern = np.zeros(
-                (self.elevation_resolution, self.azimuth_resolution, 3),
-                dtype=np.complex64,
-            )
-            theta = GF.elevationtotheta(self.elev_mesh)
-            # convrsion part, move to transmute pattern
-            conversion_matrix1 = np.asarray(
-                [
-                    np.cos(np.deg2rad(theta.ravel()))
-                    * np.cos(np.deg2rad(self.az_mesh.ravel())),
-                    np.cos(np.deg2rad(theta.ravel()))
-                    * np.sin(np.deg2rad(self.az_mesh.ravel())),
-                    -np.sin(np.deg2rad(theta.ravel())),
-                ]
-            ).transpose()
-            conversion_matrix2 = np.asarray(
-                [
-                    -np.sin(np.deg2rad(self.az_mesh.ravel())),
-                    np.cos(np.deg2rad(self.az_mesh.ravel())),
-                    np.zeros(self.az_mesh.size),
-                ]
-            ).transpose()
-            decomposed_fields = (
-                oldformat[:, 0].reshape(-1, 1) * conversion_matrix1
-                + oldformat[:, 1].reshape(-1, 1) * conversion_matrix2
-            )
-            self.pattern[:, :, 0] = decomposed_fields[:, 0].reshape(
-                self.elevation_resolution, self.azimuth_resolution
-            )
-            self.pattern[:, :, 1] = decomposed_fields[:, 1].reshape(
-                self.elevation_resolution, self.azimuth_resolution
-            )
-            self.pattern[:, :, 2] = decomposed_fields[:, 2].reshape(
-                self.elevation_resolution, self.azimuth_resolution
-            )
+            if desired_format=="ExEyEz":
+                oldformat = self.pattern.reshape(-1, self.pattern.shape[2])
+                old_shape = oldformat.shape
+                self.arbitary_pattern_format = "ExEyEz"
+                self.pattern = np.zeros(
+                    (self.elevation_resolution, self.azimuth_resolution, 3),
+                    dtype=np.complex64,
+                )
+                theta = GF.elevationtotheta(self.elev_mesh)
+                # convrsion part, move to transmute pattern
+                conversion_matrix1 = np.asarray(
+                    [
+                        np.cos(np.deg2rad(theta.ravel()))
+                        * np.cos(np.deg2rad(self.az_mesh.ravel())),
+                        np.cos(np.deg2rad(theta.ravel()))
+                        * np.sin(np.deg2rad(self.az_mesh.ravel())),
+                        -np.sin(np.deg2rad(theta.ravel())),
+                    ]
+                ).transpose()
+                conversion_matrix2 = np.asarray(
+                    [
+                        -np.sin(np.deg2rad(self.az_mesh.ravel())),
+                        np.cos(np.deg2rad(self.az_mesh.ravel())),
+                        np.zeros(self.az_mesh.size),
+                    ]
+                ).transpose()
+                decomposed_fields = (
+                    oldformat[:, 0].reshape(-1, 1) * conversion_matrix1
+                    + oldformat[:, 1].reshape(-1, 1) * conversion_matrix2
+                )
+                self.pattern[:, :, 0] = decomposed_fields[:, 0].reshape(
+                    self.elevation_resolution, self.azimuth_resolution
+                )
+                self.pattern[:, :, 1] = decomposed_fields[:, 1].reshape(
+                    self.elevation_resolution, self.azimuth_resolution
+                )
+                self.pattern[:, :, 2] = decomposed_fields[:, 2].reshape(
+                    self.elevation_resolution, self.azimuth_resolution
+                )
+            elif desired_format == "Circular":
+                #recalculate pattern using Right Hand Circular and Left Hand Circular Polarisation
+                self.arbitary_pattern_format = desired_format
+
         else:
-            oldformat = self.pattern.reshape(-1, self.pattern.shape[2])
-            old_shape = oldformat.shape
-            self.arbitary_pattern_format = "Etheta/Ephi"
-            self.pattern = np.zeros(
-                (self.elevation_resolution, self.azimuth_resolution, 2),
-                dtype=np.complex64,
-            )
-            theta = GF.elevationtotheta(self.elev_mesh)
-            costhetacosphi = (
-                np.cos(np.deg2rad(self.az_mesh.ravel()))
-                * np.cos(np.deg2rad(theta.ravel()))
-            ).astype(np.complex64)
-            sinphicostheta = (
-                np.sin(np.deg2rad(self.az_mesh.ravel()))
-                * np.cos(np.deg2rad(theta.ravel()))
-            ).astype(np.complex64)
-            sintheta = (np.sin(np.deg2rad(theta.ravel()))).astype(np.complex64)
-            sinphi = (np.sin(np.deg2rad(self.az_mesh.ravel()))).astype(np.complex64)
-            cosphi = (np.cos(np.deg2rad(self.az_mesh.ravel()))).astype(np.complex64)
-            new_etheta = (
-                oldformat[:, 0] * costhetacosphi
-                + oldformat[:, 1] * sinphicostheta
-                - oldformat[:, 2] * sintheta
-            )
-            new_ephi = -oldformat[:, 0] * sinphi + oldformat[:, 1] * cosphi
-            self.pattern[:, :, 0] = new_etheta.reshape(
-                self.elevation_resolution, self.azimuth_resolution
-            )
-            self.pattern[:, :, 1] = new_ephi.reshape(
-                self.elevation_resolution, self.azimuth_resolution
-            )
+            if desired_format == "Etheta/Ephi":
+                oldformat = self.pattern.reshape(-1, self.pattern.shape[2])
+                old_shape = oldformat.shape
+                self.arbitary_pattern_format = "Etheta/Ephi"
+                self.pattern = np.zeros(
+                    (self.elevation_resolution, self.azimuth_resolution, 2),
+                    dtype=np.complex64,
+                )
+                theta = GF.elevationtotheta(self.elev_mesh)
+                costhetacosphi = (
+                    np.cos(np.deg2rad(self.az_mesh.ravel()))
+                    * np.cos(np.deg2rad(theta.ravel()))
+                ).astype(np.complex64)
+                sinphicostheta = (
+                    np.sin(np.deg2rad(self.az_mesh.ravel()))
+                    * np.cos(np.deg2rad(theta.ravel()))
+                ).astype(np.complex64)
+                sintheta = (np.sin(np.deg2rad(theta.ravel()))).astype(np.complex64)
+                sinphi = (np.sin(np.deg2rad(self.az_mesh.ravel()))).astype(np.complex64)
+                cosphi = (np.cos(np.deg2rad(self.az_mesh.ravel()))).astype(np.complex64)
+                new_etheta = (
+                    oldformat[:, 0] * costhetacosphi
+                    + oldformat[:, 1] * sinphicostheta
+                    - oldformat[:, 2] * sintheta
+                )
+                new_ephi = -oldformat[:, 0] * sinphi + oldformat[:, 1] * cosphi
+                self.pattern[:, :, 0] = new_etheta.reshape(
+                    self.elevation_resolution, self.azimuth_resolution
+                )
+                self.pattern[:, :, 1] = new_ephi.reshape(
+                    self.elevation_resolution, self.azimuth_resolution
+                )
 
     def cartesian_points(self):
         """

@@ -535,10 +535,10 @@ def calculate_scattering(
         )
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
         unified_weights[0:num_sources, :] = (
-            conformal_E_vectors / num_sources
+            conformal_E_vectors #/ num_sources
         )  # set total amplitude to 1 for the aperture
         unified_weights[num_sources : num_sources + num_sinks, :] = (
-            1 / num_sinks
+            1 #/ num_sinks
         )  # set total amplitude to 1 for the aperture
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
         # set all sources as magnetic current sources, and permittivity and permeability as free space
@@ -646,14 +646,14 @@ def calculate_scattering(
         )
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
         unified_weights[0:num_sources, :] = (
-            conformal_E_vectors / num_sources
+            conformal_E_vectors #/ num_sources
         )  # set total amplitude to 1 for the aperture
         unified_weights[num_sources : num_sources + num_sinks, :] = (
-            1 / num_sinks
+            1 #/ num_sinks
         )  # set total amplitude to 1 for the aperture
         unified_weights[
             num_sources + num_sinks :, :
-        ] = 1.0  # / len(np.asarray(scatter_points.points))  # set total amplitude to 1 for the aperture
+        ] = 1 # / len(np.asarray(scatter_points.points))  # set total amplitude to 1 for the aperture
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
         # set all sources as magnetic current sources, and permittivity and permeability as free space
         point_informationv2[:]["Electric"] = True
@@ -827,17 +827,17 @@ def calculate_scattering(
                 point_informationv2[0:num_sources]["ey"] = 0.0
                 point_informationv2[0:num_sources]["ez"] = 0.0
                 point_informationv2[element]["ex"] = (
-                    conformal_E_vectors[element, 0] / num_sources
+                    conformal_E_vectors[element, 0] #/ num_sources
                 )
                 point_informationv2[element]["ey"] = (
-                    conformal_E_vectors[element, 1] / num_sources
+                    conformal_E_vectors[element, 1] #/ num_sources
                 )
                 point_informationv2[element]["ez"] = (
-                    conformal_E_vectors[element, 2] / num_sources
+                    conformal_E_vectors[element, 2] #/ num_sources
                 )
                 unified_weights[0:num_sources, :] = 0.0
                 unified_weights[element, :] = (
-                    conformal_E_vectors[element, :] / num_sources
+                    conformal_E_vectors[element, :] #/ num_sources
                 )
                 scatter_map = EM.EMGPUFreqDomain(
                     num_sources, num_sinks, full_index, point_informationv2, wavelength
