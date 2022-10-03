@@ -568,7 +568,7 @@ def meshed_pipe(
     return structure, scatter_cloud
 
 
-def meshed_cylinder(radius1, radius2, height, mesh_length, mesh="centres"):
+def meshed_cylinder(radius1, radius2, height, mesh_length, mesh="centres",segment_nums=0):
     """
     creates a cylinder
     Parameters
@@ -591,15 +591,16 @@ def meshed_cylinder(radius1, radius2, height, mesh_length, mesh="centres"):
     mesh : open3d point cloud of the mesh of points with normal vectors
 
     """
+    if segment_nums<3:
+        segment_nums = np.max(
+            [
+                3,
+                np.ceil((2 * np.pi * np.max([radius1, radius2])) / mesh_length).astype(
+                    "int"
+                ),
+            ]
+        )
 
-    segment_nums = np.max(
-        [
-            3,
-            np.ceil((2 * np.pi * np.max([radius1, radius2])) / mesh_length).astype(
-                "int"
-            ),
-        ]
-    )
     centre = sd.cylinder(r1=radius1, r2=radius2, h=height, segments=segment_nums)
     if mesh == "centres":
         angles = np.linspace(0, np.pi * 2, segment_nums + 1)[0:-1] + (np.pi) / (
@@ -869,12 +870,14 @@ def meshed_cylinder(radius1, radius2, height, mesh_length, mesh="centres"):
     # run openscad and export to stl
     run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
 
-    structure = o3d.io.read_triangle_mesh("temp.stl")
-    structure.compute_vertex_normals()
+    #structure = o3d.io.read_triangle_mesh("temp.stl")
+    temp_mesh=o3d.io.read_triangle_mesh("temp.stl")
+    temp_mesh.compute_vertex_normals()
     scatter_cloud = RF.points2pointcloud(np.copy(test_faces))
     scatter_cloud.normals = o3d.utility.Vector3dVector(np.copy(face_normals))
-
-    return structure, scatter_cloud
+    structure = structures([temp_mesh])
+    total_points = points([scatter_cloud])
+    return structure, total_points
 
 
 def meshed_trapazoid(radius1, radius2, height, mesh_length, mesh="centres"):

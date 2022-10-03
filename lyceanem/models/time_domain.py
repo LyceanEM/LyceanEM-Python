@@ -118,10 +118,10 @@ def calculate_scattering(
         )
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
         unified_weights[0:num_sources, :] = (
-            conformal_E_vectors / num_sources
+            conformal_E_vectors #/ num_sources
         )  # set total amplitude to 1 for the aperture
         unified_weights[num_sources : num_sources + num_sinks, :] = (
-            1 / num_sinks
+            1 #/ num_sinks
         )  # set total amplitude to 1 for the aperture
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
         # set all sources as magnetic current sources, and permittivity and permeability as free space
@@ -201,14 +201,14 @@ def calculate_scattering(
         )
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
         unified_weights[0:num_sources, :] = (
-            conformal_E_vectors / num_sources
+            conformal_E_vectors #/ num_sources
         )  # set total amplitude to 1 for the aperture
         unified_weights[num_sources : num_sources + num_sinks, :] = (
-            1 / num_sinks
+            1 #/ num_sinks
         )  # set total amplitude to 1 for the aperture
-        unified_weights[num_sources + num_sinks :, :] = 1 / len(
-            np.asarray(scatter_points.points)
-        )  # set total amplitude to 1 for the aperture
+        unified_weights[num_sources + num_sinks :, :] = 1 #/ len(
+          #  np.asarray(scatter_points.points)
+        #)  # set total amplitude to 1 for the aperture
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
         # set all sources as magnetic current sources, and permittivity and permeability as free space
         point_informationv2[:]["Electric"] = True
@@ -307,7 +307,7 @@ def calculate_scattering(
                     desired_E_axis[e_inc, :],
                     np.asarray(aperture_coords.normals).astype(np.float32),
                 )
-                unified_weights[0:num_sources, :] = conformal_E_vectors / num_sources
+                unified_weights[0:num_sources, :] = conformal_E_vectors #/ num_sources
                 point_informationv2[:]["ex"] = unified_weights[:, 0]
                 point_informationv2[:]["ey"] = unified_weights[:, 1]
                 point_informationv2[:]["ez"] = unified_weights[:, 2]

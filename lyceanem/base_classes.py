@@ -48,15 +48,20 @@ class points(object3d):
     This is the default class for passing structures to the different models.
     """
 
-    def __init__(self, points):
+    def __init__(self, points=None):
         super().__init__()
         # solids is a list of open3D :class:`open3d.geometry.TriangleMesh` structures
-        self.points = []
-        for item in points:
-            self.points.append(item)
-        # self.materials = []
-        # for item in material_characteristics:
-        #    self.materials.append(item)
+        if points==None:
+            #no points provided at creation,
+            print("Empty Object Created, please add points")
+            self.points=[]
+        else:
+            self.points = []
+            for item in points:
+                self.points.append(item)
+            # self.materials = []
+            # for item in material_characteristics:
+            #    self.materials.append(item)
 
     def remove_points(self, deletion_index):
         """
@@ -91,6 +96,25 @@ class points(object3d):
         """
         self.points.append(new_points)
         # self.materials.append(new_materials)
+    def create_points(self, points,normals):
+        """
+        create points within the class based upon the provided numpy arrays of floats in local coordinates
+
+        Parameters
+        ----------
+        points : numpy 2d array
+            the coordinates of all the poitns
+        normals : numpy 2d array
+            the normal vectors of each point
+
+        Returns
+        -------
+        None
+        """
+        new_point_cloud=o3d.geometry.PointCloud()
+        new_point_cloud.points=o3d.utility.Vector3dVector(points.reshape(-1,3))
+        new_point_cloud.normals = o3d.utility.Vector3dVector(normals.reshape(-1, 3))
+        self.add_points(new_point_cloud)
 
     def rotate_points(
         self, rotation_matrix, rotation_centre=np.zeros((3, 1), dtype=np.float32)
@@ -159,15 +183,20 @@ class structures(object3d):
     This is the default class for passing structures to the different models.
     """
 
-    def __init__(self, solids):
+    def __init__(self, solids=None):
         super().__init__()
         # solids is a list of open3D :class:`open3d.geometry.TriangleMesh` structures
-        self.solids = []
-        for item in range(len(solids)):
-            self.solids.append(solids[item])
-        # self.materials = []
-        # for item in material_characteristics:
-        #    self.materials.append(item)
+        if solids == None:
+            # no points provided at creation,
+            print("Empty Object Created, please add solids")
+            self.solids = []
+        else:
+            self.solids = []
+            for item in range(len(solids)):
+                self.solids.append(solids[item])
+            # self.materials = []
+            # for item in material_characteristics:
+            #    self.materials.append(item)
 
     def remove_structure(self, deletion_index):
         """
@@ -280,6 +309,24 @@ class structures(object3d):
         point_cloud.transform(self.pose)
         return point_cloud
 
+    def import_cad(self,posixpath,scale=1.0,center=np.zeros((3,1))):
+        """
+        Import trianglemesh from cad format, with scalling factor is requried. Open3d supports .ply, .stl, .obj, .off, and .gltf/.glb files
+        Parameters
+        ----------
+        posixpath
+            file address to cad file to import
+        scale
+            scalling factor to account for units which are not SI.
+
+        Returns
+        -------
+
+        """
+        new_solid=o3d.io.read_triangle_mesh(posixpath.as_posix())
+        new_solid.compute_triangle_normals()
+        new_solid.scale(scale,center=center)
+        self.add_structure(new_solid)
     def triangles_base_raycaster(self):
         """
         generates the triangles for all the :class:`open3d.geometry.TriangleMesh` objects in the structure, and outputs them as a continuous array of
@@ -373,7 +420,7 @@ class antenna_structures(object3d):
         --------
         None
         """
-        self.antenna_xyz.translate(vector)
+
         self.pose[:3,3]=self.pose[:3,3].ravel()+vector.ravel()
         for item in range(len(self.structures.solids)):
             self.structures.solids[item].translate(vector)
@@ -465,33 +512,41 @@ class antenna_structures(object3d):
         directivity = (4 * np.pi * projected_area) / (wavelength ** 2)
         return directivity
 
-    def visualise_antenna(self,extras=[]):
+    def visualise_antenna(self,extras=[],origin=True):
         """
         This function uses open3d to display the antenna structure in the local coordinate frame
         """
         total_points = self.export_all_points()
         # calculate bounding box
-        bounding_box = total_points.get_oriented_bounding_box()
-        max_points = bounding_box.get_max_bound()
-        min_points = bounding_box.get_min_bound()
-        center = bounding_box.get_center()
-        max_dist = np.sqrt(
-            (max_points[0] - center[0]) ** 2
-            + (max_points[1] - center[1]) ** 2
-            + (max_points[2] - center[2]) ** 2
-        )
-        min_dist = np.sqrt(
-            (center[0] - min_points[0]) ** 2
-            + (center[1] - min_points[1]) ** 2
-            + (center[2] - min_points[2]) ** 2
-        )
+        if np.asarray(total_points.points).shape[0]<4:
+            max_dist=2.0
+            min_dist=0.0
+        else:
+            bounding_box = total_points.get_oriented_bounding_box()
+            max_points = bounding_box.get_max_bound()
+            min_points = bounding_box.get_min_bound()
+            center = bounding_box.get_center()
+            max_dist = np.sqrt(
+                (max_points[0] - center[0]) ** 2
+                + (max_points[1] - center[1]) ** 2
+                + (max_points[2] - center[2]) ** 2
+            )
+            min_dist = np.sqrt(
+                (center[0] - min_points[0]) ** 2
+                + (center[1] - min_points[1]) ** 2
+                + (center[2] - min_points[2]) ** 2
+            )
         a = np.mean([max_dist, min_dist])
         #scale antenna xyz to the structures
         self.antenna_xyz=o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5*a, origin=[0, 0, 0])
-
-        o3d.visualization.draw_geometries(
-            self.points.points + self.structures.solids + [self.antenna_xyz] + extras
-        )
+        if origin:
+            o3d.visualization.draw_geometries(
+                self.points.points + self.structures.solids + [self.antenna_xyz] + extras
+            )
+        else:
+            o3d.visualization.draw_geometries(
+                self.points.points + self.structures.solids + extras
+            )
 
     # def generate_farfield(self,excitation_vector,wavelength,elements=False,azimuth_resolution=37,elevation_resolution=37):
     #
