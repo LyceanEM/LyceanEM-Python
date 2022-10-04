@@ -236,9 +236,9 @@ The second source polarisation is based upon the v-vector of the source point.
 
 .. GENERATED FROM PYTHON SOURCE LINES 107-108
 
-The first source polarisation is based upon the n-vector of the source point. Aligned with the source point normal.
+The third source polarisation is based upon the n-vector of the source point. Aligned with the source point normal.
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-183
+.. GENERATED FROM PYTHON SOURCE LINES 108-130
 
 .. code-block:: default
 
@@ -263,6 +263,40 @@ The first source polarisation is based upon the n-vector of the source point. Al
     n_pattern.pattern[:, :, 0] = Etheta
     n_pattern.pattern[:, :, 1] = Ephi
     n_pattern.display_pattern(desired_pattern='Power')
+
+
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_06_farfield_polarisation_003.png
+   :alt: Power Pattern
+   :srcset: /auto_examples/images/sphx_glr_06_farfield_polarisation_003.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Structure does not exist
+    no structures
+    /home/timtitan/anaconda3/envs/EMDevelopment/lib/python3.8/site-packages/numba/cuda/compiler.py:726: NumbaPerformanceWarning: Grid size (6) < 2 * SM count (28) will likely result in GPU under utilization due to low occupancy.
+      warn(NumbaPerformanceWarning(msg))
+    /home/timtitan/anaconda3/envs/EMDevelopment/lib/python3.8/site-packages/numba/cuda/cudadrv/devicearray.py:885: NumbaPerformanceWarning: Host array used in CUDA kernel will incur copy overhead to/from device.
+      warn(NumbaPerformanceWarning(msg))
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 131-132
+
+The point source can then be rotated, by providing a rotation matrix, and the u,v,n directions are moved with it in a consistent way.
+
+.. GENERATED FROM PYTHON SOURCE LINES 132-186
+
+.. code-block:: default
+
 
     point_antenna.rotate_antenna(o3d.geometry.get_rotation_matrix_from_axis_angle(np.radians(np.asarray([90.0,0.0,0.0]))))
 
@@ -325,13 +359,6 @@ The first source polarisation is based upon the n-vector of the source point. Al
 
     *
 
-      .. image-sg:: /auto_examples/images/sphx_glr_06_farfield_polarisation_003.png
-         :alt: Power Pattern
-         :srcset: /auto_examples/images/sphx_glr_06_farfield_polarisation_003.png
-         :class: sphx-glr-multi-img
-
-    *
-
       .. image-sg:: /auto_examples/images/sphx_glr_06_farfield_polarisation_004.png
          :alt: Power Pattern
          :srcset: /auto_examples/images/sphx_glr_06_farfield_polarisation_004.png
@@ -364,8 +391,6 @@ The first source polarisation is based upon the n-vector of the source point. Al
       warn(NumbaPerformanceWarning(msg))
     /home/timtitan/anaconda3/envs/EMDevelopment/lib/python3.8/site-packages/numba/cuda/cudadrv/devicearray.py:885: NumbaPerformanceWarning: Host array used in CUDA kernel will incur copy overhead to/from device.
       warn(NumbaPerformanceWarning(msg))
-    Structure does not exist
-    no structures
     /home/timtitan/Documents/10-19-Research-Projects/14-Electromagnetics-Modelling/14.04-Python-Development/LyceanEM/lyceanem/electromagnetics/beamforming.py:1083: RuntimeWarning: divide by zero encountered in log10
       logdata = 20 * np.log10(data)
     Structure does not exist
@@ -379,7 +404,7 @@ The first source polarisation is based upon the n-vector of the source point. Al
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  34.005 seconds)
+   **Total running time of the script:** ( 0 minutes  28.870 seconds)
 
 
 .. _sphx_glr_download_auto_examples_06_farfield_polarisation.py:

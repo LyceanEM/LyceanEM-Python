@@ -104,7 +104,7 @@ v_pattern.pattern[:, :, 1] = Ephi
 v_pattern.display_pattern(desired_pattern='Power')
 
 # %%
-# The first source polarisation is based upon the n-vector of the source point. Aligned with the source point normal.
+# The third source polarisation is based upon the n-vector of the source point. Aligned with the source point normal.
 
 desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
 desired_E_axis[0, 2] = 1.0
@@ -126,6 +126,9 @@ n_pattern = antenna_pattern(
 n_pattern.pattern[:, :, 0] = Etheta
 n_pattern.pattern[:, :, 1] = Ephi
 n_pattern.display_pattern(desired_pattern='Power')
+
+# %%
+# The point source can then be rotated, by providing a rotation matrix, and the u,v,n directions are moved with it in a consistent way.
 
 point_antenna.rotate_antenna(o3d.geometry.get_rotation_matrix_from_axis_angle(np.radians(np.asarray([90.0,0.0,0.0]))))
 
