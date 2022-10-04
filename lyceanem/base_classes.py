@@ -461,7 +461,10 @@ class antenna_structures(object3d):
 
         objects = copy.deepcopy(self.structures.solids)
         for item in range(len(objects)):
-            objects[item]=objects[item].transform(self.pose)
+            if objects[item] is None:
+                print("Structure does not exist")
+            else:
+                objects[item]=objects[item].transform(self.pose)
 
         return objects
     def farfield_distance(self, freq):
