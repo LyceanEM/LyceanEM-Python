@@ -7,7 +7,7 @@ from ..base_types import scattering_t
 from ..electromagnetics import empropagation as EM
 from ..geometry import targets as TL
 from ..raycasting import rayfunctions as RF
-
+from ..geometry import geometryfunctions as GF
 
 def calculate_scattering(
     aperture_coords,
@@ -75,7 +75,7 @@ def calculate_scattering(
 
     num_sources = len(np.asarray(aperture_coords.points))
     num_sinks = len(np.asarray(sink_coords.points))
-    environment_triangles = antenna_solid.triangles_base_raycaster()
+    environment_triangles=GF.mesh_conversion(antenna_solid)
 
     if not multiE:
         if project_vectors:

@@ -343,7 +343,7 @@ class structures(object3d):
         """
         triangles = np.empty((0), dtype=base_types.triangle_t)
         for item in range(len(self.solids)):
-            temp_object = copy.deepcopy(self.solids[item])[0]
+            temp_object = copy.deepcopy(self.solids[item])
             temp_object.transform(self.pose)
             triangles = np.append(triangles, RF.convertTriangles(temp_object))
 

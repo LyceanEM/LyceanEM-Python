@@ -3,7 +3,7 @@ import copy
 import open3d as o3d
 
 from ..base_types import scattering_t, triangle_t
-from ..base_classes import antenna_structures
+from ..base_classes import structures
 from ..utility.math_functions import calc_dv_norm
 from ..electromagnetics import empropagation as EM
 from ..geometry import geometryfunctions as GF
@@ -44,9 +44,9 @@ def aperture_projection(
         a point cloud colored according to the projected area, normalised to the total projected area of the aperture.
     """
     if environment is None:
-        blocking_triangles = RF.convertTriangles(aperture)
+        blocking_triangles=GF.mesh_conversion(aperture)
     else:
-        blocking_triangles = environment.triangles_base_raycaster()
+        blocking_triangles=GF.mesh_conversion(environment)
 
     directivity_envelope = np.zeros(
         (elev_range.shape[0], az_range.shape[0]), dtype=np.float32
@@ -144,11 +144,7 @@ def calculate_farfield(
     sink_cloud.normals = o3d.utility.Vector3dVector(sink_normals)
     num_sources = len(np.asarray(aperture_coords.points))
     num_sinks = len(np.asarray(sink_cloud.points))
-    if isinstance(antenna_solid,antenna_structures):
-        environment_triangles = antenna_solid.triangles_base_raycaster()
-    else:
-        print("no structures")
-        environment_triangles = np.empty((0), dtype=triangle_t)
+    environment_triangles=GF.mesh_conversion(antenna_solid)
 
     if project_vectors:
         conformal_E_vectors = EM.calculate_conformalVectors(
@@ -499,11 +495,7 @@ def calculate_scattering(
     num_sources = len(np.asarray(aperture_coords.points))
     num_sinks = len(np.asarray(sink_coords.points))
 
-    if antenna_solid.solids[0] is None:
-        print("no structures")
-        environment_triangles=np.empty((0), dtype=triangle_t)
-    else:
-        environment_triangles = antenna_solid.triangles_base_raycaster()
+    environment_triangles=GF.mesh_conversion(antenna_solid)
 
     if not multiE:
         if project_vectors:

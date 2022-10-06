@@ -1,8 +1,12 @@
+import copy
+
 import numpy as np
 import open3d as o3d
 from numba import vectorize
 from packaging import version
 from scipy.spatial.transform import Rotation as R
+from .. import base_types as base_types
+from .. import base_classes as base_classes
 
 
 def tri_areas(solid):
@@ -57,7 +61,11 @@ def decimate_mesh(solid, mesh_sep):
     area_limit = mesh_sep ** 2
     areas = tri_areas(solid)
     large_tri_index = np.where(areas > area_limit)[0]
+    while np.max(areas)>area_limit:
+        solid=solid.subdivide_midpoint()
+        areas = tri_areas(solid)
 
+    new_solid=copy.deepcopy(solid)
     return new_solid
 
 
@@ -241,3 +249,26 @@ def axes_from_normal(boresight_vector, boresight_along="x"):
     #         ) / np.linalg.norm(np.cross(rotation_matrix[1, :], rotation_matrix[2, :]))
 
     return rotation.as_matrix()
+
+def mesh_conversion(object):
+    """
+    Convert the provide file object into triangle_t format
+
+    Parameters
+    ----------
+    object : solid object to be converted into triangle_t format, could be open3d trianglemesh, solid, or antenna structure
+
+    Returns
+    -------
+    triangles : numpy array of type triangle_t
+    """
+    if isinstance(object,base_classes.structures):
+        triangles = object.triangles_base_raycaster()
+    elif isinstance(object,base_classes.antenna_structures):
+        exported_structure=base_classes.structures(solids=object.export_all_structures())
+        triangles=exported_structure.triangles_base_raycaster()
+    else:
+        print("no structures")
+        triangles = np.empty((0), dtype=base_types.triangle_t)
+
+    return triangles

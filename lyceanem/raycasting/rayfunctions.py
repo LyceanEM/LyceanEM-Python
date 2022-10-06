@@ -2768,6 +2768,7 @@ def workchunkingv2(
     """
     # temp function to chunk the number of rays to prevent creation of ray arrays to large for memory
     # print('WorkChunking Triangles ',len(environment))
+    RAYS_CAST=0
     raycasting_timestamp = timer()
     ray_estimate = (
         sources.shape[0] * (sinks.shape[0] + scattering_points.shape[0])
@@ -2813,6 +2814,7 @@ def workchunkingv2(
                     copy.deepcopy(environment),
                 )
                 full_index = np.append(full_index, temp_index, axis=0)
+                RAYS_CAST += first_wave_Rays
         else:
             _, temp_index, first_wave_Rays = launchRaycaster1Dv3(
                 sources,
