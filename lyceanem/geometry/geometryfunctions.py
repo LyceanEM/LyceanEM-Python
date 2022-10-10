@@ -7,6 +7,7 @@ from packaging import version
 from scipy.spatial.transform import Rotation as R
 from .. import base_types as base_types
 from .. import base_classes as base_classes
+from ..raycasting import rayfunctions as RF
 
 
 def tri_areas(solid):
@@ -267,8 +268,11 @@ def mesh_conversion(object):
     elif isinstance(object,base_classes.antenna_structures):
         exported_structure=base_classes.structures(solids=object.export_all_structures())
         triangles=exported_structure.triangles_base_raycaster()
+    elif isinstance(object,type(o3d.geometry.TriangleMesh())):
+        triangles=RF.convertTriangles(object)
     else:
         print("no structures")
+        print(type(object))
         triangles = np.empty((0), dtype=base_types.triangle_t)
 
     return triangles

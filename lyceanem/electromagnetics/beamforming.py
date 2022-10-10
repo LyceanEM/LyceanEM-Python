@@ -434,16 +434,16 @@ def MaximumDirectivityMap(
     return directivity_map
 
 
-@njit(parallel=False, cache=True, nogil=True)
+#@njit(parallel=False, cache=True, nogil=True)
 def MaximumDirectivityMapDiscrete(
     Etheta,
     Ephi,
     source_coords,
     wavelength,
-    az_res,
-    elev_res,
     az_range=np.linspace(-180.0, 180.0, 19),
     elev_range=np.linspace(-180.0, 180.0, 19),
+    az_index=None,
+    elev_index=None,
     forming="Total",
     total_solid_angle=(4 * np.pi),
     phase_resolution=np.asarray([24]),
@@ -490,6 +490,16 @@ def MaximumDirectivityMapDiscrete(
         that command angle.
 
     """
+    if elev_index == None:
+        # if no elev index is provided then generate for all possible values (assumes every elevation point is of interest)
+        elev_index = np.linspace(0, len(elev_range) - 1, len(elev_range)).astype(int)
+
+    if az_index == None:
+        # if no az index is provided then generate for all possible values (assumes every azimuth point is of interest)
+        az_index = np.linspace(0, len(az_range) - 1, len(az_range)).astype(int)
+
+    az_res = len(az_index)
+    elev_res = len(elev_index)
     source_points = np.asarray(source_coords.points)
     directivity_map = np.zeros(
         (elev_res, az_res, 3, phase_resolution.shape[0]), dtype=np.float32

@@ -14,7 +14,7 @@ from scipy.spatial.transform import Rotation as R
 from ..geometry import geometryfunctions as GF
 from ..raycasting import rayfunctions as RF
 from ..base_classes import antenna_structures, structures, points
-
+from ..utility import math_functions as math_functions
 EPSILON = 1e-6  # how close to zero do we consider zero?
 
 
@@ -1288,7 +1288,7 @@ def OTAEllipsoid(
     origins = np.zeros((10, 3), dtype=np.float32)
     directions = np.zeros((10, 3), dtype=np.float32)
     norm_length = np.zeros((10, 1), dtype=np.float32)
-    directions, norm_length = RF.calc_dv_norm(
+    directions, norm_length = math_functions.calc_dv_norm(
         full_coords, origins, directions, norm_length
     )
     angle_values = np.arctan2(directions[:, 1], directions[:, 0])
@@ -2432,7 +2432,7 @@ def gridedParabola(diameter, focal_length, thickness, grid_resolution, sides="al
         target = (normal_gradiant_vector * -x_space).transpose()
         base_directions = np.zeros((x_space.shape[0], 3), dtype=np.float32)
         norm_length = np.zeros((x_space.shape[0], 1), dtype=np.float32)
-        base_directions, norm_length = RF.calc_dv_norm(
+        base_directions, norm_length = math_functions.calc_dv_norm(
             source, target, base_directions, norm_length
         )
         base_directions = np.append(base_directions, np.array([[1, 0, 0]]), axis=0)
@@ -2521,7 +2521,7 @@ def gridedParabola(diameter, focal_length, thickness, grid_resolution, sides="al
         target = (normal_gradiant_vector * -x_space).transpose()
         base_directions = np.zeros((x_space.shape[0], 3), dtype=np.float32)
         norm_length = np.zeros((x_space.shape[0], 1), dtype=np.float32)
-        base_directions, norm_length = RF.calc_dv_norm(
+        base_directions, norm_length = math_functions.calc_dv_norm(
             source, target, base_directions, norm_length
         )
         source_coords = np.empty(((1, 3)), dtype=np.float32)

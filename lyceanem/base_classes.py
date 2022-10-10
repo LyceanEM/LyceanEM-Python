@@ -156,7 +156,7 @@ class points(object3d):
         for item in range(len(self.points)):
             self.points[item].translate(vector)
 
-    def export_points(self):
+    def export_points(self,point_index=None):
         """
         combines all the points in the collection as a combined point cloud for modelling
 
@@ -164,11 +164,20 @@ class points(object3d):
         -------
         combined points
         """
-        combined_points = o3d.geometry.PointCloud()
-        for item in range(len(self.points)):
-            combined_points = combined_points + self.points[item]
+        if point_index==None:
+            combined_points = o3d.geometry.PointCloud()
+            for item in range(len(self.points)):
+                combined_points = combined_points + self.points[item]
 
-        combined_points.transform(self.pose)
+            combined_points.transform(self.pose)
+
+        else:
+            combined_points = o3d.geometry.PointCloud()
+            for item in point_index:
+                combined_points = combined_points + self.points[item]
+
+            combined_points.transform(self.pose)
+
         return combined_points
 
 
@@ -427,16 +436,22 @@ class antenna_structures(object3d):
         for item in range(len(self.points.points)):
             self.points.points[item].translate(vector)
 
-    def export_all_points(self):
-
-        point_cloud = self.points.export_points()
-        point_cloud.transform(self.pose) ##+ self.structures.export_vertices()
+    def export_all_points(self,point_index=None):
+        if point_index==None:
+            point_cloud = self.points.export_points()
+            point_cloud.transform(self.pose) ##+ self.structures.export_vertices()
+        else:
+            point_cloud=self.points.export_points(point_index=point_index)
+            point_cloud.transform(self.pose)
 
         return point_cloud
 
-    def excitation_function(self,desired_e_vector,transmit_amplitude=1):
+    def excitation_function(self,desired_e_vector,transmit_amplitude=1,point_index=None):
         #generate the local excitation function and then convert into the global coordinate frame.
-        aperture_points=self.export_all_points()
+        if point_index==None:
+            aperture_points=self.export_all_points()
+        else:
+            aperture_points = self.export_all_points(point_index=point_index)
         aperture_weights = EM.calculate_conformalVectors(
             desired_e_vector, np.asarray(aperture_points.normals), self.pose[:3,:3]
         )
@@ -827,7 +842,7 @@ class antenna_pattern(object3d):
         weights=np.concatenate(weightsx,weightsy,weightsz)
         return points, weights
     def display_pattern(
-        self, plottype="Polar", desired_pattern="both", pattern_min=-40
+        self, plottype="Polar", desired_pattern="both", pattern_min=-40, plot_max=0
     ):
         """
         Displays the Antenna Pattern using :func:`lyceanem.electromagnetics.beamforming.PatternPlot`
@@ -855,6 +870,7 @@ class antenna_pattern(object3d):
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Etheta",
+                    plot_max=plot_max,
                 )
                 BM.PatternPlot(
                     self.pattern[:, :, 1],
@@ -863,6 +879,7 @@ class antenna_pattern(object3d):
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Ephi",
+                    plot_max=plot_max,
                 )
             elif desired_pattern == "Etheta":
                 BM.PatternPlot(
@@ -872,6 +889,7 @@ class antenna_pattern(object3d):
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Etheta",
+                    plot_max=plot_max,
                 )
             elif desired_pattern == "Ephi":
                 BM.PatternPlot(
@@ -881,6 +899,7 @@ class antenna_pattern(object3d):
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Ephi",
+                    plot_max=plot_max,
                 )
             elif desired_pattern =="Power":
                 BM.PatternPlot(
@@ -890,6 +909,7 @@ class antenna_pattern(object3d):
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Power Pattern",
+                    plot_max=plot_max,
                 )
         elif self.arbitary_pattern_format == "ExEyEz":
             if desired_pattern == "both":
@@ -900,6 +920,7 @@ class antenna_pattern(object3d):
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Ex",
+                    plot_max=plot_max,
                 )
                 BM.PatternPlot(
                     self.pattern[:, :, 1],
@@ -908,6 +929,7 @@ class antenna_pattern(object3d):
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Ey",
+                    plot_max=plot_max,
                 )
                 BM.PatternPlot(
                     self.pattern[:, :, 2],
@@ -916,6 +938,7 @@ class antenna_pattern(object3d):
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Ez",
+                    plot_max=plot_max,
                 )
             elif desired_pattern == "Ex":
                 BM.PatternPlot(
@@ -925,6 +948,7 @@ class antenna_pattern(object3d):
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Ex",
+                    plot_max=plot_max,
                 )
             elif desired_pattern == "Ey":
                 BM.PatternPlot(
@@ -934,6 +958,7 @@ class antenna_pattern(object3d):
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Ey",
+                    plot_max=plot_max,
                 )
             elif desired_pattern == "Ez":
                 BM.PatternPlot(
@@ -943,6 +968,7 @@ class antenna_pattern(object3d):
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Ez",
+                    plot_max=plot_max,
                 )
 
     def transmute_pattern(self,desired_format="Etheta/Ephi"):
