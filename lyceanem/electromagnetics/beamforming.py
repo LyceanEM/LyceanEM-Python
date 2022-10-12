@@ -1212,8 +1212,13 @@ def PatternPlot(
         # setup for 3dB contours
         contournum = np.ceil((plot_max - pattern_min) / 3).astype(int)
         levels2 = np.linspace(-contournum * 3, plot_max, contournum + 1)
+        if pattern_min<-40:
+            line_spec_width=0.5
+        else:
+            line_spec_width=1
+
         CS4 = ax.contour(
-            az, elev, logdata, levels2, colors=("k",), linewidths=(2,), origin=origin
+            az, elev, logdata, levels2, colors=("k",), linewidths=(line_spec_width,), origin=origin
         )
         ax.grid()
         if title_text != None:

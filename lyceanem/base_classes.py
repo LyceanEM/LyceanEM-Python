@@ -446,7 +446,7 @@ class antenna_structures(object3d):
 
         return point_cloud
 
-    def excitation_function(self,desired_e_vector,transmit_amplitude=1,point_index=None):
+    def excitation_function(self,desired_e_vector,transmit_amplitude=1,point_index=None,phase_shift="none",wavelength=1.0,steering_vector = np.zeros((1, 3))):
         #generate the local excitation function and then convert into the global coordinate frame.
         if point_index==None:
             aperture_points=self.export_all_points()
@@ -455,6 +455,11 @@ class antenna_structures(object3d):
         aperture_weights = EM.calculate_conformalVectors(
             desired_e_vector, np.asarray(aperture_points.normals), self.pose[:3,:3]
         )
+        if phase_shift=="wavefront":
+            source_points = np.asarray(aperture_points.points)
+            phase_weights= BM.WavefrontWeights(source_points, steering_vector, wavelength)
+            aperture_weights=aperture_weights*phase_weights.reshape(-1,1)
+
         return aperture_weights*transmit_amplitude
 
     def receive_transform(self,aperture_polarisation,excitation_function,beamforming_weights):
@@ -907,6 +912,7 @@ class antenna_pattern(object3d):
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
+                    logtype='power',
                     plottype=plottype,
                     title_text="Power Pattern",
                     plot_max=plot_max,
