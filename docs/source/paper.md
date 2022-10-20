@@ -38,7 +38,7 @@ individual elements.
 problems from antenna array architecture and assess beamforming algorithm performance to channel modelling. 
 The model is built upon a ray tracing approach, allowing for efficient modelling of large, low density spaces.
 
-`LyceanEM` relies upon the `Numba` package [@Numba] to provide `CUDA` acceleration of electromagnetics, calculating 
+`LyceanEM` relies upon the `Numba` package to provide `CUDA` acceleration of electromagnetics, calculating 
 antenna and antenna array patterns, scattering and aperture projections. Thi has been used in a number of scientific 
 publications [@Pelham:2022], [@Pelhama:2021], [@Pelhamb:2021] and has been used in a tutorial on Antenna Array Design for Complex 
 Platforms at Radar 2022. This capability in an open source package enables exciting research by academics and professional engineers alike. 
@@ -47,5 +47,13 @@ Platforms at Radar 2022. This capability in an open source package enables excit
 computer vision. The flexible and efficient nature of the scattering model allows for exciting exploration of the signal 
 sources in the local environment on low power computing devices.  
 
+# Usage Examples
 
+![Aperture Antenna Model.\label{fig:example}](./auto_examples/images/07_aperture_open3d.png)
+![Predicted Etheta Farfield Pattern. \label{fig:pattern1}](./auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_001.png)
+![Predicted Ephi Farfield Pattern. \label{fig:pattern2}](./auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_002.png)
+
+
+![Flexible Modelling and Visualisation of Conformal Antenna Array Geometry. \label{fig:uav1}](./_static/UAVArraywithPoints.png)
+![Flexible Modelling and Visualisation of Conformal Antenna Array Performance. \label{fig:uav1}](./_static/open3d_results_rendering.png)
 # References
