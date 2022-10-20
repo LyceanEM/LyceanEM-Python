@@ -278,7 +278,7 @@ class structures(object3d):
         None
         """
         for item in range(len(self.solids)):
-            self.solids[item].translate(vector)
+            self.solids[item].translate(vector,relative=True)
 
     def export_vertices(self, structure_index=None):
         """
