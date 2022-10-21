@@ -63,17 +63,22 @@ demonstrated in published research for both antenna arrays [@Pelhama:2021], and 
 The antenna array simulation allows the researcher to define the array with any combination of polarisation and excitation 
 functions, providing a powerful tool for antenna array research.
 
-![Flexible Modelling and Visualisation of Conformal Antenna Array Geometry. \label{fig:uav1}](./_static/UAVArraywithPoints.png)
+![Flexible Modelling and Visualisation of Conformal Antenna Array Geometry. \label{fig:uav1}](./_static/UAVArraywithPoints.png){ width=50% }
 
-![Flexible Modelling and Visualisation of Conformal Antenna Array Performance. \label{fig:uav2}](./_static/open3d_results_rendering.png)
+![Flexible Modelling and Visualisation of Conformal Antenna Array Performance. \label{fig:uav2}](./_static/open3d_results_rendering.png){ width=50% }
 
-![Maximum Achievable Beamforming Envelope via Aperture Projection. \label{fig:uavap}](./auto_examples/images/sphx_glr_01_aperture_projection_001.png)
+![Maximum Achievable Beamforming Envelope via Aperture Projection. \label{fig:uavap}](./auto_examples/images/sphx_glr_01_aperture_projection_001.png){ width=50% }
 
-![Beamformed Antenna Array Achieved Directivity Map vs Array Simulation. \label{fig:uavem}](./auto_examples/images/sphx_glr_05_array_beamforming_001.png)
+![Beamformed Antenna Array Achieved Directivity Map vs Array Simulation. \label{fig:uavem}](./auto_examples/images/sphx_glr_05_array_beamforming_001.png){ width=50% }
+
+In addition to modelling of antenna arrays with conventional polarisation and propagation modes, `LyceanEM` supports the 
+modelling and analysis of novel propagation models such as Orbital Angular Momentum states [@Allen:2019]. 
 
 ## Frequency & Time Domain Channel Modelling
 
 `LyceanEM` can also be used as a more general electromagnetic model, allowing the definition and simulation of complex channel models. In a published example, the Frequency domain model predicted the scattering parameters produced when illuminating a rotating metal plate with a horn antenna with a root mean square error of -69dB. [@Pelhamb:2021]. This setup is show in Figure \autoref{fig:scatter1} with the scattering plate at an angle of 45 degrees, and the transmitting and receiving horn antennas shown.
 
-![Scattering Scenario for 26GHz channel modelling with scattering plate orientated at 45 degrees from the transmitting antenna. \label{fig:scatter1}](./_static/03_frequency_domain_channel_model_picture_01.png)
+![Scattering Scenario for 26GHz channel modelling with scattering plate orientated at 45 degrees from the transmitting antenna. \label{fig:scatter1}](./_static/03_frequency_domain_channel_model_picture_01.png){ width=50% }
+
+
 # References
