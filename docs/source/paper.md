@@ -51,16 +51,29 @@ sources in the local environment on low power computing devices.
 
 ## Virtual Prototyping and Antenna Array Beamforming Research
 
-The initial intended use case for `LyceanEM` was virtual prototyping for antenna arrays and apertures for sensors and communications. As show in Figure \autoref{fig:uav1} & \autoref{fig:uav2}. This allows for antenna array patterns to be predicted extremely quickly compared to the time required for antenna design, and simulation on the platform of interest. This enables research into novel conformal antenna array configurations, and modelling of the performance of radar antenna arrays for autonomous vehicles research. This is the only package offering this capability from such a limited information set. This process allows the researcher or engineer to assess the maximum achievable beamforming envelope for the aperture (Figure \autoref{fig:uavap}), then predict the antenna array pattern with functions supporting beamsteering to points of interest to generate an accurate prediction of the beamformed coverage (Figure \autoref{fig:uavem}). This has been demonstrated in published research for both antenna arrays [@Pelhama:2021], and for reflector antennas [@Pelham:2022]. The antenna array simulation allows the researcher to define the array with any combination of polarisation and excitation functions, providing a powerful tool for antenna array research.
+The initial intended use case for `LyceanEM` was virtual prototyping for antenna arrays and apertures for sensors and 
+communications. As show in Figure \autoref{fig:uav1} & \autoref{fig:uav2}. This allows for antenna array patterns to be 
+predicted extremely quickly compared to the time required for antenna design, and simulation on the platform of interest. 
+This enables research into novel conformal antenna array configurations, and modelling of the performance of radar antenna 
+arrays for autonomous vehicles research. This is the only package offering this capability from such a limited information set. 
+This process allows the researcher or engineer to assess the maximum achievable beamforming envelope for the aperture 
+(Figure \autoref{fig:uavap}), then predict the antenna array pattern with functions supporting beamsteering to points of 
+interest to generate an accurate prediction of the beamformed coverage (Figure \autoref{fig:uavem}). This has been 
+demonstrated in published research for both antenna arrays [@Pelhama:2021], and for reflector antennas [@Pelham:2022]. 
+The antenna array simulation allows the researcher to define the array with any combination of polarisation and excitation 
+functions, providing a powerful tool for antenna array research.
 
 ![Flexible Modelling and Visualisation of Conformal Antenna Array Geometry. \label{fig:uav1}](./_static/UAVArraywithPoints.png)
+
 ![Flexible Modelling and Visualisation of Conformal Antenna Array Performance. \label{fig:uav2}](./_static/open3d_results_rendering.png)
+
 ![Maximum Achievable Beamforming Envelope via Aperture Projection. \label{fig:uavap}](./auto_examples/images/sphx_glr_01_aperture_projection_001.png)
+
 ![Beamformed Antenna Array Achieved Directivity Map vs Array Simulation. \label{fig:uavem}](./auto_examples/images/sphx_glr_05_array_beamforming_001.png)
 
 ## Frequency & Time Domain Channel Modelling
 
-`LyceanEM` can also be used as a more general electromagnetic model, allowing the definition and simulation of complex channel models. In a published example, the Frequency domain model predicted the scattering parameters produced when illuminating a rotating metal plate with a horn antenna with a root mean square error of -69dB. [@Pelhamb:2021]. This setup is show in Figure \utoref{fig:scatter1} with the scattering plate at an angle of 45 degrees, and the transmitting and receiving horn antennas shown.
+`LyceanEM` can also be used as a more general electromagnetic model, allowing the definition and simulation of complex channel models. In a published example, the Frequency domain model predicted the scattering parameters produced when illuminating a rotating metal plate with a horn antenna with a root mean square error of -69dB. [@Pelhamb:2021]. This setup is show in Figure \autoref{fig:scatter1} with the scattering plate at an angle of 45 degrees, and the transmitting and receiving horn antennas shown.
 
 ![Scattering Scenario for 26GHz channel modelling with scattering plate orientated at 45 degrees from the transmitting antenna. \label{fig:scatter1}](./_static/03_frequency_domain_channel_model_picture_01.png)
 # References
