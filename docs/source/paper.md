@@ -72,7 +72,7 @@ functions, providing a powerful tool for antenna array research.
 ![Beamformed Antenna Array Achieved Directivity Map vs Array Simulation. \label{fig:uavem}](./auto_examples/images/sphx_glr_05_array_beamforming_001.png){ width=50% }
 
 In addition to modelling of antenna arrays with conventional polarisation and propagation modes, `LyceanEM` supports the 
-modelling and analysis of novel propagation models such as Orbital Angular Momentum states [@Allen:2019]. 
+modelling and analysis of novel propagation models such as Orbital Angular Momentum states [@Allen:2019] for communications links. 
 
 ## Frequency & Time Domain Channel Modelling
 
@@ -88,7 +88,8 @@ The resultant scattering with variation of normalised scattering angle (0 degree
 
 ![Comparison of scattering parameters against normalised scattering angle. \label{fig:scatter2}](./_static/ReferenceReflectorComparisonNormalisedandModelShiftedp1d.png){ width=50% }
 
-The Time domain model also produces comparable results, as shown in Figure \autoref{fig:scatter3}
+The Time domain model also produces comparable results, as shown in Figure \autoref{fig:scatter3}, comparing the fast fourier transform of the time domain response (labelled 24GHz), and the frequency domain response (labelled FD) with the measurement.
+
 ![Comparison of scattering parameters against normalised scattering angle from both the time and frequency domain models. \label{fig:scatter3}](./_static/timedomaincomparison.png){ width=50% }
 
 
