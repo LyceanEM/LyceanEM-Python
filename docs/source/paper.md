@@ -50,16 +50,17 @@ sources in the local environment on low power computing devices.
 # Usage Examples
 
 While some usage examples are presented here, many more are included in the documentation for `LyceanEM`, which can be found at [https://lyceanem-python.readthedocs.io/en/latest/](https://lyceanem-python.readthedocs.io/en/latest/). 
+
 ## Virtual Prototyping and Antenna Array Beamforming Research
 
 The initial intended use case for `LyceanEM` was virtual prototyping for antenna arrays and apertures for sensors and 
-communications. As show in Figure \autoref{fig:uav1} & \autoref{fig:uav2}. This allows for antenna array patterns to be 
+communications. As show in \autoref{fig:uav1} & \autoref{fig:uav2}. This allows for antenna array patterns to be 
 predicted extremely quickly compared to the time required for antenna design, and simulation on the platform of interest. 
 This enables research into novel conformal antenna array configurations, and modelling of the performance of radar antenna 
 arrays for autonomous vehicles research. This is the only package offering this capability from such a limited information set. 
 This process allows the researcher or engineer to assess the maximum achievable beamforming envelope for the aperture 
-(Figure \autoref{fig:uavap}), then predict the antenna array pattern with functions supporting beamsteering to points of 
-interest to generate an accurate prediction of the beamformed coverage (Figure \autoref{fig:uavem}). This has been 
+( \autoref{fig:uavap}), then predict the antenna array pattern with functions supporting beamsteering to points of 
+interest to generate an accurate prediction of the beamformed coverage (\autoref{fig:uavem}). This has been 
 demonstrated in published research for both antenna arrays [@Pelhama:2021], and for reflector antennas [@Pelham:2022]. 
 The antenna array simulation allows the researcher to define the array with any combination of polarisation and excitation 
 functions, providing a powerful tool for antenna array research.
@@ -80,16 +81,16 @@ modelling and analysis of novel propagation models such as Orbital Angular Momen
 `LyceanEM` can also be used as a more general electromagnetic model, allowing the definition and simulation of complex 
 channel models. In a published example, the Frequency domain model predicted the scattering parameters produced when 
 illuminating a rotating metal plate with a horn antenna with a root mean square (RMS) error of -69dB between the predicted scattering parameters and the measured data. [@Pelhamb:2021]. 
-This setup is show in Figure \autoref{fig:scatter1} with the scattering plate at an angle of 45 degrees, and the 
+This setup is show in \autoref{fig:scatter1} with the scattering plate at an angle of 45 degrees, and the 
 transmitting and receiving horn antennas shown.
 
 ![Scattering Scenario for 26GHz channel modelling with scattering plate orientated at 45 degrees from the transmitting antenna. \label{fig:scatter1}](./_static/03_frequency_domain_channel_model_picture_01.png){ width=50% }
 
-The resultant scattering with variation of normalised scattering angle (0 degrees when plate is 45 degrees offset from both transmitter and receiver), shows the comparison between the measured scattering at 26GHz, and that predicted by `LyceanEM` in Figure \autoref{fig:scatter2}.
+The resultant scattering with variation of normalised scattering angle (0 degrees when plate is 45 degrees offset from both transmitter and receiver), shows the comparison between the measured scattering at 26GHz, and that predicted by `LyceanEM` in \autoref{fig:scatter2}.
 
 ![Comparison of scattering parameters against normalised scattering angle. \label{fig:scatter2}](./_static/ReferenceReflectorComparisonNormalisedandModelShiftedp1d.png){ width=50% }
 
-The Time domain model also produces comparable results, as shown in Figure \autoref{fig:scatter3}, comparing the fast fourier transform of the time domain response (labelled 24GHz), and the frequency domain response (labelled FD) with the measurement.
+The Time domain model also produces comparable results, as shown in \autoref{fig:scatter3}, comparing the fast fourier transform of the time domain response (labelled 24GHz), and the frequency domain response (labelled FD) with the measurement.
 
 ![Comparison of scattering parameters against normalised scattering angle from both the time and frequency domain models. \label{fig:scatter3}](./_static/timedomaincomparison.png){ width=50% }
 
