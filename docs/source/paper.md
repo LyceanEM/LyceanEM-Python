@@ -72,13 +72,13 @@ functions, providing a powerful tool for antenna array research.
 ![Beamformed Antenna Array Achieved Directivity Map vs Array Simulation. \label{fig:uavem}](./auto_examples/images/sphx_glr_05_array_beamforming_001.png){ width=50% }
 
 In addition to modelling of antenna arrays with conventional polarisation and propagation modes, `LyceanEM` supports the 
-modelling and analysis of novel propagation models such as Orbital Angular Momentum states [@Allen:2019] for communications links. 
+modelling and analysis of novel propagation models such as Orbital Angular Momentum states [@Allen:2019] for communications links, and allowed the prediction of the supportable OAM modes of an aperture, and the fourier analysis of the modal spectrum produced both by `LyceanEM` and the measured antenna patterns. 
 
 ## Frequency & Time Domain Channel Modelling
 
 `LyceanEM` can also be used as a more general electromagnetic model, allowing the definition and simulation of complex 
 channel models. In a published example, the Frequency domain model predicted the scattering parameters produced when 
-illuminating a rotating metal plate with a horn antenna with a root mean square error of -69dB between the predicted scattering parameters and the measured data. [@Pelhamb:2021]. 
+illuminating a rotating metal plate with a horn antenna with a root mean square (RMS) error of -69dB between the predicted scattering parameters and the measured data. [@Pelhamb:2021]. 
 This setup is show in Figure \autoref{fig:scatter1} with the scattering plate at an angle of 45 degrees, and the 
 transmitting and receiving horn antennas shown.
 
@@ -92,5 +92,7 @@ The Time domain model also produces comparable results, as shown in Figure \auto
 
 ![Comparison of scattering parameters against normalised scattering angle from both the time and frequency domain models. \label{fig:scatter3}](./_static/timedomaincomparison.png){ width=50% }
 
+## Generation of Training Datasets for Machine Learning
 
+In addition to the initial uses, `LyceanEM` allows the uses to generate datasets for use in Machine Learning. This is of specific interest for channel models from spatial mapping by computer vision, allowing `LyceanEM` to predict the scattering characteristics of the local environment from computer vision or LIDAR based spatial mapping. This allows the creation of Generative Adversarial Networks for spatial multiplexing.
 # References
