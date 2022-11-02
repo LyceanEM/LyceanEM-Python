@@ -49,6 +49,7 @@ sources in the local environment on low power computing devices.
 
 # Usage Examples
 
+While some usage examples are presented here, many more are included in the documentation for `LyceanEM`, which can be found at [https://lyceanem-python.readthedocs.io/en/latest/](https://lyceanem-python.readthedocs.io/en/latest/). 
 ## Virtual Prototyping and Antenna Array Beamforming Research
 
 The initial intended use case for `LyceanEM` was virtual prototyping for antenna arrays and apertures for sensors and 
