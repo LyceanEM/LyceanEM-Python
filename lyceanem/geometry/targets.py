@@ -241,7 +241,7 @@ def parabola(radius, focal_length, thickness, mesh_length, mesh="all"):
 
     sd.scad_render_to_file(final_parabola, "temp.scad")
     # run openscad and export to stl
-    run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+    converttostl()
 
     parabola_mesh = o3d.io.read_triangle_mesh("temp.stl")
     parabola_mesh.compute_vertex_normals()
@@ -253,6 +253,26 @@ def parabola(radius, focal_length, thickness, mesh_length, mesh="all"):
     parabola=antenna_structures(parabola_structures,parabola_points)
     return parabola
 
+def converttostl():
+    """
+    This function is a convinence to allow the repeatable used of openscad to generate watertight stl files for use within LyceanEM. This function assumes that all openscad files are saved as temp.scad in the current working directory, and the output will be saved as temp.stl, ready for the home function to import it.
+
+    Returns
+    -------
+    Nothing
+
+    """
+    import subprocess, os
+    try:
+        #print(os.getcwd())
+        working_directory="."
+        #run([, ])
+        p = subprocess.Popen(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"], cwd=working_directory)
+        p.wait()
+    except:
+        #run(["openscad", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+        p = subprocess.Popen(["openscad", "-o", "temp.stl", "temp.scad", "--export-format=binstl"],cwd=working_directory)
+        p.wait()
 
 def meshed_pipe(
     eradius1, eradius2, iradius1, iradius2, height, mesh_length, mesh="centres"
@@ -558,7 +578,8 @@ def meshed_pipe(
     # generate valid openscad code and store it in file
     sd.scad_render_to_file(centre, "temp.scad")
     # run openscad and export to stl
-    run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+    #run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+    converttostl()
 
     structure = o3d.io.read_triangle_mesh("temp.stl")
     structure.compute_vertex_normals()
@@ -868,7 +889,8 @@ def meshed_cylinder(radius1, radius2, height, mesh_length, mesh="centres",segmen
     # generate valid openscad code and store it in file
     sd.scad_render_to_file(centre, "temp.scad")
     # run openscad and export to stl
-    run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+    #run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+    converttostl()
 
     #structure = o3d.io.read_triangle_mesh("temp.stl")
     temp_mesh=o3d.io.read_triangle_mesh("temp.stl")
@@ -1127,7 +1149,8 @@ def meshed_trapazoid(radius1, radius2, height, mesh_length, mesh="centres"):
     # generate valid openscad code and store it in file
     sd.scad_render_to_file(centre, "temp.scad")
     # run openscad and export to stl
-    run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+    #run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+    converttostl()
 
     structure = o3d.io.read_triangle_mesh("temp.stl")
     structure.compute_vertex_normals()
@@ -2663,7 +2686,8 @@ def BullsEye(O2, n_rings, innerdia, period, ht, basethick, grid_resolution):
     sd.scad_render_to_file(centre, "d.scad")
 
     # run openscad and export to stl
-    run(["openscad-nightly", "-o", "d.stl", "d.scad", "--export-format=binstl"])
+    #run(["openscad-nightly", "-o", "d.stl", "d.scad", "--export-format=binstl"])
+    converttostl()
 
     solid = o3d.io.read_triangle_mesh("d.stl")
     solid.compute_vertex_normals()

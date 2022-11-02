@@ -3494,7 +3494,7 @@ def DisplayESources(
         cylinder_height=0.8 * arrow_length,
         cylinder_radius=0.04 * arrow_length,
     )
-    rot_mat = GF.caculate_align_mat(E_vectors[0, :])
+    rot_mat = GF.axes_from_normal(E_vectors[0, :], boresight_along="z")
     quiver_set = GF.open3drotate(quiver_set, rot_mat)
     quiver_set.translate(
         source_display_coords[0, :] + E_vectors[0, :] * (-0.5 * arrow_length)
@@ -3509,7 +3509,7 @@ def DisplayESources(
             cylinder_height=0.8 * arrow_length,
             cylinder_radius=0.04 * arrow_length,
         )
-        rot_mat = GF.caculate_align_mat(E_vectors[arrow_num, :])
+        rot_mat = GF.axes_from_normal(E_vectors[arrow_num, :], boresight_along="z")
         mesh_arrow = GF.open3drotate(mesh_arrow, rot_mat)
         mesh_arrow.translate(
             source_display_coords[arrow_num]

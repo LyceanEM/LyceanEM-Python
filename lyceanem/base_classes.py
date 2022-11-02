@@ -431,10 +431,10 @@ class antenna_structures(object3d):
         """
 
         self.pose[:3,3]=self.pose[:3,3].ravel()+vector.ravel()
-        for item in range(len(self.structures.solids)):
-            self.structures.solids[item].translate(vector)
-        for item in range(len(self.points.points)):
-            self.points.points[item].translate(vector)
+        #for item in range(len(self.structures.solids)):
+        #    self.structures.solids[item].translate(vector)
+        #for item in range(len(self.points.points)):
+        #    self.points.points[item].translate(vector)
 
     def export_all_points(self,point_index=None):
         if point_index==None:

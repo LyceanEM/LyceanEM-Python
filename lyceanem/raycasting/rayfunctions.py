@@ -588,7 +588,7 @@ def angle_pop(hit_directions, source_normals, angles):
     return angles
 
 
-@njit(parallel=True)
+#@njit(parallel=True)
 def patternsort(visible_patterns, sourcenum, sinknum, portion, hit_index):
     # faster method of summing the array contributions to each farfield point
     for n in range(sinknum):
@@ -2315,11 +2315,11 @@ def chunkingRaycaster1Dv3(
     # the rays must fit in GPU memory, aim for no more than 80% utilisation
     # establish memory limits
     free_mem, total_mem = cuda.current_context().get_memory_info()
-    max_mem = np.ceil(free_mem * 0.5).astype(int)
+    max_mem = np.ceil(free_mem * 0.5).astype(np.int64)
     ray_limit = (
         np.floor(np.floor((max_mem - environment_local.nbytes) / base_types.ray_t.size) / 1e7)
         * 1e7
-    ).astype(int)
+    ).astype(np.int64)
     if target_indexing.shape[0] >= ray_limit:
         # need to split the array and process seperatly
 
@@ -2779,10 +2779,10 @@ def workchunkingv2(
     # print("Total of {:3.1f} rays required".format(ray_estimate))
     # establish memory limits
     free_mem, total_mem = cuda.current_context().get_memory_info()
-    max_mem = np.ceil(free_mem * 0.8).astype(int)
+    max_mem = np.ceil(free_mem * 0.8).astype(np.int64)
     ray_limit = (
         np.floor(np.floor((max_mem - environment.nbytes) / base_types.ray_t.size) / 1e7) * 1e7
-    ).astype(int)
+    ).astype(np.int64)
     # establish index boundaries
     source_index = np.arange(1, sources.shape[0] + 1).reshape(
         sources.shape[0], 1
