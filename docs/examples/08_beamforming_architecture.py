@@ -27,7 +27,7 @@ import copy
 # an X band aperture.
 
 az_res = 361
-elev_res = 73
+elev_res = 181
 wavelength = 3e8 / 10e9
 
 # %%

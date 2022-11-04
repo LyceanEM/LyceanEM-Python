@@ -446,7 +446,8 @@ def calculate_scattering(
     los=True,
     mesh_resolution=0.5,
     project_vectors=False,
-    antenna_axes=np.eye(3)
+    antenna_axes=np.eye(3),
+    multiE=False
 ):
     """
     calculating the scattering from the provided source coordinates, to the provided sink coordinates in the environment.
@@ -484,13 +485,6 @@ def calculate_scattering(
     Ez : numpy array of complex
 
     """
-    if desired_E_axis.size > 3:
-        if not elements:
-            multiE = True
-        else:
-            multiE = False
-    else:
-        multiE = False
 
     num_sources = len(np.asarray(aperture_coords.points))
     num_sinks = len(np.asarray(sink_coords.points))
@@ -515,12 +509,12 @@ def calculate_scattering(
                 desired_E_axis, np.asarray(aperture_coords.normals), antenna_axes
             )
         else:
-            if desired_E_axis.size == 3:
-                conformal_E_vectors = np.repeat(
-                    desired_E_axis[0, :].astype(np.float32), num_sources, axis=0
-                ).reshape(num_sources, 3)
+            if desired_E_axis.shape[0] == np.asarray(aperture_coords.normals).shape[0]:
+                conformal_E_vectors = copy.deepcopy(desired_E_axis)
             else:
-                conformal_E_vectors = desired_E_axis.reshape(num_sources, 3)
+                conformal_E_vectors = np.repeat(
+                    desired_E_axis.reshape(1, 3).astype(np.complex64), num_sources, axis=0
+                )
 
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
