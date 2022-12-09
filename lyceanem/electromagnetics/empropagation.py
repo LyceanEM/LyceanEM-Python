@@ -3744,7 +3744,8 @@ def definePatch(wavelength, width, length, substrate_dielectric=1, mode="Single"
 def importDat(fileaddress):
     datafile = pathlib.Path(fileaddress)
     # noinspection PyTypeChecker
-    temp = np.loadtxt(datafile, delimiter=",")
+    #temp = np.loadtxt(datafile, delimiter=",")
+    temp = np.loadtxt(datafile)
     freq = temp[0, 4] * 1e6  # Hz
     planes = temp[0, 0]
     phi_lower = temp[0, 1]

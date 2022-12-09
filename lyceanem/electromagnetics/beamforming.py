@@ -108,7 +108,7 @@ def ArbitaryCoherenceWeights(source_coords, target_coord, wavelength):
     # calculate required time delays, and then convert to phase delays
     delays = dist / scipy.constants.speed_of_light
     weights = np.exp(
-        -1j * 2 * np.pi * (scipy.constants.speed_of_light / wavelength) * delays
+        1j * 2 * np.pi * (scipy.constants.speed_of_light / wavelength) * delays
     )
     return weights
 
@@ -815,9 +815,9 @@ def PatternTransform3D(
     point_cloud = RF.points2pointcloud(sinks + centre)
 
     # normdata
-    logdata = log_multiplier * np.log10(np.ravel(norm_magnitudes) + 1e-24)
+    norm_logdata = log_multiplier * np.log10(np.ravel(norm_magnitudes) + 1.0)
     viridis = cm.get_cmap("viridis", 40)
-    np_colors = viridis(np.ravel(norm_magnitudes))
+    np_colors = viridis(np.ravel(norm_logdata))
     point_cloud.colors = o3d.utility.Vector3dVector(np_colors[:, 0:3])
 
     return point_cloud
@@ -845,9 +845,9 @@ def PatternTransformArbitary(
         norm_ranges = np.ravel(norm_magnitudes) * 1.0
 
     # normdata
-    logdata = log_multiplier * np.log10(np.ravel(norm_magnitudes) + 1e-24)
-    viridis = cm.get_cmap("viridis", 1000)
-    np_colors = viridis(np.ravel(norm_magnitudes))
+    norm_logdata = log_multiplier * np.log10(np.ravel(norm_magnitudes) + 1.0)
+    viridis = cm.get_cmap("viridis", 40)
+    np_colors = viridis(np.ravel(norm_logdata))
     point_cloud.colors = o3d.utility.Vector3dVector(np_colors[:, 0:3])
 
     return point_cloud
@@ -1042,6 +1042,8 @@ def WeightTruncation(weights, resolution):
     ) / (quant - 1)
     new_weights = np.abs(weights) * np.exp(1j * ((levels * 2 * np.pi) - np.pi))
     return new_weights
+
+
 
 
 def PatternPlot(

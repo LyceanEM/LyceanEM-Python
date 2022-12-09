@@ -9,6 +9,7 @@ from .electromagnetics import beamforming as BM
 from .electromagnetics import empropagation as EM
 from .geometry import geometryfunctions as GF
 from .raycasting import rayfunctions as RF
+from .utility import math_functions as MF
 #from .models.frequency_domain import calculate_farfield as farfield_generator
 #from .models.frequency_domain import calculate_scattering as frequency_domain_channel
 
@@ -630,36 +631,44 @@ class antenna_pattern(object3d):
         arbitary_pattern=False,
         arbitary_pattern_type="isotropic",
         arbitary_pattern_format="Etheta/Ephi",
+        file_location=None
     ):
+        super().__init__()
 
-        self.azimuth_resolution = azimuth_resolution
-        self.elevation_resolution = elevation_resolution
-        self.pattern_frequency = pattern_frequency
-        self.arbitary_pattern_type = arbitary_pattern_type
-        self.arbitary_pattern_format = arbitary_pattern_format
-        self.field_radius = 1.0
-        az_mesh, elev_mesh = np.meshgrid(
-            np.linspace(-180, 180, self.azimuth_resolution),
-            np.linspace(-90, 90, self.elevation_resolution),
-        )
-        self.az_mesh = az_mesh
-        self.elev_mesh = elev_mesh
-        if self.arbitary_pattern_format == "Etheta/Ephi":
-
-            self.pattern = np.zeros(
-                (self.elevation_resolution, self.azimuth_resolution, 2),
-                dtype=np.complex64,
+        if file_location!=None:
+            self.pattern_frequency = pattern_frequency
+            self.arbitary_pattern_format = arbitary_pattern_format
+            self.import_pattern(file_location)
+            self.field_radius = 1.0
+        else:
+            self.azimuth_resolution = azimuth_resolution
+            self.elevation_resolution = elevation_resolution
+            self.pattern_frequency = pattern_frequency
+            self.arbitary_pattern_type = arbitary_pattern_type
+            self.arbitary_pattern_format = arbitary_pattern_format
+            self.field_radius = 1.0
+            az_mesh, elev_mesh = np.meshgrid(
+                np.linspace(-180, 180, self.azimuth_resolution),
+                np.linspace(-90, 90, self.elevation_resolution),
             )
+            self.az_mesh = az_mesh
+            self.elev_mesh = elev_mesh
+            if self.arbitary_pattern_format == "Etheta/Ephi":
 
-        elif self.arbitary_pattern_format == "ExEyEz":
+                self.pattern = np.zeros(
+                    (self.elevation_resolution, self.azimuth_resolution, 2),
+                    dtype=np.complex64,
+                )
 
-            self.pattern = np.zeros(
-                (self.elevation_resolution, self.azimuth_resolution, 3),
-                dtype=np.complex64,
-            )
+            elif self.arbitary_pattern_format == "ExEyEz":
 
-        if arbitary_pattern == True:
-            self.initilise_pattern()
+                self.pattern = np.zeros(
+                    (self.elevation_resolution, self.azimuth_resolution, 3),
+                    dtype=np.complex64,
+                )
+
+            if arbitary_pattern == True:
+                self.initilise_pattern()
 
     def initilise_pattern(self):
         """
@@ -821,7 +830,7 @@ class antenna_pattern(object3d):
 
     def export_global_weights(self):
         """
-        Calculates the global frame coordinates and xyz weightings of the antenna pattern using the pattern pose to translate and rotate into the correction position and orientation within the model environment.
+        Calculates the global frame coordinates and xyz weightings of the antenna pattern using the pattern pose to translate and rotate into the correction position and orientation within the model environment. If this function is used as a source for models, then the antenna pattern pose must be updated for the desired position and orientation before export.
 
         Returns
         -------
@@ -835,17 +844,20 @@ class antenna_pattern(object3d):
         points.points = o3d.utility.Vector3dVector(xyz)
         points.normals = o3d.utility.Vector3dVector(xyz)
         points.transform(self.pose)
+
         if self.arbitary_pattern_format == "Etheta/Ephi":
-            self.transmute_pattern()
+            self.transmute_pattern(desired_format="ExEyEz")
 
         #import to export the weights in cartesian format, then orientate correctly within global reference frame.
         rotation_matrix = self.pose[:3, :3]
 
-        weightsx= self.pattern[:,:,0].ravel()
-        weightsy = self.pattern[:, :, 1].ravel()
-        weightsz = self.pattern[:, :, 2].ravel()
-        weights=np.concatenate(weightsx,weightsy,weightsz)
+        #weightsx= self.pattern[:,:,0].ravel()
+        #weightsy = self.pattern[:, :, 1].ravel()
+        #weightsz = self.pattern[:, :, 2].ravel()
+        weights=np.array([self.pattern[:,:,0].reshape(-1),self.pattern[:,:,1].reshape(-1),self.pattern[:,:,2].reshape(-1)])
+        weights=np.matmul(weights,rotation_matrix)
         return points, weights
+
     def display_pattern(
         self, plottype="Polar", desired_pattern="both", pattern_min=-40, plot_max=0
     ):
@@ -1063,7 +1075,7 @@ class antenna_pattern(object3d):
         """
         exports the cartesian points for all pattern points.
         """
-        x, y, z = RF.sph2cart(
+        x, y, z = MF.sph2cart(
             np.deg2rad(self.az_mesh.ravel()),
             np.deg2rad(self.elev_mesh.ravel()),
             np.ones((self.pattern[:, :, 0].size)) * self.field_radius,
@@ -1100,7 +1112,7 @@ class antenna_pattern(object3d):
 
         # convert to ExEyEz for rotation
         if self.arbitary_pattern_format == "Etheta/Ephi":
-            self.transmute_pattern()
+            self.transmute_pattern(desired_format="ExEyEz")
             desired_format = "Etheta/Ephi"
         else:
             desired_format = "ExEyEz"
@@ -1125,7 +1137,7 @@ class antenna_pattern(object3d):
 
         if desired_format == "Etheta/Ephi":
             # convert back
-            self.transmute_pattern()
+            self.transmute_pattern(desired_format=desired_format)
 
     def resample_pattern_angular(
         self, new_azimuth_resolution, new_elevation_resolution
