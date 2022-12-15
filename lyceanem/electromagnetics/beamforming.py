@@ -9,7 +9,7 @@ from matplotlib import cm
 from matplotlib.patches import Wedge
 from numba import cuda, float32, njit, prange
 from scipy.spatial import distance
-
+import matplotlib.animation as animation
 from ..raycasting import rayfunctions as RF
 from ..utility import math_functions
 
@@ -1044,7 +1044,82 @@ def WeightTruncation(weights, resolution):
     return new_weights
 
 
+def AnimatedPlot(dimension1,
+                 dimension2,
+                 dimension3,
+                 data,
+                 pattern_min=-40.0,
+                 pattern_max=0.0,
+                 dimension1label=None,
+                 dimension2label=None,
+                 colorbarlabel=None,
+                 title_text=None,
+                 ticknum=9,
+                 fps=5,
+                 save_location=None):
+    def animate(i):
+        # title_text='Sampled Phase {:.2f} Wavelengths from the Transmitting Antenna'.format(dimension3[i])
+        ax.clear()
+        ax.contourf(
+            dimension1, dimension2, data[:, :, i], levels, cmap="viridis", origin=origin
+        )
+        ax.contour(
+            dimension1, dimension2, data[:, :, i], levels, colors=("k",), origin=origin
+        )
+        ax.set_xlim([np.min(dimension1), np.max(dimension1)])
+        ax.set_ylim([np.min(dimension2), np.max(dimension2)])
+        ax.grid()
+        # ax.set_xticks(np.linspace(-180, 180, 9))
+        # ax.set_yticks(np.linspace(-90, 90.0, 13))
+        if dimension1label != None:
+            ax.set_xlabel(dimension1label)
+        if dimension2label != None:
+            ax.set_ylabel(dimension2label)
+        if title_text != None:
+            ax.set_title(title_text.format(dimension3[i]))
 
+    plt.rcParams["figure.figsize"] = [7.00, 3.50]
+    plt.rcParams["figure.autolayout"] = True
+    ticknum = 9
+    fig, ax = plt.subplots(constrained_layout=True)
+    origin = "lower"
+    #pattern_min = -np.pi / 2
+    #pattern_max = np.pi / 2
+    levels = np.linspace(pattern_min, pattern_max, 73)
+    CS = ax.contourf(dimension1, dimension2, data[:, :, 0], levels, cmap="viridis", origin=origin)
+    cbar = fig.colorbar(CS, ticks=np.linspace(pattern_min, pattern_max, ticknum))
+    # bar_label="Sampled Phase Angle (Radians)"
+
+    c_label_values = np.linspace(pattern_min, pattern_max, ticknum)
+    c_labels = np.char.mod('%.2f', c_label_values)
+    cbar.set_ticklabels(c_labels.tolist())
+    ax.set_xlim([np.min(dimension1), np.max(dimension1)])
+    ax.set_ylim([np.min(dimension2), np.max(dimension2)])
+    # ax.set_xticks(np.linspace(-180, 180, 9))
+    # ax.set_yticks(np.linspace(-90, 90.0, 13))
+    ax.set_xlabel("x ($\lambda$)")
+    ax.set_ylabel("y ($\lambda$)")
+    # setup for 3dB contours
+    # contournum = np.ceil((pattern_max - pattern_min) / 3).astype(int)
+    # levels2 = np.linspace(-contournum * 3, plot_max, contournum + 1)
+    # title_text=None
+    ax.grid()
+    if dimension1label != None:
+        ax.set_xlabel(dimension1label)
+    if dimension2label != None:
+        ax.set_ylabel(dimension2label)
+    if colorbarlabel != None:
+        cbar.ax.set_ylabel(colorbarlabel)
+    if title_text != None:
+        ax.set_title(title_text.format(dimension3[0]))
+
+    ani = animation.FuncAnimation(fig, animate, 100, interval=50, blit=False)
+    plt.show()
+
+    if save_location != None:
+        # f = r"C:/Users/lycea/Documents/10-19 Research Projects/farfieldanimation.gif"
+        writergif = animation.PillowWriter(fps=fps)
+        ani.save(save_location, writer=writergif)
 
 def PatternPlot(
     data,
