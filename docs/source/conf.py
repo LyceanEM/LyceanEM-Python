@@ -111,6 +111,7 @@ sphinx_gallery_conf = {
     'filename_pattern': re.escape(os.sep),
     'image_scrapers': ('matplotlib', PNGScraper()),
     'matplotlib_animations': True,
+    'run_stale_examples': False,
     'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
                             "# It can be customized to whatever you like\n"
                             "%matplotlib inline"),
@@ -119,7 +120,7 @@ sphinx_gallery_conf = {
          # The module you locally document uses None
         'sphinx_gallery': None,
     },
-    'plot_gallery': True,
+    'plot_gallery': False, #documentation examples require cuda on build machine, so much be fully built before being passed to readthedocs
 }
 
 # -- Options for HTML output -------------------------------------------------
