@@ -373,7 +373,7 @@ TimestampedGeoJson(
 # %%
 
 
-m
+m.show_in_browser()
 
 
 
