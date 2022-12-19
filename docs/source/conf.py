@@ -116,6 +116,7 @@ sphinx_gallery_conf = {
                             "# It can be customized to whatever you like\n"
                             "%matplotlib inline"),
     'last_notebook_cell': "# This is the last cell",
+    'notebook_images': f'https://stonesoup.rtfd.io/en/{os.environ.get("READTHEDOCS_VERSION", "latest")}/',
     'reference_url': {
          # The module you locally document uses None
         'sphinx_gallery': None,
