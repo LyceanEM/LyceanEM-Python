@@ -12,7 +12,7 @@ predict the scattering parameters for the frequency and environment included in 
 
 # %%
 # Define Map and Ground Station Location and list of Satellites using skyfield API to load starlink satellites.
-# ~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 import folium
 
@@ -47,7 +47,7 @@ timebase = t.utc_datetime()
 
 # %%
 # GeoJSON
-# ~~~~~~~
+# ~~~~~~~~
 # The Folium plugin `TimestampedGeoJson`_ will be used to plot our tracks using timestamped
 # GeoJSONs. As a result, we want to convert our data into `GeoJSON format`_. Firstly, we create
 # our feature collection which we will append our features to.
@@ -62,7 +62,7 @@ geo_json = {
 }
 # %%
 # Plotting Tracks of Satellites visible to Physics Observatory
-# ~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Now we append our tracks to our feature collection list. We define `colour_iter` which will
 # allow us to cycle through different colours when mapping our tracks.
 
@@ -99,7 +99,7 @@ import base64
 
 # %%
 # Define Starlinks Tracks
-# ~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Convinience function to limit the tracks to a set number of the nearest N satellites.
 
 def starlink_tracks(pointofinterest, timebase, num_satellites=5):
@@ -137,7 +137,7 @@ def starlink_tracks(pointofinterest, timebase, num_satellites=5):
         idx = np.argpartition(arr.ravel(), k)
         return tuple(np.array(np.unravel_index(idx, arr.shape))[:, range(min(k, 0), max(k, 0))])
 
-    # numberofclosest=5
+
     indexholder = np.zeros((num_satellites, len(timebase)), dtype=int)
     for point in range(len(timebase)):
         indexholder[:, point] = get_indices_of_k_smallest(distance_trim[:, point], num_satellites)[0]
@@ -315,7 +315,6 @@ for track in range(len(r_track)):
         )
 
 from folium.plugins import TimestampedGeoJson, Fullscreen
-from folium import LayerControl
 
 Fullscreen().add_to(m)
 
@@ -369,7 +368,9 @@ TimestampedGeoJson(
     duration="PT0S",
 ).add_to(m)
 
-m
+from IPython.display import display
+
+display(m)
 
 
 
