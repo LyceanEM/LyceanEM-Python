@@ -5,10 +5,10 @@
 
 Computation times
 =================
-**00:08.506** total execution time for **auto_examples** files:
+**00:09.980** total execution time for **auto_examples** files:
 
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_09_satellite_channel_modelling.py` (``09_satellite_channel_modelling.py``)               | 00:08.506 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_09_satellite_channel_modelling.py` (``09_satellite_channel_modelling.py``)               | 00:09.980 | 0.0 MB |
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+
 | :ref:`sphx_glr_auto_examples_01_aperture_projection.py` (``01_aperture_projection.py``)                               | 00:00.000 | 0.0 MB |
 +-----------------------------------------------------------------------------------------------------------------------+-----------+--------+

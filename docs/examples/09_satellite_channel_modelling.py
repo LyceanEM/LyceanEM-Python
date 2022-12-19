@@ -357,7 +357,9 @@ def collec_to_gdf(collec_poly):
         data={'RGBA': colors},
         crs={'init': 'epsg:4326'})
 
-
+# %%
+# The Results
+# ~~~~~~~~~~~~~~
 
 TimestampedGeoJson(
     data=geo_json,
@@ -368,9 +370,9 @@ TimestampedGeoJson(
     duration="PT0S",
 ).add_to(m)
 
-from IPython.display import display
+# %%
 
-display(m)
+m
 
 
 
