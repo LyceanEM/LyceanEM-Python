@@ -564,11 +564,11 @@ class antenna_structures(object3d):
         #scale antenna xyz to the structures
         self.antenna_xyz=o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5*a, origin=[0, 0, 0])
         if origin:
-            o3d.visualization.draw_geometries(
+            o3d.visualization.draw(
                 self.points.points + self.structures.solids + [self.antenna_xyz] + extras
             )
         else:
-            o3d.visualization.draw_geometries(
+            o3d.visualization.draw(
                 self.points.points + self.structures.solids + extras
             )
 
