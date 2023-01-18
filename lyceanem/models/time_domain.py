@@ -20,6 +20,7 @@ def calculate_scattering(
     scattering=0,
     elements=False,
     sampling_freq=1e9,
+    los=False,
     num_samples=10000,
     mesh_resolution=0.5,
     antenna_axes=np.eye(3),
@@ -67,11 +68,7 @@ def calculate_scattering(
     """
 
     time_index = np.linspace(0, num_samples / sampling_freq, num_samples)
-    if desired_E_axis.size > 3:
-        # multiple excitations requried
-        multiE = True
-    else:
-        multiE = False
+    multiE = False
 
     num_sources = len(np.asarray(aperture_coords.points))
     num_sinks = len(np.asarray(sink_coords.points))
@@ -294,6 +291,7 @@ def calculate_scattering(
         np.asarray(scatter_points.points).astype(np.float32),
         environment_triangles,
         scattering + 1,
+        line_of_sight=los,
     )
 
     if not elements:

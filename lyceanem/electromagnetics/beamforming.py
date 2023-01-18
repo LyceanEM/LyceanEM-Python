@@ -113,20 +113,105 @@ def ArbitaryCoherenceWeights(source_coords, target_coord, wavelength):
     return weights
 
 
-def TimeDelayWeights(source_coords, target_coord, magnitude=1.0):
+def TimeDelayWeights(source_coords, steering_vector, magnitude=1.0, maximum_delay=10):
     """
-    Generate time delay weights to focus on a target coordinate
+    Generate time delay weights to focus on a target coordinate, with delays in nanoseconds
     """
     weights = np.zeros((len(source_coords)), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
-    dist = distance.cdist(source_coords, target_coord)
-    dist = dist - np.min(dist)
-    # calculate required time delays, and then convert to phase delays
-    delays = dist / scipy.constants.speed_of_light
+    dist = np.sqrt(
+        np.abs(
+            (source_coords[:, 0] - steering_vector.ravel()[0] * 1e9) ** 2
+            + (source_coords[:, 1] - steering_vector.ravel()[1] * 1e9) ** 2
+            + (source_coords[:, 2] - steering_vector.ravel()[2] * 1e9) ** 2
+        )
+    )
+    dist=dist-np.min(dist)
+
+
+    # calculate required time delays, and then convert to nanoseconds, stored as a complex number with the magnitude weights
+    delays = (dist/scipy.constants.speed_of_light)*1e9
     weights = magnitude + delays * 1j
     return weights
 
 
+def TimeDelayBeamform(excitation_function, weights, sampling_rate):
+    """
+    The time delay beamform function takes an n by 2 or n by 3 array, and applies the supplied time delay weights to each by rolling each slice of the array by the required number of sampling intervals.
+    Only positive time delays should be applied, but if positive and negative values are required for weighting, a constant value should be applied so that no delay is less than 0ns.
+
+    Parameters
+    ----------
+    excitation_function : float
+        excitation function for time domain antenna array
+    weights : complex
+        magnitude is the real part, while the complex part is the time_delay in ns
+    sampling_rate : float
+        sampling rate in Hz, used to calculate the shifts to align the excitation function.
+
+    Returns
+    -------
+    beamformed_function
+
+    """
+    #extract delays and convert to seconds, then integrer shifts
+    delay = (sampling_rate * (np.imag(weights)*1e-9)).astype(int).ravel()
+    if (len(excitation_function.shape) == 2):
+        magnitudes = np.real(weights).reshape(-1, 1)
+    elif (len(excitation_function.shape) == 3):
+        magnitudes = np.real(weights).reshape(-1, 1, 1)
+    elif (len(excitation_function.shape)==4):
+        magnitudes = np.real(weights).reshape(-1, 1, 1,1)
+
+    for row in range(excitation_function.shape[0]):
+        excitation_function = shift_slice(excitation_function, row, delay[row])
+
+    excitation_function = excitation_function * magnitudes
+
+    return excitation_function
+
+
+def shift_slice(array, row, shift):
+    """
+
+
+    Parameters
+    ----------
+    array : TYPE
+        DESCRIPTION.
+    row : TYPE
+        DESCRIPTION.
+    shift : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    array : TYPE
+        DESCRIPTION.
+
+    """
+    if len(array.shape) == 2:
+        array[row, :] = np.roll(array[row, :], shift)
+        if shift > 0:
+            array[row, :shift] = 0
+        elif shift < 0:
+            array[row, -shift:] = 0
+
+    if len(array.shape) == 3:
+        array[row, :, :] = np.roll(array[row, :, :], shift)
+        if shift > 0:
+            array[row, :, :shift] = 0
+        elif shift < 0:
+            array[row, :, -shift:] = 0
+
+    if len(array.shape) == 4:
+        array[row, :,:, :] = np.roll(array[row, :,:, :], shift)
+        if shift > 0:
+            array[row, :,:, :shift] = 0
+        elif shift < 0:
+            array[row, :,:, -shift:] = 0
+
+    return array
 @njit(cache=True, nogil=True)
 def EGCWeights(
     Etheta,

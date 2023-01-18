@@ -2730,7 +2730,7 @@ def TimeDomainv3(
     point_informationv2 : point data type
         currently has position, normal vector, and electric weighting in each axis, to allow for polarised scattering.
     full_index : int array
-        index of all sucesful ray paths from source (1 to source_num+1), to sink (source_num+1 to sink_num+source_num+1), with all intermediate steps
+        index of all succesful ray paths from source (1 to source_num+1), to sink (source_num+1 to sink_num+source_num+1), with all intermediate steps
     scattering_coefficient : float
         allows for exploration of different spreading factors
     wavelength : float
@@ -2929,6 +2929,8 @@ def TimeDomainv3(
         wake_times = cp.asnumpy(d_wake_time)
 
     if wake_times.size > 1:
+        print(time_map.shape)
+        print(source_chunking)
         if np.max((wake_times - np.min(wake_times)) / time_step) >= 1.0:
             corrected_time_map = np.empty_like(time_map)
             timeadjustments = np.round(
