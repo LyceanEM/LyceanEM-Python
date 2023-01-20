@@ -19,7 +19,7 @@ import copy
 # -------------------------------------------
 # LyceanEM uses Elevation and Azimuth to record spherical coordinates, ranging from -180 to 180 degrees in azimuth,
 # and from -90 to 90 degrees in elevation. In order to launch the aperture projection function, the resolution in
-# both azimuth and elevation is requried.
+# both azimuth and elevation is required.
 # In order to ensure a fast example, 37 points have been used here for both, giving a total of 1369 farfield points.
 #
 # The wavelength of interest is also an important variable for antenna array analysis, so we set it now for 10GHz,
