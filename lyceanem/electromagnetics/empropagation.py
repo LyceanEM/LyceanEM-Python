@@ -1140,19 +1140,19 @@ def freqdomainkernal(
                 scatter_index = i
 
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
-        wave_vector = (2.0 * cmath.pi) / wavelength
+        wave_vector = (2.0 * cmath.pi) / wavelength[0]
         # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
         if scatter_index == 0:
             loss = cmath.exp(lengths * wave_vector * 1j) * (
-                wavelength / (4 * cmath.pi * lengths)
+                wavelength[0] / (4 * cmath.pi * lengths)
             )
         elif scatter_index == 1:
             loss = cmath.exp(lengths * wave_vector * 1j) * (
-                wavelength / (4 * cmath.pi * lengths)
+                wavelength[0] / (4 * cmath.pi * lengths)
             )
         elif scatter_index == 2:
             loss = cmath.exp(lengths * wave_vector * 1j) * (
-                wavelength / (4 * cmath.pi * lengths)
+                wavelength[0] / (4 * cmath.pi * lengths)
             )
 
         ray_component[0] *= loss
@@ -2134,79 +2134,169 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
         the resultant scattering network for the provided ray paths
 
     """
+    #ctx = cuda.current_context()
+    #ctx.reset()
     free_mem, total_mem = cuda.current_context().get_memory_info()
-    max_mem = np.ceil(free_mem * 0.5).astype(int)
-
+    max_mem = np.ceil(free_mem).astype(np.int64)
     ray_num = full_index.shape[0]
     threads_in_block = 256
-    max_blocks = 65535
-    maximum_chunk_size = 2 ** 8
-    path_lengths = np.zeros((ray_num), dtype=np.float32)
-    scattering_network = np.zeros((source_num, sink_num, 3, 2), dtype=np.float64)
-    d_scattering_network = cuda.device_array(
-        (
-            scattering_network.shape[0],
-            scattering_network.shape[1],
-            scattering_network.shape[2],
-        ),
-        dtype=np.complex64,
-    )
-    d_scattering_network = cuda.to_device(scattering_network)
-    d_point_information = cuda.device_array(
-        point_information.shape[0], dtype=base_types.scattering_t
-    )
-    d_point_information = cuda.to_device(point_information)
-    d_wavelength = cuda.device_array((1), dtype=np.complex64)
-    d_wavelength = cuda.to_device(
-        np.csingle(np.ones((1), dtype=np.complex64) * wavelength)
-    )
     # divide in terms of a block for each source, then
     depthslice, _ = targettingindex(copy.deepcopy(full_index))
-    depthslice[:, 0] -= 1
-    depthslice[:, 1] -= source_num + 1
-    d_target_index = cuda.device_array(
-        (depthslice.shape[0], depthslice.shape[1]), dtype=np.int64
-    )
-    d_target_index = cuda.to_device(depthslice)
-    d_full_index = cuda.device_array(
-        (full_index.shape[0], full_index.shape[1]), dtype=np.int64
-    )
-    # d_paths=cuda.device_array((path_lengths.shape[0]),dtype=np.float32)
-    # d_polar_c=cuda.device_array((polar_coefficients.shape),dtype=np.complex64)
-    # paths=cp.zeros((path_lengths.shape[0]),dtype=np.float32)
-    # polar_c=cp.zeros((polar_coefficients.shape),dtype=np.complex64)
-    d_full_index = cuda.to_device(full_index)
-    # Here, we choose the granularity of the threading on our device. We want
-    # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
-    # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
 
-    grids = math.ceil(full_index.shape[0] / threads_in_block)
-    threads = threads_in_block
-    # print(grids,' blocks, ',threads,' threads')
-    # Execute the kernel
-    # cuda.profile_start()
-    freqdomainkernal[grids, threads](
-        d_full_index,
-        point_information,
-        d_target_index,
-        wavelength,
-        d_scattering_network,
-    )
-    # polaranddistance(d_full_index,d_point_information,polar_c,paths)
-    # cuda.profile_stop()
-    # ray_components[ray_chunks[n]:ray_chunks[n+1],:]=d_scatter_matrix.copy_to_host()
-    # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-    # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
-    # resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
-    # chunks=np.linspace(0,path_lengths.shape[0],math.ceil(path_lengths.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
-    # for n in range(chunks.shape[0]-1):
-    # polar_coefficients=d_polar_c.copy_to_host()
-    scattering_network = cp.asnumpy(d_scattering_network)
-    scattering_network_comp = scattering_network.view(dtype=np.complex128)[..., 0]
-    # scattering_network_comp = scattering_network[:, :, :, 0] + scattering_network[:, :, :, 1] * 1j
-    # path_lengths=d_paths.copy_to_host()
-    # print('Polar Mixing Progress {:3.0f}%'.format((source_index/source_num)*100))
 
+    memory_requirements=(source_num*sink_num*3*2*8)+depthslice.size*8+full_index.size*8
+    if memory_requirements>=(0.95*free_mem):
+        #chunking required
+        #print("Number of Chunks",np.ceil(memory_requirements/max_mem).astype(int)+1)
+        #create chunks based upon number of chunks required
+        num_chunks=np.ceil(memory_requirements / max_mem).astype(int) + 1
+        source_chunking = np.linspace(0, source_num, num_chunks + 1).astype(np.int32)
+        scattering_network = np.zeros(
+            (source_num, sink_num, 3, 2),
+            dtype=np.float64,
+        )
+        d_point_information = cuda.device_array(
+            point_information.shape[0], dtype=base_types.scattering_t
+        )
+        d_point_information = cuda.to_device(point_information)
+        d_wavelength = cuda.device_array((1), dtype=np.complex64)
+        d_wavelength = cuda.to_device(
+            np.csingle(np.ones((1), dtype=np.complex64) * wavelength)
+        )
+        #print(source_chunking)
+        #print(np.max(depthslice, axis=0))
+        #print(np.min(depthslice, axis=0))
+
+        for chunk_index in range(num_chunks):
+            sources = np.linspace(
+                source_chunking[chunk_index] + 1,
+                source_chunking[chunk_index + 1],
+                source_chunking[chunk_index + 1] - source_chunking[chunk_index],
+            ).astype(np.int64)
+            #temp_depthslice=copy.deepcopy(depthslice[np.isin(depthslice[:, 0], sources), :])
+            temp_index = copy.deepcopy(full_index[np.isin(full_index[:, 0], sources), :])
+            #temp_depthslice=copy.deepcopy(depthslice[np.logical_and(depthslice[:,0]>= source_chunking[chunk_index], depthslice[:,0] <= source_chunking[chunk_index+1]),:])
+            #temp_index = copy.deepcopy(full_index[np.logical_and(depthslice[:, 0] >= source_chunking[chunk_index],
+            #                                                          depthslice[:, 0] <= source_chunking[
+            #                                                              chunk_index + 1]), :])
+
+            temp_scattering_network = cp.zeros(
+                (source_chunking[chunk_index+1]-source_chunking[chunk_index], sink_num, 3, 2),
+                dtype=np.float64,
+            )
+            #make adjustments to the index to ensure the rays are routed correctly
+            temp_depthslice, _ = targettingindex(copy.deepcopy(temp_index))
+            temp_depthslice[:, 0] -= 1 + source_chunking[chunk_index]
+            temp_depthslice[:, 1] -= source_num + 1
+            #temp_depthslice[:,0]-=(source_chunking[chunk_index]+1)
+            #temp_depthslice[:,1] -=source_num + 1
+            #print(np.max(temp_depthslice, axis=0))
+            #print(np.min(temp_depthslice, axis=0))
+
+
+            #d_temp_target_index = cuda.device_array(
+            #    (temp_depthslice.shape[0], temp_depthslice.shape[1]), dtype=np.int64
+            #)
+            d_temp_target_index = cuda.to_device(temp_depthslice)
+            #d_temp_index = cuda.device_array(
+            #    (temp_index.shape[0], temp_index.shape[1]), dtype=np.int64
+            #)
+            d_temp_index = cuda.to_device(temp_index)
+            # Here, we choose the granularity of the threading on our device. We want
+            # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
+            # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
+
+            # d_scattering_network = cuda.to_device(scattering_network)
+            grids = math.ceil(temp_index.shape[0] / threads_in_block)
+            threads = threads_in_block
+            # print(grids,' blocks, ',threads,' threads')
+            # Execute the kernel
+            # cuda.profile_start()
+            freqdomainkernal[grids, threads](
+                d_temp_index,
+                d_point_information,
+                d_temp_target_index,
+                d_wavelength,
+                temp_scattering_network,
+            )
+            # polaranddistance(d_full_index,d_point_information,polar_c,paths)
+            # cuda.profile_stop()
+            # ray_components[ray_chunks[n]:ray_chunks[n+1],:]=d_scatter_matrix.copy_to_host()
+            # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
+            # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
+            # resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
+            # chunks=np.linspace(0,path_lengths.shape[0],math.ceil(path_lengths.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
+            # for n in range(chunks.shape[0]-1):
+            # polar_coefficients=d_polar_c.copy_to_host()
+            scattering_network[source_chunking[chunk_index]:source_chunking[chunk_index+1],:,:,:] = cp.asnumpy(temp_scattering_network)
+            #test= cp.asnumpy(temp_scattering_network)
+            #print(temp_scattering_network.shape)
+            del temp_scattering_network, d_temp_index, d_temp_target_index
+
+        scattering_network_comp = scattering_network.view(dtype=np.complex128)[..., 0]
+    else:
+        #free to process
+        depthslice[:, 0] -= 1
+        depthslice[:, 1] -= source_num + 1
+        #scattering_network = np.zeros((source_num, sink_num, 3, 2), dtype=np.float64)
+        d_scattering_network = cp.zeros(
+            (source_num, sink_num, 3, 2),
+            dtype=np.float64,
+        )
+        #d_scattering_network[:,:,:,:]=0.0
+        d_point_information = cuda.device_array(
+            point_information.shape[0], dtype=base_types.scattering_t
+        )
+        d_point_information = cuda.to_device(point_information)
+        d_wavelength = cuda.device_array((1), dtype=np.complex64)
+        d_wavelength = cuda.to_device(
+            np.csingle(np.ones((1), dtype=np.complex64) * wavelength)
+        )
+
+        d_target_index = cuda.device_array(
+            (depthslice.shape[0], depthslice.shape[1]), dtype=np.int64
+        )
+        d_target_index = cuda.to_device(depthslice)
+        d_full_index = cuda.device_array(
+            (full_index.shape[0], full_index.shape[1]), dtype=np.int64
+        )
+        # d_paths=cuda.device_array((path_lengths.shape[0]),dtype=np.float32)
+        # d_polar_c=cuda.device_array((polar_coefficients.shape),dtype=np.complex64)
+        # paths=cp.zeros((path_lengths.shape[0]),dtype=np.float32)
+        # polar_c=cp.zeros((polar_coefficients.shape),dtype=np.complex64)
+        d_full_index = cuda.to_device(full_index)
+        # Here, we choose the granularity of the threading on our device. We want
+        # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
+        # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
+
+        #d_scattering_network = cuda.to_device(scattering_network)
+        grids = math.ceil(full_index.shape[0] / threads_in_block)
+        threads = threads_in_block
+        # print(grids,' blocks, ',threads,' threads')
+        # Execute the kernel
+        # cuda.profile_start()
+        freqdomainkernal[grids, threads](
+            d_full_index,
+            d_point_information,
+            d_target_index,
+            d_wavelength,
+            d_scattering_network,
+        )
+        # polaranddistance(d_full_index,d_point_information,polar_c,paths)
+        # cuda.profile_stop()
+        # ray_components[ray_chunks[n]:ray_chunks[n+1],:]=d_scatter_matrix.copy_to_host()
+        # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
+        # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
+        # resultant_rays[ray_chunks[n]:ray_chunks[n+1],:]=d_channels.copy_to_host()
+        # chunks=np.linspace(0,path_lengths.shape[0],math.ceil(path_lengths.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
+        # for n in range(chunks.shape[0]-1):
+        # polar_coefficients=d_polar_c.copy_to_host()
+        scattering_network = cp.asnumpy(d_scattering_network)
+        scattering_network_comp = scattering_network.view(dtype=np.complex128)[..., 0]
+        # scattering_network_comp = scattering_network[:, :, :, 0] + scattering_network[:, :, :, 1] * 1j
+        # path_lengths=d_paths.copy_to_host()
+        # print('Polar Mixing Progress {:3.0f}%'.format((source_index/source_num)*100))
+        #ctx.reset()
     return scattering_network_comp
 
 

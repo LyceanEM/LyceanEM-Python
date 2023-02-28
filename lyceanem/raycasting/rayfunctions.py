@@ -438,9 +438,9 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
 
     mem_dt = timer() - start
     # deallocate memory on gpu
-    ctx = cuda.current_context()
-    deallocs = ctx.deallocations
-    deallocs.clear()
+    #ctx = cuda.current_context()
+    #deallocs = ctx.deallocations
+    #deallocs.clear()
     # final_index=np.delete(propagation_index,np.where(propagation_index[:,0]==0),axis=0)
     final_index = np.delete(ray_index, ray_flags, axis=0)
 
@@ -2203,9 +2203,9 @@ def launchRaycaster1Dv3(
     )
     mem_dt = timer() - start
     # deallocate memory on gpu
-    ctx = cuda.current_context()
-    deallocs = ctx.deallocations
-    deallocs.clear()
+    #ctx = cuda.current_context()
+    #deallocs = ctx.deallocations
+    #deallocs.clear()
     # print("First Stage: Prep {:3.1f} s, Raycasting  {:3.1f} s, Path Processing {:3.1f} s".format(prep_dt,kernel_dt,mem_dt) )
     return filtered_index, final_index, RAYS_CAST
 
@@ -2379,9 +2379,8 @@ def chunkingRaycaster1Dv3(
             filtered_index2 = np.append(filtered_index2, temp_filtered_index2, axis=0)
             final_index2 = np.append(final_index2, temp_final_index2, axis=0)
             # deallocate memory on gpu
-            ctx = cuda.current_context()
-            deallocs = ctx.deallocations
-            deallocs.clear()
+            #ctx = cuda.current_context()
+            #ctx.reset()
     else:
         second_ray_payload = charge_rays_environment1Dv2(
             sources, sinks, scattering_points, target_indexing
@@ -2431,9 +2430,9 @@ def chunkingRaycaster1Dv3(
         )
         mem_dt = timer() - start
         # deallocate memory on gpu
-        ctx = cuda.current_context()
-        deallocs = ctx.deallocations
-        deallocs.clear()
+        #ctx = cuda.current_context()
+        #deallocs = ctx.deallocations
+        #deallocs.clear()
         # print("Second Stage: Prep {:3.1f} s, Raycasting  {:3.1f} s, Path Processing {:3.1f} s".format(prep_dt,kernel_dt,mem_dt) )
     return filtered_index2, final_index2, RAYS_CAST
 

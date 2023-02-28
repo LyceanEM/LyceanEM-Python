@@ -108,7 +108,7 @@ def ArbitaryCoherenceWeights(source_coords, target_coord, wavelength):
     # calculate required time delays, and then convert to phase delays
     delays = dist / scipy.constants.speed_of_light
     weights = np.exp(
-        1j * 2 * np.pi * (scipy.constants.speed_of_light / wavelength) * delays
+        -1j * 2 * np.pi * (scipy.constants.speed_of_light / wavelength) * delays
     )
     return weights
 
@@ -127,10 +127,10 @@ def TimeDelayWeights(source_coords, steering_vector, magnitude=1.0, maximum_dela
         )
     )
     dist=dist-np.min(dist)
-
-
+    #dist is now relative distance from target vector, want to delay closest maximum, then have farthest be delayed zero
     # calculate required time delays, and then convert to nanoseconds, stored as a complex number with the magnitude weights
     delays = (dist/scipy.constants.speed_of_light)*1e9
+    delays=np.max(delays) - delays
     weights = magnitude + delays * 1j
     return weights
 
