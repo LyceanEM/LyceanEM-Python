@@ -251,25 +251,38 @@ def axes_from_normal(boresight_vector, boresight_along="x"):
 
     return rotation.as_matrix()
 
-def mesh_conversion(object):
+def mesh_conversion(conversion_object):
     """
     Convert the provide file object into triangle_t format
 
     Parameters
     ----------
-    object : solid object to be converted into triangle_t format, could be open3d trianglemesh, solid, or antenna structure
+    conversion_object : solid object to be converted into triangle_t format, could be open3d trianglemesh, solid, or antenna structure
 
     Returns
     -------
     triangles : numpy array of type triangle_t
     """
-    if isinstance(object,base_classes.structures):
+    if isinstance(conversion_object,base_classes.structures):
         triangles = object.triangles_base_raycaster()
-    elif isinstance(object,base_classes.antenna_structures):
+    elif isinstance(conversion_object,base_classes.antenna_structures):
         exported_structure=base_classes.structures(solids=object.export_all_structures())
         triangles=exported_structure.triangles_base_raycaster()
-    elif isinstance(object,type(o3d.geometry.TriangleMesh())):
+    elif isinstance(conversion_object,type(o3d.geometry.TriangleMesh())):
         triangles=RF.convertTriangles(object)
+    elif isinstance(conversion_object,list):
+        triangles = np.empty((0), dtype=base_types.triangle_t)
+        #print("Detected List")
+        for item in conversion_object:
+            #print(type(item))
+            #print(isinstance(item,type(o3d.geometry.TriangleMesh())))
+            if isinstance(item, type(o3d.geometry.TriangleMesh())):
+                triangles = np.append(triangles,RF.convertTriangles(item),axis=0)
+                #print(len(triangles))
+            elif isinstance(item, base_classes.structures):
+                triangles=np.append(triangles,item.triangles_base_raycaster(),axis=0)
+                #print(len("B ",triangles))
+
     else:
         print("no structures")
         print(type(object))
