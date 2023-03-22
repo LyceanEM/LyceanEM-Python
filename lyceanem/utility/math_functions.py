@@ -17,6 +17,18 @@ def pol2cart(rho, phi):
     y = rho * np.sin(phi)
     return (x, y)
 
+def polar2cart(theta,phi,r):
+    x = r*np.sin(phi) * np.cos(theta)
+    y = r*np.sin(phi) * np.sin(theta)
+    z = r*np.cos(phi)
+    return x,y,z
+
+def cart2polar(x,y,z):
+    r=np.sqrt(x ** 2 + y ** 2 + z ** 2)
+    theta=np.arctan2(y, x)
+    phi =np.arctan2(np.sqrt(x ** 2 + y ** 2), z)
+    return theta,phi,r
+
 
 @njit
 def cart2sph(x, y, z):

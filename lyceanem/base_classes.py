@@ -770,6 +770,106 @@ class antenna_pattern(object3d):
             self.pattern[:, :, 0] = Ea.transpose() + norm
             self.pattern[:, :, 1] = Eb.transpose() + norm
 
+    def import_ffe(self,file_path):
+        """
+        tested for .ffe files with theta in the range 0 to 180 degrees, and phi in the range -180 to 180 degrees
+        Parameters
+        ----------
+        file_path
+
+        Returns
+        -------
+
+        """
+        import copy
+
+        # Open the file and read the comments
+        with open(file_path, 'r') as f:
+            comments = f.readlines()
+
+            # Extract lines starting with #
+        comment_lines = [line.strip() for line in comments if line.startswith('#')]
+
+        # Process the comment lines for keywords
+        for line in comment_lines:
+            if 'source' in line.lower():
+                antenna_name = line.split(':')[1].strip()
+            elif 'result type' in line.lower():
+                pattern_type = line.split(':')[1].strip()
+            elif "frequency" in line.lower():
+                frequency = float(line.split(':')[1])
+            elif "coordinate system" in line.lower():
+                coordinate_sys = line.split(':')[1].strip()
+            elif "efficiency" in line.lower():
+                antenna_efficiency = float(line.split(':')[1])
+
+        # Print the metadata and the first 10 x, y, and ffp values
+        print('Antenna name:', antenna_name)
+        print('Antenna type:', pattern_type)
+        # print('X:', x[:10])
+        # print('Y:', y[:10])
+        # print('FFP:', ffp[:10])
+        if coordinate_sys == "Spherical":
+            datafile = np.loadtxt(file_path, comments=['#', '*'])
+            el = 90 - datafile[:, 0]
+            az = datafile[:, 1]
+            # x,y,z=MF.polar2cart(theta, phi, np.ones(theta.shape))
+            # azimuth,elevation,r=MF.cart2sph(x,y,z)
+            elev_res = np.unique(el).size
+            az_res = np.unique(az).size
+            if pattern_type == "Directivity":
+                etheta_field = np.flipud((datafile[:, 2] + 1j * datafile[:, 3]).reshape(az_res, elev_res).transpose())
+                ephi_field = np.flipud((datafile[:, 4] + 1j * datafile[:, 5]).reshape(az_res, elev_res).transpose())
+
+            # elevation=np.flipud(GF.thetatoelevation(theta).reshape(phi_res, theta_res).transpose())
+            # azimuth=phi.reshape(phi_res, theta_res).transpose()
+            # etheta=etheta_field
+            # ephi=np.flipud(ephi_field)
+        self.pattern_frequency=frequency
+        self.azimuth_resolution=az_res
+        self.elevation_resolution=elev_res
+        self.az_mesh = np.flipud(az.reshape(az_res, elev_res).transpose())
+        self.elev_mesh_mesh = np.flipud(el.reshape(az_res, elev_res).transpose())
+        self.pattern[:, :, 0] = copy.deepcopy(etheta_field)
+        self.pattern[:, :, 1] = copy.deepcopy(ephi_field)
+        self.display_pattern(desired_pattern="Power")
+
+        return True
+
+    def export_ffe(self, path, source_name="Antenna Export"):
+        import lyceanem
+        destination_path = path.with_suffix(".ffe")
+        filetype = "Far Field"
+        fileformat = "8"
+        import datetime
+        # Get the current date and time
+        now = datetime.datetime.now()
+        # Format the date and time as a string
+        date_string = now.strftime("%Y-%m-%d %H:%M:%S")
+        header = "##File Type: " + filetype + "\n" + "##File Format: " + fileformat + "\n" + "##Source: " + source_name + "\n" + "##Date: " + date_string + "\n" + "** File exported by LyceanEM Version " + lyceanem.__version__ + "\n" + "\n"
+        config = "LyceanEM Standard"
+        coordinates = "Spherical"
+        resulttype = "Directivity"
+        efficiency = 1.0
+        comments = "#Configuration Name: " + config + "\n" + "#Frequency: " + str(
+            self.pattern_frequency) + "\n" + "#Coordinate System: " + coordinates + "\n" + "#No. of Theta Samples: " + str(
+            self.elevation_resolution) + "\n" + "#No. of Phi Samples: " + str(
+            self.azimuth_resolution) + "\n" + "#Result Type: " + resulttype + "\n" + "#Efficiency: " + str(
+            efficiency) + "\n" + "#No. of Header Lines: 1" + "\n" + '#       "Theta"             "Phi"           "Re(Etheta)"       "Im(Etheta)"        "Re(Ephi)"         "Im(Ephi)"   "Directivity(Theta)" "Directivity(Phi)" "Directivity(Total)"'
+        theta_slice = 90 - np.flipud(self.elev_mesh).transpose().ravel()
+        phi_slice = np.flipud(self.az_mesh).transpose().ravel()
+        real_etheta = np.real(np.flipud(self.pattern[:, :, 0]).transpose().ravel())
+        imag_etheta = np.imag(np.flipud(self.pattern[:, :, 0]).transpose().ravel())
+        real_ephi = np.real(np.flipud(self.pattern[:, :, 1]).transpose().ravel())
+        imag_ephi = np.imag(np.flipud(self.pattern[:, :, 1]).transpose().ravel())
+        dtheta, dphi, dtotal, _ = self.directivity()
+        datablock = np.array([theta_slice, phi_slice, real_etheta, imag_etheta, real_ephi, imag_ephi,
+                              20 * np.log10(dtheta.transpose().ravel()), 20 * np.log10(dphi.transpose().ravel()),
+                              10 * np.log10(dtotal.transpose().ravel())]).transpose()
+        text = header + "\n" + comments + "\n"
+        np.savetxt(destination_path, datablock, header=text, comments="", fmt="%10.8e")
+
+        return True
     def export_pattern(self, file_location):
         """
         takes the file location and exports the pattern as a .dat file
@@ -1464,6 +1564,8 @@ class array_pattern:
         )
 
         return field_points
+
+
 
     def directivity(self):
         """

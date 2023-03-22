@@ -2294,32 +2294,100 @@ def chunkingRaycaster1Dv3(
     sources, sinks, scattering_points, filtered_index, environment_local, terminate_flag
 ):
     start = timer()
-    sink_index = np.arange(
-        sources.shape[0] + 1, sources.shape[0] + 1 + sinks.shape[0]
-    ).reshape(sinks.shape[0], 1)
-    scattering_point_index = np.arange(
-        np.max(sink_index) + 1, np.max(sink_index) + 1 + scattering_points.shape[0]
-    ).reshape(scattering_points.shape[0], 1)
-    if not terminate_flag:
-        target_indexing = create_model_index(
-            filtered_index, sink_index, scattering_point_index
-        )
-    else:
-        target_indexing = create_model_index(
-            filtered_index, sink_index, np.empty((0, 0), dtype=np.int32)
-        )  # only target rays at sinks
-
-    prep_dt = timer() - start
-    raystart = timer()
-    RAYS_CAST = 0
-    # the rays must fit in GPU memory, aim for no more than 80% utilisation
-    # establish memory limits
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.5).astype(np.int64)
     ray_limit = (
         np.floor(np.floor((max_mem - environment_local.nbytes) / base_types.ray_t.size) / 1e7)
         * 1e7
     ).astype(np.int64)
+    sink_index = np.arange(
+        sources.shape[0] + 1, sources.shape[0] + 1 + sinks.shape[0]
+    ).reshape(sinks.shape[0], 1)
+    scattering_point_index = np.arange(
+        np.max(sink_index) + 1, np.max(sink_index) + 1 + scattering_points.shape[0]
+    ).reshape(scattering_points.shape[0], 1)
+    prep_dt = timer() - start
+    raystart = timer()
+    RAYS_CAST = 0
+    if not terminate_flag:
+        target_indexing = create_model_index(
+            filtered_index, sink_index, scattering_point_index
+        )
+    else:
+        if (filtered_index.shape[0]*sink_index.shape[0])<ray_limit:
+            target_indexing = create_model_index(
+                filtered_index, sink_index, np.empty((0, 0), dtype=np.int32)
+            )  # only target rays at sinks
+        else:
+            # the rays must fit in GPU memory, aim for no more than 80% utilisation
+            # establish memory limits
+            sub_filtered_index = np.array_split(
+                filtered_index, np.ceil(filtered_index.shape[0]*sink_index.shape[0] / ray_limit).astype(int)
+            )
+            chunknum = len(sub_filtered_index)
+            filtered_index2 = np.empty((0, filtered_index.shape[1]+1), dtype=np.int32)
+            final_index2 = np.empty((0, filtered_index.shape[1]+1), dtype=np.int32)
+            # print('chunking total of ',target_indexing.shape[0],' rays in ',chunknum,' batches')
+            for chunkindex in range(chunknum):
+                sub_target=create_model_index(
+                sub_filtered_index[chunkindex], sink_index, np.empty((0, 0), dtype=np.int32)
+                )
+                # cycle the raycaster over the sub arrays
+                threads_in_block = 256
+                second_ray_payload = charge_rays_environment1Dv2(
+                    sources, sinks, scattering_points, sub_target
+                )
+                # ray_chunks=np.linspace(0,ray_num,math.ceil(ray_num/chunk_size)+1,dtype=np.int32)
+                # for idx in range(len(triangle_chunk)-1):
+                d_environment = cuda.device_array(
+                    len(environment_local), dtype=base_types.triangle_t
+                )
+                cuda.to_device(environment_local, to=d_environment)
+                d_chunk_payload = cuda.device_array(
+                    [second_ray_payload.shape[0]], dtype=base_types.ray_t
+                )
+                cuda.to_device(second_ray_payload, to=d_chunk_payload)
+                #
+                # ray_temp=np.empty((chunk_ray_size),dtype=np.bool)
+                # ray_temp[:]=first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']
+                # distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
+                # distance_temp[:]=math.inf
+                # dist_list=cuda.to_device(distance_temp)
+                # d_ray_flag=cuda.to_device(ray_temp)
+                # Here, we choose the granularity of the threading on our device. We want
+                # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
+                # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
+                grids = math.ceil(second_ray_payload.shape[0] / threads_in_block)
+                threads = threads_in_block
+                # Execute the kernel
+                # cuda.profile_start()
+                # kernel1Dv2[grids, threads](d_chunk_payload,d_environment,d_ray_flag)
+                kernel1Dv3[grids, threads](d_chunk_payload, d_environment)
+                # cuda.profile_stop()
+                # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
+                second_ray_payload = d_chunk_payload.copy_to_host()
+                # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']=d_chunk_payload['intersect'].copy_to_host()
+                # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['dist']=d_chunk_payload['dist'].copy_to_host()
+
+                # cuda.close()
+                kernel_dt = timer() - raystart
+                start = timer()
+                RAYS_CAST += second_ray_payload.shape[0]
+                temp_filtered_index2, temp_final_index2 = rayHits1Dv2(
+                    second_ray_payload, sub_target, sink_index
+                )
+                mem_dt = timer() - start
+                filtered_index2 = np.append(filtered_index2, temp_filtered_index2, axis=0)
+                final_index2 = np.append(final_index2, temp_final_index2, axis=0)
+                # deallocate memory on gpu
+                # ctx = cuda.current_context()
+                # ctx.reset()
+
+
+
+
+
+
     if target_indexing.shape[0] >= ray_limit:
         # need to split the array and process seperatly
 

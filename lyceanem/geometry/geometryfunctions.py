@@ -264,12 +264,12 @@ def mesh_conversion(conversion_object):
     triangles : numpy array of type triangle_t
     """
     if isinstance(conversion_object,base_classes.structures):
-        triangles = object.triangles_base_raycaster()
+        triangles = conversion_object.triangles_base_raycaster()
     elif isinstance(conversion_object,base_classes.antenna_structures):
-        exported_structure=base_classes.structures(solids=object.export_all_structures())
+        exported_structure=base_classes.structures(solids=conversion_object.export_all_structures())
         triangles=exported_structure.triangles_base_raycaster()
     elif isinstance(conversion_object,type(o3d.geometry.TriangleMesh())):
-        triangles=RF.convertTriangles(object)
+        triangles=RF.convertTriangles(conversion_object)
     elif isinstance(conversion_object,list):
         triangles = np.empty((0), dtype=base_types.triangle_t)
         #print("Detected List")
@@ -285,7 +285,7 @@ def mesh_conversion(conversion_object):
 
     else:
         print("no structures")
-        print(type(object))
+        print(type(conversion_object))
         triangles = np.empty((0), dtype=base_types.triangle_t)
 
     return triangles
