@@ -837,6 +837,22 @@ class antenna_pattern(object3d):
         return True
 
     def export_ffe(self, path, source_name="Antenna Export"):
+        """
+        Export Antenna Pattern as .ffe file for import by FEKO, and programs supporting this format.
+        This export assumes that the pattern frequency property has been populated, and translates the azimuth and elevation coordinates into theta/phi coordinates in the range 0-180 and 0-360 respectively.
+
+        Parameters
+        ----------
+        path
+        source_name
+
+        Returns
+        -------
+
+        """
+        if self.arbitary_pattern_format == "ExEyEz":
+            self.transmute_pattern()
+
         import lyceanem
         destination_path = path.with_suffix(".ffe")
         filetype = "Far Field"
@@ -856,18 +872,22 @@ class antenna_pattern(object3d):
             self.elevation_resolution) + "\n" + "#No. of Phi Samples: " + str(
             self.azimuth_resolution) + "\n" + "#Result Type: " + resulttype + "\n" + "#Efficiency: " + str(
             efficiency) + "\n" + "#No. of Header Lines: 1" + "\n" + '#       "Theta"             "Phi"           "Re(Etheta)"       "Im(Etheta)"        "Re(Ephi)"         "Im(Ephi)"   "Directivity(Theta)" "Directivity(Phi)" "Directivity(Total)"'
-        theta_slice = 90 - np.flipud(self.elev_mesh).transpose().ravel()
-        phi_slice = np.flipud(self.az_mesh).transpose().ravel()
-        real_etheta = np.real(np.flipud(self.pattern[:, :, 0]).transpose().ravel())
-        imag_etheta = np.imag(np.flipud(self.pattern[:, :, 0]).transpose().ravel())
-        real_ephi = np.real(np.flipud(self.pattern[:, :, 1]).transpose().ravel())
-        imag_ephi = np.imag(np.flipud(self.pattern[:, :, 1]).transpose().ravel())
+        theta_slice = 90 - np.flipud(self.elev_mesh[:, 1:]).transpose().ravel()
+        phi_slice = np.mod(np.flipud(self.az_mesh[:, 1:]).transpose().ravel(), 360)
+        real_etheta = np.real(np.flipud(self.pattern[:, 1:, 0]).transpose().ravel())
+        imag_etheta = np.imag(np.flipud(self.pattern[:, 1:, 0]).transpose().ravel())
+        real_ephi = np.real(np.flipud(self.pattern[:, 1:, 1]).transpose().ravel())
+        imag_ephi = np.imag(np.flipud(self.pattern[:, 1:, 1]).transpose().ravel())
         dtheta, dphi, dtotal, _ = self.directivity()
         datablock = np.array([theta_slice, phi_slice, real_etheta, imag_etheta, real_ephi, imag_ephi,
-                              20 * np.log10(dtheta.transpose().ravel()), 20 * np.log10(dphi.transpose().ravel()),
-                              10 * np.log10(dtotal.transpose().ravel())]).transpose()
-        text = header + "\n" + comments + "\n"
-        np.savetxt(destination_path, datablock, header=text, comments="", fmt="%10.8e")
+                              20 * np.log10(dtheta[:, 1:].transpose().ravel()),
+                              20 * np.log10(dphi[:, 1:].transpose().ravel()),
+                              10 * np.log10(dtotal[:, 1:].transpose().ravel())]).transpose()
+        datablock[np.where(np.isinf(datablock))] = -1e6
+        # sort for increasing angles only
+        sorted_datablock = datablock[np.lexsort((datablock[:, 0], datablock[:, 1])), :]
+        text = header + "\n" + comments
+        np.savetxt(destination_path, sorted_datablock, header=text, comments="", fmt="%10.8e")
 
         return True
     def export_pattern(self, file_location):
