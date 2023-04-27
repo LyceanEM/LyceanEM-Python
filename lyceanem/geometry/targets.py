@@ -133,7 +133,7 @@ def source_cloud_from_shape(o3dshape, ideal_point_sep, maxdeviation=0.01):
         ideal_point_sep - np.mean(source_cloud.compute_nearest_neighbor_distance())
     ) / ideal_point_sep
     loopcount = 0
-    maxloops = 20
+    maxloops = 21
     errorlog = np.full((maxloops + 1, 2), np.nan)
     while np.abs(error) > maxdeviation:
         # point sampling is to high, put in control logic for allowable variation in terms of the maxdeviation (fraction of ideal_point_sep)
@@ -141,7 +141,7 @@ def source_cloud_from_shape(o3dshape, ideal_point_sep, maxdeviation=0.01):
         loopcount += 1
         errorlog[loopcount, 0] = error
         errorlog[loopcount, 1] = np.ceil(num_points).astype(int)
-        if loopcount >= maxloops:
+        if loopcount >= maxloops-1:
             print("ran out counter, aborting")
             break
         if error < 0:

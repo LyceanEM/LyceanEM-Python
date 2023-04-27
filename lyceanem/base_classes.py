@@ -769,6 +769,9 @@ class antenna_pattern(object3d):
             self.pattern_frequency = freq * 1e6
             self.pattern[:, :, 0] = Ea.transpose() + norm
             self.pattern[:, :, 1] = Eb.transpose() + norm
+        elif file_location.suffix ==".ffe":
+            #file is .ffe format
+            self.import_ffe(file_location)
 
     def import_ffe(self,file_path):
         """
