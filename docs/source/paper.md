@@ -96,7 +96,7 @@ The Time domain model also produces comparable results, as shown in \autoref{fig
 
 ## Generation of Training Datasets for Machine Learning
 
-In addition to the initial uses, `LyceanEM` allows the uses to generate datasets for use in Machine Learning. This is of specific interest for channel models from spatial mapping by computer vision, allowing `LyceanEM` to predict the scattering characteristics of the local environment from computer vision or LIDAR based spatial mapping. This allows the creation of Generative Adversarial Networks for spatial multiplexing.
+In addition to the initial uses, `LyceanEM` allows the user to generate datasets for use in Machine Learning. This is of specific interest for channel models from spatial mapping by computer vision, allowing `LyceanEM` to predict the scattering characteristics of the local environment from computer vision or LIDAR based spatial mapping. This allows the creation of Generative Adversarial Networks for spatial multiplexing.
 
 
 # References
