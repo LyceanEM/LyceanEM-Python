@@ -47,9 +47,11 @@ Platforms at Radar 2022. This capability in an open source package enables excit
 computer vision. The flexible and efficient nature of the scattering model allows for exciting exploration of the signal 
 sources in the local environment on low power computing devices.  
 
+The benefit of this emphasis on rapid virtual prototyping is to allow the user to quickly establish the potential performance for a desired aperture and frequency, on a desired platform with relatively little design effort. Comparatively, the otherwise excellent commercial solvers like CST, HFSS, FEKO etc can provide excellent simulation fidelity, but require a significant design investment before the simulation can be run. This lack of coverage leads to an uncertain design process for antenna arrays in which the requirements for an antenna array can be specified without reference to the physical limitations imposed by the desired aperture size, location, polarisation, beamforming envelope etc. `LyceanEM` allows these factors to all be predicted rapidly, and the beamforming architecture to be simulated in a realistic way, providing crucial design insight at a low cost. 
+
 # Usage Examples
 
-While some usage examples are presented here, many more are included in the documentation for `LyceanEM`, which can be found at [https://lyceanem-python.readthedocs.io/en/latest/](https://lyceanem-python.readthedocs.io/en/latest/). 
+While some usage examples are presented here, many more are included in the documentation for `LyceanEM`, which can be found at [https://documentation.lyceanem.com/en/latest/](https://documentation.lyceanem.com/en/latest/). 
 
 ## Virtual Prototyping and Antenna Array Beamforming Research
 
