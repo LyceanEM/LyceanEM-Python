@@ -17,6 +17,7 @@ def aperture_projection(
     wavelength=1.0,
     az_range=np.linspace(-180.0, 180.0, 19),
     elev_range=np.linspace(-90.0, 90.0, 19),
+    farfield_distance=2.0
 ):
     """
 
@@ -61,6 +62,7 @@ def aperture_projection(
         vertex_area=triangle_areas,
         az_range=az_range,
         elev_range=elev_range,
+        shell_range=farfield_distance
     )
     directivity_envelope[:, :] = (4 * np.pi * visible_patterns) / (wavelength ** 2)
 
