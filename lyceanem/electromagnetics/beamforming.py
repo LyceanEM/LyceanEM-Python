@@ -7,7 +7,7 @@ import open3d as o3d
 import scipy.stats
 from matplotlib import cm
 from matplotlib.patches import Wedge
-from numba import cuda, float32, njit, prange
+from numba import cuda, float32, njit, prange, jit
 from scipy.spatial import distance
 import matplotlib.animation as animation
 from ..raycasting import rayfunctions as RF
@@ -75,7 +75,7 @@ def WavefrontWeights(source_coords, steering_vector, wavelength):
     """
     calculate the weights for a given set of element coordinates, wavelength, and steering vector (cartesian)
     """
-    weights = np.zeros((source_coords.shape[0]), dtype=np.float64)
+    weights = np.zeros((source_coords.shape[0]), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
     # dist=distance.cdist(source_coords,(steering_vector*1e9))
     # _,_,_,dist=calc_dv(source_coords,(steering_vector*1e9))
@@ -91,7 +91,7 @@ def WavefrontWeights(source_coords, steering_vector, wavelength):
     dist = dist - np.min(dist)
     # calculate required time delays, and then convert to phase delays
     delays = dist / scipy.constants.speed_of_light
-    weights = np.exp(
+    weights[:] = np.exp(
         -1j * 2 * np.pi * (scipy.constants.speed_of_light / wavelength) * delays
     )
     return weights
@@ -101,13 +101,13 @@ def ArbitaryCoherenceWeights(source_coords, target_coord, wavelength):
     """
     Generate Wavefront coherence weights based upon the desired wavelength and the coordinates of the target point
     """
-    weights = np.zeros((len(source_coords)), dtype=np.float64)
+    weights = np.zeros((len(source_coords)), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
     dist = distance.cdist(source_coords, target_coord)
     dist = dist - np.min(dist)
     # calculate required time delays, and then convert to phase delays
     delays = dist / scipy.constants.speed_of_light
-    weights = np.exp(
+    weights[:] = np.exp(
         -1j * 2 * np.pi * (scipy.constants.speed_of_light / wavelength) * delays
     )
     return weights
@@ -131,7 +131,7 @@ def TimeDelayWeights(source_coords, steering_vector, magnitude=1.0, maximum_dela
     # calculate required time delays, and then convert to nanoseconds, stored as a complex number with the magnitude weights
     delays = (dist/scipy.constants.speed_of_light)*1e9
     delays=np.max(delays) - delays
-    weights = magnitude + delays * 1j
+    weights[:] = magnitude + delays * 1j
     return weights
 
 
@@ -232,7 +232,7 @@ def EGCWeights(
     else:
         angle_vector = np.angle(Ephi[:, elev_index, az_index].astype(np.complex64))
 
-    weights = np.exp(-1j * angle_vector)
+    weights[:] = np.exp(-1j * angle_vector)
     return weights
 
 
@@ -1117,13 +1117,14 @@ def directivity_transformv2(
     return Dtheta, Dphi, Dtot, Dmax
 
 
+
 @njit(cache=True, nogil=True)
 def WeightTruncation(weights, resolution):
     quant = 2 ** resolution
-    levels = np.zeros((weights.shape), dtype=np.float32)
+    levels = np.zeros((weights.shape), dtype=np.complex64)
     # shift numpy complex angles from -pi to pi, into 0 to 2pi, then quantise for `quant' levels
     levels = np.round(
-        (quant - 1) * ((np.angle(weights) + np.pi) / (2 * np.pi)), 0, levels
+        ((quant - 1) * ((np.angle(weights) + np.pi) / (2 * np.pi))), 0, levels
     ) / (quant - 1)
     new_weights = np.abs(weights) * np.exp(1j * ((levels * 2 * np.pi) - np.pi))
     return new_weights

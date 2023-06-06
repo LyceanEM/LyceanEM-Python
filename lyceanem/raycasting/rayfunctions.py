@@ -1298,7 +1298,7 @@ def Angular_distance(center_vector, pointing_vectors):
     return angle_lists
 
 
-@jit
+@jit(nopython=True)
 def weighted_avg_and_std(values, weights):
     """
     Return the weighted average and standard deviation
