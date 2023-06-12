@@ -406,16 +406,16 @@ class antenna_structures(object3d):
         temp_origin=np.matmul(rotation_matrix,temp_origin)
         self.pose[:3,3]=temp_origin.ravel()+rotation_centre.ravel()
         self.pose[:3,:3]=np.matmul(rotation_matrix,self.pose[:3,:3])
-        for item in range(len(self.structures.solids)):
-            if (self.structures.solids[item] is not None):
-                self.structures.solids[item] = GF.open3drotate(
-                    self.structures.solids[item], rotation_matrix, rotation_centre
-                )
-        for item in range(len(self.points.points)):
-            if (self.points.points[item] is not None):
-                self.points.points[item] = GF.open3drotate(
-                    self.points.points[item], rotation_matrix, rotation_centre
-                )
+        #for item in range(len(self.structures.solids)):
+        #    if (self.structures.solids[item] is not None):
+        #        self.structures.solids[item] = GF.open3drotate(
+        #            self.structures.solids[item], rotation_matrix, rotation_centre
+        #        )
+        #for item in range(len(self.points.points)):
+        #    if (self.points.points[item] is not None):
+        #        self.points.points[item] = GF.open3drotate(
+        #            self.points.points[item], rotation_matrix, rotation_centre
+        #        )
 
     def translate_antenna(self, vector):
         """
@@ -542,34 +542,34 @@ class antenna_structures(object3d):
         """
         total_points = self.export_all_points()
         # calculate bounding box
-        if np.asarray(total_points.points).shape[0]<4:
-            max_dist=2.0
-            min_dist=0.0
-        else:
-            bounding_box = total_points.get_oriented_bounding_box()
-            max_points = bounding_box.get_max_bound()
-            min_points = bounding_box.get_min_bound()
-            center = bounding_box.get_center()
-            max_dist = np.sqrt(
-                (max_points[0] - center[0]) ** 2
-                + (max_points[1] - center[1]) ** 2
-                + (max_points[2] - center[2]) ** 2
-            )
-            min_dist = np.sqrt(
-                (center[0] - min_points[0]) ** 2
-                + (center[1] - min_points[1]) ** 2
-                + (center[2] - min_points[2]) ** 2
-            )
-        a = np.mean([max_dist, min_dist])
+        # if np.asarray(total_points.points).shape[0]<4:
+        #     max_dist=2.0
+        #     min_dist=0.0
+        # else:
+        #     bounding_box = total_points.get_oriented_bounding_box()
+        #     max_points = bounding_box.get_max_bound()
+        #     min_points = bounding_box.get_min_bound()
+        #     center = bounding_box.get_center()
+        #     max_dist = np.sqrt(
+        #         (max_points[0] - center[0]) ** 2
+        #         + (max_points[1] - center[1]) ** 2
+        #         + (max_points[2] - center[2]) ** 2
+        #     )
+        #     min_dist = np.sqrt(
+        #         (center[0] - min_points[0]) ** 2
+        #         + (center[1] - min_points[1]) ** 2
+        #         + (center[2] - min_points[2]) ** 2
+        #     )
+        # a = np.mean([max_dist, min_dist])
         #scale antenna xyz to the structures
-        self.antenna_xyz=o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5*a, origin=[0, 0, 0])
+        self.antenna_xyz=o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.1, origin=[0, 0, 0])
         if origin:
             o3d.visualization.draw(
-                self.points.points + self.structures.solids + [self.antenna_xyz] + extras
+                [self.export_all_points()] + self.export_all_structures() + [self.antenna_xyz] + extras
             )
         else:
             o3d.visualization.draw(
-                self.points.points + self.structures.solids + extras
+                [self.export_all_points()] + self.export_all_structures() + extras
             )
 
     # def generate_farfield(self,excitation_vector,wavelength,elements=False,azimuth_resolution=37,elevation_resolution=37):
