@@ -12,7 +12,7 @@ tags:
 authors:
   - name: Timothy G. Pelham
     orcid: 0000-0002-8085-1264
-    equal-contrib: true
+    equal-contrib: false
     affiliation: "1"
 affiliations:
  - name: UK Intelligence Community Postdoctoral Research Fellow, University of Bristol, UK
@@ -83,12 +83,12 @@ modelling and analysis of novel propagation models such as Orbital Angular Momen
 `LyceanEM` can also be used as a more general electromagnetic model, allowing the definition and simulation of complex 
 channel models. In a published example, the Frequency domain model predicted the scattering parameters produced when 
 illuminating a rotating metal plate with a horn antenna with a root mean square (RMS) error of -69dB between the predicted scattering parameters and the measured data. [@Pelhamb:2021]. 
-This setup is show in \autoref{fig:scatter1} with the scattering plate at an angle of 45 degrees, and the 
+This setup is shown in \autoref{fig:scatter1} with the scattering plate at an angle of 45 degrees, and the 
 transmitting and receiving horn antennas shown.
 
 ![Scattering Scenario for 26GHz channel modelling with scattering plate orientated at 45 degrees from the transmitting antenna. \label{fig:scatter1}](./_static/03_frequency_domain_channel_model_picture_01.png){ width=50% }
 
-The resultant scattering with variation of normalised scattering angle (0 degrees when plate is 45 degrees offset from both transmitter and receiver), shows the comparison between the measured scattering at 26GHz, and that predicted by `LyceanEM` in \autoref{fig:scatter2}.
+The resultant scattering with variation of normalised scattering angle (0 degrees when plate is 45 degrees offset from both transmitter and receiver) shows the comparison between the measured scattering at 26GHz, and that predicted by `LyceanEM` in \autoref{fig:scatter2}.
 
 ![Comparison of scattering parameters against normalised scattering angle. \label{fig:scatter2}](./_static/ReferenceReflectorComparisonNormalisedandModelShiftedp1d.png){ width=50% }
 
