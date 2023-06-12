@@ -1,0 +1,28 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Pelham
+  given-names: Timothy G.
+  orcid: "https://orcid.org/0000-0002-8085-1264"
+doi: 10.5281/zenodo.8026567
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Pelham
+    given-names: Timothy G.
+    orcid: "https://orcid.org/0000-0002-8085-1264"
+  date-published: 2023-06-12
+  doi: 10.21105/joss.05234
+  issn: 2475-9066
+  issue: 86
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 5234
+  title: "LyceanEM: A python package for virtual prototyping of antenna
+    arrays, time and frequency domain channel modelling"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.05234"
+  volume: 8
+title: "LyceanEM: A python package for virtual prototyping of antenna
+  arrays, time and frequency domain channel modelling"
