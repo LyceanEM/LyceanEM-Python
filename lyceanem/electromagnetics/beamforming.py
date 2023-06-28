@@ -570,8 +570,8 @@ def MaximumDirectivityMapDiscrete(
 
     Returns
     -------
-    directivity_map : 3D numpy array of float
-        The achieved maximum directivity map. At each point the directivity corresponds to the achieved directivity at
+    directivity_map : 4D numpy array of float
+        The achieved maximum directivity map (a 3D numpy array for each phase resolution) . For each phase resolution for each point the directivity corresponds to the achieved directivity at
         that command angle.
 
     """
