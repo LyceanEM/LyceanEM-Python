@@ -588,7 +588,7 @@ def angle_pop(hit_directions, source_normals, angles):
     return angles
 
 
-#@njit(parallel=True)
+@njit(parallel=True)
 def patternsort(visible_patterns, sourcenum, sinknum, portion, hit_index):
     # faster method of summing the array contributions to each farfield point
     for n in range(sinknum):
