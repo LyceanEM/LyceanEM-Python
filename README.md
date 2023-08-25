@@ -3,6 +3,8 @@
 [![Downloads](https://static.pepy.tech/personalized-badge/lyceanem?period=total&units=international_system&left_color=black&right_color=brightgreen&left_text=Downloads)](https://pepy.tech/project/lyceanem)
 [![status](https://joss.theoj.org/papers/618868c0e8d7e1f7ae6b9f0b4e1e5a2a/status.svg)](https://joss.theoj.org/papers/618868c0e8d7e1f7ae6b9f0b4e1e5a2a)
 
+![LyceanEM Logo](docs/source/_static/LY_logo_RGB_2000px.png)
+
 LyceanEM was conceived to enable rapid assesments of the suitability of difference antenna apertures for a wide range of platforms.
 This is based upon the use of ray tracing to determine the field of view of points of interest on the platform, whether building, train, plane, or mobile phone handset. Allowing the application of Wheelers formulation of the gain of an aperture.
 

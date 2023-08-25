@@ -26,7 +26,7 @@ import copy
 # The wavelength of interest is also an important variable for antenna array analysis, so we set it now for 10GHz,
 # an X band aperture.
 
-az_res = 181
+az_res = 37
 elev_res = 37
 wavelength = 3e8 / 10e9
 

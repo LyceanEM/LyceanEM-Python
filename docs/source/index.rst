@@ -6,8 +6,8 @@
 Welcome to LyceanEM's documentation!
 ====================================
 
-.. image:: _static/lynx.png
-   :width: 200px
+.. image:: _static/LY_logo_RGB_2000px.png
+   :width: 300px
    :align: center
    :alt: LyceanEM Logo
 

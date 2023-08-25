@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d
 import numpy as np
 import open3d as o3d
+import pylab as pl
 import scipy.stats
 from matplotlib import cm
 from matplotlib.patches import Wedge
@@ -101,7 +102,7 @@ def ArbitaryCoherenceWeights(source_coords, target_coord, wavelength):
     """
     Generate Wavefront coherence weights based upon the desired wavelength and the coordinates of the target point
     """
-    weights = np.zeros((len(source_coords)), dtype=np.complex64)
+    weights = np.zeros((len(source_coords),1), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
     dist = distance.cdist(source_coords, target_coord)
     dist = dist - np.min(dist)
@@ -1399,6 +1400,7 @@ def PatternPlot2D(
     ticknum=6,
     line_labels=None,
     title_text=None,
+    fontsize=16,
 ):
     # condition data
     data = np.abs(data)
@@ -1426,6 +1428,7 @@ def PatternPlot2D(
     logdata[logdata <= pattern_min] = pattern_min
     tick_marks = np.linspace(pattern_min, plot_max, ticknum)
     az_rad = np.radians(az)
+    pl.rcParams.update({'font.size':fontsize})
     fig, ax = plt.subplots(subplot_kw={"projection": "polar"})
     if multiline == True:
         for line in range(num_lines):
@@ -1437,7 +1440,7 @@ def PatternPlot2D(
         ax.plot(az_rad, logdata)
 
     ax.set_rmax(plot_max)
-    ax.set_rticks(tick_marks)  # Less radial ticks
+    ax.set_rticks(tick_marks,fontsize=fontsize)  # Less radial ticks
     ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
     ax.grid(True)
     if not (line_labels == None):
@@ -1449,10 +1452,11 @@ def PatternPlot2D(
                 0.5 + np.cos(legend_angle) / 2,
                 0.5 + np.sin(legend_angle) / 2,
             ),
+            fontsize = fontsize,
         )
 
     if not (title_text == None):
-        ax.set_title(title_text, va="bottom")
+        ax.set_title(title_text, va="bottom",fontsize=fontsize)
 
     label_angle = np.deg2rad(280)
     ax.text(label_angle, plot_max * 1.2, bar_label)
