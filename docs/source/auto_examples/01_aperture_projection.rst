@@ -44,16 +44,10 @@ be predicted using the :func:`lyceanem.models.frequency_domain.aperture_projecti
 
 .. code-block:: default
 
-    import numpy as np
-    import open3d as o3d
     import copy
 
-
-
-
-
-
-
+    import numpy as np
+    import open3d as o3d
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 34-43
@@ -78,12 +72,6 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 49-53
 
 Geometries
@@ -101,12 +89,6 @@ open3d trianglemesh structures can be accessed by importing the data subpackage
 
     # visualise UAV and Array
     o3d.visualization.draw_geometries([body, array])
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 61-62
@@ -129,12 +111,6 @@ open3d trianglemesh structures can be accessed by importing the data subpackage
     )
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 74-80
 
 Structures
@@ -151,12 +127,6 @@ structures are created by calling the class, and passing it a list of the open3d
     from lyceanem.base_classes import structures
 
     blockers = structures([body])
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 85-91
@@ -182,12 +152,6 @@ provided aperture, scaling from yellow at maximum to dark purple at minimum.
         elev_range=np.linspace(-90.0, 90.0, elev_res),
     )
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 101-106
 
 Open3D Visualisation
@@ -202,12 +166,6 @@ also as an open3d point cloud. This allows easy visualisation using :func:`open3
 
 
     o3d.visualization.draw_geometries([body, surface_array, pcd])
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 110-111
@@ -226,18 +184,6 @@ also as an open3d point cloud. This allows easy visualisation using :func:`open3
             np.max(10 * np.log10(directivity_envelope))
         )
     )
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Maximum Directivity of 18.5 dBi
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 121-127
@@ -301,20 +247,9 @@ maximum directivity envelope.
     fig.show()
 
 
-
-.. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
-   :alt: Maximum Directivity Envelope
-   :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
-   :class: sphx-glr-single-img
-
-
-
-
-
-
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  20.270 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_auto_examples_01_aperture_projection.py:

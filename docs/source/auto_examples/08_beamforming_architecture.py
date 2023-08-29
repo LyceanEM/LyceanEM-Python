@@ -11,9 +11,10 @@ The Steering Efficiency can then be evaluated using :func:`lyceanem.electromagne
 
 
 """
+import copy
+
 import numpy as np
 import open3d as o3d
-import copy
 
 # %%
 # Setting Farfield Resolution and Wavelength
@@ -26,7 +27,7 @@ import copy
 # The wavelength of interest is also an important variable for antenna array analysis, so we set it now for 10GHz,
 # an X band aperture.
 
-az_res = 181
+az_res = 37
 elev_res = 37
 wavelength = 3e8 / 10e9
 
@@ -96,7 +97,7 @@ Etheta, Ephi = calculate_farfield(
 )
 
 
-from lyceanem.electromagnetics.beamforming import MaximumDirectivityMap,MaximumDirectivityMapDiscrete
+from lyceanem.electromagnetics.beamforming import MaximumDirectivityMapDiscrete
 
 az_range = np.linspace(-180, 180, az_res)
 el_range = np.linspace(-90, 90, elev_res)

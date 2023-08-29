@@ -3,15 +3,16 @@
 
 import copy
 import math
+
 import numpy as np
 import open3d as o3d
 import scipy.io as io
 from importlib_resources import files
 
-import lyceanem.tests.data
-import lyceanem.geometry.targets as tl
 import lyceanem.geometry.geometryfunctions as GF
+import lyceanem.geometry.targets as tl
 import lyceanem.raycasting.rayfunctions as RF
+import lyceanem.tests.data
 
 
 # freq=24e9
@@ -28,6 +29,7 @@ import lyceanem.raycasting.rayfunctions as RF
 # medium_reference_reflector.points = o3d.utility.Vector3dVector(temp/1000)
 # medium_reference_reflector.estimate_normals()
 # reference_point=np.asarray([[np.min(temp[:,0]),np.min(temp[:,1]),np.min(temp[:,2])]])/1000
+
 
 # downsampled_reflector=medium_reference_reflector.voxel_down_sample(voxel_size=wavelength*0.5)
 # downsampled_reflector.translate(-reference_point.ravel(),relative=True)
@@ -87,7 +89,7 @@ def exampleUAV(frequency):
     l = bottom_length - r1
 
     slant_angle = np.arctan2(r2 - r1, array_height)
-    slant_h = (array_height ** 2 + (r2 - r1) ** 2) ** 0.5
+    slant_h = (array_height**2 + (r2 - r1) ** 2) ** 0.5
     rows = math.ceil((slant_h) / (mesh_sep) + 1)
     heights = np.linspace(0, slant_h, rows)
     centers = np.linspace(l + 0, l + slant_adjustment, rows)

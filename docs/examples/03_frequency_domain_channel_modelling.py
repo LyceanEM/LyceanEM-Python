@@ -16,7 +16,6 @@ rather than an aperture antenna such as a horn.
 
 import numpy as np
 import open3d as o3d
-import copy
 
 # %%
 # Frequency and Mesh Resolution

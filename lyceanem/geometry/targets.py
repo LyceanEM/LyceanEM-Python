@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import copy
-from subprocess import run
 
 import numpy as np
 import open3d as o3d
 import scipy.stats
 import solid as sd
 from importlib_resources import files
-from numpy.linalg import norm
 from scipy.spatial.transform import Rotation as R
 
+from ..base_classes import antenna_structures, structures, points
 from ..geometry import geometryfunctions as GF
 from ..raycasting import rayfunctions as RF
-from ..base_classes import antenna_structures, structures, points
 from ..utility import math_functions as math_functions
+
 EPSILON = 1e-6  # how close to zero do we consider zero?
 
 
@@ -126,7 +125,7 @@ def source_cloud_from_shape(o3dshape, ideal_point_sep, maxdeviation=0.01):
     # source_cloud.points=o3d.utility.Vector3dVector(centroids+np.array(o3dshape.triangle_normals)*offset)
     # source_cloud.normals=o3dshape.triangle_normals
     # print(np.sum(areas))
-    area_per_point = (ideal_point_sep ** 2) * 0.5
+    area_per_point = (ideal_point_sep**2) * 0.5
     num_points = np.ceil(np.sum(areas) / area_per_point).astype(int)
     source_cloud = o3dshape.sample_points_poisson_disk(num_points)
     error = (
@@ -141,7 +140,7 @@ def source_cloud_from_shape(o3dshape, ideal_point_sep, maxdeviation=0.01):
         loopcount += 1
         errorlog[loopcount, 0] = error
         errorlog[loopcount, 1] = np.ceil(num_points).astype(int)
-        if loopcount >= maxloops-1:
+        if loopcount >= maxloops - 1:
             print("ran out counter, aborting")
             break
         if error < 0:
@@ -206,7 +205,7 @@ def parabola(radius, focal_length, thickness, mesh_length, mesh="all"):
     # stream = pkg_resources.resource_stream(__name__, 'parabolas.scad')
     stream = files("lyceanem.geometry").joinpath("parabolas.scad")
     parabolas = sd.import_scad(str(stream))
-    height = (1 / (4 * focal_length)) * radius ** 2
+    height = (1 / (4 * focal_length)) * radius**2
     height_external = (1 / (4 * focal_length)) * (radius + thickness) ** 2
     # keep with a focal point with zero radius.
     focal_radius = 0
@@ -248,10 +247,11 @@ def parabola(radius, focal_length, thickness, mesh_length, mesh="all"):
     parabola_mesh.compute_triangle_normals()
     _, parabola_scatter_cloud = GF.tri_centroids(parabola_mesh)
 
-    parabola_structures=structures([parabola_mesh])
-    parabola_points=points([parabola_scatter_cloud])
-    parabola=antenna_structures(parabola_structures,parabola_points)
+    parabola_structures = structures([parabola_mesh])
+    parabola_points = points([parabola_scatter_cloud])
+    parabola = antenna_structures(parabola_structures, parabola_points)
     return parabola
+
 
 def converttostl():
     """
@@ -262,17 +262,31 @@ def converttostl():
     Nothing
 
     """
-    import subprocess, os
+    import subprocess
+
     try:
-        #print(os.getcwd())
-        working_directory="."
-        #run([, ])
-        p = subprocess.Popen(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"], cwd=working_directory)
+        # print(os.getcwd())
+        working_directory = "."
+        # run([, ])
+        p = subprocess.Popen(
+            [
+                "openscad-nightly",
+                "-o",
+                "temp.stl",
+                "temp.scad",
+                "--export-format=binstl",
+            ],
+            cwd=working_directory,
+        )
         p.wait()
     except:
-        #run(["openscad", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
-        p = subprocess.Popen(["openscad", "-o", "temp.stl", "temp.scad", "--export-format=binstl"],cwd=working_directory)
+        # run(["openscad", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+        p = subprocess.Popen(
+            ["openscad", "-o", "temp.stl", "temp.scad", "--export-format=binstl"],
+            cwd=working_directory,
+        )
         p.wait()
+
 
 def meshed_pipe(
     eradius1, eradius2, iradius1, iradius2, height, mesh_length, mesh="centres"
@@ -338,7 +352,7 @@ def meshed_pipe(
         angles = np.linspace(0, np.pi * 2, segment_nums + 1)[0:-1] + (np.pi) / (
             segment_nums
         )
-        face_length = (np.abs(iradius1 - iradius2) ** 2 + height ** 2) ** 0.5
+        face_length = (np.abs(iradius1 - iradius2) ** 2 + height**2) ** 0.5
         face_segments = np.max([3, np.ceil(face_length / mesh_length).astype("int")])
         face_heights = np.linspace(0, height, face_segments)
         test_points = np.empty((0, 3), dtype=np.float32)
@@ -419,7 +433,7 @@ def meshed_pipe(
         angles = np.linspace(0, np.pi * 2, segment_nums + 1)[0:-1] + (np.pi) / (
             segment_nums
         )
-        face_length = (np.abs(iradius1 - iradius2) ** 2 + height ** 2) ** 0.5
+        face_length = (np.abs(iradius1 - iradius2) ** 2 + height**2) ** 0.5
         face_segments = np.max([3, np.ceil(face_length / mesh_length).astype("int")])
         face_heights = np.linspace(0, height, face_segments)
         test_points = np.empty((0, 3), dtype=np.float32)
@@ -465,7 +479,7 @@ def meshed_pipe(
         angles = np.linspace(0, np.pi * 2, segment_nums + 1)[0:-1] + (np.pi) / (
             segment_nums
         )
-        face_length = (np.abs(iradius1 - iradius2) ** 2 + height ** 2) ** 0.5
+        face_length = (np.abs(iradius1 - iradius2) ** 2 + height**2) ** 0.5
         face_segments = np.max([3, np.ceil(face_length / mesh_length).astype("int")])
         face_heights = np.linspace(0, height, face_segments)
         test_points = np.empty((0, 3), dtype=np.float32)
@@ -578,7 +592,7 @@ def meshed_pipe(
     # generate valid openscad code and store it in file
     sd.scad_render_to_file(centre, "temp.scad")
     # run openscad and export to stl
-    #run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+    # run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
     converttostl()
 
     structure = o3d.io.read_triangle_mesh("temp.stl")
@@ -589,7 +603,9 @@ def meshed_pipe(
     return structure, scatter_cloud
 
 
-def meshed_cylinder(radius1, radius2, height, mesh_length, mesh="centres",segment_nums=0):
+def meshed_cylinder(
+    radius1, radius2, height, mesh_length, mesh="centres", segment_nums=0
+):
     """
     creates a cylinder
     Parameters
@@ -612,7 +628,7 @@ def meshed_cylinder(radius1, radius2, height, mesh_length, mesh="centres",segmen
     mesh : open3d point cloud of the mesh of points with normal vectors
 
     """
-    if segment_nums<3:
+    if segment_nums < 3:
         segment_nums = np.max(
             [
                 3,
@@ -649,7 +665,7 @@ def meshed_cylinder(radius1, radius2, height, mesh_length, mesh="centres",segmen
         angles = np.linspace(0, np.pi * 2, segment_nums + 1)[0:-1] + (np.pi) / (
             segment_nums
         )
-        face_length = (np.abs(radius1 - radius2) ** 2 + height ** 2) ** 0.5
+        face_length = (np.abs(radius1 - radius2) ** 2 + height**2) ** 0.5
         face_segments = np.max([3, np.ceil(face_length / mesh_length).astype("int")])
         face_heights = np.linspace(0, height, face_segments)
         test_points = np.empty((0, 3), dtype=np.float32)
@@ -730,7 +746,7 @@ def meshed_cylinder(radius1, radius2, height, mesh_length, mesh="centres",segmen
         angles = np.linspace(0, np.pi * 2, segment_nums + 1)[0:-1] + (np.pi) / (
             segment_nums
         )
-        face_length = (np.abs(radius1 - radius2) ** 2 + height ** 2) ** 0.5
+        face_length = (np.abs(radius1 - radius2) ** 2 + height**2) ** 0.5
         face_segments = np.max([3, np.ceil(face_length / mesh_length).astype("int")])
         face_heights = np.linspace(0, height, face_segments)
         test_points = np.empty((0, 3), dtype=np.float32)
@@ -776,7 +792,7 @@ def meshed_cylinder(radius1, radius2, height, mesh_length, mesh="centres",segmen
         angles = np.linspace(0, np.pi * 2, segment_nums + 1)[0:-1] + (np.pi) / (
             segment_nums
         )
-        face_length = (np.abs(radius1 - radius2) ** 2 + height ** 2) ** 0.5
+        face_length = (np.abs(radius1 - radius2) ** 2 + height**2) ** 0.5
         face_segments = np.max([3, np.ceil(face_length / mesh_length).astype("int")])
         face_heights = np.linspace(0, height, face_segments)
         test_points = np.empty((0, 3), dtype=np.float32)
@@ -889,11 +905,11 @@ def meshed_cylinder(radius1, radius2, height, mesh_length, mesh="centres",segmen
     # generate valid openscad code and store it in file
     sd.scad_render_to_file(centre, "temp.scad")
     # run openscad and export to stl
-    #run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+    # run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
     converttostl()
 
-    #structure = o3d.io.read_triangle_mesh("temp.stl")
-    temp_mesh=o3d.io.read_triangle_mesh("temp.stl")
+    # structure = o3d.io.read_triangle_mesh("temp.stl")
+    temp_mesh = o3d.io.read_triangle_mesh("temp.stl")
     temp_mesh.compute_vertex_normals()
     scatter_cloud = RF.points2pointcloud(np.copy(test_faces))
     scatter_cloud.normals = o3d.utility.Vector3dVector(np.copy(face_normals))
@@ -955,7 +971,7 @@ def meshed_trapazoid(radius1, radius2, height, mesh_length, mesh="centres"):
         angles = np.linspace(0, np.pi * 2, segment_nums + 1)[0:-1] + (np.pi) / (
             segment_nums
         )
-        face_length = (np.abs(radius1 - radius2) ** 2 + height ** 2) ** 0.5
+        face_length = (np.abs(radius1 - radius2) ** 2 + height**2) ** 0.5
         face_segments = np.max([3, np.ceil(face_length / mesh_length).astype("int")])
         face_heights = np.linspace(0, height, face_segments)
         test_points = np.empty((0, 3), dtype=np.float32)
@@ -1036,7 +1052,7 @@ def meshed_trapazoid(radius1, radius2, height, mesh_length, mesh="centres"):
         angles = np.linspace(0, np.pi * 2, segment_nums + 1)[0:-1] + (np.pi) / (
             segment_nums
         )
-        face_length = (np.abs(radius1 - radius2) ** 2 + height ** 2) ** 0.5
+        face_length = (np.abs(radius1 - radius2) ** 2 + height**2) ** 0.5
         face_segments = np.max([3, np.ceil(face_length / mesh_length).astype("int")])
         face_heights = np.linspace(0, height, face_segments)
         test_points = np.empty((0, 3), dtype=np.float32)
@@ -1149,7 +1165,7 @@ def meshed_trapazoid(radius1, radius2, height, mesh_length, mesh="centres"):
     # generate valid openscad code and store it in file
     sd.scad_render_to_file(centre, "temp.scad")
     # run openscad and export to stl
-    #run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
+    # run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
     converttostl()
 
     structure = o3d.io.read_triangle_mesh("temp.stl")
@@ -1316,7 +1332,7 @@ def OTAEllipsoid(
     )
     angle_values = np.arctan2(directions[:, 1], directions[:, 0])
     reflector_pointers = (
-        np.arctan((semi_major ** 2) / (semi_minor ** 2) * np.tan(angle_values))
+        np.arctan((semi_major**2) / (semi_minor**2) * np.tan(angle_values))
         - np.pi / 2.0
     )
     if reflector_index == 0 or reflector_index >= 10:
@@ -2442,7 +2458,7 @@ def gridedParabola(diameter, focal_length, thickness, grid_resolution, sides="al
             (diameter / 2),
             int(np.max(np.asarray([2, np.ceil((diameter * 0.5) / (grid_resolution))]))),
         )
-        z_space = (1 / (4 * focal_length)) * x_space ** 2
+        z_space = (1 / (4 * focal_length)) * x_space**2
         c_space = np.ceil((2 * np.pi * x_space) / grid_resolution).astype(int)
         normal_gradiant_vector = np.array(
             [
@@ -2531,7 +2547,7 @@ def gridedParabola(diameter, focal_length, thickness, grid_resolution, sides="al
             (diameter / 2),
             int(np.max(np.asarray([2, np.ceil((diameter * 0.5) / (grid_resolution))]))),
         )
-        z_space = (1 / (4 * focal_length)) * x_space ** 2
+        z_space = (1 / (4 * focal_length)) * x_space**2
         c_space = np.ceil((2 * np.pi * x_space) / grid_resolution).astype(int)
         normal_gradiant_vector = np.array(
             [
@@ -2686,7 +2702,7 @@ def BullsEye(O2, n_rings, innerdia, period, ht, basethick, grid_resolution):
     sd.scad_render_to_file(centre, "d.scad")
 
     # run openscad and export to stl
-    #run(["openscad-nightly", "-o", "d.stl", "d.scad", "--export-format=binstl"])
+    # run(["openscad-nightly", "-o", "d.stl", "d.scad", "--export-format=binstl"])
     converttostl()
 
     solid = o3d.io.read_triangle_mesh("d.stl")
@@ -2767,7 +2783,7 @@ def CASSIOPeiA_triplet(
     triplet_points = np.zeros((3, 3), dtype=np.float32)
     # spacing is equivalent to an equilateral triangle
     antenna_spacing = wavelength * 0.25
-    triplet_points[0, 0] = (3 ** 0.5 / 3) * antenna_spacing
+    triplet_points[0, 0] = (3**0.5 / 3) * antenna_spacing
     # rotate as required for primary element offset
     offsetangle = np.radians(offset_angle)
     rot_mat = np.asarray(
@@ -2833,10 +2849,12 @@ def CASSIOPeiA_Array(
     offset_angle=0.0,
     total_twist_angle=180,
 ):
-    adjusted_twist_angle=(total_twist_angle/(num_rows+1))*num_rows
+    adjusted_twist_angle = (total_twist_angle / (num_rows + 1)) * num_rows
     outer_row = ((num_rows - 1) / 2) * row_spacing
     row_centres = np.linspace(-outer_row, outer_row, num_rows)
-    angle_offsets = np.linspace(-adjusted_twist_angle / 2, adjusted_twist_angle / 2, num_rows)
+    angle_offsets = np.linspace(
+        -adjusted_twist_angle / 2, adjusted_twist_angle / 2, num_rows
+    )
     array_points = o3d.geometry.PointCloud()
     array_structure = o3d.geometry.TriangleMesh()
     # create row of triplet clusters
@@ -2860,6 +2878,7 @@ def CASSIOPeiA_Array(
     array_efield_vectors = np.tile(efield_vectors, [num_rows, 1])
     return array_points, array_structure, array_efield_vectors
 
+
 def chain_home_transmitter():
     """
     This function generates the required antenna geometry to model the Chain Home transmitter, which operated at 20MHz.
@@ -2869,8 +2888,8 @@ def chain_home_transmitter():
     chain_home_transmit
 
     """
-    wavelength=3e8/20e6
-    #eight dipoles vertically stacked half wavelength spacing, with reflectors behind each, seperated by 0.18 wavelengths horizontally, a stack for each pair of towers? So three stacks for the early quad arrangements, and two stacks for the later triple towers?
-    #mean height of the array is 215 feet, and claimed main lobe at 2.6 degrees in elevation due to ground reflection, first null at 5.2 degrees, and a horizontal beamwidth of 100 degrees
-    chain_home_transmit=antenna_structures()
+    wavelength = 3e8 / 20e6
+    # eight dipoles vertically stacked half wavelength spacing, with reflectors behind each, seperated by 0.18 wavelengths horizontally, a stack for each pair of towers? So three stacks for the early quad arrangements, and two stacks for the later triple towers?
+    # mean height of the array is 215 feet, and claimed main lobe at 2.6 degrees in elevation due to ground reflection, first null at 5.2 degrees, and a horizontal beamwidth of 100 degrees
+    chain_home_transmit = antenna_structures()
     return chain_home_transmit

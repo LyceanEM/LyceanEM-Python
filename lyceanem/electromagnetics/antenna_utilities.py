@@ -1,5 +1,4 @@
 import numpy as np
-import open3d as o3d
 
 
 def antenna_stats(freq, x, y, z):
@@ -19,6 +18,7 @@ def antenna_stats(freq, x, y, z):
 
     Returns
     -------
+    None
 
     """
     wavelength = 3e8 / freq
@@ -44,6 +44,7 @@ def antenna_size(freq, antenna):
     -------
     ka : float
         electrical size of antenna structure for given frequency
+
     """
     total_points = antenna.export_all_points()
     # calculate bounding box

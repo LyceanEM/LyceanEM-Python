@@ -5,8 +5,9 @@ import open3d as o3d
 from numba import vectorize
 from packaging import version
 from scipy.spatial.transform import Rotation as R
-from .. import base_types as base_types
+
 from .. import base_classes as base_classes
+from .. import base_types as base_types
 from ..raycasting import rayfunctions as RF
 
 
@@ -59,14 +60,14 @@ def decimate_mesh(solid, mesh_sep):
     new_solid = o3d.geometry.TriangleMesh()
     # lineset=o3d.geometry.LineSet.create_from_triangle_mesh(solid)
     # identify triangles which are too large via areas greater than mesh_sep**2
-    area_limit = mesh_sep ** 2
+    area_limit = mesh_sep**2
     areas = tri_areas(solid)
     large_tri_index = np.where(areas > area_limit)[0]
-    while np.max(areas)>area_limit:
-        solid=solid.subdivide_midpoint()
+    while np.max(areas) > area_limit:
+        solid = solid.subdivide_midpoint()
         areas = tri_areas(solid)
 
-    new_solid=copy.deepcopy(solid)
+    new_solid = copy.deepcopy(solid)
     return new_solid
 
 
@@ -121,7 +122,6 @@ def open3drotate(
         # new syntax for rotations
         item.rotate(rotation_matrix, center=rotation_centre)
     else:
-
         item.translate(-1 * rotation_centre)
         item.rotate(rotation_matrix, center=False)
         item.translate(rotation_centre)
@@ -176,23 +176,23 @@ def axes_from_normal(boresight_vector, boresight_along="x"):
 
     """
     # initially define the rotation matrix based inline with the global coordinate frame.
-    #for more consistency, need to calculate additional vectors to ensure rotation mapping is correct.
+    # for more consistency, need to calculate additional vectors to ensure rotation mapping is correct.
 
     replacement_vector = boresight_vector / np.linalg.norm(boresight_vector)
 
     if boresight_along == "x":
-        alignment_vector=np.array([[1.0,0,0]])
-        u_vector=np.array([[0.0,1.0,0]])
-        v_vector=np.array([[0,0,1.0]])
+        alignment_vector = np.array([[1.0, 0, 0]])
+        u_vector = np.array([[0.0, 1.0, 0]])
+        v_vector = np.array([[0, 0, 1.0]])
     elif boresight_along == "y":
-        alignment_vector=np.array([[0.0,1.0,0]])
+        alignment_vector = np.array([[0.0, 1.0, 0]])
         u_vector = np.array([[1.0, 0.0, 0]])
         v_vector = np.array([[0, 0, 1.0]])
     elif boresight_along == "z":
-        alignment_vector=np.array([[0.0,0,1.0]])
+        alignment_vector = np.array([[0.0, 0, 1.0]])
         u_vector = np.array([[1.0, 0.0, 0]])
         v_vector = np.array([[0, 1.0, 0]])
-    rotation,_=R.align_vectors(replacement_vector.reshape(1,3),alignment_vector)
+    rotation, _ = R.align_vectors(replacement_vector.reshape(1, 3), alignment_vector)
     # if boresight_along == "x":
     #     # then u should be based on y, and v on z
     #     rotation_matrix[1, :] = np.cross(
@@ -251,6 +251,7 @@ def axes_from_normal(boresight_vector, boresight_along="x"):
 
     return rotation.as_matrix()
 
+
 def mesh_conversion(conversion_object):
     """
     Convert the provide file object into triangle_t format
@@ -263,25 +264,29 @@ def mesh_conversion(conversion_object):
     -------
     triangles : numpy array of type triangle_t
     """
-    if isinstance(conversion_object,base_classes.structures):
+    if isinstance(conversion_object, base_classes.structures):
         triangles = conversion_object.triangles_base_raycaster()
-    elif isinstance(conversion_object,base_classes.antenna_structures):
-        exported_structure=base_classes.structures(solids=conversion_object.export_all_structures())
-        triangles=exported_structure.triangles_base_raycaster()
-    elif isinstance(conversion_object,type(o3d.geometry.TriangleMesh())):
-        triangles=RF.convertTriangles(conversion_object)
-    elif isinstance(conversion_object,list):
+    elif isinstance(conversion_object, base_classes.antenna_structures):
+        exported_structure = base_classes.structures(
+            solids=conversion_object.export_all_structures()
+        )
+        triangles = exported_structure.triangles_base_raycaster()
+    elif isinstance(conversion_object, type(o3d.geometry.TriangleMesh())):
+        triangles = RF.convertTriangles(conversion_object)
+    elif isinstance(conversion_object, list):
         triangles = np.empty((0), dtype=base_types.triangle_t)
-        #print("Detected List")
+        # print("Detected List")
         for item in conversion_object:
-            #print(type(item))
-            #print(isinstance(item,type(o3d.geometry.TriangleMesh())))
+            # print(type(item))
+            # print(isinstance(item,type(o3d.geometry.TriangleMesh())))
             if isinstance(item, type(o3d.geometry.TriangleMesh())):
-                triangles = np.append(triangles,RF.convertTriangles(item),axis=0)
-                #print(len(triangles))
+                triangles = np.append(triangles, RF.convertTriangles(item), axis=0)
+                # print(len(triangles))
             elif isinstance(item, base_classes.structures):
-                triangles=np.append(triangles,item.triangles_base_raycaster(),axis=0)
-                #print(len("B ",triangles))
+                triangles = np.append(
+                    triangles, item.triangles_base_raycaster(), axis=0
+                )
+                # print(len("B ",triangles))
 
     else:
         print("no structures")

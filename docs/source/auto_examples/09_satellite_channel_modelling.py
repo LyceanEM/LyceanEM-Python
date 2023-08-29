@@ -28,9 +28,8 @@ m = folium.Map(
 )
 
 import numpy as np
-import copy
 
-from skyfield.api import load, EarthSatellite, wgs84
+from skyfield.api import load, wgs84
 
 BristolPhysicsObservatory = wgs84.latlon(interest_center[0], interest_center[1], 0)
 
@@ -93,8 +92,6 @@ colour_iter = iter(
 colour = defaultdict(lambda: next(colour_iter))
 
 trail_Size = 7  # trail_Size is the number of timestamps we want track to trail for
-from io import BytesIO
-import base64
 
 
 # %%
@@ -319,7 +316,6 @@ from folium.plugins import TimestampedGeoJson, Fullscreen
 Fullscreen().add_to(m)
 
 import numpy as np
-import matplotlib.pyplot as plt
 from geopandas import GeoDataFrame
 from shapely.geometry import Polygon, MultiPolygon
 

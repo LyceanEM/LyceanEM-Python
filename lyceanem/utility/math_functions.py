@@ -1,8 +1,9 @@
 
 import math
-from packaging import version
+
 import numpy as np
-from numba import float32, from_dtype, njit, guvectorize
+from numba import float32, njit, guvectorize
+
 
 @njit
 def cart2pol(x, y):

@@ -1,40 +1,45 @@
 import copy
+
 import numpy as np
+import open3d as o3d
 from scipy import interpolate as sp
 from scipy.spatial.transform import Rotation as R
 
-import open3d as o3d
 from . import base_types as base_types
 from .electromagnetics import beamforming as BM
 from .electromagnetics import empropagation as EM
 from .geometry import geometryfunctions as GF
 from .raycasting import rayfunctions as RF
 from .utility import math_functions as MF
-#from .models.frequency_domain import calculate_farfield as farfield_generator
-#from .models.frequency_domain import calculate_scattering as frequency_domain_channel
+
+
+# from .models.frequency_domain import calculate_farfield as farfield_generator
+# from .models.frequency_domain import calculate_scattering as frequency_domain_channel
+
 
 class object3d:
     def __init__(self):
-        #define object pose as rotation matrix from world frame using Denavit-Hartenbeg convention
-        self.pose=np.eye(4)
-    def rotate_euler(self,x,y,z,degrees=True,replace=True):
-        rot=R.from_euler('xyz',[x,y,z],degrees=degrees)
-        transform=np.eye(4)
-        transform[:3,:3]=rot.as_matrix()
-        if replace==True:
-            self.pose=transform
+        # define object pose as rotation matrix from world frame using Denavit-Hartenbeg convention
+        self.pose = np.eye(4)
+
+    def rotate_euler(self, x, y, z, degrees=True, replace=True):
+        rot = R.from_euler("xyz", [x, y, z], degrees=degrees)
+        transform = np.eye(4)
+        transform[:3, :3] = rot.as_matrix()
+        if replace == True:
+            self.pose = transform
         else:
-            self.pose=np.matmul(self.pose,transform)
+            self.pose = np.matmul(self.pose, transform)
         return self.pose
 
-    def rotate_matrix(self,new_axes,replace=True):
-        rot=R.from_matrix(new_axes)
-        transform=np.eye(4)
-        transform[:3,:3]=rot.as_matrix()
-        if replace==True:
-            self.pose=transform
+    def rotate_matrix(self, new_axes, replace=True):
+        rot = R.from_matrix(new_axes)
+        transform = np.eye(4)
+        transform[:3, :3] = rot.as_matrix()
+        if replace == True:
+            self.pose = transform
         else:
-            self.pose=np.matmul(self.pose,transform)
+            self.pose = np.matmul(self.pose, transform)
         return self.pose
 
 
@@ -52,10 +57,10 @@ class points(object3d):
     def __init__(self, points=None):
         super().__init__()
         # solids is a list of open3D :class:`open3d.geometry.TriangleMesh` structures
-        if points==None:
-            #no points provided at creation,
+        if points == None:
+            # no points provided at creation,
             print("Empty Object Created, please add points")
-            self.points=[]
+            self.points = []
         else:
             self.points = []
             for item in points:
@@ -97,7 +102,8 @@ class points(object3d):
         """
         self.points.append(new_points)
         # self.materials.append(new_materials)
-    def create_points(self, points,normals):
+
+    def create_points(self, points, normals):
         """
         create points within the class based upon the provided numpy arrays of floats in local coordinates
 
@@ -112,8 +118,8 @@ class points(object3d):
         -------
         None
         """
-        new_point_cloud=o3d.geometry.PointCloud()
-        new_point_cloud.points=o3d.utility.Vector3dVector(points.reshape(-1,3))
+        new_point_cloud = o3d.geometry.PointCloud()
+        new_point_cloud.points = o3d.utility.Vector3dVector(points.reshape(-1, 3))
         new_point_cloud.normals = o3d.utility.Vector3dVector(normals.reshape(-1, 3))
         self.add_points(new_point_cloud)
 
@@ -157,7 +163,7 @@ class points(object3d):
         for item in range(len(self.points)):
             self.points[item].translate(vector)
 
-    def export_points(self,point_index=None):
+    def export_points(self, point_index=None):
         """
         combines all the points in the collection as a combined point cloud for modelling
 
@@ -165,7 +171,7 @@ class points(object3d):
         -------
         combined points
         """
-        if point_index==None:
+        if point_index == None:
             combined_points = o3d.geometry.PointCloud()
             for item in range(len(self.points)):
                 combined_points = combined_points + self.points[item]
@@ -279,7 +285,7 @@ class structures(object3d):
         None
         """
         for item in range(len(self.solids)):
-            self.solids[item].translate(vector,relative=True)
+            self.solids[item].translate(vector, relative=True)
 
     def export_vertices(self, structure_index=None):
         """
@@ -319,7 +325,7 @@ class structures(object3d):
         point_cloud.transform(self.pose)
         return point_cloud
 
-    def import_cad(self,posixpath,scale=1.0,center=np.zeros((3,1))):
+    def import_cad(self, posixpath, scale=1.0, center=np.zeros((3, 1))):
         """
         Import trianglemesh from cad format, with scalling factor is requried. Open3d supports .ply, .stl, .obj, .off, and .gltf/.glb files
         Parameters
@@ -333,10 +339,11 @@ class structures(object3d):
         -------
 
         """
-        new_solid=o3d.io.read_triangle_mesh(posixpath.as_posix())
+        new_solid = o3d.io.read_triangle_mesh(posixpath.as_posix())
         new_solid.compute_triangle_normals()
-        new_solid.scale(scale,center=center)
+        new_solid.scale(scale, center=center)
         self.add_structure(new_solid)
+
     def triangles_base_raycaster(self):
         """
         generates the triangles for all the :class:`open3d.geometry.TriangleMesh` objects in the structure, and outputs them as a continuous array of
@@ -377,10 +384,9 @@ class antenna_structures(object3d):
         super().__init__()
         self.structures = structures
         self.points = points
-        self.antenna_xyz=o3d.geometry.TriangleMesh.create_coordinate_frame(
-    size=1, origin=self.pose[:3,3]
-)
-
+        self.antenna_xyz = o3d.geometry.TriangleMesh.create_coordinate_frame(
+            size=1, origin=self.pose[:3, 3]
+        )
 
     def rotate_antenna(
         self, rotation_matrix, rotation_centre=np.zeros((3, 1), dtype=np.float32)
@@ -399,19 +405,20 @@ class antenna_structures(object3d):
         --------
         None
         """
-        self.antenna_xyz=GF.open3drotate(self.antenna_xyz,rotation_matrix, rotation_centre
-                )
-        #translate to the rotation centre, then rotate around origin
-        temp_origin=self.pose[:3,3].ravel()-rotation_centre.ravel()
-        temp_origin=np.matmul(rotation_matrix,temp_origin)
-        self.pose[:3,3]=temp_origin.ravel()+rotation_centre.ravel()
-        self.pose[:3,:3]=np.matmul(rotation_matrix,self.pose[:3,:3])
-        #for item in range(len(self.structures.solids)):
+        self.antenna_xyz = GF.open3drotate(
+            self.antenna_xyz, rotation_matrix, rotation_centre
+        )
+        # translate to the rotation centre, then rotate around origin
+        temp_origin = self.pose[:3, 3].ravel() - rotation_centre.ravel()
+        temp_origin = np.matmul(rotation_matrix, temp_origin)
+        self.pose[:3, 3] = temp_origin.ravel() + rotation_centre.ravel()
+        self.pose[:3, :3] = np.matmul(rotation_matrix, self.pose[:3, :3])
+        # for item in range(len(self.structures.solids)):
         #    if (self.structures.solids[item] is not None):
         #        self.structures.solids[item] = GF.open3drotate(
         #            self.structures.solids[item], rotation_matrix, rotation_centre
         #        )
-        #for item in range(len(self.points.points)):
+        # for item in range(len(self.points.points)):
         #    if (self.points.points[item] is not None):
         #        self.points.points[item] = GF.open3drotate(
         #            self.points.points[item], rotation_matrix, rotation_centre
@@ -431,44 +438,58 @@ class antenna_structures(object3d):
         None
         """
 
-        self.pose[:3,3]=self.pose[:3,3].ravel()+vector.ravel()
-        #for item in range(len(self.structures.solids)):
+        self.pose[:3, 3] = self.pose[:3, 3].ravel() + vector.ravel()
+        # for item in range(len(self.structures.solids)):
         #    self.structures.solids[item].translate(vector)
-        #for item in range(len(self.points.points)):
+        # for item in range(len(self.points.points)):
         #    self.points.points[item].translate(vector)
 
-    def export_all_points(self,point_index=None):
-        if point_index==None:
+    def export_all_points(self, point_index=None):
+        if point_index == None:
             point_cloud = self.points.export_points()
-            point_cloud.transform(self.pose) ##+ self.structures.export_vertices()
+            point_cloud.transform(self.pose)  ##+ self.structures.export_vertices()
         else:
-            point_cloud=self.points.export_points(point_index=point_index)
+            point_cloud = self.points.export_points(point_index=point_index)
             point_cloud.transform(self.pose)
 
         return point_cloud
 
-    def excitation_function(self,desired_e_vector,transmit_amplitude=1,point_index=None,phase_shift="none",wavelength=1.0,steering_vector = np.zeros((1, 3))):
-        #generate the local excitation function and then convert into the global coordinate frame.
-        if point_index==None:
-            aperture_points=self.export_all_points()
+    def excitation_function(
+        self,
+        desired_e_vector,
+        transmit_amplitude=1,
+        point_index=None,
+        phase_shift="none",
+        wavelength=1.0,
+        steering_vector=np.zeros((1, 3)),
+    ):
+        # generate the local excitation function and then convert into the global coordinate frame.
+        if point_index == None:
+            aperture_points = self.export_all_points()
         else:
             aperture_points = self.export_all_points(point_index=point_index)
         aperture_weights = EM.calculate_conformalVectors(
-            desired_e_vector, np.asarray(aperture_points.normals), self.pose[:3,:3]
+            desired_e_vector, np.asarray(aperture_points.normals), self.pose[:3, :3]
         )
-        if phase_shift=="wavefront":
+        if phase_shift == "wavefront":
             source_points = np.asarray(aperture_points.points)
-            phase_weights= BM.WavefrontWeights(source_points, steering_vector, wavelength)
-            aperture_weights=aperture_weights*phase_weights.reshape(-1,1)
+            phase_weights = BM.WavefrontWeights(
+                source_points, steering_vector, wavelength
+            )
+            aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
 
-        return aperture_weights*transmit_amplitude
+        return aperture_weights * transmit_amplitude
 
-    def receive_transform(self,aperture_polarisation,excitation_function,beamforming_weights):
-        #combine local aperture polarisation, received excitation function, and beamforming weights to calculate the received signal
-        #convert global polarisation functions to local ones
+    def receive_transform(
+        self, aperture_polarisation, excitation_function, beamforming_weights
+    ):
+        # combine local aperture polarisation, received excitation function, and beamforming weights to calculate the received signal
+        # convert global polarisation functions to local ones
         transform_R = R.from_matrix(self.pose[:3, :3])
         transform_global_to_local = transform_R.inv()
-        local_signal = np.matmul(excitation_function, transform_global_to_local.as_matrix())
+        local_signal = np.matmul(
+            excitation_function, transform_global_to_local.as_matrix()
+        )
         local_received_signal = np.zeros((excitation_function.shape[1], 3))
         received_signal = np.zeros((excitation_function.shape[1], 3))
         local_received_signal[:, 0] = np.dot(beamforming_weights, local_signal[:, :, 0])
@@ -479,15 +500,15 @@ class antenna_structures(object3d):
         return received_signal
 
     def export_all_structures(self):
-
         objects = copy.deepcopy(self.structures.solids)
         for item in range(len(objects)):
             if objects[item] is None:
                 print("Structure does not exist")
             else:
-                objects[item]=objects[item].transform(self.pose)
+                objects[item] = objects[item].transform(self.pose)
 
         return objects
+
     def farfield_distance(self, freq):
         # calculate farfield distance for the antenna, based upon the Fraunhofer distance
         total_points = self.export_all_points()
@@ -531,12 +552,12 @@ class antenna_structures(object3d):
             + (center[2] - min_points[2]) ** 2
         )
         a = np.mean([max_dist, min_dist])
-        projected_area = np.pi * (a ** 2)
+        projected_area = np.pi * (a**2)
         wavelength = 3e8 / freq
-        directivity = (4 * np.pi * projected_area) / (wavelength ** 2)
+        directivity = (4 * np.pi * projected_area) / (wavelength**2)
         return directivity
 
-    def visualise_antenna(self,extras=[],origin=True):
+    def visualise_antenna(self, extras=[], origin=True):
         """
         This function uses open3d to display the antenna structure in the local coordinate frame
         """
@@ -561,11 +582,16 @@ class antenna_structures(object3d):
         #         + (center[2] - min_points[2]) ** 2
         #     )
         # a = np.mean([max_dist, min_dist])
-        #scale antenna xyz to the structures
-        self.antenna_xyz=o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.1, origin=[0, 0, 0])
+        # scale antenna xyz to the structures
+        self.antenna_xyz = o3d.geometry.TriangleMesh.create_coordinate_frame(
+            size=0.1, origin=[0, 0, 0]
+        )
         if origin:
             o3d.visualization.draw(
-                [self.export_all_points()] + self.export_all_structures() + [self.antenna_xyz] + extras
+                [self.export_all_points()]
+                + self.export_all_structures()
+                + [self.antenna_xyz]
+                + extras
             )
         else:
             o3d.visualization.draw(
@@ -610,6 +636,7 @@ class antenna_structures(object3d):
     #                                    sink_coords,self.structures,excitation_function,scatter_points,wavelength,scattering,elements,project_vectors=True,antenna_axes=self.antenna_axes)
     #      return Ex,Ey,Ez
 
+
 class antenna_pattern(object3d):
     """
     Antenna Pattern class which allows for patterns to be handled consistently
@@ -631,11 +658,11 @@ class antenna_pattern(object3d):
         arbitary_pattern=False,
         arbitary_pattern_type="isotropic",
         arbitary_pattern_format="Etheta/Ephi",
-        file_location=None
+        file_location=None,
     ):
         super().__init__()
 
-        if file_location!=None:
+        if file_location != None:
             self.pattern_frequency = pattern_frequency
             self.arbitary_pattern_format = arbitary_pattern_format
             self.import_pattern(file_location)
@@ -654,14 +681,12 @@ class antenna_pattern(object3d):
             self.az_mesh = az_mesh
             self.elev_mesh = elev_mesh
             if self.arbitary_pattern_format == "Etheta/Ephi":
-
                 self.pattern = np.zeros(
                     (self.elevation_resolution, self.azimuth_resolution, 2),
                     dtype=np.complex64,
                 )
 
             elif self.arbitary_pattern_format == "ExEyEz":
-
                 self.pattern = np.zeros(
                     (self.elevation_resolution, self.azimuth_resolution, 3),
                     dtype=np.complex64,
@@ -694,8 +719,6 @@ class antenna_pattern(object3d):
             elev_angles = self.elev_mesh[:, 0]
             elev_index = np.where(elev_angles > 0)
             self.pattern[elev_index, :, 0] = 1.0
-
-
 
     def import_pattern(self, file_location):
         """
@@ -769,11 +792,11 @@ class antenna_pattern(object3d):
             self.pattern_frequency = freq * 1e6
             self.pattern[:, :, 0] = Ea.transpose() + norm
             self.pattern[:, :, 1] = Eb.transpose() + norm
-        elif file_location.suffix ==".ffe":
-            #file is .ffe format
+        elif file_location.suffix == ".ffe":
+            # file is .ffe format
             self.import_ffe(file_location)
 
-    def import_ffe(self,file_path):
+    def import_ffe(self, file_path):
         """
         tested for .ffe files with theta in the range 0 to 180 degrees, and phi in the range -180 to 180 degrees
         Parameters
@@ -787,33 +810,33 @@ class antenna_pattern(object3d):
         import copy
 
         # Open the file and read the comments
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             comments = f.readlines()
 
             # Extract lines starting with #
-        comment_lines = [line.strip() for line in comments if line.startswith('#')]
+        comment_lines = [line.strip() for line in comments if line.startswith("#")]
 
         # Process the comment lines for keywords
         for line in comment_lines:
-            if 'source' in line.lower():
-                antenna_name = line.split(':')[1].strip()
-            elif 'result type' in line.lower():
-                pattern_type = line.split(':')[1].strip()
+            if "source" in line.lower():
+                antenna_name = line.split(":")[1].strip()
+            elif "result type" in line.lower():
+                pattern_type = line.split(":")[1].strip()
             elif "frequency" in line.lower():
-                frequency = float(line.split(':')[1])
+                frequency = float(line.split(":")[1])
             elif "coordinate system" in line.lower():
-                coordinate_sys = line.split(':')[1].strip()
+                coordinate_sys = line.split(":")[1].strip()
             elif "efficiency" in line.lower():
-                antenna_efficiency = float(line.split(':')[1])
+                antenna_efficiency = float(line.split(":")[1])
 
         # Print the metadata and the first 10 x, y, and ffp values
-        print('Antenna name:', antenna_name)
-        print('Antenna type:', pattern_type)
+        print("Antenna name:", antenna_name)
+        print("Antenna type:", pattern_type)
         # print('X:', x[:10])
         # print('Y:', y[:10])
         # print('FFP:', ffp[:10])
         if coordinate_sys == "Spherical":
-            datafile = np.loadtxt(file_path, comments=['#', '*'])
+            datafile = np.loadtxt(file_path, comments=["#", "*"])
             el = 90 - datafile[:, 0]
             az = datafile[:, 1]
             # x,y,z=MF.polar2cart(theta, phi, np.ones(theta.shape))
@@ -821,16 +844,24 @@ class antenna_pattern(object3d):
             elev_res = np.unique(el).size
             az_res = np.unique(az).size
             if pattern_type == "Directivity":
-                etheta_field = np.flipud((datafile[:, 2] + 1j * datafile[:, 3]).reshape(az_res, elev_res).transpose())
-                ephi_field = np.flipud((datafile[:, 4] + 1j * datafile[:, 5]).reshape(az_res, elev_res).transpose())
+                etheta_field = np.flipud(
+                    (datafile[:, 2] + 1j * datafile[:, 3])
+                    .reshape(az_res, elev_res)
+                    .transpose()
+                )
+                ephi_field = np.flipud(
+                    (datafile[:, 4] + 1j * datafile[:, 5])
+                    .reshape(az_res, elev_res)
+                    .transpose()
+                )
 
             # elevation=np.flipud(GF.thetatoelevation(theta).reshape(phi_res, theta_res).transpose())
             # azimuth=phi.reshape(phi_res, theta_res).transpose()
             # etheta=etheta_field
             # ephi=np.flipud(ephi_field)
-        self.pattern_frequency=frequency
-        self.azimuth_resolution=az_res
-        self.elevation_resolution=elev_res
+        self.pattern_frequency = frequency
+        self.azimuth_resolution = az_res
+        self.elevation_resolution = elev_res
         self.az_mesh = np.flipud(az.reshape(az_res, elev_res).transpose())
         self.elev_mesh_mesh = np.flipud(el.reshape(az_res, elev_res).transpose())
         self.pattern[:, :, 0] = copy.deepcopy(etheta_field)
@@ -857,24 +888,64 @@ class antenna_pattern(object3d):
             self.transmute_pattern()
 
         import lyceanem
+
         destination_path = path.with_suffix(".ffe")
         filetype = "Far Field"
         fileformat = "8"
         import datetime
+
         # Get the current date and time
         now = datetime.datetime.now()
         # Format the date and time as a string
         date_string = now.strftime("%Y-%m-%d %H:%M:%S")
-        header = "##File Type: " + filetype + "\n" + "##File Format: " + fileformat + "\n" + "##Source: " + source_name + "\n" + "##Date: " + date_string + "\n" + "** File exported by LyceanEM Version " + lyceanem.__version__ + "\n" + "\n"
+        header = (
+            "##File Type: "
+            + filetype
+            + "\n"
+            + "##File Format: "
+            + fileformat
+            + "\n"
+            + "##Source: "
+            + source_name
+            + "\n"
+            + "##Date: "
+            + date_string
+            + "\n"
+            + "** File exported by LyceanEM Version "
+            + lyceanem.__version__
+            + "\n"
+            + "\n"
+        )
         config = "LyceanEM Standard"
         coordinates = "Spherical"
         resulttype = "Directivity"
         efficiency = 1.0
-        comments = "#Configuration Name: " + config + "\n" + "#Frequency: " + str(
-            self.pattern_frequency) + "\n" + "#Coordinate System: " + coordinates + "\n" + "#No. of Theta Samples: " + str(
-            self.elevation_resolution) + "\n" + "#No. of Phi Samples: " + str(
-            self.azimuth_resolution) + "\n" + "#Result Type: " + resulttype + "\n" + "#Efficiency: " + str(
-            efficiency) + "\n" + "#No. of Header Lines: 1" + "\n" + '#       "Theta"             "Phi"           "Re(Etheta)"       "Im(Etheta)"        "Re(Ephi)"         "Im(Ephi)"   "Directivity(Theta)" "Directivity(Phi)" "Directivity(Total)"'
+        comments = (
+            "#Configuration Name: "
+            + config
+            + "\n"
+            + "#Frequency: "
+            + str(self.pattern_frequency)
+            + "\n"
+            + "#Coordinate System: "
+            + coordinates
+            + "\n"
+            + "#No. of Theta Samples: "
+            + str(self.elevation_resolution)
+            + "\n"
+            + "#No. of Phi Samples: "
+            + str(self.azimuth_resolution)
+            + "\n"
+            + "#Result Type: "
+            + resulttype
+            + "\n"
+            + "#Efficiency: "
+            + str(efficiency)
+            + "\n"
+            + "#No. of Header Lines: 1"
+            + "\n"
+            + '#       "Theta"             "Phi"           "Re(Etheta)"       "Im(Etheta)"        "Re(Ephi)"         "Im(Ephi)"   "Directivity(Theta)" "Directivity(Phi)" "Directivity(Total)"'
+        )
         theta_slice = 90 - np.flipud(self.elev_mesh[:, 1:]).transpose().ravel()
         phi_slice = np.mod(np.flipud(self.az_mesh[:, 1:]).transpose().ravel(), 360)
         real_etheta = np.real(np.flipud(self.pattern[:, 1:, 0]).transpose().ravel())
@@ -882,17 +953,29 @@ class antenna_pattern(object3d):
         real_ephi = np.real(np.flipud(self.pattern[:, 1:, 1]).transpose().ravel())
         imag_ephi = np.imag(np.flipud(self.pattern[:, 1:, 1]).transpose().ravel())
         dtheta, dphi, dtotal, _ = self.directivity()
-        datablock = np.array([theta_slice, phi_slice, real_etheta, imag_etheta, real_ephi, imag_ephi,
-                              20 * np.log10(dtheta[:, 1:].transpose().ravel()),
-                              20 * np.log10(dphi[:, 1:].transpose().ravel()),
-                              10 * np.log10(dtotal[:, 1:].transpose().ravel())]).transpose()
+        datablock = np.array(
+            [
+                theta_slice,
+                phi_slice,
+                real_etheta,
+                imag_etheta,
+                real_ephi,
+                imag_ephi,
+                20 * np.log10(dtheta[:, 1:].transpose().ravel()),
+                20 * np.log10(dphi[:, 1:].transpose().ravel()),
+                10 * np.log10(dtotal[:, 1:].transpose().ravel()),
+            ]
+        ).transpose()
         datablock[np.where(np.isinf(datablock))] = -1e6
         # sort for increasing angles only
         sorted_datablock = datablock[np.lexsort((datablock[:, 0], datablock[:, 1])), :]
         text = header + "\n" + comments
-        np.savetxt(destination_path, sorted_datablock, header=text, comments="", fmt="%10.8e")
+        np.savetxt(
+            destination_path, sorted_datablock, header=text, comments="", fmt="%10.8e"
+        )
 
         return True
+
     def export_pattern(self, file_location):
         """
         takes the file location and exports the pattern as a .dat file
@@ -971,14 +1054,20 @@ class antenna_pattern(object3d):
         if self.arbitary_pattern_format == "Etheta/Ephi":
             self.transmute_pattern(desired_format="ExEyEz")
 
-        #import to export the weights in cartesian format, then orientate correctly within global reference frame.
+        # import to export the weights in cartesian format, then orientate correctly within global reference frame.
         rotation_matrix = self.pose[:3, :3]
 
-        #weightsx= self.pattern[:,:,0].ravel()
-        #weightsy = self.pattern[:, :, 1].ravel()
-        #weightsz = self.pattern[:, :, 2].ravel()
-        weights=np.array([self.pattern[:,:,0].reshape(-1),self.pattern[:,:,1].reshape(-1),self.pattern[:,:,2].reshape(-1)])
-        weights=np.matmul(weights,rotation_matrix)
+        # weightsx= self.pattern[:,:,0].ravel()
+        # weightsy = self.pattern[:, :, 1].ravel()
+        # weightsz = self.pattern[:, :, 2].ravel()
+        weights = np.array(
+            [
+                self.pattern[:, :, 0].reshape(-1),
+                self.pattern[:, :, 1].reshape(-1),
+                self.pattern[:, :, 2].reshape(-1),
+            ]
+        )
+        weights = np.matmul(weights, rotation_matrix)
         return points, weights
 
     def display_pattern(
@@ -1041,13 +1130,13 @@ class antenna_pattern(object3d):
                     title_text="Ephi",
                     plot_max=plot_max,
                 )
-            elif desired_pattern =="Power":
+            elif desired_pattern == "Power":
                 BM.PatternPlot(
-                    self.pattern[:, :, 0]**2+self.pattern[:, :, 1]**2,
+                    self.pattern[:, :, 0] ** 2 + self.pattern[:, :, 1] ** 2,
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
-                    logtype='power',
+                    logtype="power",
                     plottype=plottype,
                     title_text="Power Pattern",
                     plot_max=plot_max,
@@ -1112,12 +1201,12 @@ class antenna_pattern(object3d):
                     plot_max=plot_max,
                 )
 
-    def transmute_pattern(self,desired_format="Etheta/Ephi"):
+    def transmute_pattern(self, desired_format="Etheta/Ephi"):
         """
         convert the pattern from Etheta/Ephi format to Ex, Ey,Ez format, or back again
         """
         if self.arbitary_pattern_format == "Etheta/Ephi":
-            if desired_format=="ExEyEz":
+            if desired_format == "ExEyEz":
                 oldformat = self.pattern.reshape(-1, self.pattern.shape[2])
                 old_shape = oldformat.shape
                 self.arbitary_pattern_format = "ExEyEz"
@@ -1157,7 +1246,7 @@ class antenna_pattern(object3d):
                     self.elevation_resolution, self.azimuth_resolution
                 )
             elif desired_format == "Circular":
-                #recalculate pattern using Right Hand Circular and Left Hand Circular Polarisation
+                # recalculate pattern using Right Hand Circular and Left Hand Circular Polarisation
                 self.arbitary_pattern_format = desired_format
 
         else:
@@ -1203,9 +1292,7 @@ class antenna_pattern(object3d):
             np.deg2rad(self.elev_mesh.ravel()),
             np.ones((self.pattern[:, :, 0].size)) * self.field_radius,
         )
-        field_points = (
-            np.array([x, y, z]).transpose().astype(np.float32)
-        )
+        field_points = np.array([x, y, z]).transpose().astype(np.float32)
 
         return field_points
 
@@ -1352,6 +1439,7 @@ class antenna_pattern(object3d):
         )
         return Dtheta, Dphi, Dtotal, Dmax
 
+
 class array_pattern:
     """
     Array Pattern class which allows for patterns to be handled consistently
@@ -1377,7 +1465,6 @@ class array_pattern:
         rotation_offset=np.zeros((3), dtype=np.float32),
         elements=2,
     ):
-
         self.azimuth_resolution = azimuth_resolution
         self.elevation_resolution = elevation_resolution
         self.pattern_frequency = pattern_frequency
@@ -1386,8 +1473,8 @@ class array_pattern:
         self.position_mapping = position_mapping
         self.rotation_offset = rotation_offset
         self.field_radius = 1.0
-        self.elements=elements
-        self.beamforming_weights=np.ones((self.elements),dtype=np.complex64)
+        self.elements = elements
+        self.beamforming_weights = np.ones((self.elements), dtype=np.complex64)
         az_mesh, elev_mesh = np.meshgrid(
             np.linspace(-180, 180, self.azimuth_resolution),
             np.linspace(-90, 90, self.elevation_resolution),
@@ -1396,13 +1483,12 @@ class array_pattern:
         self.elev_mesh = elev_mesh
         if self.arbitary_pattern_format == "Etheta/Ephi":
             self.pattern = np.zeros(
-                ( elements,self.elevation_resolution, self.azimuth_resolution, 2),
+                (elements, self.elevation_resolution, self.azimuth_resolution, 2),
                 dtype=np.complex64,
             )
         elif self.arbitary_pattern_format == "ExEyEz":
-
             self.pattern = np.zeros(
-                ( elements,self.elevation_resolution, self.azimuth_resolution, 3),
+                (elements, self.elevation_resolution, self.azimuth_resolution, 3),
                 dtype=np.complex64,
             )
         if arbitary_pattern == True:
@@ -1439,19 +1525,19 @@ class array_pattern:
         Populated antenna pattern
         """
         if self.arbitary_pattern_type == "isotropic":
-            self.pattern[:, :,:, 0] = 1.0
+            self.pattern[:, :, :, 0] = 1.0
         elif self.arbitary_pattern_type == "xhalfspace":
             az_angles = self.az_mesh[0, :]
             az_index = np.where(np.abs(az_angles) < 90)
-            self.pattern[:, az_index,:, 0] = 1.0
+            self.pattern[:, az_index, :, 0] = 1.0
         elif self.arbitary_pattern_type == "yhalfspace":
             az_angles = self.az_mesh[0, :]
             az_index = np.where(az_angles > 90)
-            self.pattern[:, az_index, :,0] = 1.0
+            self.pattern[:, az_index, :, 0] = 1.0
         elif self.arbitary_pattern_type == "zhalfspace":
             elev_angles = self.elev_mesh[:, 0]
             elev_index = np.where(elev_angles > 0)
-            self.pattern[elev_index, :, :,0] = 1.0
+            self.pattern[elev_index, :, :, 0] = 1.0
 
     def display_pattern(
         self, plottype="Polar", desired_pattern="both", pattern_min=-40
@@ -1476,7 +1562,7 @@ class array_pattern:
         if self.arbitary_pattern_format == "Etheta/Ephi":
             if desired_pattern == "both":
                 BM.PatternPlot(
-                    self.beamforming_weights*self.pattern[:,:, :, 0],
+                    self.beamforming_weights * self.pattern[:, :, :, 0],
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
@@ -1484,7 +1570,7 @@ class array_pattern:
                     title_text="Etheta",
                 )
                 BM.PatternPlot(
-                    self.beamforming_weights*self.pattern[:,:, :, 1],
+                    self.beamforming_weights * self.pattern[:, :, :, 1],
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
@@ -1493,7 +1579,7 @@ class array_pattern:
                 )
             elif desired_pattern == "Etheta":
                 BM.PatternPlot(
-                    self.beamforming_weights*self.pattern[:,:, :, 0],
+                    self.beamforming_weights * self.pattern[:, :, :, 0],
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
@@ -1502,16 +1588,17 @@ class array_pattern:
                 )
             elif desired_pattern == "Ephi":
                 BM.PatternPlot(
-                    self.beamforming_weights*self.pattern[:,:, :, 1],
+                    self.beamforming_weights * self.pattern[:, :, :, 1],
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Ephi",
                 )
-            elif desired_pattern =="Power":
+            elif desired_pattern == "Power":
                 BM.PatternPlot(
-                    (self.beamforming_weights*self.pattern[:,:, :, 0])**2+(self.beamforming_weights*self.pattern[:,:, :, 1])**2,
+                    (self.beamforming_weights * self.pattern[:, :, :, 0]) ** 2
+                    + (self.beamforming_weights * self.pattern[:, :, :, 1]) ** 2,
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
@@ -1521,7 +1608,7 @@ class array_pattern:
         elif self.arbitary_pattern_format == "ExEyEz":
             if desired_pattern == "both":
                 BM.PatternPlot(
-                    self.beamforming_weights*self.pattern[:,:, :, 0],
+                    self.beamforming_weights * self.pattern[:, :, :, 0],
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
@@ -1529,7 +1616,7 @@ class array_pattern:
                     title_text="Ex",
                 )
                 BM.PatternPlot(
-                    self.beamforming_weights*self.pattern[:,:, :, 1],
+                    self.beamforming_weights * self.pattern[:, :, :, 1],
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
@@ -1537,7 +1624,7 @@ class array_pattern:
                     title_text="Ey",
                 )
                 BM.PatternPlot(
-                    self.beamforming_weights*self.pattern[:,:, :, 2],
+                    self.beamforming_weights * self.pattern[:, :, :, 2],
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
@@ -1546,7 +1633,7 @@ class array_pattern:
                 )
             elif desired_pattern == "Ex":
                 BM.PatternPlot(
-                    self.beamforming_weights*self.pattern[:,:, :, 0],
+                    self.beamforming_weights * self.pattern[:, :, :, 0],
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
@@ -1555,7 +1642,7 @@ class array_pattern:
                 )
             elif desired_pattern == "Ey":
                 BM.PatternPlot(
-                    self.beamforming_weights*self.pattern[:,:, :, 1],
+                    self.beamforming_weights * self.pattern[:, :, :, 1],
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
@@ -1564,14 +1651,13 @@ class array_pattern:
                 )
             elif desired_pattern == "Ez":
                 BM.PatternPlot(
-                    self.beamforming_weights*self.pattern[:,:, :, 2],
+                    self.beamforming_weights * self.pattern[:, :, :, 2],
                     self.az_mesh,
                     self.elev_mesh,
                     pattern_min=pattern_min,
                     plottype=plottype,
                     title_text="Ez",
                 )
-
 
     def cartesian_points(self):
         """
@@ -1582,13 +1668,9 @@ class array_pattern:
             np.deg2rad(self.elev_mesh.ravel()),
             np.ones((self.pattern[:, :, 0].size)) * self.field_radius,
         )
-        field_points = (
-            np.array([x, y, z]).transpose().astype(np.float32)
-        )
+        field_points = np.array([x, y, z]).transpose().astype(np.float32)
 
         return field_points
-
-
 
     def directivity(self):
         """
@@ -1606,8 +1688,8 @@ class array_pattern:
 
         """
         Dtheta, Dphi, Dtotal, Dmax = BM.directivity_transformv2(
-            self.beamforming_weights*self.pattern[:,:, :, 0],
-            self.beamforming_weights*self.pattern[:,:, :, 1],
+            self.beamforming_weights * self.pattern[:, :, :, 0],
+            self.beamforming_weights * self.pattern[:, :, :, 1],
             az_range=self.az_mesh[0, :],
             elev_range=self.elev_mesh[:, 0],
         )

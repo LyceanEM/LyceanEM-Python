@@ -25,10 +25,10 @@ As this method is built into a raytracing environment, the maximum performance f
 be predicted using the :func:`lyceanem.models.frequency_domain.aperture_projection` function.
 
 """
-import numpy as np
-import open3d as o3d
 import copy
 
+import numpy as np
+import open3d as o3d
 
 # %%
 # Setting Farfield Resolution and Wavelength

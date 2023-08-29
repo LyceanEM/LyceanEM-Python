@@ -26,22 +26,15 @@ the farfield patterns for a linearly polarised aperture with multiple elements. 
 
 The Steering Efficiency can then be evaluated using :func:`lyceanem.electromagnetics.beamforming.Steering_Efficiency` for the resultant achieved beamforming.
 
-.. GENERATED FROM PYTHON SOURCE LINES 14-18
+.. GENERATED FROM PYTHON SOURCE LINES 14-17
 
 .. code-block:: default
 
     import numpy as np
     import open3d as o3d
-    import copy
 
 
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 19-28
+.. GENERATED FROM PYTHON SOURCE LINES 18-27
 
 Setting Farfield Resolution and Wavelength
 -------------------------------------------
@@ -53,7 +46,7 @@ In order to ensure a fast example, 37 points have been used here for both, givin
 The wavelength of interest is also an important variable for antenna array analysis, so we set it now for 10GHz,
 an X band aperture.
 
-.. GENERATED FROM PYTHON SOURCE LINES 28-33
+.. GENERATED FROM PYTHON SOURCE LINES 27-32
 
 .. code-block:: default
 
@@ -63,20 +56,14 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 34-38
+.. GENERATED FROM PYTHON SOURCE LINES 33-37
 
 Geometries
 ------------------------
 In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
 :class:`open3d.geometry.TriangleMesh` structures can be accessed by importing the data subpackage
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-42
+.. GENERATED FROM PYTHON SOURCE LINES 37-41
 
 .. code-block:: default
 
@@ -85,20 +72,14 @@ In order to make things easy to start, an example geometry has been included wit
     body, array, source_coords = data.exampleUAV(10e9)
 
 
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 43-47
+.. GENERATED FROM PYTHON SOURCE LINES 42-46
 
 Visualise the Resultant UAV and Array
 ---------------------------------------
 :func:`open3d.visualization.draw_geometries` can be used to visualise the open3d data
 structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.PointCloud`
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-53
+.. GENERATED FROM PYTHON SOURCE LINES 46-52
 
 .. code-block:: default
 
@@ -109,17 +90,11 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
     o3d.visualization.draw_geometries([body, array, source_coords, mesh_frame])
 
 
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 54-55
+.. GENERATED FROM PYTHON SOURCE LINES 53-54
 
 .. image:: ../_static/UAVArraywithPoints.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 55-61
+.. GENERATED FROM PYTHON SOURCE LINES 54-60
 
 .. code-block:: default
 
@@ -130,13 +105,7 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
     blockers = structures([body, array])
 
 
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 62-69
+.. GENERATED FROM PYTHON SOURCE LINES 61-68
 
 Model Farfield Array Patterns
 -------------------------------
@@ -146,7 +115,7 @@ elevation points, and azimuth points. These can then be beamformed using the des
 currently includes two open loop algorithms for phase weights :func:`lyceanem.electromagnetics.beamforming.EGCWeights`,
 and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-103
+.. GENERATED FROM PYTHON SOURCE LINES 68-102
 
 .. code-block:: default
 
@@ -185,31 +154,11 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
     )
 
 
-
-
-.. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_001.png
-   :alt: 05 array beamforming
-   :srcset: /auto_examples/images/sphx_glr_05_array_beamforming_001.png
-   :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    C:\Users\lycea\anaconda3\envs\cusignal-dev\lib\site-packages\numba\cuda\cudadrv\devicearray.py:885: NumbaPerformanceWarning: Host array used in CUDA kernel will incur copy overhead to/from device.
-      warn(NumbaPerformanceWarning(msg))
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1167: RuntimeWarning: divide by zero encountered in log10
-      logdata = 10 * np.log10(data)
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 104-105
+.. GENERATED FROM PYTHON SOURCE LINES 103-104
 
 .. image:: ../_static/sphx_glr_05_array_beamforming_001.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-125
+.. GENERATED FROM PYTHON SOURCE LINES 104-124
 
 .. code-block:: default
 
@@ -235,24 +184,9 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
     )
 
 
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Steering Effciency of 9.1%
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\05_array_beamforming.py:122: RuntimeWarning: divide by zero encountered in log10
-      np.max(10 * np.log10(directivity_map[:, :, 2]))
-    Maximum Directivity of 23.0 dBi
-
-
-
-
-
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 2 minutes  30.337 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_auto_examples_05_array_beamforming.py:

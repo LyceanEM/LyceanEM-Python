@@ -9,14 +9,12 @@ import cupy as cp
 import numpy as np
 import open3d as o3d
 import scipy.stats
-from matplotlib import cm
-from numba import cuda, float32, float64, complex64, njit, guvectorize, prange
+from numba import cuda, float32, float64, complex64, njit, guvectorize
 from numpy.linalg import norm
-from scipy.spatial import distance
 
 import lyceanem.base_types as base_types
-import lyceanem.raycasting.rayfunctions as RF
 import lyceanem.geometry.geometryfunctions as GF
+import lyceanem.raycasting.rayfunctions as RF
 
 
 @cuda.jit(device=True)
@@ -324,7 +322,6 @@ def sourcelaunchtransformreal(ray_field, launch_point, outgoing_dir):
 
 @cuda.jit
 def scatteringkernal(network_index, point_information, ray_components, wavelength):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -389,7 +386,6 @@ def scatteringkernal(network_index, point_information, ray_components, wavelengt
 def scatteringkernalv2(
     problem_size, network_index, point_information, scattering_matrix, wavelength
 ):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -479,7 +475,6 @@ def scatteringkernalv2(
 def scatteringkernaltest(
     problem_size, network_index, point_information, scattering_matrix, wavelength
 ):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -613,7 +608,6 @@ def scatteringkernalv3(
     scattering_coefficient,
     wavelength,
 ):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -767,7 +761,6 @@ def scatteringkernalv4(
     wavelength,
     target_index,
 ):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -899,7 +892,6 @@ def scatteringkernaltest(
     scattering_coefficient,
     wavelength,
 ):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -928,7 +920,6 @@ def scatteringkernaltest(
 
 @cuda.jit
 def polaranddistance(network_index, point_information, polar_coefficients, distances):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -1043,7 +1034,6 @@ def polaranddistance(network_index, point_information, polar_coefficients, dista
 def freqdomainkernal(
     network_index, point_information, source_sink_index, wavelength, scattering_network
 ):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -1209,7 +1199,6 @@ def freqdomainkernal(
 def freqdomainisokernal(
     network_index, point_information, source_sink_index, wavelength, scattering_network
 ):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -1217,7 +1206,6 @@ def freqdomainisokernal(
         # noinspection PyTypeChecker
         ray_component = cuda.local.array(shape=(3), dtype=np.complex128)
         for i in range(network_index.shape[1] - 1):
-
             # print(i,cu_ray_num,network_index[cu_ray_num,i],network_index[cu_ray_num,i+1])
             if i == 0:
                 lengths = float(0)
@@ -1743,7 +1731,6 @@ def timedomainthetaphi(
 
 @cuda.jit
 def pathlength(network_index, point_information, distances):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -1779,7 +1766,6 @@ def pathlength(network_index, point_information, distances):
 
 @cuda.jit
 def polarmixing(network_index, point_information, polar_coefficients):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -1890,7 +1876,6 @@ def polarmixing(network_index, point_information, polar_coefficients):
 
 @cuda.jit
 def pp(network_index, point_information, polar_coefficients, paths):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -2065,7 +2050,7 @@ def EMGPUJointPathLengthandPolar(source_num, sink_num, full_index, point_informa
     ray_num = full_index.shape[0]
     threads_in_block = 256
     max_blocks = 65535
-    maximum_chunk_size = 2 ** 8
+    maximum_chunk_size = 2**8
     path_lengths = np.zeros((ray_num), dtype=np.float32)
     polar_coefficients = np.ones((ray_num, 3), dtype=np.complex64)
     d_point_information = cuda.device_array(
@@ -2134,8 +2119,8 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
         the resultant scattering network for the provided ray paths
 
     """
-    #ctx = cuda.current_context()
-    #ctx.reset()
+    # ctx = cuda.current_context()
+    # ctx.reset()
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem).astype(np.int64)
     ray_num = full_index.shape[0]
@@ -2143,13 +2128,14 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
     # divide in terms of a block for each source, then
     depthslice, _ = targettingindex(copy.deepcopy(full_index))
 
-
-    memory_requirements=(source_num*sink_num*3*2*8)+depthslice.size*8+full_index.size*8
-    if memory_requirements>=(0.95*free_mem):
-        #chunking required
-        #print("Number of Chunks",np.ceil(memory_requirements/max_mem).astype(int)+1)
-        #create chunks based upon number of chunks required
-        num_chunks=np.ceil(memory_requirements / max_mem).astype(int) + 1
+    memory_requirements = (
+        (source_num * sink_num * 3 * 2 * 8) + depthslice.size * 8 + full_index.size * 8
+    )
+    if memory_requirements >= (0.95 * free_mem):
+        # chunking required
+        # print("Number of Chunks",np.ceil(memory_requirements/max_mem).astype(int)+1)
+        # create chunks based upon number of chunks required
+        num_chunks = np.ceil(memory_requirements / max_mem).astype(int) + 1
         source_chunking = np.linspace(0, source_num, num_chunks + 1).astype(np.int32)
         scattering_network = np.zeros(
             (source_num, sink_num, 3, 2),
@@ -2163,9 +2149,9 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
         d_wavelength = cuda.to_device(
             np.csingle(np.ones((1), dtype=np.complex64) * wavelength)
         )
-        #print(source_chunking)
-        #print(np.max(depthslice, axis=0))
-        #print(np.min(depthslice, axis=0))
+        # print(source_chunking)
+        # print(np.max(depthslice, axis=0))
+        # print(np.min(depthslice, axis=0))
 
         for chunk_index in range(num_chunks):
             sources = np.linspace(
@@ -2173,34 +2159,40 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
                 source_chunking[chunk_index + 1],
                 source_chunking[chunk_index + 1] - source_chunking[chunk_index],
             ).astype(np.int64)
-            #temp_depthslice=copy.deepcopy(depthslice[np.isin(depthslice[:, 0], sources), :])
-            temp_index = copy.deepcopy(full_index[np.isin(full_index[:, 0], sources), :])
-            #temp_depthslice=copy.deepcopy(depthslice[np.logical_and(depthslice[:,0]>= source_chunking[chunk_index], depthslice[:,0] <= source_chunking[chunk_index+1]),:])
-            #temp_index = copy.deepcopy(full_index[np.logical_and(depthslice[:, 0] >= source_chunking[chunk_index],
+            # temp_depthslice=copy.deepcopy(depthslice[np.isin(depthslice[:, 0], sources), :])
+            temp_index = copy.deepcopy(
+                full_index[np.isin(full_index[:, 0], sources), :]
+            )
+            # temp_depthslice=copy.deepcopy(depthslice[np.logical_and(depthslice[:,0]>= source_chunking[chunk_index], depthslice[:,0] <= source_chunking[chunk_index+1]),:])
+            # temp_index = copy.deepcopy(full_index[np.logical_and(depthslice[:, 0] >= source_chunking[chunk_index],
             #                                                          depthslice[:, 0] <= source_chunking[
             #                                                              chunk_index + 1]), :])
 
             temp_scattering_network = cp.zeros(
-                (source_chunking[chunk_index+1]-source_chunking[chunk_index], sink_num, 3, 2),
+                (
+                    source_chunking[chunk_index + 1] - source_chunking[chunk_index],
+                    sink_num,
+                    3,
+                    2,
+                ),
                 dtype=np.float64,
             )
-            #make adjustments to the index to ensure the rays are routed correctly
+            # make adjustments to the index to ensure the rays are routed correctly
             temp_depthslice, _ = targettingindex(copy.deepcopy(temp_index))
             temp_depthslice[:, 0] -= 1 + source_chunking[chunk_index]
             temp_depthslice[:, 1] -= source_num + 1
-            #temp_depthslice[:,0]-=(source_chunking[chunk_index]+1)
-            #temp_depthslice[:,1] -=source_num + 1
-            #print(np.max(temp_depthslice, axis=0))
-            #print(np.min(temp_depthslice, axis=0))
+            # temp_depthslice[:,0]-=(source_chunking[chunk_index]+1)
+            # temp_depthslice[:,1] -=source_num + 1
+            # print(np.max(temp_depthslice, axis=0))
+            # print(np.min(temp_depthslice, axis=0))
 
-
-            #d_temp_target_index = cuda.device_array(
+            # d_temp_target_index = cuda.device_array(
             #    (temp_depthslice.shape[0], temp_depthslice.shape[1]), dtype=np.int64
-            #)
+            # )
             d_temp_target_index = cuda.to_device(temp_depthslice)
-            #d_temp_index = cuda.device_array(
+            # d_temp_index = cuda.device_array(
             #    (temp_index.shape[0], temp_index.shape[1]), dtype=np.int64
-            #)
+            # )
             d_temp_index = cuda.to_device(temp_index)
             # Here, we choose the granularity of the threading on our device. We want
             # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
@@ -2228,22 +2220,24 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
             # chunks=np.linspace(0,path_lengths.shape[0],math.ceil(path_lengths.shape[0]/maximum_chunk_size)+1,dtype=np.int32)
             # for n in range(chunks.shape[0]-1):
             # polar_coefficients=d_polar_c.copy_to_host()
-            scattering_network[source_chunking[chunk_index]:source_chunking[chunk_index+1],:,:,:] = cp.asnumpy(temp_scattering_network)
-            #test= cp.asnumpy(temp_scattering_network)
-            #print(temp_scattering_network.shape)
+            scattering_network[
+                source_chunking[chunk_index] : source_chunking[chunk_index + 1], :, :, :
+            ] = cp.asnumpy(temp_scattering_network)
+            # test= cp.asnumpy(temp_scattering_network)
+            # print(temp_scattering_network.shape)
             del temp_scattering_network, d_temp_index, d_temp_target_index
 
         scattering_network_comp = scattering_network.view(dtype=np.complex128)[..., 0]
     else:
-        #free to process
+        # free to process
         depthslice[:, 0] -= 1
         depthslice[:, 1] -= source_num + 1
-        #scattering_network = np.zeros((source_num, sink_num, 3, 2), dtype=np.float64)
+        # scattering_network = np.zeros((source_num, sink_num, 3, 2), dtype=np.float64)
         d_scattering_network = cp.zeros(
             (source_num, sink_num, 3, 2),
             dtype=np.float64,
         )
-        #d_scattering_network[:,:,:,:]=0.0
+        # d_scattering_network[:,:,:,:]=0.0
         d_point_information = cuda.device_array(
             point_information.shape[0], dtype=base_types.scattering_t
         )
@@ -2269,7 +2263,7 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
         # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
         # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
 
-        #d_scattering_network = cuda.to_device(scattering_network)
+        # d_scattering_network = cuda.to_device(scattering_network)
         grids = math.ceil(full_index.shape[0] / threads_in_block)
         threads = threads_in_block
         # print(grids,' blocks, ',threads,' threads')
@@ -2296,7 +2290,7 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
         # scattering_network_comp = scattering_network[:, :, :, 0] + scattering_network[:, :, :, 1] * 1j
         # path_lengths=d_paths.copy_to_host()
         # print('Polar Mixing Progress {:3.0f}%'.format((source_index/source_num)*100))
-        #ctx.reset()
+        # ctx.reset()
     return scattering_network_comp
 
 
@@ -2324,7 +2318,7 @@ def IsoGPUFreqDomain(source_num, sink_num, full_index, point_information, wavele
     ray_num = full_index.shape[0]
     threads_in_block = 256
     max_blocks = 65535
-    maximum_chunk_size = 2 ** 8
+    maximum_chunk_size = 2**8
     path_lengths = np.zeros((ray_num), dtype=np.float32)
     test_d = cuda.device_array((path_lengths.shape[0]), dtype=np.float64)
     scattering_network = np.zeros((source_num, sink_num, 3, 2), dtype=np.float64)
@@ -2724,7 +2718,7 @@ def TimeDomainv2(
     ray_num = full_index.shape[0]
     threads_in_block = 256
     max_blocks = 65535
-    maximum_chunk_size = 2 ** 8
+    maximum_chunk_size = 2**8
     path_lengths = np.zeros((ray_num), dtype=np.float32)
     time_map = np.zeros((source_num, sink_num, num_samples, 3), dtype=np.float64)
     print(time_map.nbytes)
@@ -2843,7 +2837,7 @@ def TimeDomainv3(
     ray_num = full_index.shape[0]
     threads_in_block = 256
     max_blocks = 65535
-    maximum_chunk_size = 2 ** 8
+    maximum_chunk_size = 2**8
     path_lengths = np.zeros((ray_num), dtype=np.float32)
     time_map = np.zeros((source_num, sink_num, num_samples, 3), dtype=np.float64)
     time_step = 1.0 / sampling_freq
@@ -3096,7 +3090,7 @@ def TimeDomainThetaPhi(
     ray_num = full_index.shape[0]
     threads_in_block = 256
     max_blocks = 65535
-    maximum_chunk_size = 2 ** 8
+    maximum_chunk_size = 2**8
     path_lengths = np.zeros((ray_num), dtype=np.float32)
     time_map = np.zeros((source_num, sink_num, num_samples, 2), dtype=np.float64)
     flag = True
@@ -3436,7 +3430,7 @@ def EMGPUScatteringWrapper(
     # cuda.select_device(0)
     # network_index,point_information,ray_components
     ray_num = full_index.shape[0]
-    maximum_chunk_size = 2 ** 8
+    maximum_chunk_size = 2**8
     threads_in_block = 1024
     maximum_sources = 1
     scattering_matrix = np.zeros((source_num, sink_num, 3), dtype=np.complex64)
@@ -3526,7 +3520,7 @@ def EMGPUWrapper(source_num, sink_num, full_index, point_information, wavelength
     """
     # network_index,point_information,ray_components
     ray_num = full_index.shape[0]
-    maximum_chunk_size = 2 ** 8
+    maximum_chunk_size = 2**8
     threads_in_block = 1024
     resultant_rays = np.zeros((ray_num, 3), dtype=np.complex64)
     ray_chunks = np.linspace(
@@ -3614,8 +3608,8 @@ def DisplayESources(
     return quiver_set
 
 
-#@njit(cache=True, nogil=True)
-def vector_mapping(local_E_vector, point_normal,rotation_matrix):
+# @njit(cache=True, nogil=True)
+def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     """
     Function to transform local vectors to the global coordinate set. This is intended to allow for transforming from
     antennas with horizontal, vertical, circular polarization to be specified with reference to antenna face normal
@@ -3639,29 +3633,28 @@ def vector_mapping(local_E_vector, point_normal,rotation_matrix):
 
     """
     point_vector = point_normal.astype(local_E_vector.dtype)
-    local_axes=np.eye(3)
-    uvn_axes=np.zeros((3,3),dtype=local_E_vector.dtype)
-    uvn_axes[2,:]=point_vector
+    local_axes = np.eye(3)
+    uvn_axes = np.zeros((3, 3), dtype=local_E_vector.dtype)
+    uvn_axes[2, :] = point_vector
     global_vector = np.zeros((3), dtype=local_E_vector.dtype)
     # # make sure point vectors are locked on appropriate antenna axes
     x_orth = np.linalg.norm(np.cross(local_axes[:, 0], point_vector))
     y_orth = np.linalg.norm(np.cross(local_axes[:, 1], point_vector))
     z_orth = np.linalg.norm(np.cross(local_axes[:, 2], point_vector))
-    #print('check values',x_orth,y_orth,z_orth)
-    #if antenna_axes[:,2] is aligned with point_vector then the cross product will be NaN, and another axes will be
+    # print('check values',x_orth,y_orth,z_orth)
+    # if antenna_axes[:,2] is aligned with point_vector then the cross product will be NaN, and another axes will be
     # needed to define the polarisation axes consistently.
-    if abs(z_orth)==0:
+    if abs(z_orth) == 0:
         # cannot use z axis as reference, so point normal is aligned with z axis, therefore face_u should be the on the
         # antenna y_axis, therefore face_v can be used to define backwards.
-        uvn_axes[0,:]=np.cross(point_vector,local_axes[0,:]) / np.linalg.norm(
-           np.cross(local_axes[0,:], point_vector)
+        uvn_axes[0, :] = np.cross(point_vector, local_axes[0, :]) / np.linalg.norm(
+            np.cross(local_axes[0, :], point_vector)
         )
 
     else:
-        uvn_axes[0,:] = np.cross(local_axes[2,:], point_vector) / np.linalg.norm(
-            np.cross(local_axes[2,:], point_vector)
+        uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
+            np.cross(local_axes[2, :], point_vector)
         )
-
 
     # if (abs(x_orth) > abs(y_orth)) and (abs(x_orth) > abs(z_orth)):
     #      # use x-axis to establish face uv axes
@@ -3681,14 +3674,13 @@ def vector_mapping(local_E_vector, point_normal,rotation_matrix):
     #          np.cross(antenna_axes[:, 2], point_vector)
     #      )
 
-    uvn_axes[1,:] = np.cross(point_vector,uvn_axes[0,:]) / np.linalg.norm(
-       np.cross(uvn_axes[0,:], point_vector)
+    uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
+        np.cross(uvn_axes[0, :], point_vector)
     )
-    #print('uvn',uvn_axes)
+    # print('uvn',uvn_axes)
 
-
-    #convert uvn vector to local axes, and then rotate into global axes
-    global_vector=np.matmul(local_E_vector, uvn_axes)
+    # convert uvn vector to local axes, and then rotate into global axes
+    global_vector = np.matmul(local_E_vector, uvn_axes)
     return global_vector
 
 
@@ -3836,7 +3828,7 @@ def definePatch(wavelength, width, length, substrate_dielectric=1, mode="Single"
 def importDat(fileaddress):
     datafile = pathlib.Path(fileaddress)
     # noinspection PyTypeChecker
-    #temp = np.loadtxt(datafile, delimiter=",")
+    # temp = np.loadtxt(datafile, delimiter=",")
     temp = np.loadtxt(datafile)
     freq = temp[0, 4] * 1e6  # Hz
     planes = temp[0, 0]

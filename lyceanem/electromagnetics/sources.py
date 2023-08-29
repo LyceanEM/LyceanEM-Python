@@ -3,9 +3,8 @@ import numpy as np
 # provide idealised patterns to allow testing of the different models
 import open3d as o3d
 
-from lyceanem.base_classes import antenna_pattern
 import lyceanem.geometry.geometryfunctions as GF
-
+from lyceanem.base_classes import antenna_pattern
 
 
 def electriccurrentsource(prime_vector, theta, phi):

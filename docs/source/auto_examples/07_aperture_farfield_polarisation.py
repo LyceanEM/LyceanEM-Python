@@ -11,8 +11,6 @@ weights.
 
 """
 import numpy as np
-import open3d as o3d
-import copy
 
 # %%
 # Setting Farfield Resolution and Wavelength
@@ -25,8 +23,8 @@ import copy
 # The wavelength of interest is also an important variable for antenna array analysis, so we set it now for 10GHz,
 # an X band aperture.
 
-az_res = 37
-elev_res = 37
+az_res = 181
+elev_res = 73
 wavelength = 3e8 / 10e9
 
 # %%
@@ -40,6 +38,7 @@ structure,array_points=meshedHorn(3*wavelength, 1*wavelength, 4*wavelength, 0.05
 
 horn_antenna=antenna_structures(structures(solids=[structure]), points(points=[array_points]))
 
+horn_antenna.visualise_antenna()
 
 from lyceanem.models.frequency_domain import calculate_farfield
 
@@ -125,8 +124,12 @@ n_pattern.display_pattern(desired_pattern='Power')
 
 # %%
 # The point source can then be rotated, by providing a rotation matrix, and the u,v,n directions are moved with it in a consistent way.
+from scipy.spatial.transform import Rotation as R
 
-horn_antenna.rotate_antenna(o3d.geometry.get_rotation_matrix_from_axis_angle(np.radians(np.asarray([45.0,0.0,0.0]))))
+r=R.from_euler('xyz', np.radians(np.asarray([45.0,45.0,0.0])))
+horn_antenna.rotate_antenna(r.as_matrix())
+horn_antenna.visualise_antenna()
+
 
 desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
 desired_E_axis[0, 0] = 1.0

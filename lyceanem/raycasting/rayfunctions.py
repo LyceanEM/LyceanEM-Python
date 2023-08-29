@@ -9,12 +9,11 @@ import open3d as o3d
 import scipy.stats
 from matplotlib import cm
 from numba import cuda, float32, jit, njit, guvectorize, prange
-from numpy.linalg import norm
 from scipy.spatial import distance
 
 import lyceanem.base_types as base_types
-from ..utility import math_functions as math_functions
 import lyceanem.electromagnetics.empropagation as EM
+from ..utility import math_functions as math_functions
 
 EPSILON = 1e-6  # how close to zero do we consider zero? example used 1e-7
 
@@ -188,7 +187,7 @@ def cross(ax1, ay1, az1, ax2, ay2, az2):
 # @cuda.jit(boolean,float32(ray_t, triangle_t), device=True, inline=False)
 @cuda.jit(device=True, inline=False)
 def hit(ray, triangle):
-    """ Compute compute whether the defined ray will intersect with the defined triangle
+    """Compute compute whether the defined ray will intersect with the defined triangle
     using the  Möller–Trumbore ray-triangle intersection algorithm
     """
     # find edge vectors
@@ -305,7 +304,6 @@ def integratedkernal(ray_index, point_information, environment, ray_flag):
 
 @cuda.jit
 def kernel1D(rays, environment, ray_flag, distances):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -327,7 +325,6 @@ def kernel1D(rays, environment, ray_flag, distances):
 
 @cuda.jit
 def kernel1Dv2(rays, environment):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
@@ -365,7 +362,6 @@ def kernel1Dv2(rays, environment):
 
 @cuda.jit
 def kernel1Dv3(rays, environment):
-
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
 
     if (
@@ -405,10 +401,12 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
     prep_dt = timer() - start
     raystart = timer()
     # Create a container for the pixel RGBA information of our image
-    chunk_size = 2 ** 11
+    chunk_size = 2**11
     threads_in_block = 1024
     # for idx in range(len(triangle_chunk)-1):
-    d_environment = cuda.device_array(len(environment_local), dtype=base_types.triangle_t)
+    d_environment = cuda.device_array(
+        len(environment_local), dtype=base_types.triangle_t
+    )
     d_ray_index = cuda.device_array(
         (ray_index.shape[0], ray_index.shape[1]), dtype=np.int32
     )
@@ -438,9 +436,9 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
 
     mem_dt = timer() - start
     # deallocate memory on gpu
-    #ctx = cuda.current_context()
-    #deallocs = ctx.deallocations
-    #deallocs.clear()
+    # ctx = cuda.current_context()
+    # deallocs = ctx.deallocations
+    # deallocs.clear()
     # final_index=np.delete(propagation_index,np.where(propagation_index[:,0]==0),axis=0)
     final_index = np.delete(ray_index, ray_flags, axis=0)
 
@@ -558,13 +556,13 @@ def visiblespace(
 
 @njit(cache=True, nogil=True)
 def unit_vector(vector):
-    """ Returns the unit vector of the vector.  """
+    """Returns the unit vector of the vector."""
     return vector / np.linalg.norm(vector)
 
 
 @njit(cache=True, nogil=True)
 def angle(vector1, vector2):
-    """ Returns the angle in radians between given vectors"""
+    """Returns the angle in radians between given vectors"""
     v1_u = unit_vector(vector1)
     v2_u = unit_vector(vector2)
     minor = np.linalg.det(np.stack((v1_u[-2:], v2_u[-2:])))
@@ -2087,17 +2085,19 @@ def launchRaycaster1Dv2(
     raystart = timer()
     ray_num = len(first_ray_payload)
     tri_num = len(environment_local)
-    max_tris = 2 ** 20
+    max_tris = 2**20
     triangle_chunk = np.linspace(
         0, tri_num, math.ceil(tri_num / max_tris) + 1, dtype=np.int32
     )
-    chunk_size = 2 ** 10
+    chunk_size = 2**10
     threads_in_block = 1024
     ray_chunks = np.linspace(
         0, ray_num, math.ceil(ray_num / chunk_size) + 1, dtype=np.int32
     )
     # for idx in range(len(triangle_chunk)-1):
-    d_environment = cuda.device_array(len(environment_local), dtype=base_types.triangle_t)
+    d_environment = cuda.device_array(
+        len(environment_local), dtype=base_types.triangle_t
+    )
     cuda.to_device(environment_local, to=d_environment)
     for n in range(len(ray_chunks) - 1):
         chunk_payload = first_ray_payload[ray_chunks[n] : ray_chunks[n + 1]]
@@ -2156,15 +2156,17 @@ def launchRaycaster1Dv3(
     ray_num = len(first_ray_payload)
     tri_num = len(environment_local)
     # print('Launch Raycaster Triangles ', len(environment_local))
-    max_tris = 2 ** 20
+    max_tris = 2**20
     triangle_chunk = np.linspace(
         0, tri_num, math.ceil(tri_num / max_tris) + 1, dtype=np.int32
     )
-    chunk_size = 2 ** 18
+    chunk_size = 2**18
     threads_in_block = 256
     # ray_chunks=np.linspace(0,ray_num,math.ceil(ray_num/chunk_size)+1,dtype=np.int32)
     # for idx in range(len(triangle_chunk)-1):
-    d_environment = cuda.device_array(len(environment_local), dtype=base_types.triangle_t)
+    d_environment = cuda.device_array(
+        len(environment_local), dtype=base_types.triangle_t
+    )
     cuda.to_device(environment_local, to=d_environment)
 
     d_chunk_payload = cuda.device_array([ray_num], dtype=base_types.ray_t)
@@ -2203,9 +2205,9 @@ def launchRaycaster1Dv3(
     )
     mem_dt = timer() - start
     # deallocate memory on gpu
-    #ctx = cuda.current_context()
-    #deallocs = ctx.deallocations
-    #deallocs.clear()
+    # ctx = cuda.current_context()
+    # deallocs = ctx.deallocations
+    # deallocs.clear()
     # print("First Stage: Prep {:3.1f} s, Raycasting  {:3.1f} s, Path Processing {:3.1f} s".format(prep_dt,kernel_dt,mem_dt) )
     return filtered_index, final_index, RAYS_CAST
 
@@ -2237,18 +2239,20 @@ def chunkingRaycaster1Dv2(
     raystart = timer()
     ray_num = len(second_ray_payload)
     tri_num = len(environment_local)
-    max_tris = 2 ** 18
+    max_tris = 2**18
     triangle_chunk = np.linspace(
         0, tri_num, math.ceil(tri_num / max_tris) + 1, dtype=np.int32
     )
     # Create a container for the pixel RGBA information of our image
-    chunk_size = 2 ** 10
+    chunk_size = 2**10
     threads_in_block = 1024
     ray_chunks = np.linspace(
         0, ray_num, math.ceil(ray_num / chunk_size) + 1, dtype=np.int32
     )
     # for idx in range(len(triangle_chunk)-1):
-    d_environment = cuda.device_array(len(environment_local), dtype=base_types.triangle_t)
+    d_environment = cuda.device_array(
+        len(environment_local), dtype=base_types.triangle_t
+    )
     cuda.to_device(environment_local, to=d_environment)
     for n in range(len(ray_chunks) - 1):
         chunk_payload = second_ray_payload[ray_chunks[n] : ray_chunks[n + 1]]
@@ -2297,7 +2301,9 @@ def chunkingRaycaster1Dv3(
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.5).astype(np.int64)
     ray_limit = (
-        np.floor(np.floor((max_mem - environment_local.nbytes) / base_types.ray_t.size) / 1e7)
+        np.floor(
+            np.floor((max_mem - environment_local.nbytes) / base_types.ray_t.size) / 1e7
+        )
         * 1e7
     ).astype(np.int64)
     sink_index = np.arange(
@@ -2314,7 +2320,7 @@ def chunkingRaycaster1Dv3(
             filtered_index, sink_index, scattering_point_index
         )
     else:
-        if (filtered_index.shape[0]*sink_index.shape[0])<ray_limit:
+        if (filtered_index.shape[0] * sink_index.shape[0]) < ray_limit:
             target_indexing = create_model_index(
                 filtered_index, sink_index, np.empty((0, 0), dtype=np.int32)
             )  # only target rays at sinks
@@ -2322,15 +2328,20 @@ def chunkingRaycaster1Dv3(
             # the rays must fit in GPU memory, aim for no more than 80% utilisation
             # establish memory limits
             sub_filtered_index = np.array_split(
-                filtered_index, np.ceil(filtered_index.shape[0]*sink_index.shape[0] / ray_limit).astype(int)
+                filtered_index,
+                np.ceil(
+                    filtered_index.shape[0] * sink_index.shape[0] / ray_limit
+                ).astype(int),
             )
             chunknum = len(sub_filtered_index)
-            filtered_index2 = np.empty((0, filtered_index.shape[1]+1), dtype=np.int32)
-            final_index2 = np.empty((0, filtered_index.shape[1]+1), dtype=np.int32)
+            filtered_index2 = np.empty((0, filtered_index.shape[1] + 1), dtype=np.int32)
+            final_index2 = np.empty((0, filtered_index.shape[1] + 1), dtype=np.int32)
             # print('chunking total of ',target_indexing.shape[0],' rays in ',chunknum,' batches')
             for chunkindex in range(chunknum):
-                sub_target=create_model_index(
-                sub_filtered_index[chunkindex], sink_index, np.empty((0, 0), dtype=np.int32)
+                sub_target = create_model_index(
+                    sub_filtered_index[chunkindex],
+                    sink_index,
+                    np.empty((0, 0), dtype=np.int32),
                 )
                 # cycle the raycaster over the sub arrays
                 threads_in_block = 256
@@ -2377,16 +2388,13 @@ def chunkingRaycaster1Dv3(
                     second_ray_payload, sub_target, sink_index
                 )
                 mem_dt = timer() - start
-                filtered_index2 = np.append(filtered_index2, temp_filtered_index2, axis=0)
+                filtered_index2 = np.append(
+                    filtered_index2, temp_filtered_index2, axis=0
+                )
                 final_index2 = np.append(final_index2, temp_final_index2, axis=0)
                 # deallocate memory on gpu
                 # ctx = cuda.current_context()
                 # ctx.reset()
-
-
-
-
-
 
     if target_indexing.shape[0] >= ray_limit:
         # need to split the array and process seperatly
@@ -2447,8 +2455,8 @@ def chunkingRaycaster1Dv3(
             filtered_index2 = np.append(filtered_index2, temp_filtered_index2, axis=0)
             final_index2 = np.append(final_index2, temp_final_index2, axis=0)
             # deallocate memory on gpu
-            #ctx = cuda.current_context()
-            #ctx.reset()
+            # ctx = cuda.current_context()
+            # ctx.reset()
     else:
         second_ray_payload = charge_rays_environment1Dv2(
             sources, sinks, scattering_points, target_indexing
@@ -2461,7 +2469,9 @@ def chunkingRaycaster1Dv3(
         threads_in_block = 256
         # ray_chunks=np.linspace(0,ray_num,math.ceil(ray_num/chunk_size)+1,dtype=np.int32)
         # for idx in range(len(triangle_chunk)-1):
-        d_environment = cuda.device_array(len(environment_local), dtype=base_types.triangle_t)
+        d_environment = cuda.device_array(
+            len(environment_local), dtype=base_types.triangle_t
+        )
         cuda.to_device(environment_local, to=d_environment)
         d_chunk_payload = cuda.device_array(
             [second_ray_payload.shape[0]], dtype=base_types.ray_t
@@ -2498,9 +2508,9 @@ def chunkingRaycaster1Dv3(
         )
         mem_dt = timer() - start
         # deallocate memory on gpu
-        #ctx = cuda.current_context()
-        #deallocs = ctx.deallocations
-        #deallocs.clear()
+        # ctx = cuda.current_context()
+        # deallocs = ctx.deallocations
+        # deallocs.clear()
         # print("Second Stage: Prep {:3.1f} s, Raycasting  {:3.1f} s, Path Processing {:3.1f} s".format(prep_dt,kernel_dt,mem_dt) )
     return filtered_index2, final_index2, RAYS_CAST
 
@@ -2622,12 +2632,12 @@ def shadowRaycaster(filtered_network, sinks, filtered_index, environment_local):
     raystart = timer()
     ray_num = len(second_ray_payload)
     tri_num = len(environment_local)
-    max_tris = 2 ** 16
+    max_tris = 2**16
     triangle_chunk = np.linspace(
         0, tri_num, math.ceil(tri_num / max_tris) + 1, dtype=np.int32
     )
     # Create a container for the pixel RGBA information of our image
-    chunk_size = 2 ** 21
+    chunk_size = 2**21
     threads_in_block = 1024
     ray_chunks = np.linspace(
         0, ray_num, math.ceil(ray_num / chunk_size) + 1, dtype=np.int32
@@ -2652,7 +2662,9 @@ def shadowRaycaster(filtered_network, sinks, filtered_index, environment_local):
             dist_list = cuda.to_device(distance_temp)
             d_ray_flag = cuda.to_device(ray_temp)
             # d_chunk_payload = cuda.device_array([chunk_ray_size], dtype=ray_t)
-            d_chunk_payload = cuda.device_array([chunk_ray_size], dtype=base_types.ray_t)
+            d_chunk_payload = cuda.device_array(
+                [chunk_ray_size], dtype=base_types.ray_t
+            )
             cuda.to_device(chunk_payload, to=d_chunk_payload)
             # Here, we choose the granularity of the threading on our device. We want
             # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
@@ -2836,7 +2848,7 @@ def workchunkingv2(
     """
     # temp function to chunk the number of rays to prevent creation of ray arrays to large for memory
     # print('WorkChunking Triangles ',len(environment))
-    RAYS_CAST=0
+    RAYS_CAST = 0
     raycasting_timestamp = timer()
     ray_estimate = (
         sources.shape[0] * (sinks.shape[0] + scattering_points.shape[0])
@@ -2848,7 +2860,8 @@ def workchunkingv2(
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.8).astype(np.int64)
     ray_limit = (
-        np.floor(np.floor((max_mem - environment.nbytes) / base_types.ray_t.size) / 1e7) * 1e7
+        np.floor(np.floor((max_mem - environment.nbytes) / base_types.ray_t.size) / 1e7)
+        * 1e7
     ).astype(np.int64)
     # establish index boundaries
     source_index = np.arange(1, sources.shape[0] + 1).reshape(

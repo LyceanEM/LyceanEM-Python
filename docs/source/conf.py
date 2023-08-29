@@ -10,12 +10,14 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import sys
 import os
 import re
-from glob import glob
 import shutil
+import sys
+from glob import glob
+
 from sphinx_gallery.scrapers import figure_rst
+
 try:
     from importlib import metadata
 except ImportError: # for Python<3.8

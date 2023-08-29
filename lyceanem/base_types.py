@@ -1,6 +1,5 @@
 import numpy as np
-from numba import float32, from_dtype, njit, guvectorize
-
+from numba import from_dtype
 
 # A numpy record array (like a struct) to record triangle
 point_data = np.dtype(

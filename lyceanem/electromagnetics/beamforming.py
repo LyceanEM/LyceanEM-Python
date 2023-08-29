@@ -1,5 +1,6 @@
 import cmath
 
+import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d
 import numpy as np
@@ -8,9 +9,9 @@ import pylab as pl
 import scipy.stats
 from matplotlib import cm
 from matplotlib.patches import Wedge
-from numba import cuda, float32, njit, prange, jit
+from numba import cuda, float32, njit, prange
 from scipy.spatial import distance
-import matplotlib.animation as animation
+
 from ..raycasting import rayfunctions as RF
 from ..utility import math_functions
 
@@ -102,7 +103,7 @@ def ArbitaryCoherenceWeights(source_coords, target_coord, wavelength):
     """
     Generate Wavefront coherence weights based upon the desired wavelength and the coordinates of the target point
     """
-    weights = np.zeros((len(source_coords),1), dtype=np.complex64)
+    weights = np.zeros((len(source_coords), 1), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
     dist = distance.cdist(source_coords, target_coord)
     dist = dist - np.min(dist)
@@ -127,11 +128,11 @@ def TimeDelayWeights(source_coords, steering_vector, magnitude=1.0, maximum_dela
             + (source_coords[:, 2] - steering_vector.ravel()[2] * 1e9) ** 2
         )
     )
-    dist=dist-np.min(dist)
-    #dist is now relative distance from target vector, want to delay closest maximum, then have farthest be delayed zero
+    dist = dist - np.min(dist)
+    # dist is now relative distance from target vector, want to delay closest maximum, then have farthest be delayed zero
     # calculate required time delays, and then convert to nanoseconds, stored as a complex number with the magnitude weights
-    delays = (dist/scipy.constants.speed_of_light)*1e9
-    delays=np.max(delays) - delays
+    delays = (dist / scipy.constants.speed_of_light) * 1e9
+    delays = np.max(delays) - delays
     weights[:] = magnitude + delays * 1j
     return weights
 
@@ -155,14 +156,14 @@ def TimeDelayBeamform(excitation_function, weights, sampling_rate):
     beamformed_function
 
     """
-    #extract delays and convert to seconds, then integrer shifts
-    delay = (sampling_rate * (np.imag(weights)*1e-9)).astype(int).ravel()
-    if (len(excitation_function.shape) == 2):
+    # extract delays and convert to seconds, then integrer shifts
+    delay = (sampling_rate * (np.imag(weights) * 1e-9)).astype(int).ravel()
+    if len(excitation_function.shape) == 2:
         magnitudes = np.real(weights).reshape(-1, 1)
-    elif (len(excitation_function.shape) == 3):
+    elif len(excitation_function.shape) == 3:
         magnitudes = np.real(weights).reshape(-1, 1, 1)
-    elif (len(excitation_function.shape)==4):
-        magnitudes = np.real(weights).reshape(-1, 1, 1,1)
+    elif len(excitation_function.shape) == 4:
+        magnitudes = np.real(weights).reshape(-1, 1, 1, 1)
 
     for row in range(excitation_function.shape[0]):
         excitation_function = shift_slice(excitation_function, row, delay[row])
@@ -206,13 +207,15 @@ def shift_slice(array, row, shift):
             array[row, :, -shift:] = 0
 
     if len(array.shape) == 4:
-        array[row, :,:, :] = np.roll(array[row, :,:, :], shift)
+        array[row, :, :, :] = np.roll(array[row, :, :, :], shift)
         if shift > 0:
-            array[row, :,:, :shift] = 0
+            array[row, :, :, :shift] = 0
         elif shift < 0:
-            array[row, :,:, -shift:] = 0
+            array[row, :, :, -shift:] = 0
 
     return array
+
+
 @njit(cache=True, nogil=True)
 def EGCWeights(
     Etheta,
@@ -281,7 +284,9 @@ def OAMFourierCartesian(Ex, Ey, Ez, coordinates, mode_limit):
     """
     mode_index = np.linspace(-mode_limit, mode_limit, mode_limit * 2 + 1)
     mode_coefficients = np.zeros((mode_index.shape[0], 3), dtype=np.complex64)
-    az, el, r = math_functions.cart2sph(coordinates[:, 0], coordinates[:, 1], coordinates[:, 2])
+    az, el, r = math_functions.cart2sph(
+        coordinates[:, 0], coordinates[:, 1], coordinates[:, 2]
+    )
     # a coefficient of mode m, at angle theta is defined in terms of the
     # integral of the phi dimension in the range 0 to 2pi.
     for oam_m in range(len(mode_index)):
@@ -295,7 +300,7 @@ def OAMFourierCartesian(Ex, Ey, Ez, coordinates, mode_limit):
             Ez.ravel() * np.exp(1j * mode_index[oam_m] * az), axis=0
         )
 
-    powers = np.sum(np.abs(mode_coefficients ** 2), axis=0)
+    powers = np.sum(np.abs(mode_coefficients**2), axis=0)
 
     mode_probabilities = np.zeros((mode_index.shape[0], 3), dtype=np.float32)
     mode_probabilities[:, 0] = np.abs(
@@ -520,7 +525,7 @@ def MaximumDirectivityMap(
     return directivity_map
 
 
-#@njit(parallel=False, cache=True, nogil=True)
+# @njit(parallel=False, cache=True, nogil=True)
 def MaximumDirectivityMapDiscrete(
     Etheta,
     Ephi,
@@ -805,9 +810,9 @@ def MaximumfieldMapDiscrete(
                 Ephibeamformed3 = np.sum(
                     WS_weights.reshape(Etheta.shape[0], 1, 1) * Ephi, axis=0
                 )
-                Etotal = Ethetabeamformed ** 2 + Ephibeamformed ** 2
-                Etotal2 = Ethetabeamformed2 ** 2 + Ephibeamformed2 ** 2
-                Etotal3 = Ethetabeamformed3 ** 2 + Ephibeamformed3 ** 2
+                Etotal = Ethetabeamformed**2 + Ephibeamformed**2
+                Etotal2 = Ethetabeamformed2**2 + Ephibeamformed2**2
+                Etotal3 = Ethetabeamformed3**2 + Ephibeamformed3**2
                 # Dtheta,Dphi,Dtot,_=directivity_transform(Ethetabeamformed,Ephibeamformed,az_range=az_range,elev_range=elev_range)
                 # Dtheta2,Dphi2,Dtot2,_=directivity_transform(Ethetabeamformed2,Ephibeamformed2,az_range=az_range,elev_range=elev_range,total_solid_angle=total_solid_angle)
                 # Dtheta3,Dphi3,Dtot3,_=directivity_transform(Ethetabeamformed3,Ephibeamformed3,az_range=az_range,elev_range=elev_range,total_solid_angle=total_solid_angle)
@@ -1069,9 +1074,9 @@ def directivity_transformv2(
     # power per unit solid angle
     Dmax = np.zeros((3), dtype=np.float32)
     Umax = np.zeros((3), dtype=np.float32)
-    Utheta = np.abs(Etheta ** 2)
-    Uphi = np.abs(Ephi ** 2)
-    Utotal = np.abs(Etheta ** 2) + np.abs(Ephi ** 2)
+    Utheta = np.abs(Etheta**2)
+    Uphi = np.abs(Ephi**2)
+    Utotal = np.abs(Etheta**2) + np.abs(Ephi**2)
     power_sum = 0.0
     temp_vector = np.zeros((4), dtype=np.float32)
     temp_vector2 = np.zeros((4), dtype=np.float32)
@@ -1118,10 +1123,9 @@ def directivity_transformv2(
     return Dtheta, Dphi, Dtot, Dmax
 
 
-
 @njit(cache=True, nogil=True)
 def WeightTruncation(weights, resolution):
-    quant = 2 ** resolution
+    quant = 2**resolution
     levels = np.zeros((weights.shape), dtype=np.complex64)
     # shift numpy complex angles from -pi to pi, into 0 to 2pi, then quantise for `quant' levels
     levels = np.round(
@@ -1131,19 +1135,21 @@ def WeightTruncation(weights, resolution):
     return new_weights
 
 
-def AnimatedPlot(dimension1,
-                 dimension2,
-                 dimension3,
-                 data,
-                 pattern_min=-40.0,
-                 pattern_max=0.0,
-                 dimension1label=None,
-                 dimension2label=None,
-                 colorbarlabel=None,
-                 title_text=None,
-                 ticknum=9,
-                 fps=5,
-                 save_location=None):
+def AnimatedPlot(
+    dimension1,
+    dimension2,
+    dimension3,
+    data,
+    pattern_min=-40.0,
+    pattern_max=0.0,
+    dimension1label=None,
+    dimension2label=None,
+    colorbarlabel=None,
+    title_text=None,
+    ticknum=9,
+    fps=5,
+    save_location=None,
+):
     def animate(i):
         # title_text='Sampled Phase {:.2f} Wavelengths from the Transmitting Antenna'.format(dimension3[i])
         ax.clear()
@@ -1170,15 +1176,17 @@ def AnimatedPlot(dimension1,
     ticknum = 9
     fig, ax = plt.subplots(constrained_layout=True)
     origin = "lower"
-    #pattern_min = -np.pi / 2
-    #pattern_max = np.pi / 2
+    # pattern_min = -np.pi / 2
+    # pattern_max = np.pi / 2
     levels = np.linspace(pattern_min, pattern_max, 73)
-    CS = ax.contourf(dimension1, dimension2, data[:, :, 0], levels, cmap="viridis", origin=origin)
+    CS = ax.contourf(
+        dimension1, dimension2, data[:, :, 0], levels, cmap="viridis", origin=origin
+    )
     cbar = fig.colorbar(CS, ticks=np.linspace(pattern_min, pattern_max, ticknum))
     # bar_label="Sampled Phase Angle (Radians)"
 
     c_label_values = np.linspace(pattern_min, pattern_max, ticknum)
-    c_labels = np.char.mod('%.2f', c_label_values)
+    c_labels = np.char.mod("%.2f", c_label_values)
     cbar.set_ticklabels(c_labels.tolist())
     ax.set_xlim([np.min(dimension1), np.max(dimension1)])
     ax.set_ylim([np.min(dimension2), np.max(dimension2)])
@@ -1207,6 +1215,7 @@ def AnimatedPlot(dimension1,
         # f = r"C:/Users/lycea/Documents/10-19 Research Projects/farfieldanimation.gif"
         writergif = animation.PillowWriter(fps=fps)
         ani.save(save_location, writer=writergif)
+
 
 def PatternPlot(
     data,
@@ -1376,13 +1385,19 @@ def PatternPlot(
         # setup for 3dB contours
         contournum = np.ceil((plot_max - pattern_min) / 3).astype(int)
         levels2 = np.linspace(-contournum * 3, plot_max, contournum + 1)
-        if pattern_min<-40:
-            line_spec_width=0.5
+        if pattern_min < -40:
+            line_spec_width = 0.5
         else:
-            line_spec_width=1
+            line_spec_width = 1
 
         CS4 = ax.contour(
-            az, elev, logdata, levels2, colors=("k",), linewidths=(line_spec_width,), origin=origin
+            az,
+            elev,
+            logdata,
+            levels2,
+            colors=("k",),
+            linewidths=(line_spec_width,),
+            origin=origin,
         )
         ax.grid()
         if title_text != None:
@@ -1428,7 +1443,7 @@ def PatternPlot2D(
     logdata[logdata <= pattern_min] = pattern_min
     tick_marks = np.linspace(pattern_min, plot_max, ticknum)
     az_rad = np.radians(az)
-    pl.rcParams.update({'font.size':fontsize})
+    pl.rcParams.update({"font.size": fontsize})
     fig, ax = plt.subplots(subplot_kw={"projection": "polar"})
     if multiline == True:
         for line in range(num_lines):
@@ -1440,7 +1455,7 @@ def PatternPlot2D(
         ax.plot(az_rad, logdata)
 
     ax.set_rmax(plot_max)
-    ax.set_rticks(tick_marks,fontsize=fontsize)  # Less radial ticks
+    ax.set_rticks(tick_marks, fontsize=fontsize)  # Less radial ticks
     ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
     ax.grid(True)
     if not (line_labels == None):
@@ -1452,11 +1467,11 @@ def PatternPlot2D(
                 0.5 + np.cos(legend_angle) / 2,
                 0.5 + np.sin(legend_angle) / 2,
             ),
-            fontsize = fontsize,
+            fontsize=fontsize,
         )
 
     if not (title_text == None):
-        ax.set_title(title_text, va="bottom",fontsize=fontsize)
+        ax.set_title(title_text, va="bottom", fontsize=fontsize)
 
     label_angle = np.deg2rad(280)
     ax.text(label_angle, plot_max * 1.2, bar_label)
@@ -1487,10 +1502,7 @@ def EqualGainCombiningGPU(SteeringPattern, CommandIndex, weights):
 
 @cuda.jit
 def GPUBeamformingMap(Etheta, Ephi, DirectivityMap, az_range, el_range, wavelength):
-    """
-
-    """
+    """ """
     az_inc, el_inc = cuda.grid(2)
     if az_inc < az_range.shape[0] and el_inc < el_range.shape[0]:
-
         DirectivityMap[az_inc, el_inc] = 0

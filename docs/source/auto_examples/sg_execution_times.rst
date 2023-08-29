@@ -1,4 +1,3 @@
-
 :orphan:
 
 .. _sphx_glr_auto_examples_sg_execution_times:

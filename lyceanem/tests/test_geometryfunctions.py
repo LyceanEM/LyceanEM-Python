@@ -1,8 +1,9 @@
-import pytest
 import numpy as np
 import open3d as o3d
-from numpy.testing import assert_equal, assert_allclose
+import pytest
+from numpy.testing import assert_allclose
 from scipy.spatial.transform import Rotation as R
+
 from ..geometry.geometryfunctions import tri_areas, axes_from_normal
 
 

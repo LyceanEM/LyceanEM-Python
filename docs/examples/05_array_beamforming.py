@@ -13,7 +13,6 @@ The Steering Efficiency can then be evaluated using :func:`lyceanem.electromagne
 """
 import numpy as np
 import open3d as o3d
-import copy
 
 # %%
 # Setting Farfield Resolution and Wavelength

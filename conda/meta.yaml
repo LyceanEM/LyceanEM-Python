@@ -1,9 +1,9 @@
-{% set name = "lyceanem" %}
-{% set version = "0.0.4" %}
+{ % set name = "lyceanem" % }
+  { % set version = "0.0.4" % }
 
 package:
-  name: {{ name|lower }}
-  version: {{ version }}
+  name: { { name|lower } }
+  version: { { version } }
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/LyceanEM-{{ version }}.tar.gz
@@ -11,7 +11,7 @@ source:
 
 build:
   noarch: python
-  script: {{ PYTHON }} -m pip install . -vv
+  script: { { PYTHON } } -m pip install . -vv
   number: 0
 
 requirements:

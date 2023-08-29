@@ -1,9 +1,9 @@
-import pytest
 import numpy as np
-import open3d as o3d
-from numpy.testing import assert_equal, assert_allclose
+from numpy.testing import assert_allclose
 from scipy.spatial.transform import Rotation as R
+
 from ..electromagnetics.empropagation import vector_mapping
+
 
 def test_vector_mapping_x_u():
     #initially test in global coordinate set

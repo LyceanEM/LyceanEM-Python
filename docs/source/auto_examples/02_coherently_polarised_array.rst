@@ -25,22 +25,17 @@ This example uses the frequency domain :func:`lyceanem.models.frequency_domain.c
 the farfield pattern for a linearly polarised aperture. This could represent an antenna array without any beamforming
 weights.
 
-.. GENERATED FROM PYTHON SOURCE LINES 13-17
+.. GENERATED FROM PYTHON SOURCE LINES 13-18
 
 .. code-block:: default
 
-    import numpy as np
-    import open3d as o3d
     import copy
 
+    import numpy as np
+    import open3d as o3d
 
 
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 18-27
+.. GENERATED FROM PYTHON SOURCE LINES 19-28
 
 Setting Farfield Resolution and Wavelength
 -------------------------------------------
@@ -52,7 +47,7 @@ In order to ensure a fast example, 37 points have been used here for both, givin
 The wavelength of interest is also an important variable for antenna array analysis, so we set it now for 10GHz,
 an X band aperture.
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-32
+.. GENERATED FROM PYTHON SOURCE LINES 28-33
 
 .. code-block:: default
 
@@ -62,20 +57,14 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 33-37
+.. GENERATED FROM PYTHON SOURCE LINES 34-38
 
 Geometries
 ------------------------
 In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
 :class:`open3d.geometry.TriangleMesh` structures can be accessed by importing the data subpackage
 
-.. GENERATED FROM PYTHON SOURCE LINES 37-41
+.. GENERATED FROM PYTHON SOURCE LINES 38-42
 
 .. code-block:: default
 
@@ -84,20 +73,14 @@ In order to make things easy to start, an example geometry has been included wit
     body, array, source_coords = data.exampleUAV(10e9)
 
 
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 42-46
+.. GENERATED FROM PYTHON SOURCE LINES 43-47
 
 Visualise the Resultant UAV and Array
 ---------------------------------------
 :func:`open3d.visualization.draw_geometries` can be used to visualise the open3d data
 structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.PointCloud`
 
-.. GENERATED FROM PYTHON SOURCE LINES 46-52
+.. GENERATED FROM PYTHON SOURCE LINES 47-53
 
 .. code-block:: default
 
@@ -108,17 +91,11 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
     o3d.visualization.draw_geometries([body, array, source_coords, mesh_frame])
 
 
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 53-54
+.. GENERATED FROM PYTHON SOURCE LINES 54-55
 
 .. image:: ../_static/UAVArraywithPoints.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-77
+.. GENERATED FROM PYTHON SOURCE LINES 55-78
 
 .. code-block:: default
 
@@ -146,31 +123,11 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
     o3d.visualization.draw_geometries([body, array, source_points])
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    0.858793760075754
-    0.6307553291661078
-    0.3736530779617891
-    0.18721894988353757
-    0.034796457229518504
-    0.03058959422793881
-    -0.012054608990102791
-    0.02742812135247836
-    0.04455952883350341
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 78-79
+.. GENERATED FROM PYTHON SOURCE LINES 79-80
 
 .. image:: ../_static/sourcecloudfromshapeuav.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-86
+.. GENERATED FROM PYTHON SOURCE LINES 82-87
 
 Drawbacks of :func:`lyceanem.geometry.geometryfunctions.sourcecloudfromshape`
 ------------------------------------------------------------------------------
@@ -178,7 +135,7 @@ As can be seen by comparing the two source point sets, :func:`lyceanem.geometry.
 has a significant drawback when used for complex sharply curved antenna arrays, as the poisson disk sampling method
 does not produce consistently spaced results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 86-101
+.. GENERATED FROM PYTHON SOURCE LINES 87-102
 
 .. code-block:: default
 
@@ -198,20 +155,7 @@ does not produce consistently spaced results.
     )
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    C:\Users\lycea\anaconda3\envs\cusignal-dev\lib\site-packages\numba\cuda\cudadrv\devicearray.py:885: NumbaPerformanceWarning: Host array used in CUDA kernel will incur copy overhead to/from device.
-      warn(NumbaPerformanceWarning(msg))
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 102-110
+.. GENERATED FROM PYTHON SOURCE LINES 103-111
 
 Storing and Manipulating Antenna Patterns
 ---------------------------------------------
@@ -222,7 +166,7 @@ to :func:`lyceanem.base.antenna_pattern.display_pattern`. This produces 3D polar
 give a better view of the whole pattern, but if contour plots are required, then this can also be produced by passing
 plottype='Contour' to the function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-121
+.. GENERATED FROM PYTHON SOURCE LINES 111-122
 
 .. code-block:: default
 
@@ -238,44 +182,12 @@ plottype='Contour' to the function.
     UAV_Static_Pattern.display_pattern()
 
 
-
-
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_001.png
-         :alt: Etheta
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_001.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
-         :alt: Ephi
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
-         :class: sphx-glr-multi-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1170: RuntimeWarning: divide by zero encountered in log10
-      logdata = 20 * np.log10(data)
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1173: RuntimeWarning: invalid value encountered in subtract
-      logdata -= np.nanmax(logdata)
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 122-124
+.. GENERATED FROM PYTHON SOURCE LINES 123-125
 
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_001.png
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_002.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 124-127
+.. GENERATED FROM PYTHON SOURCE LINES 125-128
 
 .. code-block:: default
 
@@ -283,45 +195,7 @@ plottype='Contour' to the function.
     UAV_Static_Pattern.display_pattern(plottype="Contour")
 
 
-
-
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
-         :alt: Etheta
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
-         :alt: Ephi
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
-         :class: sphx-glr-multi-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1170: RuntimeWarning: divide by zero encountered in log10
-      logdata = 20 * np.log10(data)
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1173: RuntimeWarning: invalid value encountered in subtract
-      logdata -= np.nanmax(logdata)
-    C:\Users\lycea\anaconda3\envs\cusignal-dev\lib\site-packages\matplotlib\contour.py:1479: UserWarning: Warning: converting a masked element to nan.
-      self.zmax = float(z.max())
-    C:\Users\lycea\anaconda3\envs\cusignal-dev\lib\site-packages\matplotlib\contour.py:1480: UserWarning: Warning: converting a masked element to nan.
-      self.zmin = float(z.min())
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1297: UserWarning: No contour levels were found within the data range.
-      CS4 = ax.contour(
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 128-130
+.. GENERATED FROM PYTHON SOURCE LINES 129-131
 
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_003.png
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_004.png
@@ -329,7 +203,7 @@ plottype='Contour' to the function.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  11.282 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_auto_examples_02_coherently_polarised_array.py:

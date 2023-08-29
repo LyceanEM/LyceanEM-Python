@@ -1,13 +1,15 @@
+import copy
+
 import numpy as np
 import open3d as o3d
 import scipy.constants
-import copy
 
 from ..base_types import scattering_t
 from ..electromagnetics import empropagation as EM
+from ..geometry import geometryfunctions as GF
 from ..geometry import targets as TL
 from ..raycasting import rayfunctions as RF
-from ..geometry import geometryfunctions as GF
+
 
 def calculate_scattering(
     aperture_coords,
