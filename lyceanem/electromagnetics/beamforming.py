@@ -75,7 +75,9 @@ def Steering_Efficiency(
 @njit(cache=True, nogil=True)
 def WavefrontWeights(source_coords, steering_vector, wavelength):
     """
+
     calculate the weights for a given set of element coordinates, wavelength, and steering vector (cartesian)
+
     """
     weights = np.zeros((source_coords.shape[0]), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
@@ -101,7 +103,9 @@ def WavefrontWeights(source_coords, steering_vector, wavelength):
 
 def ArbitaryCoherenceWeights(source_coords, target_coord, wavelength):
     """
+
     Generate Wavefront coherence weights based upon the desired wavelength and the coordinates of the target point
+
     """
     weights = np.zeros((len(source_coords), 1), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
@@ -139,8 +143,10 @@ def TimeDelayWeights(source_coords, steering_vector, magnitude=1.0, maximum_dela
 
 def TimeDelayBeamform(excitation_function, weights, sampling_rate):
     """
+
     The time delay beamform function takes an n by 2 or n by 3 array, and applies the supplied time delay weights to each by rolling each slice of the array by the required number of sampling intervals.
     Only positive time delays should be applied, but if positive and negative values are required for weighting, a constant value should be applied so that no delay is less than 0ns.
+
 
     Parameters
     ----------
@@ -175,7 +181,6 @@ def TimeDelayBeamform(excitation_function, weights, sampling_rate):
 
 def shift_slice(array, row, shift):
     """
-
 
     Parameters
     ----------
@@ -226,7 +231,9 @@ def EGCWeights(
     elev_range=np.linspace(-90.0, 90.0, 19),
 ):
     """
+
     calculate the equal gain combining weights for a given set of element coordinates, wavelength, and command angles (az,elev)
+
     """
     weights = np.zeros((Etheta.shape[0]), dtype=np.complex64)
     az_index = np.argmin(np.abs(az_range - command_angles[0]))
@@ -242,7 +249,9 @@ def EGCWeights(
 
 def OAMWeights(x, y, mode):
     """
+
     generate OAM mode weights, based upon the radial angle of each element.
+
     """
     # assumed array is x directed
     angles = np.arctan2(x, y)
@@ -263,7 +272,9 @@ def OAMFourier(
     coord_format="AzEl",
 ):
     """
+
     producing mode index, mode coefficiencts, and mode probabilities with the co and crosspolar (Etheta,Ephi), but can probably be done the same for Ex,Ey,Ez
+
     """
     # establish coordinate set, in this case theta and phi, but would work just as well with elevation and azimuth, assume that array is propagating in the z+ direction.
     if coord_format == "xyz":
@@ -280,7 +291,9 @@ def OAMFourier(
 
 def OAMFourierCartesian(Ex, Ey, Ez, coordinates, mode_limit):
     """
-    assume probagation is in the Ez dimension
+
+    assume propagation is in the Ez dimension
+
     """
     mode_index = np.linspace(-mode_limit, mode_limit, mode_limit * 2 + 1)
     mode_coefficients = np.zeros((mode_index.shape[0], 3), dtype=np.complex64)
@@ -318,7 +331,9 @@ def OAMFourierCartesian(Ex, Ey, Ez, coordinates, mode_limit):
 
 def OAMFourierSpherical(Ex, Ey, Ez, coordinates, mode_limit, az_range, elev_range):
     """
+
     assume probagation is in the Ez dimension
+
     """
     mode_index = np.linspace(-mode_limit, mode_limit, mode_limit * 2 + 1)
     mode_coefficients = np.zeros((mode_index.shape[0], len(elev_range), 3))
@@ -356,6 +371,7 @@ def MaximumDirectivityMap(
     phase_resolution=24,
 ):
     """
+
     Uses wavefront beamsteering, and equal gain combining algorithms to steer the antenna array to each possible
     command angle in the farfield, mapping out the maximum achieved directivity at the command angle for each command
     angle set.
@@ -540,9 +556,11 @@ def MaximumDirectivityMapDiscrete(
     phase_resolution=np.asarray([24]),
 ):
     """
+
     Uses wavefront beamsteering, and equal gain combining algorithms to steer the antenna array to each possible
     command angle in the farfield, mapping out the maximum achieved directivity at the command angle for each command
     angle set.
+
 
     Parameters
     ----------
@@ -981,10 +999,12 @@ def directivity_transform(
     total_solid_angle=(4 * np.pi),
 ):
     """
+
     Directivity Transform for Etheta and Ephi
 
     directivity is defined in terms of the power radiated in a specific direction, over the average radiated power
     power per unit solid angle
+
 
     Parameters
     ----------
@@ -1229,7 +1249,9 @@ def PatternPlot(
     title_text=None,
 ):
     """
+
     Plot the relavent 3D data in relative power (dB) or normalised directivity (dBi)
+
 
     Parameters
     -----------
@@ -1482,7 +1504,9 @@ def PatternPlot2D(
 @cuda.jit(device=True)
 def point_directivity(Ea, Eb, az_range, el_range, interest_index):
     """
+
     compute the directivity at the point of interest in the farfield pattern
+
     """
 
     average_power = 0.0
@@ -1493,7 +1517,9 @@ def point_directivity(Ea, Eb, az_range, el_range, interest_index):
 @cuda.jit(device=True)
 def EqualGainCombiningGPU(SteeringPattern, CommandIndex, weights):
     """
+
     equal gain combining algorithm based on the provided steering pattern and command index
+
     """
     weights = cmath.exp(-1j * np.angle(SteeringPattern[:, CommandIndex]))
 

@@ -1033,7 +1033,70 @@ class antenna_pattern(object3d):
         )
         outputarray = np.concatenate((infoarray, dataarray), axis=0)
         np.savetxt(file_location, outputarray, delimiter=",", fmt="%.2e")
+    def export_pyvista_object(self):
+        """
+        Return Antenna Pattern as a PyVista Structured Mesh Data Object
+        """
+        import pyvista as pv
+        def cell_bounds(points, bound_position=0.5):
+            """
+            Calculate coordinate cell boundaries.
 
+            Parameters
+            ----------
+            points: numpy.ndarray
+                One-dimensional array of uniformly spaced values of shape (M,).
+
+            bound_position: bool, optional
+                The desired position of the bounds relative to the position
+                of the points.
+
+            Returns
+            -------
+            bounds: numpy.ndarray
+                Array of shape (M+1,)
+
+            Examples
+            --------
+            >>> a = np.arange(-1, 2.5, 0.5)
+            >>> a
+            array([-1. , -0.5,  0. ,  0.5,  1. ,  1.5,  2. ])
+            >>> cell_bounds(a)
+            array([-1.25, -0.75, -0.25,  0.25,  0.75,  1.25,  1.75,  2.25])
+            """
+            if points.ndim != 1:
+                raise ValueError("Only 1D points are allowed.")
+            diffs = np.diff(points)
+            delta = diffs[0] * bound_position
+            bounds = np.concatenate([[points[0] - delta], points + delta])
+            return bounds
+
+        self.transmute_pattern(desired_format="ExEyEz")
+        #hack for cst patterns in spatial intelligence project
+        ex=self.pattern[:,:,0]
+        ey=self.pattern[:,:,1]
+        ez=self.pattern[:,:,2]
+        az=np.linspace(0,360,self.azimuth_resolution)
+        elevation=np.linspace(-90,90,self.elevation_resolution)
+        xx_bounds = cell_bounds(az)
+        yy_bounds = cell_bounds(90-elevation)
+        self.transmute_pattern(desired_format="Etheta/Ephi")
+        et=self.pattern[:,:,0]
+        ep=self.pattern[:,:,1]
+        vista_pattern=pv.grid_from_sph_coords(xx_bounds, yy_bounds,  self.field_radius)
+        vista_pattern['Real']=np.real(np.append(np.append(ex.transpose().ravel().reshape(ex.size,1),
+                                                          ey.transpose().ravel().reshape(ex.size,1),axis=1),
+                                                ez.transpose().ravel().reshape(ex.size,1),axis=1))
+        vista_pattern['Imag']=np.imag(np.append(np.append(ex.transpose().ravel().reshape(ex.size,1),
+                                                          ey.transpose().ravel().reshape(ex.size,1),axis=1),
+                                                ez.transpose().ravel().reshape(ex.size,1),axis=1))
+        vista_pattern['E($\Theta$) Magnitude']=np.abs(et.transpose().ravel())
+        vista_pattern['E($\Theta$) Phase']=np.angle(et.transpose().ravel())
+        vista_pattern['E($\Phi$) Magnitude']=np.abs(ep.transpose().ravel())
+        vista_pattern['E($\Phi$) Phase']=np.angle(ep.transpose().ravel())
+        vista_pattern['Magnitude']=np.abs(vista_pattern['Real']+1j*vista_pattern['Imag'])
+        vista_pattern['Phase']=np.angle(vista_pattern['Real']+1j*vista_pattern['Imag'])
+        return vista_pattern
     def export_global_weights(self):
         """
         Calculates the global frame coordinates and xyz weightings of the antenna pattern using the pattern pose to translate and rotate into the correction position and orientation within the model environment. If this function is used as a source for models, then the antenna pattern pose must be updated for the desired position and orientation before export.

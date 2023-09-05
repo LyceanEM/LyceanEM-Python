@@ -3,7 +3,6 @@
 LyceanEM Base
 ==============
 
-
 .. automodule:: lyceanem.base_types
     :members:
 

@@ -1,9 +1,10 @@
 import numpy as np
 
-
 def antenna_stats(freq, x, y, z):
     """
+
     Utility for evaluating electrical size
+
 
     Parameters
     ----------
@@ -21,6 +22,7 @@ def antenna_stats(freq, x, y, z):
     None
 
     """
+
     wavelength = 3e8 / freq
     k = (2 * np.pi) / wavelength
     a = np.sqrt((x) ** 2 + (y) ** 2 + (z) ** 2) * 0.5
@@ -31,7 +33,9 @@ def antenna_stats(freq, x, y, z):
 
 def antenna_size(freq, antenna):
     """
+
     Utility for calculating the electrical size of a given antenna structure
+
 
     Parameters
     ----------
@@ -46,6 +50,7 @@ def antenna_size(freq, antenna):
         electrical size of antenna structure for given frequency
 
     """
+
     total_points = antenna.export_all_points()
     # calculate bounding box
     bounding_box = total_points.get_oriented_bounding_box()
