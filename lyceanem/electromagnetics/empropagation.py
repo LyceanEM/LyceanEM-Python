@@ -372,7 +372,7 @@ def scatteringkernal(network_index, point_information, ray_components, wavelengt
     if lengths[0] == 0.0:
         loss1 = 1.0
     else:
-        loss1 = (cmath.exp(1j * wave_vector * lengths[0])) * (
+        loss1 = (cmath.exp(-1j * wave_vector * lengths[0])) * (
             wavelength[0] / (4 * (scipy.constants.pi) * (lengths[0]))
         )
 
@@ -463,7 +463,7 @@ def scatteringkernalv2(
     wave_vector = (2.0 * cmath.pi) / wavelength[0]
     # loss1=cuda.local.array(shape=(1),dtype=complex64)
     if (lengths[0] != 0.0) or (lengths[0] != cmath.inf):
-        loss1 = (cmath.exp(1j * wave_vector * lengths[0])) * (
+        loss1 = (cmath.exp(-1j * wave_vector * lengths[0])) * (
             wavelength[0] / (4 * (cmath.pi) * (lengths[0]))
         )
         scattering_matrix[sink_index, 0] += ray_component[0] * loss1
@@ -592,7 +592,7 @@ def scatteringkernaltest(
     if (lengths != 0.0) or (lengths != cmath.inf):
         # print(cu_ray_num,lengths[0],abs(ray_component[2]))
         loss1 = complex(0, 0)
-        loss1 = cmath.exp(1j * wave_vector * lengths)
+        loss1 = cmath.exp(-1j * wave_vector * lengths)
         loss1 = loss1 * (wavelength[0] / (4 * (cmath.pi) * (lengths)))
         scattering_matrix[cu_ray_num, 0] = ray_component[0] * loss1
         scattering_matrix[cu_ray_num, 1] = ray_component[1] * loss1
@@ -738,7 +738,7 @@ def scatteringkernalv3(
     if (lengths != 0.0) or (lengths != cmath.inf):
         # print(cu_ray_num,lengths[0])
         loss1 = complex(0, 0)
-        loss1 = cmath.exp(1j * wave_vector * lengths)
+        loss1 = cmath.exp(-1j * wave_vector * lengths)
         loss1 = loss1 * (wavelength[0] / (4 * (cmath.pi) * (lengths)))
         scattering_matrix[sink_index, 0] = scattering_matrix[sink_index, 0] + (
             ray_component[0] * loss1
@@ -868,7 +868,7 @@ def scatteringkernalv4(
     if (lengths != 0.0) or (lengths != cmath.inf):
         # print(cu_ray_num,lengths[0])
         loss1 = complex(0, 0)
-        loss1 = cmath.exp(1j * wave_vector * lengths)
+        loss1 = cmath.exp(-1j * wave_vector * lengths)
         loss1 = loss1 * (wavelength[0] / (4 * (cmath.pi) * (lengths)))
         scattering_matrix[sink_index, 0] = scattering_matrix[sink_index, 0] + (
             ray_component[0] * loss1
@@ -1133,15 +1133,15 @@ def freqdomainkernal(
         wave_vector = (2.0 * cmath.pi) / wavelength[0]
         # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
         if scatter_index == 0:
-            loss = cmath.exp(lengths * wave_vector * 1j) * (
+            loss = cmath.exp(-lengths * wave_vector * 1j) * (
                 wavelength[0] / (4 * cmath.pi * lengths)
             )
         elif scatter_index == 1:
-            loss = cmath.exp(lengths * wave_vector * 1j) * (
+            loss = cmath.exp(-lengths * wave_vector * 1j) * (
                 wavelength[0] / (4 * cmath.pi * lengths)
             )
         elif scatter_index == 2:
-            loss = cmath.exp(lengths * wave_vector * 1j) * (
+            loss = cmath.exp(-lengths * wave_vector * 1j) * (
                 wavelength[0] / (4 * cmath.pi * lengths)
             )
 
@@ -1227,7 +1227,7 @@ def freqdomainisokernal(
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
         wave_vector = (2.0 * cmath.pi) / wavelength
         # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
-        loss = cmath.exp(lengths * wave_vector * 1j) * (
+        loss = cmath.exp(-lengths * wave_vector * 1j) * (
             wavelength / (4 * cmath.pi * lengths)
         )
         ray_component[0] = loss

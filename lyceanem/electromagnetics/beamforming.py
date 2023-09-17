@@ -96,7 +96,7 @@ def WavefrontWeights(source_coords, steering_vector, wavelength):
     # calculate required time delays, and then convert to phase delays
     delays = dist / scipy.constants.speed_of_light
     weights[:] = np.exp(
-        -1j * 2 * np.pi * (scipy.constants.speed_of_light / wavelength) * delays
+        1j * 2 * np.pi * (scipy.constants.speed_of_light / wavelength) * delays
     )
     return weights
 
@@ -114,7 +114,7 @@ def ArbitaryCoherenceWeights(source_coords, target_coord, wavelength):
     # calculate required time delays, and then convert to phase delays
     delays = dist / scipy.constants.speed_of_light
     weights[:] = np.exp(
-        -1j * 2 * np.pi * (scipy.constants.speed_of_light / wavelength) * delays
+        1j * 2 * np.pi * (scipy.constants.speed_of_light / wavelength) * delays
     )
     return weights
 
@@ -239,11 +239,11 @@ def EGCWeights(
     az_index = np.argmin(np.abs(az_range - command_angles[0]))
     elev_index = np.argmin(np.abs(elev_range - command_angles[1]))
     if polarization_switch == "Etheta":
-        angle_vector = np.angle(Etheta[:, elev_index, az_index].astype(np.complex64))
+        angle_vector = -np.angle(Etheta[:, elev_index, az_index].astype(np.complex64))
     else:
-        angle_vector = np.angle(Ephi[:, elev_index, az_index].astype(np.complex64))
+        angle_vector = -np.angle(Ephi[:, elev_index, az_index].astype(np.complex64))
 
-    weights[:] = np.exp(-1j * angle_vector)
+    weights[:] = np.exp(1j * angle_vector)
     return weights
 
 

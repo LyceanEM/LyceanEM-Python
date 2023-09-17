@@ -13,6 +13,6 @@ except metadata.PackageNotFoundError:
     pass
 
 __copyright__ = """\
-© Timothy Pelham 2016-2022
+© Timothy Pelham 2016-2024
 """
 __license__ = "GNU Affero General Public License v3"
