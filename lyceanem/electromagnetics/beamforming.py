@@ -256,7 +256,7 @@ def OAMWeights(x, y, mode):
     # assumed array is x directed
     angles = np.arctan2(x, y)
     weights = np.zeros((len(x)), dtype=np.complex64)
-    weights = np.exp(-1j * mode * angles)
+    weights = np.exp(1j * mode * angles)
     return weights
 
 
