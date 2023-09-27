@@ -2319,11 +2319,109 @@ def chunkingRaycaster1Dv3(
         target_indexing = create_model_index(
             filtered_index, sink_index, scattering_point_index
         )
+        second_ray_payload = charge_rays_environment1Dv2(
+            sources, sinks, scattering_points, target_indexing
+        )
+        # print('Chunking Raycaster Triangles ', len(environment_local))
+        # max_tris=2**18
+        # triangle_chunk=np.linspace(0,tri_num,math.ceil(tri_num/max_tris)+1,dtype=np.int32)
+
+        # chunk_size=2**11
+        threads_in_block = 256
+        # ray_chunks=np.linspace(0,ray_num,math.ceil(ray_num/chunk_size)+1,dtype=np.int32)
+        # for idx in range(len(triangle_chunk)-1):
+        d_environment = cuda.device_array(
+            len(environment_local), dtype=base_types.triangle_t
+        )
+        cuda.to_device(environment_local, to=d_environment)
+        d_chunk_payload = cuda.device_array(
+            [second_ray_payload.shape[0]], dtype=base_types.ray_t
+        )
+        cuda.to_device(second_ray_payload, to=d_chunk_payload)
+        #
+        # ray_temp=np.empty((chunk_ray_size),dtype=np.bool)
+        # ray_temp[:]=first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']
+        # distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
+        # distance_temp[:]=math.inf
+        # dist_list=cuda.to_device(distance_temp)
+        # d_ray_flag=cuda.to_device(ray_temp)
+        # Here, we choose the granularity of the threading on our device. We want
+        # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
+        # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
+        grids = math.ceil(second_ray_payload.shape[0] / threads_in_block)
+        threads = threads_in_block
+        # Execute the kernel
+        # cuda.profile_start()
+        # kernel1Dv2[grids, threads](d_chunk_payload,d_environment,d_ray_flag)
+        kernel1Dv3[grids, threads](d_chunk_payload, d_environment)
+        # cuda.profile_stop()
+        # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
+        second_ray_payload = d_chunk_payload.copy_to_host()
+        # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']=d_chunk_payload['intersect'].copy_to_host()
+        # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['dist']=d_chunk_payload['dist'].copy_to_host()
+
+        # cuda.close()
+        kernel_dt = timer() - raystart
+        start = timer()
+        RAYS_CAST += second_ray_payload.shape[0]
+        filtered_index2, final_index2 = rayHits1Dv2(
+            second_ray_payload, target_indexing, sink_index
+        )
+        mem_dt = timer() - start
     else:
         if (filtered_index.shape[0] * sink_index.shape[0]) < ray_limit:
             target_indexing = create_model_index(
                 filtered_index, sink_index, np.empty((0, 0), dtype=np.int32)
             )  # only target rays at sinks
+            second_ray_payload = charge_rays_environment1Dv2(
+                sources, sinks, scattering_points, target_indexing
+            )
+            # print('Chunking Raycaster Triangles ', len(environment_local))
+            # max_tris=2**18
+            # triangle_chunk=np.linspace(0,tri_num,math.ceil(tri_num/max_tris)+1,dtype=np.int32)
+
+            # chunk_size=2**11
+            threads_in_block = 256
+            # ray_chunks=np.linspace(0,ray_num,math.ceil(ray_num/chunk_size)+1,dtype=np.int32)
+            # for idx in range(len(triangle_chunk)-1):
+            d_environment = cuda.device_array(
+                len(environment_local), dtype=base_types.triangle_t
+            )
+            cuda.to_device(environment_local, to=d_environment)
+            d_chunk_payload = cuda.device_array(
+                [second_ray_payload.shape[0]], dtype=base_types.ray_t
+            )
+            cuda.to_device(second_ray_payload, to=d_chunk_payload)
+            #
+            # ray_temp=np.empty((chunk_ray_size),dtype=np.bool)
+            # ray_temp[:]=first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']
+            # distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
+            # distance_temp[:]=math.inf
+            # dist_list=cuda.to_device(distance_temp)
+            # d_ray_flag=cuda.to_device(ray_temp)
+            # Here, we choose the granularity of the threading on our device. We want
+            # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
+            # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
+            grids = math.ceil(second_ray_payload.shape[0] / threads_in_block)
+            threads = threads_in_block
+            # Execute the kernel
+            # cuda.profile_start()
+            # kernel1Dv2[grids, threads](d_chunk_payload,d_environment,d_ray_flag)
+            kernel1Dv3[grids, threads](d_chunk_payload, d_environment)
+            # cuda.profile_stop()
+            # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
+            second_ray_payload = d_chunk_payload.copy_to_host()
+            # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']=d_chunk_payload['intersect'].copy_to_host()
+            # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['dist']=d_chunk_payload['dist'].copy_to_host()
+
+            # cuda.close()
+            kernel_dt = timer() - raystart
+            start = timer()
+            RAYS_CAST += second_ray_payload.shape[0]
+            filtered_index2, final_index2 = rayHits1Dv2(
+                second_ray_payload, target_indexing, sink_index
+            )
+            mem_dt = timer() - start
         else:
             # the rays must fit in GPU memory, aim for no more than 80% utilisation
             # establish memory limits
@@ -2396,117 +2494,69 @@ def chunkingRaycaster1Dv3(
                 # ctx = cuda.current_context()
                 # ctx.reset()
 
-    if target_indexing.shape[0] >= ray_limit:
-        # need to split the array and process seperatly
+    # if target_indexing.shape[0] >= ray_limit:
+    #     # need to split the array and process seperatly
 
-        sub_target = np.array_split(
-            target_indexing, np.ceil(target_indexing.shape[0] / ray_limit).astype(int)
-        )
-        chunknum = len(sub_target)
-        filtered_index2 = np.empty((0, target_indexing.shape[1]), dtype=np.int32)
-        final_index2 = np.empty((0, target_indexing.shape[1]), dtype=np.int32)
-        # print('chunking total of ',target_indexing.shape[0],' rays in ',chunknum,' batches')
-        for chunkindex in range(chunknum):
-            # cycle the raycaster over the sub arrays
-            threads_in_block = 256
-            second_ray_payload = charge_rays_environment1Dv2(
-                sources, sinks, scattering_points, sub_target[chunkindex]
-            )
-            # ray_chunks=np.linspace(0,ray_num,math.ceil(ray_num/chunk_size)+1,dtype=np.int32)
-            # for idx in range(len(triangle_chunk)-1):
-            d_environment = cuda.device_array(
-                len(environment_local), dtype=base_types.triangle_t
-            )
-            cuda.to_device(environment_local, to=d_environment)
-            d_chunk_payload = cuda.device_array(
-                [second_ray_payload.shape[0]], dtype=base_types.ray_t
-            )
-            cuda.to_device(second_ray_payload, to=d_chunk_payload)
-            #
-            # ray_temp=np.empty((chunk_ray_size),dtype=np.bool)
-            # ray_temp[:]=first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']
-            # distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
-            # distance_temp[:]=math.inf
-            # dist_list=cuda.to_device(distance_temp)
-            # d_ray_flag=cuda.to_device(ray_temp)
-            # Here, we choose the granularity of the threading on our device. We want
-            # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
-            # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
-            grids = math.ceil(second_ray_payload.shape[0] / threads_in_block)
-            threads = threads_in_block
-            # Execute the kernel
-            # cuda.profile_start()
-            # kernel1Dv2[grids, threads](d_chunk_payload,d_environment,d_ray_flag)
-            kernel1Dv3[grids, threads](d_chunk_payload, d_environment)
-            # cuda.profile_stop()
-            # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-            second_ray_payload = d_chunk_payload.copy_to_host()
-            # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']=d_chunk_payload['intersect'].copy_to_host()
-            # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['dist']=d_chunk_payload['dist'].copy_to_host()
+    #     sub_target = np.array_split(
+    #         target_indexing, np.ceil(target_indexing.shape[0] / ray_limit).astype(int)
+    #     )
+    #     chunknum = len(sub_target)
+    #     filtered_index2 = np.empty((0, target_indexing.shape[1]), dtype=np.int32)
+    #     final_index2 = np.empty((0, target_indexing.shape[1]), dtype=np.int32)
+    #     # print('chunking total of ',target_indexing.shape[0],' rays in ',chunknum,' batches')
+    #     for chunkindex in range(chunknum):
+    #         # cycle the raycaster over the sub arrays
+    #         threads_in_block = 256
+    #         second_ray_payload = charge_rays_environment1Dv2(
+    #             sources, sinks, scattering_points, sub_target[chunkindex]
+    #         )
+    #         # ray_chunks=np.linspace(0,ray_num,math.ceil(ray_num/chunk_size)+1,dtype=np.int32)
+    #         # for idx in range(len(triangle_chunk)-1):
+    #         d_environment = cuda.device_array(
+    #             len(environment_local), dtype=base_types.triangle_t
+    #         )
+    #         cuda.to_device(environment_local, to=d_environment)
+    #         d_chunk_payload = cuda.device_array(
+    #             [second_ray_payload.shape[0]], dtype=base_types.ray_t
+    #         )
+    #         cuda.to_device(second_ray_payload, to=d_chunk_payload)
+    #         #
+    #         # ray_temp=np.empty((chunk_ray_size),dtype=np.bool)
+    #         # ray_temp[:]=first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']
+    #         # distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
+    #         # distance_temp[:]=math.inf
+    #         # dist_list=cuda.to_device(distance_temp)
+    #         # d_ray_flag=cuda.to_device(ray_temp)
+    #         # Here, we choose the granularity of the threading on our device. We want
+    #         # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
+    #         # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
+    #         grids = math.ceil(second_ray_payload.shape[0] / threads_in_block)
+    #         threads = threads_in_block
+    #         # Execute the kernel
+    #         # cuda.profile_start()
+    #         # kernel1Dv2[grids, threads](d_chunk_payload,d_environment,d_ray_flag)
+    #         kernel1Dv3[grids, threads](d_chunk_payload, d_environment)
+    #         # cuda.profile_stop()
+    #         # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
+    #         second_ray_payload = d_chunk_payload.copy_to_host()
+    #         # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']=d_chunk_payload['intersect'].copy_to_host()
+    #         # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['dist']=d_chunk_payload['dist'].copy_to_host()
 
-            # cuda.close()
-            kernel_dt = timer() - raystart
-            start = timer()
-            RAYS_CAST += second_ray_payload.shape[0]
-            temp_filtered_index2, temp_final_index2 = rayHits1Dv2(
-                second_ray_payload, sub_target[chunkindex], sink_index
-            )
-            mem_dt = timer() - start
-            filtered_index2 = np.append(filtered_index2, temp_filtered_index2, axis=0)
-            final_index2 = np.append(final_index2, temp_final_index2, axis=0)
-            # deallocate memory on gpu
-            # ctx = cuda.current_context()
-            # ctx.reset()
-    else:
-        second_ray_payload = charge_rays_environment1Dv2(
-            sources, sinks, scattering_points, target_indexing
-        )
-        # print('Chunking Raycaster Triangles ', len(environment_local))
-        # max_tris=2**18
-        # triangle_chunk=np.linspace(0,tri_num,math.ceil(tri_num/max_tris)+1,dtype=np.int32)
-
-        # chunk_size=2**11
-        threads_in_block = 256
-        # ray_chunks=np.linspace(0,ray_num,math.ceil(ray_num/chunk_size)+1,dtype=np.int32)
-        # for idx in range(len(triangle_chunk)-1):
-        d_environment = cuda.device_array(
-            len(environment_local), dtype=base_types.triangle_t
-        )
-        cuda.to_device(environment_local, to=d_environment)
-        d_chunk_payload = cuda.device_array(
-            [second_ray_payload.shape[0]], dtype=base_types.ray_t
-        )
-        cuda.to_device(second_ray_payload, to=d_chunk_payload)
-        #
-        # ray_temp=np.empty((chunk_ray_size),dtype=np.bool)
-        # ray_temp[:]=first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']
-        # distance_temp=np.empty((chunk_ray_size),dtype=np.float32)
-        # distance_temp[:]=math.inf
-        # dist_list=cuda.to_device(distance_temp)
-        # d_ray_flag=cuda.to_device(ray_temp)
-        # Here, we choose the granularity of the threading on our device. We want
-        # to try to cover the entire workload of rays and targets with simulatenous threads, so we'll
-        # choose a grid of (source_num/16. target_num/16) blocks, each with (16, 16) threads
-        grids = math.ceil(second_ray_payload.shape[0] / threads_in_block)
-        threads = threads_in_block
-        # Execute the kernel
-        # cuda.profile_start()
-        # kernel1Dv2[grids, threads](d_chunk_payload,d_environment,d_ray_flag)
-        kernel1Dv3[grids, threads](d_chunk_payload, d_environment)
-        # cuda.profile_stop()
-        # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-        second_ray_payload = d_chunk_payload.copy_to_host()
-        # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']=d_chunk_payload['intersect'].copy_to_host()
-        # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['dist']=d_chunk_payload['dist'].copy_to_host()
-
-        # cuda.close()
-        kernel_dt = timer() - raystart
-        start = timer()
-        RAYS_CAST += second_ray_payload.shape[0]
-        filtered_index2, final_index2 = rayHits1Dv2(
-            second_ray_payload, target_indexing, sink_index
-        )
-        mem_dt = timer() - start
+    #         # cuda.close()
+    #         kernel_dt = timer() - raystart
+    #         start = timer()
+    #         RAYS_CAST += second_ray_payload.shape[0]
+    #         temp_filtered_index2, temp_final_index2 = rayHits1Dv2(
+    #             second_ray_payload, sub_target[chunkindex], sink_index
+    #         )
+    #         mem_dt = timer() - start
+    #         filtered_index2 = np.append(filtered_index2, temp_filtered_index2, axis=0)
+    #         final_index2 = np.append(final_index2, temp_final_index2, axis=0)
+    #         # deallocate memory on gpu
+    #         # ctx = cuda.current_context()
+    #         # ctx.reset()
+    # else:
+        
         # deallocate memory on gpu
         # ctx = cuda.current_context()
         # deallocs = ctx.deallocations

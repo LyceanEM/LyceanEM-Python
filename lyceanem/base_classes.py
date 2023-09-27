@@ -4,6 +4,7 @@ import numpy as np
 import open3d as o3d
 from scipy import interpolate as sp
 from scipy.spatial.transform import Rotation as R
+import pyvista as pv
 
 from . import base_types as base_types
 from .electromagnetics import beamforming as BM
@@ -1132,9 +1133,22 @@ class antenna_pattern(object3d):
         )
         weights = np.matmul(weights, rotation_matrix)
         return points, weights
+    def pattern_mesh(self):
+        points = self.cartesian_points()
+        mesh = pv.StructuredGrid(points[:, 0], points[:, 1], points[:, 2])
+        mesh.dimensions = [self.azimuth_resolution, self.elevation_resolution, 1]
+        if self.arbitary_pattern_format == "Etheta/Ephi":
+            mesh.point_data['Etheta'] = self.pattern[:,:,0]
+            mesh.point_data['Ephi'] = self.pattern[:, :, 1]
+        elif self.arbitary_pattern_format == "ExEyEz":
+            mesh.point_data['Ex'] = self.pattern[:, :, 0]
+            mesh.point_data['Ey'] = self.pattern[:, :, 1]
+            mesh.point_data['Ez'] = self.pattern[:, :, 2]
+
+        return mesh
 
     def display_pattern(
-        self, plottype="Polar", desired_pattern="both", pattern_min=-40, plot_max=0
+        self, plottype="Polar", desired_pattern="both", pattern_min=-40, plot_max=0,plotengine="matplotlib"
     ):
         """
         Displays the Antenna Pattern using :func:`lyceanem.electromagnetics.beamforming.PatternPlot`
@@ -1152,7 +1166,40 @@ class antenna_pattern(object3d):
         -------
         None
         """
+        if plotengine=="pyvista":
+            def PatternPlot(
+                    data,
+                    az,
+                    elev,
+                    pattern_min=-40,
+                    plot_max=0.0,
+                    plottype="Polar",
+                    logtype="amplitude",
+                    ticknum=6,
+                    title_text=None,
+                    shell_radius=1.0
+            ):
+                # points = spherical_mesh(az, elev,
+                # (data / np.nanmax(data) * shell_radius))
+                # mesh = pv.StructuredGrid(points[:, 0], points[:, 1], points[:, 2])
+                # mesh.dimensions = [az.size, elev.size, 1]
+                # mesh.point_data['Beamformed Directivity (dBi)'] = 10 * np.log10(data.ravel())
+                mesh = self.pattern_mesh(shell_radius)
+                sargs = dict(
+                    title_font_size=20,
+                    label_font_size=16,
+                    shadow=True,
+                    n_labels=ticknum,
+                    italic=True,
+                    fmt="%.1f",
+                    font_family="arial",
+                )
+                pl = pv.Plotter()
+                pl.add_mesh(mesh, scalar_bar_args=sargs, clim=[pattern_min, plot_max])
+                pl.show_axes()
+                pl.show()
 
+                return pl
         if self.arbitary_pattern_format == "Etheta/Ephi":
             if desired_pattern == "both":
                 BM.PatternPlot(
