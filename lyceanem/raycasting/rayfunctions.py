@@ -2022,9 +2022,9 @@ def charge_rays_environment1Dv2(sources, sinks, environment_points, point_indexi
         directions,
         norm_length,
     )
-    temp_ray_payload[:]["ox"] = unified_model[point_indexing[:, 0] - 1, 0]
-    temp_ray_payload[:]["oy"] = unified_model[point_indexing[:, 0] - 1, 1]
-    temp_ray_payload[:]["oz"] = unified_model[point_indexing[:, 0] - 1, 2]
+    temp_ray_payload[:]["ox"] = unified_model[point_indexing[:, -2] - 1, 0]
+    temp_ray_payload[:]["oy"] = unified_model[point_indexing[:, -2] - 1, 1]
+    temp_ray_payload[:]["oz"] = unified_model[point_indexing[:, -2] - 1, 2]
     temp_ray_payload[:]["dx"] = directions[:, 0]
     temp_ray_payload[:]["dy"] = directions[:, 1]
     temp_ray_payload[:]["dz"] = directions[:, 2]
