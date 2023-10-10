@@ -176,7 +176,7 @@ def calculate_farfield(
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
         if source_weights is None:
             unified_weights[0:num_sources, :] = (
-                conformal_E_vectors / num_sources
+                conformal_E_vectors #/ num_sources
             )  # set total amplitude to 1 for the aperture
         else:
             unified_weights[0:num_sources, :] = source_weights
@@ -257,7 +257,7 @@ def calculate_farfield(
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
         if source_weights is None:
             unified_weights[0:num_sources, :] = (
-                conformal_E_vectors / num_sources
+                conformal_E_vectors# / num_sources
             )  # set total amplitude to 1 for the aperture
         else:
             unified_weights[0:num_sources, :] = source_weights
@@ -372,13 +372,13 @@ def calculate_farfield(
             point_informationv2[0:num_sources]["ey"] = 0.0
             point_informationv2[0:num_sources]["ez"] = 0.0
             point_informationv2[element]["ex"] = (
-                conformal_E_vectors[element, 0] / num_sources
+                conformal_E_vectors[element, 0] #/ num_sources
             )
             point_informationv2[element]["ey"] = (
-                conformal_E_vectors[element, 1] / num_sources
+                conformal_E_vectors[element, 1] #/ num_sources
             )
             point_informationv2[element]["ez"] = (
-                conformal_E_vectors[element, 2] / num_sources
+                conformal_E_vectors[element, 2] #/ num_sources
             )
             # unified_weights[0:num_sources, :] = 0.0
             # unified_weights[element, :] = (conformal_E_vectors[element, :] / num_sources)*v_transmit
@@ -753,7 +753,7 @@ def calculate_scattering(
                     desired_E_axis[e_inc, :],
                     np.asarray(aperture_coords.normals).astype(np.float32),
                 )
-                unified_weights[0:num_sources, :] = conformal_E_vectors / num_sources
+                unified_weights[0:num_sources, :] = conformal_E_vectors# / num_sources
                 point_informationv2[:]["ex"] = unified_weights[:, 0]
                 point_informationv2[:]["ey"] = unified_weights[:, 1]
                 point_informationv2[:]["ez"] = unified_weights[:, 2]
@@ -789,17 +789,17 @@ def calculate_scattering(
                     point_informationv2[0:num_sources]["ey"] = 0.0
                     point_informationv2[0:num_sources]["ez"] = 0.0
                     point_informationv2[element]["ex"] = (
-                        conformal_E_vectors[element, 0] / num_sources
+                        conformal_E_vectors[element, 0] #/ num_sources
                     )
                     point_informationv2[element]["ey"] = (
-                        conformal_E_vectors[element, 1] / num_sources
+                        conformal_E_vectors[element, 1] #/ num_sources
                     )
                     point_informationv2[element]["ez"] = (
-                        conformal_E_vectors[element, 2] / num_sources
+                        conformal_E_vectors[element, 2] #/ num_sources
                     )
                     unified_weights[0:num_sources, :] = 0.0
                     unified_weights[element, :] = (
-                        conformal_E_vectors[element, :] / num_sources
+                        conformal_E_vectors[element, :]# / num_sources
                     )
                     scatter_map = EM.EMGPUFreqDomain(
                         num_sources,

@@ -962,9 +962,9 @@ class antenna_pattern(object3d):
                 imag_etheta,
                 real_ephi,
                 imag_ephi,
-                20 * np.log10(dtheta[:, 1:].transpose().ravel()),
-                20 * np.log10(dphi[:, 1:].transpose().ravel()),
-                10 * np.log10(dtotal[:, 1:].transpose().ravel()),
+                dtheta[:, 1:].transpose().ravel(),
+                dphi[:, 1:].transpose().ravel(),
+                dtotal[:, 1:].transpose().ravel(),
             ]
         ).transpose()
         datablock[np.where(np.isinf(datablock))] = -1e6
