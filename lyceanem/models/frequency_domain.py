@@ -821,29 +821,13 @@ def calculate_scattering(
             Ex = np.zeros((num_sources, num_sinks), dtype=np.complex64)
             Ey = np.zeros((num_sources, num_sinks), dtype=np.complex64)
             Ez = np.zeros((num_sources, num_sinks), dtype=np.complex64)
-            for element in range(num_sources):
-                point_informationv2[0:num_sources]["ex"] = 0.0
-                point_informationv2[0:num_sources]["ey"] = 0.0
-                point_informationv2[0:num_sources]["ez"] = 0.0
-                point_informationv2[element]["ex"] = (
-                    conformal_E_vectors[element, 0] #/ num_sources
-                )
-                point_informationv2[element]["ey"] = (
-                    conformal_E_vectors[element, 1] #/ num_sources
-                )
-                point_informationv2[element]["ez"] = (
-                    conformal_E_vectors[element, 2] #/ num_sources
-                )
-                unified_weights[0:num_sources, :] = 0.0
-                unified_weights[element, :] = (
-                    conformal_E_vectors[element, :] #/ num_sources
-                )
-                scatter_map = EM.EMGPUFreqDomain(
-                    num_sources, num_sinks, full_index, point_informationv2, wavelength
-                )
-                Ex[element, :] = np.dot(np.ones((num_sources)), scatter_map[:, :, 0])
-                Ey[element, :] = np.dot(np.ones((num_sources)), scatter_map[:, :, 1])
-                Ez[element, :] = np.dot(np.ones((num_sources)), scatter_map[:, :, 2])
+            scatter_map = EM.EMGPUFreqDomain(
+                num_sources, num_sinks, full_index, point_informationv2, wavelength
+            )
+            Ex = scatter_map[:, :, 0]
+            Ey = scatter_map[:, :, 1]
+            Ez = scatter_map[:, :, 2]
+                
 
     return Ex, Ey, Ez
 
