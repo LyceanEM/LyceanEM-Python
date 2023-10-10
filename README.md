@@ -24,15 +24,7 @@ Further documentation can be found [here](https://lyceanem-python.readthedocs.io
 
 If you use LyceanEM in an academic project, please cite our paper:
 
-::
-
-    @article{Pelham2021,
-        author      = {Timothy G Pelham and Geoff Hilton and Evangelos Mellios and Rob Lewis},
-        title       = {Conformal Antenna Array Design Using Aperture Synthesis and On-Platform Modeling},
-        journal     = {IEEE Access},
-        year        = {2021},
-        doi         = {10.1109/ACCESS.2021.3074317}
-    }
+[LyceanEM: A python package for virtual prototyping of antenna arrays, time and frequency domain channel modelling](https://doi.org/10.21105/joss.05234)
 
 ## Core Features
 
@@ -107,7 +99,5 @@ of users. Thank you for your support!
 ## Resources
 
 * Code: [github.com/LyceanEM/LyceanEM-Python](https://github.com/LyceanEM/LyceanEM-Python)
-*
-Documentation: [https://documentation.lyceanem.com/en/latest/index.html](https://documentation.lyceanem.com/en/latest/index.html)
-*
-License: [github.com/LyceanEM/LyceanEM-Python/blob/master/LICENSE.txt](https://github.com/LyceanEM/LyceanEM-Python/blob/master/LICENSE.txt)
+* Documentation: [https://documentation.lyceanem.com/en/latest/index.html](https://documentation.lyceanem.com/en/latest/index.html)
+* License: [github.com/LyceanEM/LyceanEM-Python/blob/master/LICENSE.txt](https://github.com/LyceanEM/LyceanEM-Python/blob/master/LICENSE.txt)
