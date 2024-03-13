@@ -14,6 +14,7 @@ from scipy.spatial import distance
 import lyceanem.base_types as base_types
 import lyceanem.electromagnetics.empropagation as EM
 from ..utility import math_functions as math_functions
+import meshio
 
 EPSILON = 1e-6  # how close to zero do we consider zero? example used 1e-7
 
@@ -670,14 +671,15 @@ def azeltocart(az_data, el_data, radius):
 
 def convertTriangles(triangle_object):
     """
-    convert o3d triangle object to ray tracer triangle class
+    convert meshio.Mesh triangle object to ray tracer triangle class
     """
     if triangle_object == None:
         triangles = np.empty(0, dtype=base_types.triangle_t)
     else:
-        vertices = np.asarray(triangle_object.vertices)
-        tri_index = np.asarray(triangle_object.triangles)
-        normals = np.asarray(triangle_object.triangle_normals)
+        assert triangle_object.cells[0].type == "triangle", "Not a triangle mesh"
+
+        vertices = np.asarray(triangle_object.points)
+        tri_index = np.asarray(triangle_object.cells[0].data)
         triangles = np.empty(len(tri_index), dtype=base_types.triangle_t)
         for idx in range(len(tri_index)):
             triangles[idx]["v0x"] = np.single(vertices[tri_index[idx, 0], 0])
@@ -689,9 +691,6 @@ def convertTriangles(triangle_object):
             triangles[idx]["v2x"] = np.single(vertices[tri_index[idx, 2], 0])
             triangles[idx]["v2y"] = np.single(vertices[tri_index[idx, 2], 1])
             triangles[idx]["v2z"] = np.single(vertices[tri_index[idx, 2], 2])
-            # triangles[idx]['normx']=np.single(normals[idx,0])
-            # triangles[idx]['normy']=np.single(normals[idx,1])
-            # triangles[idx]['normz']=np.single(normals[idx,2])
 
     return triangles
 
