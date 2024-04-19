@@ -3,7 +3,8 @@
 import copy
 
 import numpy as np
-import open3d as o3d
+import meshio
+import pyvista as pv
 import scipy.stats
 import solid as sd
 from importlib_resources import files
@@ -13,6 +14,8 @@ from ..base_classes import antenna_structures, structures, points
 from ..geometry import geometryfunctions as GF
 from ..raycasting import rayfunctions as RF
 from ..utility import math_functions as math_functions
+import meshio
+
 
 EPSILON = 1e-6  # how close to zero do we consider zero?
 
@@ -28,7 +31,7 @@ def NasaAlmond(resolution="quarter"):
 
     Returns
     -------
-    NasaAlmond : o3d triangle mesh
+    NasaAlmond : meshio triangle mesh
         the physical structure of the nasa almond
     NasaAlmond_points : o3d points
         the mesh points for scattering
@@ -38,19 +41,26 @@ def NasaAlmond(resolution="quarter"):
         stream = files("lyceanem.geometry.data").joinpath(
             "NasaAlmondHalfWavelengthv2.stl"
         )
-        NasaAlmond = o3d.io.read_triangle_mesh(str(stream))
+        NasaAlmond = meshio.read(str(stream))
+        nasa = pv.read(str(stream))
+
     elif resolution == "quarter":
         stream = files("lyceanem.geometry.data").joinpath(
             "NasaAlmondQuarterWavelengthv2.stl"
         )
-        NasaAlmond = o3d.io.read_triangle_mesh(str(stream))
+        NasaAlmond = meshio.read(str(stream))
+        nasa = pv.read(str(stream))
     elif resolution == "tenth":
         stream = files("lyceanem.geometry.data").joinpath(
             "NasaAlmondTenthWavelengthv2.stl"
         )
-        NasaAlmond = o3d.io.read_triangle_mesh(str(stream))
+        NasaAlmond = meshio.read(str(stream))
+        nasa = pv.read(str(stream))
 
-    NasaAlmond.compute_vertex_normals()
+    nasa.compute_normals(inplace=True)
+
+    NasaAlmond.point_data["normals"] = nasa.point_normals
+
     # points=np.asarray(NasaAlmond.vertices)
     # normals=np.asarray(NasaAlmond.vertex_normals)
     _, scatter_cloud = GF.tri_centroids(NasaAlmond)
@@ -242,7 +252,7 @@ def parabola(radius, focal_length, thickness, mesh_length, mesh="all"):
     # run openscad and export to stl
     converttostl()
 
-    parabola_mesh = o3d.io.read_triangle_mesh("temp.stl")
+    parabola_mesh = meshio.read("temp.stl")
     parabola_mesh.compute_vertex_normals()
     parabola_mesh.compute_triangle_normals()
     _, parabola_scatter_cloud = GF.tri_centroids(parabola_mesh)
@@ -595,7 +605,7 @@ def meshed_pipe(
     # run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
     converttostl()
 
-    structure = o3d.io.read_triangle_mesh("temp.stl")
+    structure = meshio.read("temp.stl")
     structure.compute_vertex_normals()
     scatter_cloud = RF.points2pointcloud(np.copy(test_faces))
     scatter_cloud.normals = o3d.utility.Vector3dVector(np.copy(face_normals))
@@ -908,8 +918,8 @@ def meshed_cylinder(
     # run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
     converttostl()
 
-    # structure = o3d.io.read_triangle_mesh("temp.stl")
-    temp_mesh = o3d.io.read_triangle_mesh("temp.stl")
+    # structure = meshio.read("temp.stl")
+    temp_mesh = meshio.read("temp.stl")
     temp_mesh.compute_vertex_normals()
     scatter_cloud = RF.points2pointcloud(np.copy(test_faces))
     scatter_cloud.normals = o3d.utility.Vector3dVector(np.copy(face_normals))
@@ -1168,13 +1178,12 @@ def meshed_trapazoid(radius1, radius2, height, mesh_length, mesh="centres"):
     # run(["openscad-nightly", "-o", "temp.stl", "temp.scad", "--export-format=binstl"])
     converttostl()
 
-    structure = o3d.io.read_triangle_mesh("temp.stl")
+    structure = meshio.read("temp.stl")
     structure.compute_vertex_normals()
     scatter_cloud = RF.points2pointcloud(np.copy(test_faces))
     scatter_cloud.normals = o3d.utility.Vector3dVector(np.copy(face_normals))
 
     return structure, scatter_cloud
-
 
 def rectReflector(majorsize, minorsize, thickness):
     """
@@ -1182,18 +1191,35 @@ def rectReflector(majorsize, minorsize, thickness):
     with normal aligned with zenith, and major axis with x,
     adjust position so the face is centred on (0,0,0)
     """
+    print("majorsize",majorsize)
+    print("minorsize",minorsize)
+    print("thickness",thickness)
 
-    reflector1 = o3d.geometry.TriangleMesh.create_box(majorsize, minorsize, thickness)
-    translate_dist = np.array(
-        [-majorsize / 2.0, -minorsize / 2.0, -(thickness + EPSILON)]
-    )
-    # fine_mesh=reflector1.subdivide_midpoint(3)
-    fine_mesh = reflector1
-    fine_mesh.compute_vertex_normals()
-    fine_mesh.paint_uniform_color([0.79, 0.50, 0.24])
-    fine_mesh.translate(translate_dist, relative=True)
+    halfMajor = majorsize / 2.0
+    halfMinor = minorsize / 2.0
+    pv_mesh = pv.Box((-halfMajor, halfMajor, -halfMinor, halfMinor, -(thickness+EPSILON),- EPSILON))
+    pv_mesh = pv_mesh.triangulate()
+    pv_mesh.compute_normals(inplace=True,consistent_normals=False)
+    triangles = np.reshape(np.array(pv_mesh.faces),(12,4))
+    triangles = triangles[:,1:]
 
-    return fine_mesh
+    mesh = meshio.Mesh(pv_mesh.points, {"triangle": triangles})
+
+
+    mesh.point_data["nx"] = pv_mesh.point_normals[:,0]
+
+    mesh.point_data["ny"] = pv_mesh.point_normals[:,1]
+    mesh.point_data["nz"] = pv_mesh.point_normals[:,2]
+    mesh.point_data["normals"] = pv_mesh.point_normals
+    mesh.cell_data["normals"] = pv_mesh.cell_normals
+    red = np.zeros((8, 1), dtype=np.float32) 
+    green = np.ones((8, 1), dtype=np.float32) * 0.259
+    blue = np.ones((8, 1), dtype=np.float32) * 0.145
+
+    mesh.point_data["red"] = red
+    mesh.point_data["green"] = green
+    mesh.point_data["blue"] = blue
+    return mesh
 
 
 def shapeTrapezoid(x_size, y_size, length, flare_angle):
@@ -1236,7 +1262,7 @@ def shapeTrapezoid(x_size, y_size, length, flare_angle):
             length,
         ]
     )
-    triangle_list = np.zeros((12, 3), dtype=np.int32)
+    triangle_list = np.zeros(((12, 3)), dtype=int)
     triangle_list[0, :] = [0, 1, 3]
     triangle_list[1, :] = [2, 3, 1]
     triangle_list[2, :] = [0, 3, 4]
@@ -1249,12 +1275,28 @@ def shapeTrapezoid(x_size, y_size, length, flare_angle):
     triangle_list[9, :] = [5, 6, 1]
     triangle_list[10, :] = [4, 7, 5]
     triangle_list[11, :] = [6, 5, 7]
-    mesh = o3d.geometry.TriangleMesh()
-    mesh.vertices = o3d.utility.Vector3dVector(mesh_vertices)
-    mesh.triangles = o3d.utility.Vector3iVector(triangle_list)
-    mesh.compute_triangle_normals()
-    mesh.paint_uniform_color(np.array([0, 0.259, 0.145]))
+    mesh = meshio.Mesh(
+        points=mesh_vertices,
+        cells=[("triangle", triangle_list)],)
+    print(mesh)
+    triangle_list = np.insert(triangle_list, 0, 3, axis=1)
+    
+    pv_mesh = pv.PolyData( mesh_vertices, faces = triangle_list)
+    pv_mesh.compute_normals(inplace=True,consistent_normals=False)
 
+ 
+    mesh.point_data["nx"] = pv_mesh.point_normals[0,:]
+    mesh.point_data["ny"] = pv_mesh.point_normals[1,:]
+    mesh.point_data["nz"] = pv_mesh.point_normals[2,:]
+    mesh.point_data["normals"] = pv_mesh.point_normals
+    mesh.cell_data["nx"] = pv_mesh.cell_normals[0,:]
+    red = np.zeros((8, 1), dtype=np.float32) 
+    green = np.ones((8, 1), dtype=np.float32) * 0.259
+    blue = np.ones((8, 1), dtype=np.float32) * 0.145
+
+    mesh.point_data["red"] = red
+    mesh.point_data["green"] = green
+    mesh.point_data["blue"] = blue
     return mesh
 
 
@@ -1287,6 +1329,8 @@ def meshedReflector(majorsize, minorsize, thickness, grid_resolution, sides="all
         the populating surfaces
 
     """
+    print("meshing reflector")
+    print("args", majorsize, minorsize, thickness)
     reflector = rectReflector(majorsize, minorsize, thickness)
     mesh_points = gridedReflectorPoints(
         majorsize, minorsize, thickness, grid_resolution, sides
@@ -1950,13 +1994,14 @@ def meshedHorn(
     mesh_points : :class:`open3d.geometry.PointCloud`
         the source points for the horn aperture
     """
+    print("HIHIH")
     structure = shapeTrapezoid(
         majorsize + (edge_width * 2), minorsize + (edge_width * 2), length, flare_angle
     )
     mesh_points = gridedReflectorPoints(
         majorsize, minorsize, 1e-6, grid_resolution, sides
     )
-    mesh_points.translate(np.asarray([0, 0, 1e-6]))
+
     return structure, mesh_points
 
 
@@ -2404,9 +2449,7 @@ def gridedReflectorPoints(
             np.append(source_normals, back_normals, axis=0), side_normals, axis=0
         )
         # mesh_normals=np.append(source_normals,back_normals,axis=0)
-        mesh_points = o3d.geometry.PointCloud()
-        mesh_points.points = o3d.utility.Vector3dVector(np.copy(mesh_vertices))
-        mesh_points.normals = o3d.utility.Vector3dVector(np.copy(mesh_normals))
+
     elif sides == "front":
         x = np.linspace(
             -(majorsize / 2),
@@ -2438,9 +2481,8 @@ def gridedReflectorPoints(
         mesh_vertices = source_coords
         mesh_normals = source_normals
 
-    mesh_points = o3d.geometry.PointCloud()
-    mesh_points.points = o3d.utility.Vector3dVector(np.copy(mesh_vertices))
-    mesh_points.normals = o3d.utility.Vector3dVector(np.copy(mesh_normals))
+    mesh_points = meshio.Mesh(points=mesh_vertices, cells=[], point_data={"normals": mesh_normals})
+
     return mesh_points
 
 
@@ -2705,7 +2747,7 @@ def BullsEye(O2, n_rings, innerdia, period, ht, basethick, grid_resolution):
     # run(["openscad-nightly", "-o", "d.stl", "d.scad", "--export-format=binstl"])
     converttostl()
 
-    solid = o3d.io.read_triangle_mesh("d.stl")
+    solid = meshio.read("d.stl")
     solid.compute_vertex_normals()
     # o3d.visualization.draw_geometries([test_structure])
 

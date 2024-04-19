@@ -5,11 +5,12 @@ import copy
 import math
 
 import numpy as np
-import open3d as o3d
+import meshio
 import scipy.io as io
 from importlib_resources import files
 
 import lyceanem.geometry.geometryfunctions as GF
+import pyvista as pv
 import lyceanem.geometry.targets as tl
 import lyceanem.raycasting.rayfunctions as RF
 import lyceanem.tests.data
@@ -37,29 +38,37 @@ import lyceanem.tests.data
 def exampleUAV(frequency):
     bodystream = files(lyceanem.tests.data).joinpath("UAV.stl")
     arraystream = files(lyceanem.tests.data).joinpath("UAVarray.stl")
-    body = o3d.io.read_triangle_mesh(str(bodystream))
-    array = o3d.io.read_triangle_mesh(str(arraystream))
+    #body = o3d.io.read_triangle_mesh(str(bodystream))
+    #array = o3d.io.read_triangle_mesh(str(arraystream))
+    body = meshio.read(bodystream)
+    array = meshio.read(arraystream)
     rotation_vector1 = np.asarray([0.0, np.deg2rad(90), 0.0])
     rotation_vector2 = np.asarray([np.deg2rad(90), 0.0, 0.0])
-    body = GF.open3drotate(
-        body, o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1)
-    )
-    body = GF.open3drotate(
-        body, o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2)
-    )
-    array = GF.open3drotate(
-        array, o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1)
-    )
-    array = GF.open3drotate(
-        array, o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2)
-    )
-    body.translate(np.asarray([0.25, 0, 0]), relative=True)
-    array.translate(np.asarray([0.25, 0, 0]), relative=True)
-    array.translate(np.array([-0.18, 0, 0.0125]), relative=True)
-    body.translate(np.array([-0.18, 0, 0.0125]), relative=True)
+    body = GF.mesh_rotate(
+        body,rotation_vector1)
+    body = GF.mesh_rotate(body,rotation_vector2)
+    array = GF.mesh_rotate( array,rotation_vector1)
+    array = GF.mesh_rotate(array,rotation_vector2)
+    
+    body = GF.translate_mesh(body,np.asarray([0.25, 0, 0]))
+    array = GF.translate_mesh(array,np.asarray([0.25, 0, 0]))
+    array = GF.translate_mesh(array,np.array([-0.18, 0, 0.0125]))
+    body = GF.translate_mesh(body,np.array([-0.18, 0, 0.0125]))
+    
+    triangle_list_body = np.asarray(body.cells[0].data)
+    mesh_vertices = np.asarray(body.points)
+
+    triangle_list = np.insert(triangle_list_body, 0, 3, axis=1)
+    
+    pv_mesh = pv.PolyData( mesh_vertices, faces = triangle_list)
+    pv_mesh.compute_normals(inplace=True,consistent_normals=False)
+    body.point_data
+
+
     array.compute_vertex_normals()
     array.paint_uniform_color(np.array([0, 1.0, 1.0]))
     body.compute_vertex_normals()
+
     body.paint_uniform_color(np.array([0, 0.259, 0.145]))
 
     wavelength = 3e8 / frequency
