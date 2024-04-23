@@ -21,18 +21,60 @@ def are_meshes_equal(mesh1, mesh2, rtol=1e-5):
 
 
     # Check cells
-    if len(mesh1.cells) >0:
+    assert len(mesh1.cells) == len(mesh2.cells)
+    for i in range(len(mesh1.cells)):
+        assert np.allclose(mesh1.cells[i].data, mesh2.cells[i].data, rtol=rtol)
+    ## normals
+    if 'nx' in mesh1.point_data and 'ny' in mesh1.point_data and 'nz' in mesh1.point_data:
+        if 'nx' in mesh2.point_data and 'ny' in mesh2.point_data and 'nz' in mesh2.point_data:
+            assert np.allclose(mesh1.point_data['nx'], mesh2.point_data['nx'], rtol=rtol)
+            assert np.allclose(mesh1.point_data['ny'], mesh2.point_data['ny'], rtol=rtol)
+            assert np.allclose(mesh1.point_data['nz'], mesh2.point_data['nz'], rtol=rtol)
+        elif 'normals' in mesh2.point_data:
+            assert np.allclose(mesh1.point_data['nx'], mesh2.point_data['normals'][:,0], rtol=rtol)
+            assert np.allclose(mesh1.point_data['ny'], mesh2.point_data['normals'][:,1], rtol=rtol)
+            assert np.allclose(mesh1.point_data['nz'], mesh2.point_data['normals'][:,2], rtol=rtol)
+        else:
+            assert False
+    elif 'normals' in mesh1.point_data:
+        if 'nx' and 'ny' and 'nz' in mesh2.point_data:
+            assert np.allclose(mesh1.point_data['normals'][:,0], mesh2.point_data['nx'], rtol=rtol)
+            assert np.allclose(mesh1.point_data['normals'][:,1], mesh2.point_data['ny'], rtol=rtol)
+            assert np.allclose(mesh1.point_data['normals'][:,2], mesh2.point_data['nz'], rtol=rtol)
+        elif 'normals' in mesh2.point_data:
+            assert np.allclose(mesh1.point_data['normals'], mesh2.point_data['normals'], rtol=rtol)
+        else:
+            assert False
+    else:
+        assert True
+    ##normals cell data
+    for i in range(len(mesh1.cells)):
+        if 'nx' and 'ny' and 'nz' in mesh1.cell_data:
+            if 'nx' and 'ny' and 'nz' in mesh2.cell_data:
+                assert np.allclose(mesh1.cell_data['nx'], mesh2.cell_data['nx'], rtol=rtol)
+                assert np.allclose(mesh1.cell_data['ny'], mesh2.cell_data['ny'], rtol=rtol)
+                assert np.allclose(mesh1.cell_data['nz'], mesh2.cell_data['nz'], rtol=rtol)
+            elif 'normals' in mesh2.cell_data:
+                assert np.allclose(mesh1.cell_data['nx'], mesh2.cell_data['normals'][:,0], rtol=rtol)
+                assert np.allclose(mesh1.cell_data['ny'], mesh2.cell_data['normals'][:,1], rtol=rtol)
+                assert np.allclose(mesh1.cell_data['nz'], mesh2.cell_data['normals'][:,2], rtol=rtol)
+            else:
+                assert False
+        elif 'normals' in mesh1.cell_data:
+            if 'nx' and 'ny' and 'nz' in mesh2.cell_data:
+                assert np.allclose(mesh1.cell_data['normals'][:,0], mesh2.cell_data['nx'], rtol=rtol)
+                assert np.allclose(mesh1.cell_data['normals'][:,1], mesh2.cell_data['ny'], rtol=rtol)
+                assert np.allclose(mesh1.cell_data['normals'][:,2], mesh2.cell_data['nz'], rtol=rtol)
+            elif 'normals' in mesh2.cell_data:
+                assert np.allclose(mesh1.cell_data['normals'], mesh2.cell_data['normals'], rtol=rtol)
+            else:
+                assert False
+        else:
+            assert True
+        
 
-        assert np.allclose(mesh1.cells[0].data, mesh2.cells[0].data)
+        
 
-    for i in mesh1.point_data:
-        assert np.allclose(mesh1.point_data[i], mesh2.point_data[i])
-
-    for i in mesh1.cell_data:
-        assert np.allclose(mesh1.cell_data[i], mesh2.cell_data[i])
-
-
-    return True
 
 def test_tri_areas_2():
     refrence = np.load('data/areas.npy')

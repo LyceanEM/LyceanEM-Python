@@ -41,7 +41,7 @@ def tri_centroids(triangle_mesh):
     centroid_cloud = meshio.Mesh(points=centroids, cells=[], point_data=triangle_mesh.cell_data)
     return centroids, centroid_cloud
 
-def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((3, 1), dtype=np.float32)):
+def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float32)):
     """
     Rotate a mesh by a given rotation vector about a given center.
     """
@@ -54,6 +54,7 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((3, 1), dtype=np.float3
     rotated_points = r.apply(mesh.points - rotation_centre) + rotation_centre
     cell_data = mesh.cell_data
     point_data = mesh.point_data
+        
 
     if 'normals' in mesh.point_data:
         #rotate normals cloud
@@ -65,10 +66,39 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((3, 1), dtype=np.float3
         normals = mesh.cell_data['normals']
         rotated_normals = r.apply(normals)
         cell_data['normals'] = rotated_normals
+    if 'nx' in mesh.point_data and 'ny' in mesh.point_data and 'nz' in mesh.point_data:
+        #rotate normals cloud
+        normals = np.array([mesh.point_data['nx'], mesh.point_data['ny'], mesh.point_data['nz']]).T
+        rotated_normals = r.apply(normals)
+        point_data['nx'] = rotated_normals[:, 0]
+        point_data['ny'] = rotated_normals[:, 1]
+        point_data['nz'] = rotated_normals[:, 2]
+    if 'nx' in mesh.cell_data and 'ny' in mesh.cell_data and 'nz' in mesh.cell_data:
+        #rotate normals cloud
+        normals = np.array([mesh.cell_data['nx'], mesh.cell_data['ny'], mesh.cell_data['nz']]).T
+        rotated_normals = r.apply(normals)
+        cell_data['nx'] = rotated_normals[:, 0]
+        cell_data['ny'] = rotated_normals[:, 1]
+        cell_data['nz'] = rotated_normals[:, 2]
+    mesh_return = meshio.Mesh(points=rotated_points, cells=mesh.cells)
+    mesh_return.point_data = point_data
+    mesh_return.cell_data = cell_data
 
 
     
-    return meshio.Mesh(points=rotated_points, cells=mesh.cells, point_data=point_data, cell_data=cell_data)
+    return mesh_return 
+
+def mesh_transform(array, transform_matrix, rotate_only):
+    for i in range(array.shape[0]):
+        point_dummy = np.ones((4,))
+        if rotate_only:
+            point_dummy[3] = 0
+        point_dummy[:3] = array[i,:]            
+        point_dummy = np.matmul(transform_matrix, point_dummy)
+        array[i,:] = point_dummy[:3]
+    return array
+
+
 def mesh_conversion(conversion_object):
     """
     Convert the provide file object into triangle_t format
@@ -185,6 +215,18 @@ def elevationtotheta(el):
         theta = np.abs(el) + 90.0
 
     return theta
+
+def translate_mesh(mesh, translation_vector):
+    """
+    Translate a mesh by a given translation vector.
+    """
+    translated_points = mesh.points + translation_vector
+    cell_data = mesh.cell_data
+    point_data = mesh.point_data
+    mesh_return = meshio.Mesh(points=translated_points, cells=mesh.cells)
+    mesh_return.point_data = point_data
+    mesh_return.cell_data = cell_data
+    return mesh_return
 
 
 @vectorize(["(float32(float32))", "(float64(float64))"])

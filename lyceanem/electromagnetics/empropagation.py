@@ -7,7 +7,6 @@ import pathlib
 
 import cupy as cp
 import numpy as np
-import open3d as o3d
 import scipy.stats
 from numba import cuda, float32, float64, complex64, njit, guvectorize
 from numpy.linalg import norm
@@ -3563,49 +3562,7 @@ def EMGPUWrapper(source_num, sink_num, full_index, point_information, wavelength
     return resultant_rays
 
 
-def DisplayESources(
-    source_display_coords, E_vectors, source_type="E", arrow_length=0.1
-):
-    # create a set of arrows, coloured depending on the type of source
-    E_colour = np.array([0.08, 0, 1])
-    M_colour = np.array([1, 0.04, 0.04])
-    if source_type == "E":
-        arrow_color = E_colour
-    else:
-        arrow_color = M_colour
 
-    quiver_set = o3d.geometry.TriangleMesh.create_arrow(
-        cone_height=0.2 * arrow_length,
-        cone_radius=0.06 * arrow_length,
-        cylinder_height=0.8 * arrow_length,
-        cylinder_radius=0.04 * arrow_length,
-    )
-    rot_mat = GF.axes_from_normal(E_vectors[0, :], boresight_along="z")
-    quiver_set = GF.open3drotate(quiver_set, rot_mat)
-    quiver_set.translate(
-        source_display_coords[0, :] + E_vectors[0, :] * (-0.5 * arrow_length)
-    )
-    quiver_set.paint_uniform_color(arrow_color)
-    quiver_set.compute_vertex_normals()
-
-    for arrow_num in range(1, source_display_coords.shape[0]):
-        mesh_arrow = o3d.geometry.TriangleMesh.create_arrow(
-            cone_height=0.2 * arrow_length,
-            cone_radius=0.06 * arrow_length,
-            cylinder_height=0.8 * arrow_length,
-            cylinder_radius=0.04 * arrow_length,
-        )
-        rot_mat = GF.axes_from_normal(E_vectors[arrow_num, :], boresight_along="z")
-        mesh_arrow = GF.open3drotate(mesh_arrow, rot_mat)
-        mesh_arrow.translate(
-            source_display_coords[arrow_num]
-            + E_vectors[arrow_num, :] * (-0.5 * arrow_length)
-        )
-        mesh_arrow.paint_uniform_color(arrow_color)
-        mesh_arrow.compute_vertex_normals()
-        quiver_set = quiver_set + mesh_arrow
-
-    return quiver_set
 
 
 # @njit(cache=True, nogil=True)
@@ -3802,27 +3759,7 @@ def face_centric_E_vectors(sink_normals, major_axis, scatter_map):
     return new_scatter_map
 
 
-def definePatch(wavelength, width, length, substrate_dielectric=1, mode="Single"):
-    # define a patch antenna
-    # try sources, mapped a tenth of a wavelength along, and given appropriate weights
-    # x_mesh=np.linspace(-length/2,length/2,np.int(np.ceil(length/(wavelength*0.1))+1))
-    if mode == "Single":
-        sources = np.zeros((1, 3), dtype=np.float32)
-        patch_normals = np.zeros((1, 3), dtype=np.float32)
-        patch_normals[:, 2] = 1
-        patch_sources = o3d.geometry.PointCloud()
-        patch_sources.points = o3d.utility.Vector3dVector(sources)
-        patch_sources.normals = o3d.utility.Vector3dVector(patch_normals)
 
-    patch_structure = o3d.geometry.TriangleMesh.create_box(length, width, 1e-4)
-    translate_dist = np.array([-length / 2.0, -width / 2.0, -(1e-4)])
-    # fine_mesh=reflector1.subdivide_midpoint(3)
-    patch_structure.compute_vertex_normals()
-    patch_structure.paint_uniform_color([184 / 256, 115 / 256, 51 / 256])
-    patch_structure.translate(translate_dist, relative=True)
-    patch_weights = np.ones((sources.shape[0]), dtype=np.complex64)
-
-    return patch_sources, patch_weights, patch_structure
 
 
 def importDat(fileaddress):

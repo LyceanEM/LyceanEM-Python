@@ -1,7 +1,7 @@
 import copy
 
 import numpy as np
-import open3d as o3d
+import meshio
 from scipy import interpolate as sp
 from scipy.spatial.transform import Rotation as R
 import pyvista as pv
@@ -104,36 +104,35 @@ class points(object3d):
         self.points.append(new_points)
         # self.materials.append(new_materials)
 
-    def create_points(self, points, normals):
-        """
-        create points within the class based upon the provided numpy arrays of floats in local coordinates
+        def create_points(self, points, normals):
+            """
+            create points within the class based upon the provided numpy arrays of floats in local coordinates
 
-        Parameters
-        ----------
-        points : numpy 2d array
-            the coordinates of all the poitns
-        normals : numpy 2d array
-            the normal vectors of each point
+            Parameters
+            points : numpy 2d array
+                the coordinates of all the poitns
+            normals : numpy 2d array
+                the normal vectors of each point
 
-        Returns
-        -------
-        None
-        """
-        new_point_cloud = o3d.geometry.PointCloud()
-        new_point_cloud.points = o3d.utility.Vector3dVector(points.reshape(-1, 3))
-        new_point_cloud.normals = o3d.utility.Vector3dVector(normals.reshape(-1, 3))
-        self.add_points(new_point_cloud)
+            Returns
+            None
+            """
+            mesh_vertices = points.reshape(-1, 3)
+            mesh_normals = normals.reshape(-1, 3)
+            new_point_cloud = meshio.Mesh(points=mesh_vertices, cells=[], point_data={"normals": mesh_normals})
+
+            self.add_points(new_point_cloud)
 
     def rotate_points(
-        self, rotation_matrix, rotation_centre=np.zeros((3, 1), dtype=np.float32)
+        self, rotation_vector, rotation_centre=np.zeros((3, 1), dtype=np.float32)
     ):
         """
         rotates the components of the structure around a common point, default is the origin
 
         Parameters
         ----------
-        rotation_matrix : open3d rotation matrix
-            o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector)
+        rotation_matrix : open3d rotation vector
+            3,1numpy array
         rotation_centre : 1*3 numpy float array
             centre of rotation for the structures
 
@@ -143,9 +142,10 @@ class points(object3d):
         """
         # warning, current commond just rotates around the origin, and until Open3D can be brought up to the
         # latest version without breaking BlueCrystal reqruiements, this will require additional code.
+        assert rotation_vector.shape == (3,)
         for item in range(len(self.points)):
-            self.point[item] = GF.open3drotate(
-                self.point[item], rotation_matrix, rotation_centre
+            self.point[item] = GF.mesh_rotate(
+                self.point[item], rotation_vector, rotation_centre
             )
 
     def translate_points(self, vector):
@@ -162,7 +162,7 @@ class points(object3d):
         None
         """
         for item in range(len(self.points)):
-            self.points[item].translate(vector)
+            self.points[item] = GF.translate_mesh(self.points[item], vector)
 
     def export_points(self, point_index=None):
         """
@@ -173,20 +173,46 @@ class points(object3d):
         combined points
         """
         if point_index == None:
-            combined_points = o3d.geometry.PointCloud()
+            
             for item in range(len(self.points)):
-                combined_points = combined_points + self.points[item]
+                if item == 0:
+                    points = np.array(self.points[item].points)
+                points = np.append(points, self.points[item].points, axis=0)
+            point_data = np.array(len(self.points[0].point_data), points.shape[0])
+            for data in self.points[0].point_data:
+                pointssofar = 0
+                for item in range(1,len(self.points)):
+                    point_data_element = np.array(self.points[item][data])
+                    point_data[pointssofar:point_data_element.shape[0]] = point_data_element
+                    pointssofar+= point_data_element.shape[0]
+            points = GF.mesh_transform(points, self.pose, False)
 
-            combined_points.transform(self.pose)
+                
+            combinded_points = meshio.Mesh(points, point_data=point_data)  
+                    
+
+
 
         else:
-            combined_points = o3d.geometry.PointCloud()
             for item in point_index:
-                combined_points = combined_points + self.points[item]
+                if item == 0:
+                    points = np.array(self.points[item].points)
+                points = np.append(points, self.points[item].points, axis=0)
+            point_data = np.array(len(self.points[0].point_data), points.shape[0])
+            for data in self.points[0].point_data:
+                pointssofar = 0
+                for item in point_index:
+                    point_data_element = np.array(self.points[item][data])
+                    point_data[pointssofar:point_data_element.shape[0]] = point_data_element
+                    pointssofar+= point_data_element.shape[0]
+            
+            points = GF.mesh_transform(points, self.pose, False)
 
-            combined_points.transform(self.pose)
+            combinded_points = meshio.Mesh(points, point_data=point_data)
 
-        return combined_points
+
+        
+        return combinded_points
 
 
 class structures(object3d):
@@ -257,8 +283,8 @@ class structures(object3d):
 
         Parameters
         ----------
-        rotation_matrix : open3d rotation matrix
-            o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector)
+        rotation_matrix : numpy array of appropriate shape (4,4)
+        
         rotation_centre : 1*3 numpy float array
             centre of rotation for the structures
 
@@ -268,7 +294,7 @@ class structures(object3d):
         """
 
         for item in range(len(self.solids)):
-            self.solids[item] = GF.open3drotate(
+            self.solids[item] = GF.mesh_rotate(
                 self.solids[item], rotation_matrix, rotation_centre
             )
 
@@ -286,64 +312,8 @@ class structures(object3d):
         None
         """
         for item in range(len(self.solids)):
-            self.solids[item].translate(vector, relative=True)
+            self.solids[item] = GF.translate_mesh(self.solids[item],vector, relative=True)
 
-    def export_vertices(self, structure_index=None):
-        """
-        Exports the vertices for either all or the indexed point clouds, transformed to the global coordinate frame.
-
-        Parameters
-        ----------
-        structure_index : list
-            list of structures of interest for vertices export
-
-        Returns
-        -------
-        point_cloud :
-        """
-        point_cloud = o3d.geometry.PointCloud()
-        if structure_index == None:
-            # if no structure index is provided, then generate an index including all items in the class
-            structure_index = []
-            for item in range(len(self.solids)):
-                structure_index.append(item)
-
-        for item in structure_index:
-            if self.solids[item] == None:
-                # do nothing
-                temp_cloud = o3d.geometry.PointCloud()
-            else:
-                temp_cloud = o3d.geometry.PointCloud()
-                temp_cloud.points = self.solids[item].vertices
-                if self.solids[item].has_vertex_normals():
-                    temp_cloud.normals = self.solids[item].vertex_normals
-                else:
-                    self.solids[item].compute_vertex_normals()
-                    temp_cloud.normals = self.solids[item].vertex_normals
-
-                point_cloud = point_cloud + temp_cloud
-
-        point_cloud.transform(self.pose)
-        return point_cloud
-
-    def import_cad(self, posixpath, scale=1.0, center=np.zeros((3, 1))):
-        """
-        Import trianglemesh from cad format, with scalling factor is requried. Open3d supports .ply, .stl, .obj, .off, and .gltf/.glb files
-        Parameters
-        ----------
-        posixpath
-            file address to cad file to import
-        scale
-            scalling factor to account for units which are not SI.
-
-        Returns
-        -------
-
-        """
-        new_solid = o3d.io.read_triangle_mesh(posixpath.as_posix())
-        new_solid.compute_triangle_normals()
-        new_solid.scale(scale, center=center)
-        self.add_structure(new_solid)
 
     def triangles_base_raycaster(self):
         """
@@ -362,10 +332,13 @@ class structures(object3d):
         triangles = np.empty((0), dtype=base_types.triangle_t)
         for item in range(len(self.solids)):
             temp_object = copy.deepcopy(self.solids[item])
-            temp_object.transform(self.pose)
+            points = temp_object.points
+            points = GF.mesh_transform(points, self.pose, False)
+
             triangles = np.append(triangles, RF.convertTriangles(temp_object))
 
         return triangles
+
 
 
 class antenna_structures(object3d):
@@ -385,9 +358,9 @@ class antenna_structures(object3d):
         super().__init__()
         self.structures = structures
         self.points = points
-        self.antenna_xyz = o3d.geometry.TriangleMesh.create_coordinate_frame(
-            size=1, origin=self.pose[:3, 3]
-        )
+        #self.antenna_xyz = o3d.geometry.TriangleMesh.create_coordinate_frame(
+           # size=1, origin=self.pose[:3, 3]
+       # )
 
     def rotate_antenna(
         self, rotation_matrix, rotation_centre=np.zeros((3, 1), dtype=np.float32)
@@ -397,18 +370,18 @@ class antenna_structures(object3d):
 
         Parameters
         ----------
-        rotation_matrix : open3d rotation matrix
-            o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector)
-        rotation_centre : 1*3 numpy float array
+        rotation_matrix : 4,4 numpy array is rotation matrix
+            
+        rotation_centre : 3,1 numpy float array
             centre of rotation for the structures
 
         Returns
         --------
         None
         """
-        self.antenna_xyz = GF.open3drotate(
-            self.antenna_xyz, rotation_matrix, rotation_centre
-        )
+        #self.antenna_xyz = GF.open3drotate(
+           # self.antenna_xyz, rotation_matrix, rotation_centre
+        #)
         # translate to the rotation centre, then rotate around origin
         temp_origin = self.pose[:3, 3].ravel() - rotation_centre.ravel()
         temp_origin = np.matmul(rotation_matrix, temp_origin)
@@ -560,44 +533,10 @@ class antenna_structures(object3d):
 
     def visualise_antenna(self, extras=[], origin=True):
         """
-        This function uses open3d to display the antenna structure in the local coordinate frame
+        figure out in pyvista todo
         """
-        total_points = self.export_all_points()
-        # calculate bounding box
-        # if np.asarray(total_points.points).shape[0]<4:
-        #     max_dist=2.0
-        #     min_dist=0.0
-        # else:
-        #     bounding_box = total_points.get_oriented_bounding_box()
-        #     max_points = bounding_box.get_max_bound()
-        #     min_points = bounding_box.get_min_bound()
-        #     center = bounding_box.get_center()
-        #     max_dist = np.sqrt(
-        #         (max_points[0] - center[0]) ** 2
-        #         + (max_points[1] - center[1]) ** 2
-        #         + (max_points[2] - center[2]) ** 2
-        #     )
-        #     min_dist = np.sqrt(
-        #         (center[0] - min_points[0]) ** 2
-        #         + (center[1] - min_points[1]) ** 2
-        #         + (center[2] - min_points[2]) ** 2
-        #     )
-        # a = np.mean([max_dist, min_dist])
-        # scale antenna xyz to the structures
-        self.antenna_xyz = o3d.geometry.TriangleMesh.create_coordinate_frame(
-            size=0.1, origin=[0, 0, 0]
-        )
-        if origin:
-            o3d.visualization.draw(
-                [self.export_all_points()]
-                + self.export_all_structures()
-                + [self.antenna_xyz]
-                + extras
-            )
-        else:
-            o3d.visualization.draw(
-                [self.export_all_points()] + self.export_all_structures() + extras
-            )
+
+
 
     # def generate_farfield(self,excitation_vector,wavelength,elements=False,azimuth_resolution=37,elevation_resolution=37):
     #
@@ -1098,41 +1037,6 @@ class antenna_pattern(object3d):
         vista_pattern['Magnitude']=np.abs(vista_pattern['Real']+1j*vista_pattern['Imag'])
         vista_pattern['Phase']=np.angle(vista_pattern['Real']+1j*vista_pattern['Imag'])
         return vista_pattern
-    def export_global_weights(self):
-        """
-        Calculates the global frame coordinates and xyz weightings of the antenna pattern using the pattern pose to translate and rotate into the correction position and orientation within the model environment. If this function is used as a source for models, then the antenna pattern pose must be updated for the desired position and orientation before export.
-
-        Returns
-        -------
-        points :
-
-        weights :
-
-        """
-        xyz = self.cartesian_points()
-        points = o3d.geometry.PointCloud()
-        points.points = o3d.utility.Vector3dVector(xyz)
-        points.normals = o3d.utility.Vector3dVector(xyz)
-        points.transform(self.pose)
-
-        if self.arbitary_pattern_format == "Etheta/Ephi":
-            self.transmute_pattern(desired_format="ExEyEz")
-
-        # import to export the weights in cartesian format, then orientate correctly within global reference frame.
-        rotation_matrix = self.pose[:3, :3]
-
-        # weightsx= self.pattern[:,:,0].ravel()
-        # weightsy = self.pattern[:, :, 1].ravel()
-        # weightsz = self.pattern[:, :, 2].ravel()
-        weights = np.array(
-            [
-                self.pattern[:, :, 0].reshape(-1),
-                self.pattern[:, :, 1].reshape(-1),
-                self.pattern[:, :, 2].reshape(-1),
-            ]
-        )
-        weights = np.matmul(weights, rotation_matrix)
-        return points, weights
     def pattern_mesh(self):
         points = self.cartesian_points()
         mesh = pv.StructuredGrid(points[:, 0], points[:, 1], points[:, 2])
