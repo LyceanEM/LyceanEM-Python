@@ -78,8 +78,6 @@ receive_horn_structure = GF.translate_mesh(receive_horn_structure,np.asarray([0,
 receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector1)
 receiving_antenna_surface_coords = GF.translate_mesh(receiving_antenna_surface_coords,np.asarray([0, 1.427, 0]))
 
-receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector2)
-receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector2)
 
 
 # %%
@@ -188,6 +186,7 @@ for angle_inc in tqdm(range(len(angle_values))):
     rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_increment]))
     scatter_points = GF.mesh_rotate(scatter_points,rotation_vector)
     reflectorplate = GF.mesh_rotate(reflectorplate,rotation_vector)
+    blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_structure])
     Ex, Ey, Ez = FD.calculate_scattering(
         aperture_coords=transmitting_antenna_surface_coords,
         sink_coords=receiving_antenna_surface_coords,
