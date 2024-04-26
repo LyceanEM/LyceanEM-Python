@@ -179,16 +179,16 @@ class points(object3d):
                     points = np.array(self.points[item].points)
                 points = np.append(points, self.points[item].points, axis=0)
             point_data = np.array(len(self.points[0].point_data), points.shape[0])
-            for data in self.points[0].point_data:
+            for key in self.points[0].point_data.keys():
+                point_data[key] = np.array(points.shape[0])
                 pointssofar = 0
-                for item in range(1,len(self.points)):
-                    point_data_element = np.array(self.points[item][data])
-                    point_data[pointssofar:point_data_element.shape[0]] = point_data_element
+                for item in range(len(self.points)):
+                    point_data_element = np.array(self.point_data[item][key])
+                    point_data[key][pointssofar:(pointssofar+point_data_element.shape[0])] = point_data_element
                     pointssofar+= point_data_element.shape[0]
-            points = GF.mesh_transform(points, self.pose, False)
-
-                
-            combinded_points = meshio.Mesh(points, point_data=point_data)  
+            combinded_points = meshio.Mesh(points, point_data=point_data)
+            combinded_points = GF.mesh_transform(combinded_points, self.pose, False)
+            return combinded_points
                     
 
 
@@ -198,21 +198,21 @@ class points(object3d):
                 if item == 0:
                     points = np.array(self.points[item].points)
                 points = np.append(points, self.points[item].points, axis=0)
-            point_data = np.array(len(self.points[0].point_data), points.shape[0])
-            for data in self.points[0].point_data:
+            point_data = {}
+            for key in self.points[0].point_data.keys():
+                point_data[key] = np.array(points.shape[0])
                 pointssofar = 0
                 for item in point_index:
-                    point_data_element = np.array(self.points[item][data])
-                    point_data[pointssofar:point_data_element.shape[0]] = point_data_element
+                    point_data_element = np.array(self.point_data[item][key])
+                    point_data[key][pointssofar:(pointssofar+point_data_element.shape[0])] = point_data_element
                     pointssofar+= point_data_element.shape[0]
-            
-            points = GF.mesh_transform(points, self.pose, False)
+                
 
             combinded_points = meshio.Mesh(points, point_data=point_data)
-
+            combinded_points = GF.mesh_transform(combinded_points, self.pose, False)
 
         
-        return combinded_points
+            return combinded_points
 
 
 class structures(object3d):
@@ -332,8 +332,7 @@ class structures(object3d):
         triangles = np.empty((0), dtype=base_types.triangle_t)
         for item in range(len(self.solids)):
             temp_object = copy.deepcopy(self.solids[item])
-            points = temp_object.points
-            points = GF.mesh_transform(points, self.pose, False)
+            temp_object = GF.mesh_transform(temp_object, self.pose, False)
 
             triangles = np.append(triangles, RF.convertTriangles(temp_object))
 
@@ -362,69 +361,13 @@ class antenna_structures(object3d):
            # size=1, origin=self.pose[:3, 3]
        # )
 
-    def rotate_antenna(
-        self, rotation_matrix, rotation_centre=np.zeros((3, 1), dtype=np.float32)
-    ):
-        """
-        rotates the components of the structure around a common point, default is the origin within the local coordinate system
 
-        Parameters
-        ----------
-        rotation_matrix : 4,4 numpy array is rotation matrix
-            
-        rotation_centre : 3,1 numpy float array
-            centre of rotation for the structures
-
-        Returns
-        --------
-        None
-        """
-        #self.antenna_xyz = GF.open3drotate(
-           # self.antenna_xyz, rotation_matrix, rotation_centre
-        #)
-        # translate to the rotation centre, then rotate around origin
-        temp_origin = self.pose[:3, 3].ravel() - rotation_centre.ravel()
-        temp_origin = np.matmul(rotation_matrix, temp_origin)
-        self.pose[:3, 3] = temp_origin.ravel() + rotation_centre.ravel()
-        self.pose[:3, :3] = np.matmul(rotation_matrix, self.pose[:3, :3])
-        # for item in range(len(self.structures.solids)):
-        #    if (self.structures.solids[item] is not None):
-        #        self.structures.solids[item] = GF.open3drotate(
-        #            self.structures.solids[item], rotation_matrix, rotation_centre
-        #        )
-        # for item in range(len(self.points.points)):
-        #    if (self.points.points[item] is not None):
-        #        self.points.points[item] = GF.open3drotate(
-        #            self.points.points[item], rotation_matrix, rotation_centre
-        #        )
-
-    def translate_antenna(self, vector):
-        """
-        translates the structures and points in the class by the given cartesian vector (x,y,z) within the local coordinate system
-
-        Parameters
-        -----------
-        vector : 1*3 numpy array of floats
-            The desired translation vector for the antenna
-
-        Returns
-        --------
-        None
-        """
-
-        self.pose[:3, 3] = self.pose[:3, 3].ravel() + vector.ravel()
-        # for item in range(len(self.structures.solids)):
-        #    self.structures.solids[item].translate(vector)
-        # for item in range(len(self.points.points)):
-        #    self.points.points[item].translate(vector)
 
     def export_all_points(self, point_index=None):
         if point_index == None:
             point_cloud = self.points.export_points()
-            point_cloud.transform(self.pose)  ##+ self.structures.export_vertices()
         else:
             point_cloud = self.points.export_points(point_index=point_index)
-            point_cloud.transform(self.pose)
 
         return point_cloud
 
@@ -454,32 +397,14 @@ class antenna_structures(object3d):
 
         return aperture_weights * transmit_amplitude
 
-    def receive_transform(
-        self, aperture_polarisation, excitation_function, beamforming_weights
-    ):
-        # combine local aperture polarisation, received excitation function, and beamforming weights to calculate the received signal
-        # convert global polarisation functions to local ones
-        transform_R = R.from_matrix(self.pose[:3, :3])
-        transform_global_to_local = transform_R.inv()
-        local_signal = np.matmul(
-            excitation_function, transform_global_to_local.as_matrix()
-        )
-        local_received_signal = np.zeros((excitation_function.shape[1], 3))
-        received_signal = np.zeros((excitation_function.shape[1], 3))
-        local_received_signal[:, 0] = np.dot(beamforming_weights, local_signal[:, :, 0])
-        local_received_signal[:, 1] = np.dot(beamforming_weights, local_signal[:, :, 1])
-        local_received_signal[:, 2] = np.dot(beamforming_weights, local_signal[:, :, 2])
-        received_signal = np.dot(local_received_signal, aperture_polarisation.ravel())
-
-        return received_signal
-
+    
     def export_all_structures(self):
         objects = copy.deepcopy(self.structures.solids)
         for item in range(len(objects)):
             if objects[item] is None:
                 print("Structure does not exist")
             else:
-                objects[item] = objects[item].transform(self.pose)
+                objects[item] = GF.mesh_transform(objects[item], self.pose, False)
 
         return objects
 
@@ -531,50 +456,6 @@ class antenna_structures(object3d):
         directivity = (4 * np.pi * projected_area) / (wavelength**2)
         return directivity
 
-    def visualise_antenna(self, extras=[], origin=True):
-        """
-        figure out in pyvista todo
-        """
-
-
-
-    # def generate_farfield(self,excitation_vector,wavelength,elements=False,azimuth_resolution=37,elevation_resolution=37):
-    #
-    #
-    #       if elements==False:
-    #           resultant_pattern=antenna_pattern(azimuth_resolution=azimuth_resolution,elevation_resolution=elevation_resolution)
-    #           resultant_pattern.pattern[:,:,0], resultant_pattern.pattern[:,:,1] =farfield_generator(self.points.export_points(),
-    #                                                self.structures,
-    #                                                excitation_vector,
-    #                                                az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
-    #                                                el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
-    #                                                wavelength=wavelength,
-    #                                                farfield_distance=20,
-    #                                                project_vectors=True,
-    #                                                antenna_axes=self.antenna_axes,elements=elements)
-    #       else:
-    #           #generate antenna array pattern
-    #           array_points=self.points.export_points()
-    #           num_elements=np.asarray(np.asarray(array_points.points).shape[0])
-    #           resultant_pattern = array_pattern(elements=num_elements,azimuth_resolution=azimuth_resolution,elevation_resolution=elevation_resolution)
-    #           resultant_pattern.pattern[:,:, :, 0], resultant_pattern.pattern[:,:, :, 1] = farfield_generator(
-    #               self.points.export_points(),
-    #               self.structures,
-    #               excitation_vector,
-    #               az_range=np.linspace(-180, 180, resultant_pattern.azimuth_resolution),
-    #               el_range=np.linspace(-90, 90, resultant_pattern.elevation_resolution),
-    #               wavelength=wavelength,
-    #               farfield_distance=20,
-    #               project_vectors=True,
-    #               antenna_axes=self.antenna_axes, elements=elements)
-    #
-    #       return resultant_pattern
-    #
-    # def frequency_domain_channel(self,sink_coords,excitation_function,wavelength=1.0,scatter_points=None,scattering=1,elements=True,):
-    #
-    #      Ex,Ey,Ez=frequency_domain_channel(self.points.export_points(),
-    #                                    sink_coords,self.structures,excitation_function,scatter_points,wavelength,scattering,elements,project_vectors=True,antenna_axes=self.antenna_axes)
-    #      return Ex,Ey,Ez
 
 
 class antenna_pattern(object3d):
@@ -605,6 +486,8 @@ class antenna_pattern(object3d):
         if file_location != None:
             self.pattern_frequency = pattern_frequency
             self.arbitary_pattern_format = arbitary_pattern_format
+            antenna_pattern_import_implemented = False
+            assert antenna_pattern_import_implemented
             self.import_pattern(file_location)
             self.field_radius = 1.0
         else:
@@ -660,319 +543,11 @@ class antenna_pattern(object3d):
             elev_index = np.where(elev_angles > 0)
             self.pattern[elev_index, :, 0] = 1.0
 
-    def import_pattern(self, file_location):
-        """
-        takes the file location and imports the individual pattern file, replacing exsisting values with those of the saved file.
 
-        It is import to note that for CST ASCII export format, that you select a plot range of -180 to 180 for phi, and that by defauly CST exports from 0 to 180 in theta, which
-        is the opposite direction to the default for LyceanEM, so this data structures are flipped for consistency.
 
-        Parameters
-        -----------
-        file location : :class:`pathlib.Path`
-            file location
 
-        Returns
-        ---------
-        None
-        """
-        if file_location.suffix == ".txt":
-            # file is a CST ffs format
-            datafile = np.loadtxt(file_location, skiprows=2)
-            theta = datafile[:, 0]
-            phi = datafile[:, 1]
-            freq_index1 = file_location.name.find("f=")
-            freq_index2 = file_location.name.find(")")
-            file_frequency = (
-                float(file_location.name[freq_index1 + 2 : freq_index2]) * 1e9
-            )
-            phi_steps = np.linspace(np.min(phi), np.max(phi), np.unique(phi).size)
-            theta_steps = np.linspace(
-                np.min(theta), np.max(theta), np.unique(theta).size
-            )
-            phi_res = np.unique(phi).size
-            theta_res = np.unique(theta).size
-            etheta = (
-                (datafile[:, 3] * np.exp(1j * np.deg2rad(datafile[:, 4])))
-                .reshape(phi_res, theta_res)
-                .transpose()
-            )
-            ephi = (
-                (datafile[:, 5] * np.exp(1j * np.deg2rad(datafile[:, 6])))
-                .reshape(phi_res, theta_res)
-                .transpose()
-            )
-            self.azimuth_resolution = phi_res
-            self.elevation_resolution = theta_res
-            self.elev_mesh = np.flipud(
-                GF.thetatoelevation(theta).reshape(phi_res, theta_res).transpose()
-            )
-            self.az_mesh = np.flipud(phi.reshape(phi_res, theta_res).transpose())
-            self.pattern = np.zeros(
-                (self.elevation_resolution, self.azimuth_resolution, 2),
-                dtype=np.complex64,
-            )
-            self.pattern[:, :, 0] = np.flipud(etheta)
-            self.pattern[:, :, 1] = np.flipud(ephi)
-            self.pattern_frequency = file_frequency
-        elif file_location.suffix == ".dat":
-            # file is .dat format from anechoic chamber measurements
-            Ea, Eb, freq, norm, theta_values, phi_values = EM.importDat(file_location)
-            az_mesh, elev_mesh = np.meshgrid(
-                phi_values, GF.thetatoelevation(theta_values)
-            )
-            self.azimuth_resolution = np.unique(phi_values).size
-            self.elevation_resolution = np.unique(theta_values).size
-            self.az_mesh = az_mesh
-            self.elev_mesh = elev_mesh
-            self.pattern = np.zeros(
-                (self.elevation_resolution, self.azimuth_resolution, 2),
-                dtype=np.complex64,
-            )
-            self.pattern_frequency = freq * 1e6
-            self.pattern[:, :, 0] = Ea.transpose() + norm
-            self.pattern[:, :, 1] = Eb.transpose() + norm
-        elif file_location.suffix == ".ffe":
-            # file is .ffe format
-            self.import_ffe(file_location)
 
-    def import_ffe(self, file_path):
-        """
-        tested for .ffe files with theta in the range 0 to 180 degrees, and phi in the range -180 to 180 degrees
-        Parameters
-        ----------
-        file_path
 
-        Returns
-        -------
-
-        """
-        import copy
-
-        # Open the file and read the comments
-        with open(file_path, "r") as f:
-            comments = f.readlines()
-
-            # Extract lines starting with #
-        comment_lines = [line.strip() for line in comments if line.startswith("#")]
-
-        # Process the comment lines for keywords
-        for line in comment_lines:
-            if "source" in line.lower():
-                antenna_name = line.split(":")[1].strip()
-            elif "result type" in line.lower():
-                pattern_type = line.split(":")[1].strip()
-            elif "frequency" in line.lower():
-                frequency = float(line.split(":")[1])
-            elif "coordinate system" in line.lower():
-                coordinate_sys = line.split(":")[1].strip()
-            elif "efficiency" in line.lower():
-                antenna_efficiency = float(line.split(":")[1])
-
-        # Print the metadata and the first 10 x, y, and ffp values
-        print("Antenna name:", antenna_name)
-        print("Antenna type:", pattern_type)
-        # print('X:', x[:10])
-        # print('Y:', y[:10])
-        # print('FFP:', ffp[:10])
-        if coordinate_sys == "Spherical":
-            datafile = np.loadtxt(file_path, comments=["#", "*"])
-            el = 90 - datafile[:, 0]
-            az = datafile[:, 1]
-            # x,y,z=MF.polar2cart(theta, phi, np.ones(theta.shape))
-            # azimuth,elevation,r=MF.cart2sph(x,y,z)
-            elev_res = np.unique(el).size
-            az_res = np.unique(az).size
-            if pattern_type == "Directivity":
-                etheta_field = np.flipud(
-                    (datafile[:, 2] + 1j * datafile[:, 3])
-                    .reshape(az_res, elev_res)
-                    .transpose()
-                )
-                ephi_field = np.flipud(
-                    (datafile[:, 4] + 1j * datafile[:, 5])
-                    .reshape(az_res, elev_res)
-                    .transpose()
-                )
-
-            # elevation=np.flipud(GF.thetatoelevation(theta).reshape(phi_res, theta_res).transpose())
-            # azimuth=phi.reshape(phi_res, theta_res).transpose()
-            # etheta=etheta_field
-            # ephi=np.flipud(ephi_field)
-        self.pattern_frequency = frequency
-        self.azimuth_resolution = az_res
-        self.elevation_resolution = elev_res
-        self.az_mesh = np.flipud(az.reshape(az_res, elev_res).transpose())
-        self.elev_mesh_mesh = np.flipud(el.reshape(az_res, elev_res).transpose())
-        self.pattern[:, :, 0] = copy.deepcopy(etheta_field)
-        self.pattern[:, :, 1] = copy.deepcopy(ephi_field)
-        self.display_pattern(desired_pattern="Power")
-
-        return True
-
-    def export_ffe(self, path, source_name="Antenna Export"):
-        """
-        Export Antenna Pattern as .ffe file for import by FEKO, and programs supporting this format.
-        This export assumes that the pattern frequency property has been populated, and translates the azimuth and elevation coordinates into theta/phi coordinates in the range 0-180 and 0-360 respectively.
-
-        Parameters
-        ----------
-        path
-        source_name
-
-        Returns
-        -------
-
-        """
-        if self.arbitary_pattern_format == "ExEyEz":
-            self.transmute_pattern()
-
-        import lyceanem
-
-        destination_path = path.with_suffix(".ffe")
-        filetype = "Far Field"
-        fileformat = "8"
-        import datetime
-
-        # Get the current date and time
-        now = datetime.datetime.now()
-        # Format the date and time as a string
-        date_string = now.strftime("%Y-%m-%d %H:%M:%S")
-        header = (
-            "##File Type: "
-            + filetype
-            + "\n"
-            + "##File Format: "
-            + fileformat
-            + "\n"
-            + "##Source: "
-            + source_name
-            + "\n"
-            + "##Date: "
-            + date_string
-            + "\n"
-            + "** File exported by LyceanEM Version "
-            + lyceanem.__version__
-            + "\n"
-            + "\n"
-        )
-        config = "LyceanEM Standard"
-        coordinates = "Spherical"
-        resulttype = "Directivity"
-        efficiency = 1.0
-        comments = (
-            "#Configuration Name: "
-            + config
-            + "\n"
-            + "#Frequency: "
-            + str(self.pattern_frequency)
-            + "\n"
-            + "#Coordinate System: "
-            + coordinates
-            + "\n"
-            + "#No. of Theta Samples: "
-            + str(self.elevation_resolution)
-            + "\n"
-            + "#No. of Phi Samples: "
-            + str(self.azimuth_resolution)
-            + "\n"
-            + "#Result Type: "
-            + resulttype
-            + "\n"
-            + "#Efficiency: "
-            + str(efficiency)
-            + "\n"
-            + "#No. of Header Lines: 1"
-            + "\n"
-            + '#       "Theta"             "Phi"           "Re(Etheta)"       "Im(Etheta)"        "Re(Ephi)"         "Im(Ephi)"   "Directivity(Theta)" "Directivity(Phi)" "Directivity(Total)"'
-        )
-        theta_slice = 90 - np.flipud(self.elev_mesh[:, 1:]).transpose().ravel()
-        phi_slice = np.mod(np.flipud(self.az_mesh[:, 1:]).transpose().ravel(), 360)
-        real_etheta = np.real(np.flipud(self.pattern[:, 1:, 0]).transpose().ravel())
-        imag_etheta = np.imag(np.flipud(self.pattern[:, 1:, 0]).transpose().ravel())
-        real_ephi = np.real(np.flipud(self.pattern[:, 1:, 1]).transpose().ravel())
-        imag_ephi = np.imag(np.flipud(self.pattern[:, 1:, 1]).transpose().ravel())
-        dtheta, dphi, dtotal, _ = self.directivity()
-        datablock = np.array(
-            [
-                theta_slice,
-                phi_slice,
-                real_etheta,
-                imag_etheta,
-                real_ephi,
-                imag_ephi,
-                dtheta[:, 1:].transpose().ravel(),
-                dphi[:, 1:].transpose().ravel(),
-                dtotal[:, 1:].transpose().ravel(),
-            ]
-        ).transpose()
-        datablock[np.where(np.isinf(datablock))] = -1e6
-        # sort for increasing angles only
-        sorted_datablock = datablock[np.lexsort((datablock[:, 0], datablock[:, 1])), :]
-        text = header + "\n" + comments
-        np.savetxt(
-            destination_path, sorted_datablock, header=text, comments="", fmt="%10.8e"
-        )
-
-        return True
-
-    def export_pattern(self, file_location):
-        """
-        takes the file location and exports the pattern as a .dat file
-        unfinished, must be in Etheta/Ephi format,
-
-        Parameters
-        -----------
-        file_location : :class:`pathlib.Path`
-            the path for the output file, including name
-
-        Returns
-        --------
-        None
-        """
-        if self.arbitary_pattern_format == "ExEyEz":
-            self.transmute_pattern()
-
-        theta_flat = GF.elevationtotheta(self.elev_mesh).transpose().reshape(-1, 1)
-        phi_mesh = self.az_mesh.transpose().reshape(-1, 1)
-        planes = self.azimuth_resolution
-        copolardb = 20 * np.log10(
-            np.abs(self.pattern[:, :, 0].transpose().reshape(-1, 1))
-        )
-        copolarangle = np.degrees(
-            np.angle(self.pattern[:, :, 0].transpose().reshape(-1, 1))
-        )
-        crosspolardb = 20 * np.log10(
-            np.abs(self.pattern[:, :, 1].transpose().reshape(-1, 1))
-        )
-        crosspolarangle = np.degrees(
-            np.angle(self.pattern[:, :, 1].transpose().reshape(-1, 1))
-        )
-        norm = np.nanmax(np.array([np.nanmax(copolardb), np.nanmax(crosspolardb)]))
-        copolardb -= norm
-        crosspolardb -= norm
-        infoarray = np.array(
-            [
-                planes,
-                np.min(self.az_mesh),
-                np.max(self.az_mesh),
-                norm,
-                self.pattern_frequency / 1e6,
-            ]
-        ).reshape(1, -1)
-
-        dataarray = np.concatenate(
-            (
-                theta_flat.reshape(-1, 1),
-                copolardb.reshape(-1, 1),
-                copolarangle.reshape(-1, 1),
-                crosspolardb.reshape(-1, 1),
-                crosspolarangle.reshape(-1, 1),
-            ),
-            axis=1,
-        )
-        outputarray = np.concatenate((infoarray, dataarray), axis=0)
-        np.savetxt(file_location, outputarray, delimiter=",", fmt="%.2e")
     def export_pyvista_object(self):
         """
         Return Antenna Pattern as a PyVista Structured Mesh Data Object

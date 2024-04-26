@@ -66,20 +66,7 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
         normals = mesh.cell_data['normals']
         rotated_normals = r.apply(normals)
         cell_data['normals'] = rotated_normals
-    if 'nx' in mesh.point_data and 'ny' in mesh.point_data and 'nz' in mesh.point_data:
-        #rotate normals cloud
-        normals = np.array([mesh.point_data['nx'], mesh.point_data['ny'], mesh.point_data['nz']]).T
-        rotated_normals = r.apply(normals)
-        point_data['nx'] = rotated_normals[:, 0]
-        point_data['ny'] = rotated_normals[:, 1]
-        point_data['nz'] = rotated_normals[:, 2]
-    if 'nx' in mesh.cell_data and 'ny' in mesh.cell_data and 'nz' in mesh.cell_data:
-        #rotate normals cloud
-        normals = np.array([mesh.cell_data['nx'], mesh.cell_data['ny'], mesh.cell_data['nz']]).T
-        rotated_normals = r.apply(normals)
-        cell_data['nx'] = rotated_normals[:, 0]
-        cell_data['ny'] = rotated_normals[:, 1]
-        cell_data['nz'] = rotated_normals[:, 2]
+
     mesh_return = meshio.Mesh(points=rotated_points, cells=mesh.cells)
     mesh_return.point_data = point_data
     mesh_return.cell_data = cell_data
@@ -88,15 +75,16 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
     
     return mesh_return 
 
-def mesh_transform(array, transform_matrix, rotate_only):
-    for i in range(array.shape[0]):
-        point_dummy = np.ones((4,))
-        if rotate_only:
-            point_dummy[3] = 0
-        point_dummy[:3] = array[i,:]            
-        point_dummy = np.matmul(transform_matrix, point_dummy)
-        array[i,:] = point_dummy[:3]
-    return array
+def mesh_transform(mesh, transform_matrix, rotate_only):
+    return_mesh = mesh
+    if rotate_only:
+        for i in range(mesh.points.shape[0]):
+            return_mesh.points[i] = np.dot(transform_matrix, np.append(mesh.points[i], 0))[:3]
+    else:
+        for i in range(mesh.points.shape[0]):
+            return_mesh.points[i] = np.dot(transform_matrix, np.append(mesh.points[i], 1))[:3]
+
+    return return_mesh
 
 
 def mesh_conversion(conversion_object):
