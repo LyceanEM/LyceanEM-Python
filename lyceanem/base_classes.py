@@ -444,6 +444,7 @@ class antenna_pattern(object3d):
             self.arbitary_pattern_format = arbitary_pattern_format
             antenna_pattern_import_implemented = False
             assert antenna_pattern_import_implemented
+            ## needs implementing
             self.import_pattern(file_location)
             self.field_radius = 1.0
         else:

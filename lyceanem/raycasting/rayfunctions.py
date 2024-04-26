@@ -293,7 +293,20 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
 
     return final_index
 
-
+# @njit
+def patterntocloud(pattern_data, shell_coords, maxarea):
+    # takes the pattern_data and shell_coordinates, and creates an open3d point cloud based upon the data.
+    point_cloud = points2pointcloud(shell_coords)
+    points, elements = np.shape(pattern_data)
+    # normdata
+    viridis = cm.get_cmap("viridis", 40)
+    visible_elements = np.sum(pattern_data / maxarea, axis=1)
+    np_colors = viridis(visible_elements)
+    point_cloud.point_data["red"] = np_colors[:, 0]
+    point_cloud.point_data["green"] = np_colors[:, 1]
+    point_cloud.point_data["blue"] = np_colors[:, 2]
+    
+    return point_cloud
 def visiblespace(
     source_coords,
     source_normals,
@@ -466,6 +479,7 @@ def patterncreator(az_range, elev_range, source_coords, pointingindex, hit_index
                 ):
                     visible_patterns[n, m, element] = 1
     return visible_patterns
+
 
 
 def quickpatterncreator(

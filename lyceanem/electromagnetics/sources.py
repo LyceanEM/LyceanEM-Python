@@ -68,6 +68,7 @@ def antenna_pattern_source(radius, import_antenna=False, antenna_file=None):
     if import_antenna:
         # import antenna pattern
         pattern = antenna_pattern()
+        ## import the pattern not implemented
         pattern.import_pattern(antenna_file)
         pattern.field_radius = radius
     else:
