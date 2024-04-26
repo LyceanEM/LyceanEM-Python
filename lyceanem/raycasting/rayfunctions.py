@@ -1841,6 +1841,10 @@ def charge_rays_environment1Dv2(sources, sinks, environment_points, point_indexi
         ray payload to be sent to GPU
 
     """
+    print("sources shape", sources.shape)
+    print("sinks shape", sinks.shape)
+    print("environment_points shape", environment_points.shape)
+
     unified_model = np.append(
         np.append(sources, sinks, axis=0), environment_points, axis=0
     )

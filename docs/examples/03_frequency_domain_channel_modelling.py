@@ -36,12 +36,7 @@ import lyceanem.geometry.geometryfunctions as GF
 transmit_horn_structure, transmitting_antenna_surface_coords = TL.meshedHorn(
     58e-3, 58e-3, 128e-3, 2e-3, 0.21, mesh_resolution
 )
-print("hi",transmit_horn_structure)
-print("hii",transmit_horn_structure.points.shape)
-print("hiiii",transmit_horn_structure.point_data)
-print("len", len(transmit_horn_structure.cells))
-print("cells", transmit_horn_structure.cells[0])
-print("data", transmitting_antenna_surface_coords.cell_data)
+
 receive_horn_structure, receiving_antenna_surface_coords = TL.meshedHorn(
     58e-3, 58e-3, 128e-3, 2e-3, 0.21, mesh_resolution
 )
