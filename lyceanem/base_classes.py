@@ -408,53 +408,9 @@ class antenna_structures(object3d):
 
         return objects
 
-    def farfield_distance(self, freq):
-        # calculate farfield distance for the antenna, based upon the Fraunhofer distance
-        total_points = self.export_all_points()
-        # calculate bounding box
-        bounding_box = total_points.get_oriented_bounding_box()
-        max_points = bounding_box.get_max_bound()
-        min_points = bounding_box.get_min_bound()
-        center = bounding_box.get_center()
-        max_dist = np.sqrt(
-            (max_points[0] - center[0]) ** 2
-            + (max_points[1] - center[1]) ** 2
-            + (max_points[2] - center[2]) ** 2
-        )
-        min_dist = np.sqrt(
-            (center[0] - min_points[0]) ** 2
-            + (center[1] - min_points[1]) ** 2
-            + (center[2] - min_points[2]) ** 2
-        )
-        a = np.mean([max_dist, min_dist])
-        wavelength = 3e8 / freq
-        farfield_distance = (2 * (2 * a) ** 2) / wavelength
 
-        return farfield_distance
 
-    def estimate_maximum_directivity(self, freq):
-        # estimate the maximum possible directivity based upon the smallest enclosing sphere and Hannan's relation between projected area and directivity
-        total_points = self.export_all_points()
-        # calculate bounding box
-        bounding_box = total_points.get_oriented_bounding_box()
-        max_points = bounding_box.get_max_bound()
-        min_points = bounding_box.get_min_bound()
-        center = bounding_box.get_center()
-        max_dist = np.sqrt(
-            (max_points[0] - center[0]) ** 2
-            + (max_points[1] - center[1]) ** 2
-            + (max_points[2] - center[2]) ** 2
-        )
-        min_dist = np.sqrt(
-            (center[0] - min_points[0]) ** 2
-            + (center[1] - min_points[1]) ** 2
-            + (center[2] - min_points[2]) ** 2
-        )
-        a = np.mean([max_dist, min_dist])
-        projected_area = np.pi * (a**2)
-        wavelength = 3e8 / freq
-        directivity = (4 * np.pi * projected_area) / (wavelength**2)
-        return directivity
+  
 
 
 
