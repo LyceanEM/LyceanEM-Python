@@ -12,7 +12,6 @@ The Steering Efficiency can then be evaluated using :func:`lyceanem.electromagne
 
 """
 import numpy as np
-import open3d as o3d
 
 # %%
 # Setting Farfield Resolution and Wavelength
@@ -38,16 +37,7 @@ import lyceanem.tests.reflectordata as data
 
 body, array, source_coords = data.exampleUAV(10e9)
 
-# %%
-# Visualise the Resultant UAV and Array
-# ---------------------------------------
-# :func:`open3d.visualization.draw_geometries` can be used to visualise the open3d data
-# structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.PointCloud`
 
-mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-    size=0.5, origin=[0, 0, 0]
-)
-o3d.visualization.draw_geometries([body, array, source_coords, mesh_frame])
 
 # %%
 # .. image:: ../_static/UAVArraywithPoints.png

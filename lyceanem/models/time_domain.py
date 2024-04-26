@@ -1,8 +1,8 @@
 import copy
 
 import numpy as np
-import open3d as o3d
 import scipy.constants
+import meshio
 
 from ..base_types import scattering_t
 from ..electromagnetics import empropagation as EM
@@ -79,10 +79,10 @@ def calculate_scattering(
     if not multiE:
         if project_vectors:
             conformal_E_vectors = EM.calculate_conformalVectors(
-                desired_E_axis, np.asarray(aperture_coords.normals), antenna_axes
+                desired_E_axis, np.asarray(aperture_coords.point_data["normals"]), antenna_axes
             )
         else:
-            if desired_E_axis.shape[0] == np.asarray(aperture_coords.normals).shape[0]:
+            if desired_E_axis.shape[0] == np.asarray(aperture_coords.point_data["normals"]).shape[0]:
                 conformal_E_vectors = copy.deepcopy(desired_E_axis)
             else:
                 conformal_E_vectors = np.repeat(
@@ -91,7 +91,7 @@ def calculate_scattering(
     else:
         if project_vectors:
             conformal_E_vectors = EM.calculate_conformalVectors(
-                desired_E_axis, np.asarray(aperture_coords.normals), antenna_axes
+                desired_E_axis, np.asarray(aperture_coords.point_data["normals"]), antenna_axes
             )
         else:
             if desired_E_axis.size == 3:
@@ -103,7 +103,7 @@ def calculate_scattering(
 
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
-        scatter_points = o3d.geometry.PointCloud()
+        scatter_points = meshio.Mesh(points = np.empty((0,3), dtype=np.float32), cells=[])
 
         unified_model = np.append(
             np.asarray(aperture_coords.points).astype(np.float32),
@@ -111,8 +111,8 @@ def calculate_scattering(
             axis=0,
         )
         unified_normals = np.append(
-            np.asarray(aperture_coords.normals).astype(np.float32),
-            np.asarray(sink_coords.normals).astype(np.float32),
+            np.asarray(aperture_coords.point_data["normals"]).astype(np.float32),
+            np.asarray(sink_coords.point_data["normals"]).astype(np.float32),
             axis=0,
         )
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
@@ -138,13 +138,13 @@ def calculate_scattering(
             aperture_coords.points
         ).astype(np.float32)[:, 2]
         point_informationv2[0:num_sources]["nx"] = np.asarray(
-            aperture_coords.normals
+            aperture_coords.point_data["normals"]
         ).astype(np.float32)[:, 0]
         point_informationv2[0:num_sources]["ny"] = np.asarray(
-            aperture_coords.normals
+            aperture_coords.point_data["normals"]
         ).astype(np.float32)[:, 1]
         point_informationv2[0:num_sources]["nz"] = np.asarray(
-            aperture_coords.normals
+            aperture_coords.point_data["normals"]
         ).astype(np.float32)[:, 2]
         # set position and velocity of sinks
         point_informationv2[num_sources : (num_sources + num_sinks)]["px"] = np.asarray(
@@ -157,13 +157,13 @@ def calculate_scattering(
             sink_coords.points
         ).astype(np.float32)[:, 2]
         point_informationv2[num_sources : (num_sources + num_sinks)]["nx"] = np.asarray(
-            sink_coords.normals
+            sink_coords.point_data["normals"]
         ).astype(np.float32)[:, 0]
         point_informationv2[num_sources : (num_sources + num_sinks)]["ny"] = np.asarray(
-            sink_coords.normals
+            sink_coords.point_data["normals"]
         ).astype(np.float32)[:, 1]
         point_informationv2[num_sources : (num_sources + num_sinks)]["nz"] = np.asarray(
-            sink_coords.normals
+            sink_coords.point_data["normals"]
         ).astype(np.float32)[:, 2]
 
         point_informationv2[:]["ex"] = unified_weights[:, 0]
@@ -191,11 +191,11 @@ def calculate_scattering(
         )
         unified_normals = np.append(
             np.append(
-                np.asarray(aperture_coords.normals).astype(np.float32),
-                np.asarray(sink_coords.normals).astype(np.float32),
+                np.asarray(aperture_coords.point_data["normals"]).astype(np.float32),
+                np.asarray(sink_coords.point_data["normals"]).astype(np.float32),
                 axis=0,
             ),
-            np.asarray(scatter_points.normals).astype(np.float32),
+            np.asarray(scatter_points.point_data["normals"]).astype(np.float32),
             axis=0,
         )
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
@@ -224,13 +224,13 @@ def calculate_scattering(
             aperture_coords.points
         ).astype(np.float32)[:, 2]
         point_informationv2[0:num_sources]["nx"] = np.asarray(
-            aperture_coords.normals
+            aperture_coords.point_data["normals"]
         ).astype(np.float32)[:, 0]
         point_informationv2[0:num_sources]["ny"] = np.asarray(
-            aperture_coords.normals
+            aperture_coords.point_data["normals"]
         ).astype(np.float32)[:, 1]
         point_informationv2[0:num_sources]["nz"] = np.asarray(
-            aperture_coords.normals
+            aperture_coords.point_data["normals"]
         ).astype(np.float32)[:, 2]
         # point_informationv2[0:num_sources]['ex']=unified_weights[0:num_sources,0]
         # point_informationv2[0:num_sources]['ey']=unified_weights[0:num_sources,1]
@@ -249,13 +249,13 @@ def calculate_scattering(
         # point_informationv2[num_sources:(num_sources+num_sinks)]['vy']=0.0
         # point_informationv2[num_sources:(num_sources+num_sinks)]['vz']=0.0
         point_informationv2[num_sources : (num_sources + num_sinks)]["nx"] = np.asarray(
-            sink_coords.normals
+            sink_coords.point_data["normals"]
         ).astype(np.float32)[:, 0]
         point_informationv2[num_sources : (num_sources + num_sinks)]["ny"] = np.asarray(
-            sink_coords.normals
+            sink_coords.point_data["normals"]
         ).astype(np.float32)[:, 1]
         point_informationv2[num_sources : (num_sources + num_sinks)]["nz"] = np.asarray(
-            sink_coords.normals
+            sink_coords.point_data["normals"]
         ).astype(np.float32)[:, 2]
         point_informationv2[(num_sources + num_sinks) :]["px"] = np.asarray(
             scatter_points.points
@@ -267,13 +267,13 @@ def calculate_scattering(
             scatter_points.points
         ).astype(np.float32)[:, 2]
         point_informationv2[(num_sources + num_sinks) :]["nx"] = np.asarray(
-            scatter_points.normals
+            scatter_points.point_data["normals"]
         ).astype(np.float32)[:, 0]
         point_informationv2[(num_sources + num_sinks) :]["ny"] = np.asarray(
-            scatter_points.normals
+            scatter_points.point_data["normals"]
         ).astype(np.float32)[:, 1]
         point_informationv2[(num_sources + num_sinks) :]["nz"] = np.asarray(
-            scatter_points.normals
+            scatter_points.point_data["normals"]
         ).astype(np.float32)[:, 2]
         point_informationv2[:]["ex"] = unified_weights[:, 0]
         point_informationv2[:]["ey"] = unified_weights[:, 1]
@@ -305,7 +305,7 @@ def calculate_scattering(
             for e_inc in range(desired_E_axis.shape[0]):
                 conformal_E_vectors = EM.calculate_conformalVectors(
                     desired_E_axis[e_inc, :],
-                    np.asarray(aperture_coords.normals).astype(np.float32),
+                    np.asarray(aperture_coords.point_data["normals"]).astype(np.float32),
                 )
                 unified_weights[0:num_sources, :] = conformal_E_vectors #/ num_sources
                 point_informationv2[:]["ex"] = unified_weights[:, 0]
@@ -399,7 +399,7 @@ def calculate_scattering(
             for e_inc in range(desired_E_axis.shape[1]):
                 conformal_E_vectors = EM.calculate_conformalVectors(
                     desired_E_axis[e_inc, :],
-                    np.asarray(aperture_coords.normals).astype(np.float32),antenna_axes
+                    np.asarray(aperture_coords.point_data["normals"]).astype(np.float32),antenna_axes
                 )
                 for element in range(num_sources):
                     point_informationv2[0:num_sources]["ex"] = 0.0

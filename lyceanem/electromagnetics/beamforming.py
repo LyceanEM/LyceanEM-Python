@@ -894,7 +894,7 @@ def MaximumfieldMapDiscrete(
 
 
 @njit(cache=True, nogil=True)
-def directivity_transformv2(
+def directivity_transform(
     Etheta,
     Ephi,
     az_range=np.linspace(-180.0, 180.0, 19),
