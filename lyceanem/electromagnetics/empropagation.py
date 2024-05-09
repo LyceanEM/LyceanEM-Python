@@ -759,20 +759,20 @@ def clip(a,a_min,a_max):
 @cuda.jit(device=True)
 def lossy_propagation(point1,point2,lengths,alpha,beta):
     # calculate loss using improved Rayliegh-Summerfeld
-    outgoing_dir = cuda.local.array(shape=(3), dtype=complex64)
+    outgoing_dir = cuda.local.array(shape=(3), dtype=np.float32)
     calc_dv(
         point1,
         point2,
         outgoing_dir,
     )
-    normal = cuda.local.array(shape=(3), dtype=np.complex128)
+    normal = cuda.local.array(shape=(3), dtype=np.float32)
     normal[0] = point1["nx"]
     normal[1] = point1["ny"]
     normal[2] = point1["nz"]
     angle=cmath.acos(clip(dot_vec(outgoing_dir,normal),-1.0,1.0))
     front=-(1/(2*cmath.pi))
-    G=(np.exp(-(alpha+1j*beta)*lengths))/lengths
-    dG=np.cos(angle)*(-(alpha+1j*beta)-(1/lengths))*G
+    G=(cmath.exp(-(alpha+1j*beta)*lengths))/lengths
+    dG=cmath.cos(angle)*(-(alpha+1j*beta)-(1/lengths))*G
     loss=front*dG
     return loss
 
@@ -1155,21 +1155,33 @@ def freqdomainkernal(
                 scatter_index = i
 
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
-        wave_vector = (2.0 * cmath.pi) / wavelength[0]
-        # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
-        if scatter_index == 0:
-            loss = cmath.exp(-lengths * wave_vector * 1j) * (
-                wavelength[0] / (4 * cmath.pi * lengths)
-            )
-        elif scatter_index == 1:
-            loss = cmath.exp(-lengths * wave_vector * 1j) * (
-                wavelength[0] / (4 * cmath.pi * lengths)
-            )
-        elif scatter_index == 2:
-            loss = cmath.exp(-lengths * wave_vector * 1j) * (
-                wavelength[0] / (4 * cmath.pi * lengths)
-            )
 
+        # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
+        alpha = 0.0
+        beta = (2.0 * cmath.pi) / wavelength[0]
+        loss = lossy_propagation(
+            point_information[network_index[cu_ray_num, 0] - 1],
+            point_information[network_index[cu_ray_num, 1] - 1],
+            calc_sep(
+                point_information[network_index[cu_ray_num, 0] - 1],
+                point_information[network_index[cu_ray_num, 1] - 1],
+                float(0)
+            ),
+            alpha,
+            beta
+        )
+        for i in range(network_index.shape[1] - 1):
+            if network_index[cu_ray_num, i + 1] != 0:
+                loss *= lossy_propagation(point_information[network_index[cu_ray_num, i] - 1],
+                                          point_information[network_index[cu_ray_num, i + 1] - 1],
+                                            calc_sep(point_information[network_index[cu_ray_num, i] - 1],
+                                                     point_information[network_index[cu_ray_num, i + 1] - 1],
+                                                     float(0)),
+                                            alpha,
+                                            beta
+                                            )
+            
+                
         ray_component[0] *= loss
         ray_component[1] *= loss
         ray_component[2] *= loss
