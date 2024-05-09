@@ -38,7 +38,6 @@ structure,array_points=meshedHorn(3*wavelength, 1*wavelength, 4*wavelength, 0.05
 
 horn_antenna=antenna_structures(structures(solids=[structure]), points(points=[array_points]))
 
-horn_antenna.visualise_antenna()
 
 from lyceanem.models.frequency_domain import calculate_farfield
 
@@ -128,7 +127,6 @@ from scipy.spatial.transform import Rotation as R
 
 r=R.from_euler('xyz', np.radians(np.asarray([45.0,45.0,0.0])))
 horn_antenna.rotate_antenna(r.as_matrix())
-horn_antenna.visualise_antenna()
 
 
 desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
