@@ -177,16 +177,18 @@ class points(object3d):
             for item in range(len(self.points)):
                 if item == 0:
                     points = np.array(self.points[item].points)
-                points = np.append(points, self.points[item].points, axis=0)
-            point_data = np.array(len(self.points[0].point_data), points.shape[0])
+                else:
+                    points = np.append(points, self.points[item].points, axis=0)
+            point_data = {}
             for key in self.points[0].point_data.keys():
-                point_data[key] = np.array(points.shape[0])
-                pointssofar = 0
-                for item in range(len(self.points)):
-                    point_data_element = np.array(self.point_data[item][key])
-                    point_data[key][pointssofar:(pointssofar+point_data_element.shape[0])] = point_data_element
-                    pointssofar+= point_data_element.shape[0]
-            combinded_points = meshio.Mesh(points, point_data=point_data)
+                for item in range(len(self.points)):  
+                    if item == 0:
+                        point_data[key] = np.array(self.points[item].point_data[key])
+                    else:
+                        point_data_element = np.array(self.points[item].point_data[key])
+                        point_data[key] = np.append(point_data[key], point_data_element, axis=0)
+
+            combinded_points = meshio.Mesh(points, cells = [], point_data=point_data)
             combinded_points = GF.mesh_transform(combinded_points, self.pose, False)
             return combinded_points
                     
@@ -197,15 +199,16 @@ class points(object3d):
             for item in point_index:
                 if item == 0:
                     points = np.array(self.points[item].points)
-                points = np.append(points, self.points[item].points, axis=0)
+                else:
+                    points = np.append(points, self.points[item].points, axis=0)
             point_data = {}
             for key in self.points[0].point_data.keys():
-                point_data[key] = np.array(points.shape[0])
-                pointssofar = 0
-                for item in point_index:
-                    point_data_element = np.array(self.point_data[item][key])
-                    point_data[key][pointssofar:(pointssofar+point_data_element.shape[0])] = point_data_element
-                    pointssofar+= point_data_element.shape[0]
+                for item in point_index:  
+                    if item == 0:
+                        point_data[key] = np.array(self.points[item].point_data[key])
+                    else:
+                        point_data_element = np.array(self.points[item].point_data[key])
+                        point_data[key] = np.append(point_data[key], point_data_element, axis=0)
                 
 
             combinded_points = meshio.Mesh(points, point_data=point_data)
