@@ -170,7 +170,7 @@ for angle_inc in tqdm(range(len(angle_values))):
     output_amplitude_peak = v_transmit
 
     desired_E_axis = np.zeros((3), dtype=np.float32)
-    desired_E_axis[2] = 1.0
+    desired_E_axis[1] = 1.0
     noise_volts_peak = (10 ** (noise_power / 10) * receiver_impedence) * 0.5
 
     excitation_signal = output_amplitude_rms * sig.chirp(
