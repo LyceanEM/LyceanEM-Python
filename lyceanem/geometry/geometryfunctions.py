@@ -51,6 +51,12 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
         r = R.from_matrix(rotation)
     else:
         raise ValueError("Rotation  must be a 3x1 or 3x3 array")
+    if rotation_centre.shape == (3,) or rotation_centre.shape == (3,1):
+        print("Warning: rotation_centre is a 1x3 array, reshaping to 3x1")
+        rotation_centre = rotation_centre.reshape(1, 3)
+    if rotation_centre.shape != (1, 3):
+        print(rotation_centre.shape)
+        raise ValueError("Rotation centre must be a 3x1 array")
     rotated_points = r.apply(mesh.points - rotation_centre) + rotation_centre
     cell_data = mesh.cell_data
     point_data = mesh.point_data
