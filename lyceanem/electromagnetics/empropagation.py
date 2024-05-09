@@ -1155,10 +1155,10 @@ def freqdomainkernal(
                 scatter_index = i
 
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
-        wave_vector = (2.0 * cmath.pi) / wavelength[0]
+
         # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
-        alpha = .1
-        beta = .1
+        alpha = 0.0
+        beta = (2.0 * cmath.pi) / wavelength[0]
         loss = lossy_propagation(
             point_information[network_index[cu_ray_num, 0] - 1],
             point_information[network_index[cu_ray_num, 1] - 1],
