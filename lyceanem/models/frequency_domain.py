@@ -511,7 +511,7 @@ def calculate_scattering(
 
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
-        scatter_points = o3d.geometry.PointCloud()
+        
 
         unified_model = np.append(
             np.asarray(aperture_coords.points).astype(np.float32),

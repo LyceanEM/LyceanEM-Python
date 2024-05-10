@@ -76,7 +76,7 @@ source_points = surface_array.points
 # does not produce consistently spaced results.
 
 desired_E_axis = np.zeros((1, 3), dtype=np.float32)
-desired_E_axis[0, 2] = 1.0
+desired_E_axis[0, 1] = 1.0
 
 Etheta, Ephi = calculate_farfield(
     source_coords,
