@@ -179,7 +179,7 @@ Ex, Ey, Ez = FD.calculate_scattering(
 
 
 
-angle_values = np.linspace(0, 360, 361)
+angle_values = np.linspace(0, 180, 91)
 angle_increment = np.diff(angle_values)[0]
 responsex = np.zeros((len(angle_values)), dtype="complex")
 responsey = np.zeros((len(angle_values)), dtype="complex")
