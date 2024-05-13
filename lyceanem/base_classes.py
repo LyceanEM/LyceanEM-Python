@@ -389,7 +389,7 @@ class antenna_structures(object3d):
         else:
             aperture_points = self.export_all_points(point_index=point_index)
         aperture_weights = EM.calculate_conformalVectors(
-            desired_e_vector, np.asarray(aperture_points.normals), self.pose[:3, :3]
+            desired_e_vector, aperture_points.point_data['normals'], self.pose[:3, :3]
         )
         if phase_shift == "wavefront":
             source_points = np.asarray(aperture_points.points)

@@ -70,10 +70,10 @@ transmitting_antenna_surface_coords = GF.translate_mesh(transmitting_antenna_sur
 # rotate the receiving horn to desired orientation and translate to final position.
 
 receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector1)
-receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector3)
+#receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector3)
 receive_horn_structure = GF.translate_mesh(receive_horn_structure,np.asarray([0, 1.427, 0]))
 receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector1)
-receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector3)
+#receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector3)
 receiving_antenna_surface_coords = GF.translate_mesh(receiving_antenna_surface_coords,np.asarray([0, 1.427, 0]))
 
 
@@ -137,6 +137,7 @@ plotter = pv.Plotter()
 plotter.add_mesh(pyvista_mesh, color="white", show_edges=True)
 plotter.add_mesh(pyvista_mesh2, color="blue", show_edges=True)
 plotter.add_mesh(pyvista_mesh3, color="red", show_edges=True)
+plotter.add_axes_at_origin()
 plotter.show()
 # Specify desired Transmit Polarisation
 # --------------------------------------
@@ -164,6 +165,7 @@ Ex, Ey, Ez = FD.calculate_scattering(
     scatter_points=scatter_points,
     wavelength=wavelength,
     scattering=1,
+    project_vectors=False
 )
 
 
@@ -177,7 +179,7 @@ Ex, Ey, Ez = FD.calculate_scattering(
 
 
 
-angle_values = np.linspace(0, 90, 91)
+angle_values = np.linspace(0, 360, 361)
 angle_increment = np.diff(angle_values)[0]
 responsex = np.zeros((len(angle_values)), dtype="complex")
 responsey = np.zeros((len(angle_values)), dtype="complex")
@@ -219,6 +221,7 @@ for angle_inc in tqdm(range(len(angle_values))):
         scatter_points=scatter_points_temp,
         wavelength=wavelength,
         scattering=1,
+        project_vectors=False
     )
     responsex[angle_inc] = Ex
     responsey[angle_inc] = Ey

@@ -772,7 +772,8 @@ def lossy_propagation(point1,point2,lengths,alpha,beta):
     angle=cmath.acos(clip(dot_vec(outgoing_dir,normal),-1.0,1.0))
     front=-(1/(2*cmath.pi))
     G=(cmath.exp(-(alpha+1j*beta)*lengths))/lengths
-    dG=cmath.cos(angle)*(-(alpha+1j*beta)-(1/lengths))*G
+    #dG=cmath.cos(angle)*(-(alpha+1j*beta)-(1/lengths))*G
+    dG=(-(alpha+1j*beta)-(1/lengths))*G
     loss=front*dG
     return loss
 
