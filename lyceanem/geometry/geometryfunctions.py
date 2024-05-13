@@ -51,6 +51,8 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
         r = R.from_matrix(rotation)
     else:
         raise ValueError("Rotation  must be a 3x1 or 3x3 array")
+    if rotation_centre.shape == (3,) or rotation_centre.shape == (3,1):
+        rotation_centre = rotation_centre.reshape(1, 3)
     rotated_points = r.apply(mesh.points - rotation_centre) + rotation_centre
     cell_data = mesh.cell_data
     point_data = mesh.point_data
@@ -110,18 +112,13 @@ def mesh_conversion(conversion_object):
         triangles = RF.convertTriangles(conversion_object)
     elif isinstance(conversion_object, list):
         triangles = np.empty((0), dtype=base_types.triangle_t)
-        # print("Detected List")
         for item in conversion_object:
-            # print(type(item))
-            # print(isinstance(item,type(o3d.geometry.TriangleMesh())))
             if isinstance(item, meshio.Mesh):
                 triangles = np.append(triangles, RF.convertTriangles(item), axis=0)
-                # print(len(triangles))
             elif isinstance(item, base_classes.structures):
                 triangles = np.append(
                     triangles, item.triangles_base_raycaster(), axis=0
                 )
-                # print(len("B ",triangles))
 
     else:
         print("no structures")

@@ -142,10 +142,10 @@ class points(object3d):
         """
         # warning, current commond just rotates around the origin, and until Open3D can be brought up to the
         # latest version without breaking BlueCrystal reqruiements, this will require additional code.
-        assert rotation_vector.shape == (3,)
+        assert (rotation_vector.shape == (3,) or rotation_vector.shape == (3,1) or rotation_vector.shape == (1,3) or rotation_vector.shape == (3,3)), "Rotation vector must be a 3x1 or 3x3 array"
         for item in range(len(self.points)):
-            self.point[item] = GF.mesh_rotate(
-                self.point[item], rotation_vector, rotation_centre
+            self.points[item] = GF.mesh_rotate(
+                self.points[item], rotation_vector, rotation_centre
             )
 
     def translate_points(self, vector):
@@ -296,6 +296,7 @@ class structures(object3d):
         None
         """
 
+
         for item in range(len(self.solids)):
             self.solids[item] = GF.mesh_rotate(
                 self.solids[item], rotation_matrix, rotation_centre
@@ -410,6 +411,9 @@ class antenna_structures(object3d):
                 objects[item] = GF.mesh_transform(objects[item], self.pose, False)
 
         return objects
+    def rotate_antenna(self, rotation_vector):
+        self.structures.rotate_structures(rotation_vector)
+        self.points.rotate_points(rotation_vector)
 
 
 
