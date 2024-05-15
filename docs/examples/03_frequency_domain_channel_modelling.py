@@ -21,7 +21,7 @@ import numpy as np
 # Frequency and Mesh Resolution
 # ------------------------------
 #
-freq = np.asarray(20.0e9)
+freq = np.asarray(24.0e9)
 wavelength = 3e8 / freq
 mesh_resolution = 0.5 * wavelength
 
@@ -145,7 +145,7 @@ plotter.show()
 # horn will be vertically polarised, (e-vector aligned with the y direction)
 
 desired_E_axis = np.zeros((1, 3), dtype=np.float32)
-desired_E_axis[0, 2] = 1.0
+desired_E_axis[0, 1] = 1.0
 
 # %%
 # Frequency Domain Scattering
@@ -179,7 +179,7 @@ Ex, Ey, Ez = FD.calculate_scattering(
 
 
 
-angle_values = np.linspace(0, 180, 91)
+angle_values = np.linspace(0, 90, 91)
 angle_increment = np.diff(angle_values)[0]
 responsex = np.zeros((len(angle_values)), dtype="complex")
 responsey = np.zeros((len(angle_values)), dtype="complex")
@@ -188,7 +188,7 @@ responsez = np.zeros((len(angle_values)), dtype="complex")
 plate_orientation_angle = -45.0
 
 rotation_vector = np.radians(
-    np.asarray([0.0, 0.0, plate_orientation_angle + angle_increment])
+    np.asarray([0.0, 0.0, plate_orientation_angle + 0.0])
 )
 scatter_points = GF.mesh_rotate(scatter_points,rotation_vector)
 reflectorplate = GF.mesh_rotate(reflectorplate,rotation_vector)
