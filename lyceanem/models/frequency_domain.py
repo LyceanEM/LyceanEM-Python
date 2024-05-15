@@ -745,9 +745,9 @@ def calculate_scattering(
     if not elements:
         # create efiles for model
         if multiE:
-            Ex = np.zeros((desired_E_axis.shape[0]), dtype=np.complex64)
-            Ey = np.zeros((desired_E_axis.shape[0]), dtype=np.complex64)
-            Ez = np.zeros((desired_E_axis.shape[0]), dtype=np.complex64)
+            Ex = np.zeros((desired_E_axis.shape[0],num_sinks), dtype=np.complex64)
+            Ey = np.zeros((desired_E_axis.shape[0],num_sinks), dtype=np.complex64)
+            Ez = np.zeros((desired_E_axis.shape[0],num_sinks), dtype=np.complex64)
             for e_inc in range(desired_E_axis.shape[0]):
                 conformal_E_vectors = EM.calculate_conformalVectors(
                     desired_E_axis[e_inc, :],
@@ -760,16 +760,16 @@ def calculate_scattering(
                 scatter_map = EM.EMGPUFreqDomain(
                     num_sources, num_sinks, full_index, point_informationv2, wavelength
                 )
-                Ex[e_inc] = np.sum(np.dot(np.ones((num_sources)), scatter_map[:, :, 0]))
-                Ey[e_inc] = np.sum(np.dot(np.ones((num_sources)), scatter_map[:, :, 1]))
-                Ez[e_inc] = np.sum(np.dot(np.ones((num_sources)), scatter_map[:, :, 2]))
+                Ex[e_inc] = np.dot(np.ones((num_sources)), scatter_map[:, :, 0])
+                Ey[e_inc] = np.dot(np.ones((num_sources)), scatter_map[:, :, 1])
+                Ez[e_inc] = np.dot(np.ones((num_sources)), scatter_map[:, :, 2])
         else:
             scatter_map = EM.EMGPUFreqDomain(
                 num_sources, num_sinks, full_index, point_informationv2, wavelength
             )
-            Ex = np.sum(np.dot(np.ones((num_sources)), scatter_map[:, :, 0]))
-            Ey = np.sum(np.dot(np.ones((num_sources)), scatter_map[:, :, 1]))
-            Ez = np.sum(np.dot(np.ones((num_sources)), scatter_map[:, :, 2]))
+            Ex =np.dot(np.ones((num_sources)), scatter_map[:, :, 0])
+            Ey =np.dot(np.ones((num_sources)), scatter_map[:, :, 1])
+            Ez =np.dot(np.ones((num_sources)), scatter_map[:, :, 2])
 
         # convert to etheta,ephi
 
@@ -1047,9 +1047,8 @@ def calculate_scattering_isotropic(
         scatter_map = EM.IsoGPUFreqDomain(
             num_sources, num_sinks, full_index, point_informationv2, wavelength
         )
-        final_scattering_map = np.sum(
-            np.dot(np.ones((num_sources)), scatter_map[:, :, 0])
-        )
+        final_scattering_map = np.dot(np.ones((num_sources)), scatter_map[:, :, 0])
+
 
     # convert to etheta,ephi
 
