@@ -528,10 +528,13 @@ def convertTriangles(triangle_object):
     if triangle_object == None:
         triangles = np.empty(0, dtype=base_types.triangle_t)
     else:
-        assert triangle_object.cells[0].type == "triangle", "Not a triangle mesh"
-
+        #assert triangle_object.cells[1].type == "triangle", "Not a triangle mesh"
+        for idx in range(len(triangle_object.cells)):
+            if (triangle_object.cells[idx].type=="triangle"):
+                triangle_cell_index=idx
+                
         vertices = np.asarray(triangle_object.points)
-        tri_index = np.asarray(triangle_object.cells[0].data)
+        tri_index = np.asarray(triangle_object.cells[triangle_cell_index].data)
         triangles = np.empty(len(tri_index), dtype=base_types.triangle_t)
         for idx in range(len(tri_index)):
             triangles[idx]["v0x"] = np.single(vertices[tri_index[idx, 0], 0])

@@ -11,6 +11,7 @@ weights.
 
 """
 import numpy as np
+import pygmsh
 
 # %%
 # Setting Farfield Resolution and Wavelength
@@ -34,9 +35,45 @@ wavelength = 3e8 / 10e9
 from lyceanem.base_classes import points,structures,antenna_structures
 
 from lyceanem.geometry.targets import meshedHorn
-structure,array_points=meshedHorn(3*wavelength, 1*wavelength, 4*wavelength, 0.05*wavelength,np.radians(10),wavelength*0.5)
+structure,array_points=meshedHorn(3*wavelength, 1*wavelength, 4*wavelength, 1*wavelength,np.radians(10),wavelength*0.5)
 
-horn_antenna=antenna_structures(structures(solids=[structure]), points(points=[array_points]))
+def planar_aperture(u_size,v_size,wall_thickness=2e-3,depth=2e-3,mesh_size=1.0):
+    with pygmsh.occ.Geometry() as geom:
+        geom.characteristic_length_max=mesh_size
+        u_points=np.linspace(-u_size/2,u_size/2,np.ceil(u_size/mesh_size).astype(int))
+        v_points=np.linspace(-v_size/2,v_size/2,np.ceil(v_size/mesh_size).astype(int))
+        n_points=np.linspace(0,0,1)
+        u_mesh,v_mesh,n_mesh=np.meshgrid(u_points,v_points,n_points,indexing='ij')
+        aperture_points=np.array([u_mesh.ravel(),v_mesh.ravel(),n_mesh.ravel()]).transpose()
+        source_normals = np.empty(((aperture_points.shape[0], 3)), dtype=np.float32)
+        source_normals[:] = 0.0
+        source_normals[:, 2] = 1.0
+        ground_plane=geom.add_box((-(u_size+wall_thickness*2)/2.0,-(v_size+wall_thickness*2)/2.0,-depth), extents=(u_size+wall_thickness*2,v_size+wall_thickness*2,depth),mesh_size=mesh_size)
+        point_list=[]
+        for inc in range(aperture_points.shape[0]):
+            point_list.append(geom.add_point(aperture_points[inc,:]))
+            geom.in_surface(point_list[-1],ground_plane)
+
+        #aperture=geom.add_rectangle((-u_size/2.0,-v_size/2.0,0.0), u_size, v_size,mesh_size=mesh_size)
+        #ground_plane=geom.add_box((-(u_size+wall_thickness*2)/2.0,-(v_size+wall_thickness*2)/2.0,-depth), extents=(u_size+wall_thickness*2,v_size+wall_thickness*2,depth),mesh_size=mesh_size)
+        
+        
+        mesh = geom.generate_mesh()
+        end_point=mesh.points.shape[0]
+        mesh.point_data['Normals']=np.zeros((mesh.points.shape[0],3))
+        mesh.point_data['Normals'][mesh.points[:,2]>-depth*0.5,2]=1.0
+        mesh.point_data['Normals'][mesh.points[:,2]>-depth*0.5,2]=-1.0
+        mesh.points=np.append(mesh.points,aperture_points,axis=0)
+        mesh.point_data['Normals']=np.append(mesh.point_data['Normals'],source_normals,axis=0)
+        mesh.cell_sets['Aperture']=[None,None,None,np.linspace(end_point,aperture_points.shape[0]+end_point-1,aperture_points.shape[0]).astype(int)]
+        mesh.cells[3].data=np.append(mesh.cells[3].data,np.linspace(end_point,aperture_points.shape[0]+end_point-1,aperture_points.shape[0]).astype(int).reshape(-1,1),axis=0)
+    return mesh
+
+mesh2=planar_aperture(3*wavelength,1*wavelength,mesh_size=wavelength*0.5)
+
+
+
+horn_antenna=antenna_structures(structures(solids=[mesh2]), points(points=[array_points]))
 
 
 from lyceanem.models.frequency_domain import calculate_farfield

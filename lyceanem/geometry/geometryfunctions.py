@@ -82,12 +82,12 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
     if rotate_only:
         for i in range(mesh.points.shape[0]):
             return_mesh.points[i] = np.dot(transform_matrix, np.append(mesh.points[i], 0))[:3]
-            return_mesh.point_data['normals'][i] = np.dot(transform_matrix, np.append(mesh.point_data['normals'][i], 0))[:3]
+            return_mesh.point_data['Normals'][i] = np.dot(transform_matrix, np.append(mesh.point_data['Normals'][i], 0))[:3]
 
     else:
         for i in range(mesh.points.shape[0]):
             return_mesh.points[i] = np.dot(transform_matrix, np.append(mesh.points[i], 1))[:3]
-            return_mesh.point_data['normals'][i]= np.dot(transform_matrix, np.append(mesh.point_data['normals'][i], 0))[:3]
+            return_mesh.point_data['Normals'][i]= np.dot(transform_matrix, np.append(mesh.point_data['Normals'][i], 0))[:3]
     
 
     return return_mesh
