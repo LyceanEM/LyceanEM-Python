@@ -11,7 +11,6 @@ weights.
 
 """
 import numpy as np
-import open3d as o3d
 
 # %%
 # Setting Farfield Resolution and Wavelength
