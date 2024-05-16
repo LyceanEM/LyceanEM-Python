@@ -299,6 +299,7 @@ def meshedHorn(
     mesh_points = gridedReflectorPoints(
         majorsize, minorsize, 1e-6, grid_resolution, sides
     )
+    mesh_points = GF.translate_mesh(mesh_points, [0, 0, 1e-6])
 
     return structure, mesh_points
 
