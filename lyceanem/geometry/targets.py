@@ -300,32 +300,11 @@ def meshedHorn(
         majorsize, minorsize, 1e-6, grid_resolution, sides
     )
 
+    mesh_points = GF.translate_mesh(mesh_points, [0, 0, 1e-6])
+
     return structure, mesh_points
 
-def coneReflector(radius, height):
-    """
-    create a primative of the right size, assuming always orientated
-    with normal aligned with zenith, and major axis with x,
-    adjust position so the face is centred on (0,0,1)
-    """
-    resolution = 200000
-    split = 1
-    reflector1 = o3d.geometry.TriangleMesh.create_cone(
-        radius, height, resolution, split
-    )
-    translate_dist = np.array([0, 0, 3])
-    reflector1 = GF.open3drotate(
-        reflector1,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_axis_angle(
-            np.array([0.0, np.radians(180), 0.0])
-        ),
-        center=True,
-    )
-    reflector1.compute_vertex_normals()
-    reflector1.paint_uniform_color([0.79, 0.50, 0.24])
-    reflector1.translate(translate_dist, relative=True)
 
-    return reflector1
 
 
 
