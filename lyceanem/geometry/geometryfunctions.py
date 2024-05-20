@@ -58,16 +58,16 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
     point_data = mesh.point_data
         
 
-    if 'normals' in mesh.point_data:
+    if 'Normals' in mesh.point_data:
         #rotate normals cloud
-        normals = mesh.point_data['normals']
+        normals = mesh.point_data['Normals']
         rotated_normals = r.apply(normals)
-        point_data['normals'] = rotated_normals
-    if 'normals' in mesh.cell_data:
+        point_data['Normals'] = rotated_normals
+    if 'Normals' in mesh.cell_data:
         #rotate normals cloud
-        normals = mesh.cell_data['normals']
+        normals = mesh.cell_data['Normals']
         rotated_normals = r.apply(normals)
-        cell_data['normals'] = rotated_normals
+        cell_data['Normals'] = rotated_normals
 
     mesh_return = meshio.Mesh(points=rotated_points, cells=mesh.cells)
     mesh_return.point_data = point_data

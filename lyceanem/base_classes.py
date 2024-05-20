@@ -119,7 +119,7 @@ class points(object3d):
             """
             mesh_vertices = points.reshape(-1, 3)
             mesh_normals = normals.reshape(-1, 3)
-            new_point_cloud = meshio.Mesh(points=mesh_vertices, cells=[], point_data={"normals": mesh_normals})
+            new_point_cloud = meshio.Mesh(points=mesh_vertices, cells=[], point_data={"Normals": mesh_normals})
 
             self.add_points(new_point_cloud)
 

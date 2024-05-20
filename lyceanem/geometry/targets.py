@@ -57,7 +57,7 @@ def NasaAlmond(resolution="quarter"):
 
     nasa.compute_normals(inplace=True)
 
-    NasaAlmond.point_data["normals"] = nasa.point_normals
+    NasaAlmond.point_data["Normals"] = nasa.point_normals
 
     # points=np.asarray(NasaAlmond.vertices)
     # normals=np.asarray(NasaAlmond.vertex_normals)

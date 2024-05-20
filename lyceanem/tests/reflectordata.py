@@ -61,10 +61,10 @@ def exampleUAV(frequency):
     pyvista_array.compute_normals(inplace=True)
     pyvista_body.compute_normals(inplace=True)
 
-    array.point_data['normals'] = pyvista_array.point_normals
-    body.point_data['normals'] = pyvista_body.point_normals
-    array.cell_data['normals'] = pyvista_array.cell_normals
-    body.cell_data['normals'] = pyvista_body.cell_normals
+    array.point_data['Normals'] = pyvista_array.point_normals
+    body.point_data['Normals'] = pyvista_body.point_normals
+    array.cell_data['Normals'] = pyvista_array.cell_normals
+    body.cell_data['Normals'] = pyvista_body.cell_normals
 
 
     wavelength = 3e8 / frequency
@@ -195,7 +195,7 @@ def exampleUAV(frequency):
         axis=0,
     ) + np.array([0.1025, 0, -0.025])
     source_pcd = RF.points2pointcloud(total_array)
-    source_pcd.point_data['normals'] = total_array_normals
+    source_pcd.point_data['Normals'] = total_array_normals
     source_pcd = GF.translate_mesh(source_pcd, np.array([-0.18, 0, 0.0125]))
 
 
