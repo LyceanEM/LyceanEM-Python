@@ -92,6 +92,44 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
 
     return return_mesh
 
+def compute_normals(mesh):
+    """
+    Computes the Cell Normals for meshio mesh objects, this does not currently calculate the point normals, but this will be done soon.
+
+    Parameters
+    ----------
+    mesh
+
+    Returns
+    -------
+
+    """
+    cell_normal_list = []
+    for inc, cell in enumerate(mesh.cells):
+        print(cell.type, cell.data.shape[0])
+        if cell.type == 'vertex':
+            vertex_normals = np.zeros((cell.data.shape[0], 3))
+            cell_normal_list.append(vertex_normals)
+        if cell.type == 'line':
+            line_normals = np.zeros((cell.data.shape[0], 3))
+            cell_normal_list.append(line_normals)
+        if cell.type == 'triangle':
+            # print(inc)
+            edge1 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 1], :]
+            edge2 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 2], :]
+            tri_cell_normals = np.cross(edge1, edge2)
+            tri_cell_normals *= (1 / np.linalg.norm(tri_cell_normals, axis=1)).reshape(-1, 1)
+            cell_normal_list.append(tri_cell_normals)
+        if cell.type == 'tetra':
+            # print(inc)
+            edge1 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 1], :]
+            edge2 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 2], :]
+            tetra_cell_normals = np.cross(edge1, edge2)
+            tetra_cell_normals *= (1 / np.linalg.norm(tetra_cell_normals, axis=1)).reshape(-1, 1)
+            cell_normal_list.append(tetra_cell_normals)
+
+    mesh.cell_data['Normals'] = cell_normal_list
+    return mesh
 
 def mesh_conversion(conversion_object):
     """
