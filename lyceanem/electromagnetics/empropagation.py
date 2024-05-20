@@ -1266,10 +1266,27 @@ def freqdomainisokernal(
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
         wave_vector = (2.0 * cmath.pi) / wavelength
         # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
-        loss = cmath.exp(-lengths * wave_vector * 1j) * (
-            wavelength / (4 * cmath.pi * lengths)
+        alpha = 0.0
+        beta = (2.0 * cmath.pi) / wavelength[0]
+        loss = lossy_propagation(
+            calc_sep(
+                point_information[network_index[cu_ray_num, 0] - 1],
+                point_information[network_index[cu_ray_num, 1] - 1],
+                float(0)
+            ),
+            alpha,
+            beta
         )
-        ray_component[0] = loss
+        for i in range(1,network_index.shape[1] - 1):
+            if network_index[cu_ray_num, i + 1] != 0:
+
+                loss *= lossy_propagation(calc_sep(point_information[network_index[cu_ray_num, i] - 1],
+                                                   point_information[network_index[cu_ray_num, i + 1] - 1],
+                                                   float(0)),
+                                          alpha,
+                                          beta
+                                          )
+        ray_component[0] *= loss
         # ray_component[1]=loss
         # ray_component[2]=loss
         # print(ray_component[0].real,ray_component[1].real,ray_component[2].real)
@@ -1419,9 +1436,26 @@ def timedomainkernal(
             i = i + 1
 
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
-        wave_vector = (2.0 * cmath.pi) / wavelength[0]
-        # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
-        loss = wavelength[0] / (4 * cmath.pi * lengths)
+        alpha = 0.0
+        beta = (2.0 * cmath.pi) / wavelength[0]
+        loss = lossy_propagation(
+            calc_sep(
+                point_information[full_index[cu_ray_num, 0] - 1],
+                point_information[full_index[cu_ray_num, 1] - 1],
+                float(0)
+            ),
+            alpha,
+            beta
+        )
+        for i in range(1,full_index.shape[1] - 1):
+            if full_index[cu_ray_num, i + 1] != 0:
+
+                loss *= lossy_propagation(calc_sep(point_information[full_index[cu_ray_num, i] - 1],
+                                                   point_information[full_index[cu_ray_num, i + 1] - 1],
+                                                   float(0)),
+                                          alpha,
+                                          beta
+                                          )
 
         ray_component[0] *= loss
         ray_component[1] *= loss
