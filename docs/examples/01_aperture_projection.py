@@ -63,7 +63,7 @@ body, array, _ = data.exampleUAV(10e9)
 surface_array = copy.deepcopy(array)
 surface_array.cells[0].data = np.asarray(array.cells[0].data)[: (array.cells[0].data).shape[0] // 2, :]
 
-surface_array.cell_data["normals"] = np.array(array.cell_data["normals"])[: (array.cells[0].data).shape[0] // 2]
+surface_array.cell_data["Normals"] = np.array(array.cell_data["Normals"])[: (array.cells[0].data).shape[0] // 2]
 
 # %%
 # Structures
