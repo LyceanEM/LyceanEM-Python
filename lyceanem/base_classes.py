@@ -373,6 +373,9 @@ class antenna_structures(object3d):
         else:
             point_cloud = self.points.export_points(point_index=point_index)
 
+        point_cloud = GF.mesh_transform(point_cloud, self.pose, False)
+
+
         return point_cloud
 
     def excitation_function(
