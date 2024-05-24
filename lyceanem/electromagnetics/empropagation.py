@@ -3663,7 +3663,7 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     global_vector
 
     """
-    point_vector = point_normal.astype(local_E_vector.dtype)
+    point_vector = np.matmul(point_normal.astype(local_E_vector.dtype),rotation_matrix)
     local_axes = np.eye(3)
     uvn_axes = np.zeros((3, 3), dtype=local_E_vector.dtype)
     uvn_axes[2, :] = point_vector
