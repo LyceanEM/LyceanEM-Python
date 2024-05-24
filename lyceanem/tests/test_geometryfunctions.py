@@ -158,9 +158,7 @@ def test_axes_from_normal_y_z():
 def test_axes_from_normal_z_x():
     boresight = np.zeros((3), dtype=np.float32)
     boresight[0] = 1
-    rotation_matrix = np.array([[ 0.,  0.,  1.],
-       [-1.,  0.,  0.],
-       [ 0., -1.,  0.]])
+    rotation_matrix = R.from_euler('y', 90, degrees=True).as_matrix()
     assert_allclose(GF.axes_from_normal(boresight,boresight_along='z'),rotation_matrix,atol=1e-12)
 
 
