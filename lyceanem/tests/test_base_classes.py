@@ -33,7 +33,8 @@ def cube():
                 [1, 4, 5]]
     ## put into meshio mesh
     cube = meshio.Mesh(points=cube_points, cells=[("triangle", cube_cells)])
-
+    from ..geometry.geometryfunctions import compute_normals
+    cube=compute_normals(cube)
     return cube
 
 

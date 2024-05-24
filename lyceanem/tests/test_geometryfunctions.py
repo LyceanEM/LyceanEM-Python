@@ -1,17 +1,19 @@
 import numpy as np
-
+import lyceanem
 import pytest
 from numpy.testing import assert_allclose
 from scipy.spatial.transform import Rotation as R
 import meshio
-
+from importlib_resources import files
 from  ..geometry import geometryfunctions as GF
+import lyceanem.tests.data
 
 
 
 @pytest.fixture
 def standard_cube():
-    cube = meshio.read('data/cube.ply')
+    cube_location= files(lyceanem.tests.data).joinpath("cube.ply")
+    cube = meshio.read(cube_location)
     return cube
 
 
@@ -82,21 +84,21 @@ def are_meshes_equal(mesh1, mesh2, rtol=1e-5):
 
 
 def test_tri_areas_2():
-    refrence = np.load('data/areas.npy')
-    input = meshio.read('data/receive_horn.ply')
+    refrence = np.load(files(lyceanem.tests.data).joinpath("areas.npy"))
+    input = meshio.read(files(lyceanem.tests.data).joinpath("receive_horn.ply"))
     result = GF.tri_areas(input)
     assert np.allclose(result, refrence)
 
 def test_tri_centroids():
-    refrence = np.load('data/centroid_numpy.npy')
-    refrenece_mesh = meshio.read('data/centroid_mesh.ply')
-    input = meshio.read('data/receive_horn.ply')
+    refrence = np.load(files(lyceanem.tests.data).joinpath('centroid_numpy.npy'))
+    refrenece_mesh = meshio.read(files(lyceanem.tests.data).joinpath('centroid_mesh.ply'))
+    input = meshio.read(files(lyceanem.tests.data).joinpath('receive_horn.ply'))
     result_numpy, result_mesh = GF.tri_centroids(input)
     assert np.allclose(result_numpy, refrence)
     assert are_meshes_equal(result_mesh, refrenece_mesh)
 def test_mesh_rotate():
-    refrence = meshio.read('data/rotated_recieve.ply')
-    input = meshio.read('data/receive_horn.ply')
+    refrence = meshio.read(files(lyceanem.tests.data).joinpath('rotated_recieve.ply'))
+    input = meshio.read(files(lyceanem.tests.data).joinpath('receive_horn.ply'))
     rotation_vector1 = np.radians(np.asarray([90.0, 0.0, 0.0]))
     centre = np.array([1.0, 1.0, 1.0])
  

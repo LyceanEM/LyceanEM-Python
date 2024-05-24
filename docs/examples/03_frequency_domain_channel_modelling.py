@@ -21,7 +21,7 @@ import numpy as np
 # Frequency and Mesh Resolution
 # ------------------------------
 #
-freq = np.asarray(24.0e9)
+freq = np.asarray(16.0e9)
 wavelength = 3e8 / freq
 mesh_resolution = 0.5 * wavelength
 
@@ -179,7 +179,7 @@ Ex, Ey, Ez = FD.calculate_scattering(
 
 
 
-angle_values = np.linspace(0, 90, 91)
+angle_values = np.linspace(0, 90, 181)
 angle_increment = np.diff(angle_values)[0]
 responsex = np.zeros((len(angle_values)), dtype="complex")
 responsey = np.zeros((len(angle_values)), dtype="complex")
@@ -223,9 +223,9 @@ for angle_inc in tqdm(range(len(angle_values))):
         scattering=1,
         project_vectors=False
     )
-    responsex[angle_inc] = Ex
-    responsey[angle_inc] = Ey
-    responsez[angle_inc] = Ez
+    responsex[angle_inc] = np.sum(Ex)
+    responsey[angle_inc] = np.sum(Ey)
+    responsez[angle_inc] = np.sum(Ez)
 
 
 

@@ -30,7 +30,7 @@ thermal_noise_power = 4 * kb * 293.15 * receiver_impedence * bandwidth
 noise_power = -80  # dbw
 mean_noise = 0
 
-model_freq = 16e9
+model_freq = 24e9
 wavelength = 3e8 / model_freq
 
 # %%
