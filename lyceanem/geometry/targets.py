@@ -125,8 +125,8 @@ def rectReflector(majorsize, minorsize, thickness):
 
 
 
-    mesh.point_data["normals"] = pv_mesh.point_normals
-    mesh.cell_data["normals"] = pv_mesh.cell_normals
+    mesh.point_data["Normals"] = pv_mesh.point_normals
+    mesh.cell_data["Normals"] = pv_mesh.cell_normals
     red = np.zeros((8, 1), dtype=np.float32) 
     green = np.ones((8, 1), dtype=np.float32) * 0.259
     blue = np.ones((8, 1), dtype=np.float32) * 0.145
@@ -199,8 +199,8 @@ def shapeTrapezoid(x_size, y_size, length, flare_angle):
     pv_mesh = pv.PolyData( mesh_vertices, faces = triangle_list)
     pv_mesh.compute_normals(inplace=True,consistent_normals=False)
 
-    mesh.point_data["normals"] = np.asarray(pv_mesh.point_normals)
-    mesh.cell_data["normals"] = np.asarray(pv_mesh.cell_normals)
+    mesh.point_data["Normals"] = np.asarray(pv_mesh.point_normals)
+    mesh.cell_data["Normals"] = np.asarray(pv_mesh.cell_normals)
 
     red = np.zeros((8, 1), dtype=np.float32) 
     green = np.ones((8, 1), dtype=np.float32) * 0.259
@@ -477,6 +477,6 @@ def gridedReflectorPoints(
         mesh_vertices = source_coords
         mesh_normals = source_normals
 
-    mesh_points = meshio.Mesh(points=mesh_vertices, cells=[], point_data={"normals": mesh_normals})
+    mesh_points = meshio.Mesh(points=mesh_vertices, cells=[], point_data={"Normals": mesh_normals})
 
     return mesh_points

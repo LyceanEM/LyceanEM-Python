@@ -1,0 +1,10 @@
+numpy>1.22, <1.27
+scipy
+importlib_resources
+numba
+cupy
+setuptools
+cuda-toolkit
+cmake
+pybind11
+pytest

@@ -54,7 +54,7 @@ def aperture_projection(
     )
     triangle_centroids, _ = GF.tri_centroids(aperture)
     triangle_areas = GF.tri_areas(aperture)
-    triangle_normals = np.asarray(aperture.cell_data["normals"])
+    triangle_normals = np.asarray(aperture.cell_data["Normals"])
     visible_patterns, pcd = RF.visiblespace(
         triangle_centroids,
         triangle_normals,
@@ -143,17 +143,17 @@ def calculate_farfield(
         sinks, np.zeros((len(sinks), 3), dtype=np.float32), sink_normals, lengths
     )
     sink_cloud = RF.points2pointcloud(sinks)
-    sink_cloud.point_data["normals"] = sink_normals
+    sink_cloud.point_data["Normals"] = sink_normals
     num_sources = len(np.asarray(aperture_coords.points))
     num_sinks = len(np.asarray(sink_cloud.points))
     environment_triangles=GF.mesh_conversion(antenna_solid)
 
     if project_vectors:
         conformal_E_vectors = EM.calculate_conformalVectors(
-            desired_E_axis, np.asarray(aperture_coords.point_data["normals"]), antenna_axes
+            desired_E_axis, np.asarray(aperture_coords.point_data["Normals"]), antenna_axes
         )
     else:
-        if desired_E_axis.shape[0]==np.asarray(aperture_coords.point_data["normals"]).shape[0]:
+        if desired_E_axis.shape[0]==np.asarray(aperture_coords.point_data["Normals"]).shape[0]:
             conformal_E_vectors=copy.deepcopy(desired_E_axis)
         else:
             conformal_E_vectors = np.repeat(
@@ -169,8 +169,8 @@ def calculate_farfield(
             axis=0,
         )
         unified_normals = np.append(
-            np.asarray(aperture_coords.point_data["normals"]).astype(np.float32),
-            np.asarray(sink_cloud.point_data["normals"]).astype(np.float32),
+            np.asarray(aperture_coords.point_data["Normals"]).astype(np.float32),
+            np.asarray(sink_cloud.point_data["Normals"]).astype(np.float32),
             axis=0,
         )
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
@@ -199,7 +199,7 @@ def calculate_farfield(
         point_informationv2[0:num_sources]["pz"] = np.asarray(
             aperture_coords.points
         ).astype(np.float32)[:, 2]
-        normals = np.asarray(aperture_coords.point_data["normals"])
+        normals = np.asarray(aperture_coords.point_data["Normals"])
         point_informationv2[0:num_sources]["nx"] = normals[:, 0]
         point_informationv2[0:num_sources]["ny"] = normals[:, 1]
         point_informationv2[0:num_sources]["nz"] = normals[:, 2]
@@ -242,11 +242,11 @@ def calculate_farfield(
         )
         unified_normals = np.append(
             np.append(
-                np.asarray(aperture_coords.point_data["normals"]).astype(np.float32),
-                np.asarray(sink_cloud.point_data["normals"]).astype(np.float32),
+                np.asarray(aperture_coords.point_data["Normals"]).astype(np.float32),
+                np.asarray(sink_cloud.point_data["Normals"]).astype(np.float32),
                 axis=0,
             ),
-            np.asarray(scatter_points.point_data["normals"]).astype(np.float32),
+            np.asarray(scatter_points.point_data["Normals"]).astype(np.float32),
             axis=0,
         )
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
@@ -278,13 +278,13 @@ def calculate_farfield(
             aperture_coords.points
         ).astype(np.float32)[:, 2]
         point_informationv2[0:num_sources]["nx"] = np.asarray(
-            aperture_coords.point_data["normals"]
+            aperture_coords.point_data["Normals"]
         ).astype(np.float32)[:, 0]
         point_informationv2[0:num_sources]["ny"] = np.asarray(
-            aperture_coords.point_data["normals"]
+            aperture_coords.point_data["Normals"]
         ).astype(np.float32)[:, 1]
         point_informationv2[0:num_sources]["nz"] = np.asarray(
-            aperture_coords.point_data["normals"]
+            aperture_coords.point_data["Normals"]
         ).astype(np.float32)[:, 2]
         # point_informationv2[0:num_sources]['ex']=unified_weights[0:num_sources,0]
         # point_informationv2[0:num_sources]['ey']=unified_weights[0:num_sources,1]
@@ -314,7 +314,7 @@ def calculate_farfield(
         point_informationv2[(num_sources + num_sinks) :]["pz"] = np.asarray(
             scatter_points.points
         ).astype(np.float32)[:, 2]
-        scatter_normals = np.asarray(scatter_points.point_data["normals"])
+        scatter_normals = np.asarray(scatter_points.point_data["Normals"])
         point_informationv2[(num_sources + num_sinks) :]["nx"] = scatter_normals[:, 0]
         point_informationv2[(num_sources + num_sinks) :]["ny"] = scatter_normals[:, 1]
         point_informationv2[(num_sources + num_sinks) :]["nz"] = scatter_normals[:, 2]
@@ -486,11 +486,11 @@ def calculate_scattering(
     if not multiE:
         if project_vectors:
             conformal_E_vectors = EM.calculate_conformalVectors(
-                desired_E_axis, np.asarray(aperture_coords.point_data["normals"]), antenna_axes
+                desired_E_axis, np.asarray(aperture_coords.point_data["Normals"]), antenna_axes
             )
         else:
             print("hi from here", aperture_coords.cell_data)
-            if desired_E_axis.shape[0] == np.asarray(aperture_coords.point_data["normals"]).shape[0]:
+            if desired_E_axis.shape[0] == np.asarray(aperture_coords.point_data["Normals"]).shape[0]:
                 conformal_E_vectors = copy.deepcopy(desired_E_axis)
             else:
                 conformal_E_vectors = np.repeat(
@@ -499,10 +499,10 @@ def calculate_scattering(
     else:
         if project_vectors:
             conformal_E_vectors = EM.calculate_conformalVectors(
-                desired_E_axis, np.asarray(aperture_coords.point_data["normals"]), antenna_axes
+                desired_E_axis, np.asarray(aperture_coords.point_data["Normals"]), antenna_axes
             )
         else:
-            if desired_E_axis.shape[0] == np.asarray(aperture_coords.point_data["normals"]).shape[0]:
+            if desired_E_axis.shape[0] == np.asarray(aperture_coords.point_data["Normals"]).shape[0]:
                 conformal_E_vectors = copy.deepcopy(desired_E_axis)
             else:
                 conformal_E_vectors = np.repeat(
@@ -518,8 +518,8 @@ def calculate_scattering(
             axis=0,
         )
         unified_normals = np.append(
-            np.asarray(aperture_coords.point_data["normals"]).astype(np.float32),
-            np.asarray(sink_coords.point_data["normals"]).astype(np.float32),
+            np.asarray(aperture_coords.point_data["Normals"]).astype(np.float32),
+            np.asarray(sink_coords.point_data["Normals"]).astype(np.float32),
             axis=0,
         )
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
@@ -545,13 +545,13 @@ def calculate_scattering(
             aperture_coords.points
         ).astype(np.float32)[:, 2]
         point_informationv2[0:num_sources]["nx"] = np.asarray(
-            aperture_coords.point_data["normals"]
+            aperture_coords.point_data["Normals"]
         ).astype(np.float32)[:, 0]
         point_informationv2[0:num_sources]["ny"] = np.asarray(
-            aperture_coords.point_data["normals"]
+            aperture_coords.point_data["Normals"]
         ).astype(np.float32)[:, 1]
         point_informationv2[0:num_sources]["nz"] = np.asarray(
-            aperture_coords.point_data["normals"]
+            aperture_coords.point_data["Normals"]
         ).astype(np.float32)[:, 2]
         # set position and velocity of sinks
         point_informationv2[num_sources : (num_sources + num_sinks)]["px"] = np.asarray(
@@ -564,13 +564,13 @@ def calculate_scattering(
             sink_coords.points
         ).astype(np.float32)[:, 2]
         point_informationv2[num_sources : (num_sources + num_sinks)]["nx"] = np.asarray(
-            sink_coords.point_data["normals"]
+            sink_coords.point_data["Normals"]
         ).astype(np.float32)[:, 0]
         point_informationv2[num_sources : (num_sources + num_sinks)]["ny"] = np.asarray(
-            sink_coords.point_data["normals"]
+            sink_coords.point_data["Normals"]
         ).astype(np.float32)[:, 1]
         point_informationv2[num_sources : (num_sources + num_sinks)]["nz"] = np.asarray(
-            sink_coords.point_data["normals"]
+            sink_coords.point_data["Normals"]
         ).astype(np.float32)[:, 2]
 
         point_informationv2[:]["ex"] = unified_weights[:, 0]
@@ -591,7 +591,7 @@ def calculate_scattering(
             if project_vectors:
                 conformal_E_vectors = EM.calculate_conformalVectors(
                     desired_E_axis[0, :].reshape(1, 3),
-                    np.asarray(aperture_coords.point_data["normals"]).astype(np.float32),
+                    np.asarray(aperture_coords.point_data["Normals"]).astype(np.float32),
                 )
             else:
                 conformal_E_vectors = np.repeat(
@@ -603,7 +603,7 @@ def calculate_scattering(
             if project_vectors:
                 conformal_E_vectors = EM.calculate_conformalVectors(
                     desired_E_axis[0, :].reshape(1, 3),
-                    np.asarray(aperture_coords.point_data["normals"]).astype(np.float32),
+                    np.asarray(aperture_coords.point_data["Normals"]).astype(np.float32),
                 )
             else:
                 if desired_E_axis.size == 3:
@@ -626,11 +626,11 @@ def calculate_scattering(
         )
         unified_normals = np.append(
             np.append(
-                np.asarray(aperture_coords.point_data["normals"]).astype(np.float32),
-                np.asarray(sink_coords.point_data["normals"]).astype(np.float32),
+                np.asarray(aperture_coords.point_data["Normals"]).astype(np.float32),
+                np.asarray(sink_coords.point_data["Normals"]).astype(np.float32),
                 axis=0,
             ),
-            np.asarray(scatter_points.point_data["normals"]).astype(np.float32),
+            np.asarray(scatter_points.point_data["Normals"]).astype(np.float32),
             axis=0,
         )
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
@@ -659,13 +659,13 @@ def calculate_scattering(
             aperture_coords.points
         ).astype(np.float32)[:, 2]
         point_informationv2[0:num_sources]["nx"] = np.asarray(
-            aperture_coords.point_data["normals"]
+            aperture_coords.point_data["Normals"]
         ).astype(np.float32)[:, 0]
         point_informationv2[0:num_sources]["ny"] = np.asarray(
-            aperture_coords.point_data["normals"]
+            aperture_coords.point_data["Normals"]
         ).astype(np.float32)[:, 1]
         point_informationv2[0:num_sources]["nz"] = np.asarray(
-            aperture_coords.point_data["normals"]
+            aperture_coords.point_data["Normals"]
         ).astype(np.float32)[:, 2]
         # point_informationv2[0:num_sources]['ex']=unified_weights[0:num_sources,0]
         # point_informationv2[0:num_sources]['ey']=unified_weights[0:num_sources,1]
@@ -684,13 +684,13 @@ def calculate_scattering(
         # point_informationv2[num_sources:(num_sources+num_sinks)]['vy']=0.0
         # point_informationv2[num_sources:(num_sources+num_sinks)]['vz']=0.0
         point_informationv2[num_sources : (num_sources + num_sinks)]["nx"] = np.asarray(
-            sink_coords.point_data["normals"]
+            sink_coords.point_data["Normals"]
         ).astype(np.float32)[:, 0]
         point_informationv2[num_sources : (num_sources + num_sinks)]["ny"] = np.asarray(
-            sink_coords.point_data["normals"]
+            sink_coords.point_data["Normals"]
         ).astype(np.float32)[:, 1]
         point_informationv2[num_sources : (num_sources + num_sinks)]["nz"] = np.asarray(
-            sink_coords.point_data["normals"]
+            sink_coords.point_data["Normals"]
         ).astype(np.float32)[:, 2]
         point_informationv2[(num_sources + num_sinks) :]["px"] = np.asarray(
             scatter_points.points
@@ -702,13 +702,13 @@ def calculate_scattering(
             scatter_points.points
         ).astype(np.float32)[:, 2]
         point_informationv2[(num_sources + num_sinks) :]["nx"] = np.asarray(
-            scatter_points.point_data["normals"]
+            scatter_points.point_data["Normals"]
         ).astype(np.float32)[:, 0]
         point_informationv2[(num_sources + num_sinks) :]["ny"] = np.asarray(
-            scatter_points.point_data["normals"]
+            scatter_points.point_data["Normals"]
         ).astype(np.float32)[:, 1]
         point_informationv2[(num_sources + num_sinks) :]["nz"] = np.asarray(
-            scatter_points.point_data["normals"]
+            scatter_points.point_data["Normals"]
         ).astype(np.float32)[:, 2]
         point_informationv2[:]["ex"] = unified_weights[:, 0]
         point_informationv2[:]["ey"] = unified_weights[:, 1]
@@ -741,7 +741,7 @@ def calculate_scattering(
             for e_inc in range(desired_E_axis.shape[0]):
                 conformal_E_vectors = EM.calculate_conformalVectors(
                     desired_E_axis[e_inc, :],
-                    np.asarray(aperture_coords.point_data["normals"]).astype(np.float32),
+                    np.asarray(aperture_coords.point_data["Normals"]).astype(np.float32),
                 )
                 unified_weights[0:num_sources, :] = conformal_E_vectors# / num_sources
                 point_informationv2[:]["ex"] = unified_weights[:, 0]
@@ -772,7 +772,7 @@ def calculate_scattering(
             for e_inc in range(desired_E_axis.shape[1]):
                 conformal_E_vectors = EM.calculate_conformalVectors(
                     desired_E_axis[e_inc, :],
-                    np.asarray(aperture_coords.point_data["normals"]).astype(np.float32),
+                    np.asarray(aperture_coords.point_data["Normals"]).astype(np.float32),
                 )
                 for element in range(num_sources):
                     point_informationv2[0:num_sources]["ex"] = 0.0
