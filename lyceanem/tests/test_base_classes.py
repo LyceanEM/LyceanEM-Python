@@ -56,6 +56,7 @@ def standard_antenna():
     return antenna()
 
 
+
 def test_excitation_function_x_u(standard_antenna):
     # test that an unrotated antenna with u (horizontal-y) polarisation gives horizontal-y polarisation
     desired_E_vector = np.array([1, 0, 0], dtype=np.complex64)

@@ -17,60 +17,65 @@ def standard_cube():
 
 def are_meshes_equal(mesh1, mesh2, rtol=1e-5):
     # Check vertices
-    assert np.allclose(mesh1.points, mesh2.points, rtol=rtol)
+    meshes_are_equal = True
+    meshes_are_equal =  np.allclose(mesh1.points, mesh2.points, rtol=rtol)
 
 
     # Check cells
-    assert len(mesh1.cells) == len(mesh2.cells)
+    meshes_are_equal = len(mesh1.cells) == len(mesh2.cells)
     for i in range(len(mesh1.cells)):
-        assert np.allclose(mesh1.cells[i].data, mesh2.cells[i].data, rtol=rtol)
+        meshes_are_equal  *= np.allclose(mesh1.cells[i].data, mesh2.cells[i].data, rtol=rtol)
     ## normals
+    print("checking 'normffffals3")
+
     if 'nx' in mesh1.point_data and 'ny' in mesh1.point_data and 'nz' in mesh1.point_data:
         if 'nx' in mesh2.point_data and 'ny' in mesh2.point_data and 'nz' in mesh2.point_data:
-            assert np.allclose(mesh1.point_data['nx'], mesh2.point_data['nx'], rtol=rtol)
-            assert np.allclose(mesh1.point_data['ny'], mesh2.point_data['ny'], rtol=rtol)
-            assert np.allclose(mesh1.point_data['nz'], mesh2.point_data['nz'], rtol=rtol)
+            meshes_are_equal  *= np.allclose(mesh1.point_data['nx'], mesh2.point_data['nx'], rtol=rtol)
+            meshes_are_equal  *= np.allclose(mesh1.point_data['ny'], mesh2.point_data['ny'], rtol=rtol)
+            meshes_are_equal  *= np.allclose(mesh1.point_data['nz'], mesh2.point_data['nz'], rtol=rtol)
         elif 'Normals' in mesh2.point_data:
-            assert np.allclose(mesh1.point_data['nx'], mesh2.point_data['Normals'][:,0], rtol=rtol)
-            assert np.allclose(mesh1.point_data['ny'], mesh2.point_data['Normals'][:,1], rtol=rtol)
-            assert np.allclose(mesh1.point_data['nz'], mesh2.point_data['Normals'][:,2], rtol=rtol)
+            meshes_are_equal  *= np.allclose(mesh1.point_data['nx'], mesh2.point_data['Normals'][:,0], rtol=rtol)
+            meshes_are_equal  *= np.allclose(mesh1.point_data['ny'], mesh2.point_data['Normals'][:,1], rtol=rtol)
+            meshes_are_equal  *= np.allclose(mesh1.point_data['nz'], mesh2.point_data['Normals'][:,2], rtol=rtol)
         else:
-            assert False
+            meshes_are_equal  *= False
     elif 'Normals' in mesh1.point_data:
         if 'nx' and 'ny' and 'nz' in mesh2.point_data:
-            assert np.allclose(mesh1.point_data['Normals'][:,0], mesh2.point_data['nx'], rtol=rtol)
-            assert np.allclose(mesh1.point_data['Normals'][:,1], mesh2.point_data['ny'], rtol=rtol)
-            assert np.allclose(mesh1.point_data['Normals'][:,2], mesh2.point_data['nz'], rtol=rtol)
+            meshes_are_equal  *= np.allclose(mesh1.point_data['Normals'][:,0], mesh2.point_data['nx'], rtol=rtol)
+            meshes_are_equal  *= np.allclose(mesh1.point_data['Normals'][:,1], mesh2.point_data['ny'], rtol=rtol)
+            meshes_are_equal  *= np.allclose(mesh1.point_data['Normals'][:,2], mesh2.point_data['nz'], rtol=rtol)
+            print("checking 'normals3")
         elif 'Normals' in mesh2.point_data:
-            assert np.allclose(mesh1.point_data['Normals'], mesh2.point_data['Normals'], rtol=rtol)
+            meshes_are_equal  *= np.allclose(mesh1.point_data['Normals'], mesh2.point_data['Normals'], rtol=rtol)
         else:
-            assert False
+            meshes_are_equal  *= False
     else:
-        assert True
+        meshes_are_equal  *= True
     ##normals cell data
     for i in range(len(mesh1.cells)):
         if 'nx' and 'ny' and 'nz' in mesh1.cell_data:
             if 'nx' and 'ny' and 'nz' in mesh2.cell_data:
-                assert np.allclose(mesh1.cell_data['nx'], mesh2.cell_data['nx'], rtol=rtol)
-                assert np.allclose(mesh1.cell_data['ny'], mesh2.cell_data['ny'], rtol=rtol)
-                assert np.allclose(mesh1.cell_data['nz'], mesh2.cell_data['nz'], rtol=rtol)
+                meshes_are_equal  *= np.allclose(mesh1.cell_data['nx'], mesh2.cell_data['nx'], rtol=rtol)
+                meshes_are_equal  *= np.allclose(mesh1.cell_data['ny'], mesh2.cell_data['ny'], rtol=rtol)
+                meshes_are_equal  *= np.allclose(mesh1.cell_data['nz'], mesh2.cell_data['nz'], rtol=rtol)
             elif 'Normals' in mesh2.cell_data:
-                assert np.allclose(mesh1.cell_data['nx'], mesh2.cell_data['Normals'][:,0], rtol=rtol)
-                assert np.allclose(mesh1.cell_data['ny'], mesh2.cell_data['Normals'][:,1], rtol=rtol)
-                assert np.allclose(mesh1.cell_data['nz'], mesh2.cell_data['Normals'][:,2], rtol=rtol)
+                meshes_are_equal  *= np.allclose(mesh1.cell_data['nx'], mesh2.cell_data['Normals'][:,0], rtol=rtol)
+                meshes_are_equal  *= np.allclose(mesh1.cell_data['ny'], mesh2.cell_data['Normals'][:,1], rtol=rtol)
+                meshes_are_equal  *= np.allclose(mesh1.cell_data['nz'], mesh2.cell_data['Normals'][:,2], rtol=rtol)
             else:
-                assert False
+                meshes_are_equal  *= False
         elif 'Normals' in mesh1.cell_data:
             if 'nx' and 'ny' and 'nz' in mesh2.cell_data:
-                assert np.allclose(mesh1.cell_data['Normals'][:,0], mesh2.cell_data['nx'], rtol=rtol)
-                assert np.allclose(mesh1.cell_data['Normals'][:,1], mesh2.cell_data['ny'], rtol=rtol)
-                assert np.allclose(mesh1.cell_data['Normals'][:,2], mesh2.cell_data['nz'], rtol=rtol)
+                meshes_are_equal  *= np.allclose(mesh1.cell_data['Normals'][:,0], mesh2.cell_data['nx'], rtol=rtol)
+                meshes_are_equal  *= np.allclose(mesh1.cell_data['Normals'][:,1], mesh2.cell_data['ny'], rtol=rtol)
+                meshes_are_equal  *= np.allclose(mesh1.cell_data['Normals'][:,2], mesh2.cell_data['nz'], rtol=rtol)
             elif 'Normals' in mesh2.cell_data:
-                assert np.allclose(mesh1.cell_data['Normals'], mesh2.cell_data['Normals'], rtol=rtol)
+                meshes_are_equal  *= np.allclose(mesh1.cell_data['Normals'], mesh2.cell_data['Normals'], rtol=rtol)
             else:
-                assert False
+                meshes_are_equal  *= False
         else:
-            assert True
+            meshes_are_equal  *= True
+    return meshes_are_equal
         
 
         
