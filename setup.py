@@ -1,6 +1,7 @@
-from setuptools import setup
+from skbuild import setup  # This line replaces 'from setuptools import setup'
 import os
 import sys
+
 
 # move to the directory of the setup.py file
 
@@ -23,15 +24,15 @@ setup(
     long_description=metadata.get("long_description"),
     long_description_content_type=metadata.get("long_description_content_type"),
     url=metadata.get("url"),
-    packages=metadata.get("packages"),
+    packages =["lyceanem","lyceanem.CUDA_source"],
     python_requires=metadata.get("python_requires"),
     install_requires=metadata.get("install_requires"),
     classifiers=metadata.get("classifiers", "").split("\n"),
     license=metadata.get("license"),
     license_file=metadata.get("license_file"),
     include_package_data=metadata.get("include_package_data", False),
+    cmake_install_dir=
+        "lyceanem/frequency_domain",
+    cmake_args=[ 'Unix Makefiles',
+    ]
 )
-print("hi")
-os.system("cmake -S ./CUDA_source -B ./CUDA_source/build/ ")
-print("hi")
-os.system("cmake --build ./CUDA_source/build/")

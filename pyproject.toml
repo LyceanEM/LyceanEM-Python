@@ -1,6 +1,7 @@
 [build-system]
-#requires = ["setuptools", "versioneer"]
-requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2", "cmake>3.12"]
+requires = ["setuptools>=42", "wheel", "scikit-build", "cmake>=3.22", "ninja", "typing_extensions"]
 build-backend = "setuptools.build_meta"
 [tool.setuptools_scm]
 write_to = "lyceanem/_version.py"
+[tool.scikit-build]
+build-dir = "build"
