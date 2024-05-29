@@ -1,37 +1,44 @@
-{ % set name = "lyceanem" % }
-  { % set version = "0.0.4" % }
+{% set name = "lyceanem" %}
+{% set version = "0.0.1" %}
 
 package:
-  name: { { name|lower } }
-  version: { { version } }
+  name: {{ name }}
+  version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/LyceanEM-{{ version }}.tar.gz
-  sha256: a12631f848174a177e0856e5099e34bfe0969bfe50ecc6439a0318206cdc0b8b
+  path: ..
 
 build:
   noarch: python
-  script: { { PYTHON } } -m pip install . -vv
+  script: "{{ PYTHON }} -m pip install . -vv"
   number: 0
 
 requirements:
-  - python>=3.6
-  - pip
+  build:
+    - python>=3.6
+    - pip
+    - conda-forge::pybind11
+    - python>=3.6
+    - conda-forge::cudatoolkit
+    - conda-forge::cupy
+    - conda-forge::cmake
+    - conda-forge::ninja
+    - conda-forge::scikit-build
+    - conda-forge::gcc_linux-64
 
-  - conda-forge::cudatoolkit
-  - conda-forge::cupy
-
-  - open3d-admin::open3d
-
-  - pip:
-      -lyceanem==0.0.4
 
 about:
   home: https://lyceanem-python.readthedocs.io/en/latest/index.html
-  summary: LyceanEM is a Python library for modelling electromagnetic propagation for sensors and communications. You can find the documentation at https://lyceanem-python.readthedocs.io/en/latest/
+  summary: >
+    LyceanEM is a Python library for modelling electromagnetic propagation
+    for sensors and communications. You can find the documentation at
+    https://lyceanem-python.readthedocs.io/en/latest/
   license: GPL-3.0
   license_file: LICENSE.txt
 
 extra:
   recipe-maintainers:
     - LyceanEM
+test:
+  imports:
+    - lyceanem

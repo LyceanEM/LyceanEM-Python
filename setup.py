@@ -24,7 +24,7 @@ setup(
     long_description=metadata.get("long_description"),
     long_description_content_type=metadata.get("long_description_content_type"),
     url=metadata.get("url"),
-    packages =["lyceanem","lyceanem.CUDA_source"],
+    packages =["lyceanem"],
     python_requires=metadata.get("python_requires"),
     install_requires=metadata.get("install_requires"),
     classifiers=metadata.get("classifiers", "").split("\n"),
@@ -32,7 +32,7 @@ setup(
     license_file=metadata.get("license_file"),
     include_package_data=metadata.get("include_package_data", False),
     cmake_install_dir=
-        "lyceanem/frequency_domain",
+        "lyceanem/",
     cmake_args=[ 'Unix Makefiles',
     ]
 )

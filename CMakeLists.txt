@@ -18,7 +18,7 @@ find_package(pybind11  REQUIRED)
 find_package( PkgConfig )
  
 # Set the source file for the C++ extension module
-set(EMSOURCE  ~/lycean_em/LyceanEM_CUDA_MVP/source/frequency_domain_models.cu)
+set(EMSOURCE  lyceanem/CUDA_source/EM_workspace/source/frequency_domain_models.cu)
 
 
 
@@ -29,10 +29,10 @@ pybind11_add_module(em ${EMSOURCE})
 
 
 
-target_include_directories(em PRIVATE ~/lycean_em/LyceanEM_CUDA_MVP/source)
+target_include_directories(em PRIVATE lyceanem/CUDA_source/EM_workspace/source)
 target_compile_options(em PRIVATE --expt-relaxed-constexpr -arch=sm_75)
 target_compile_options(em PRIVATE -lineinfo)
 
-install(TARGETS em DESTINATION lyceanem)
+install(TARGETS em DESTINATION .)
 
 
