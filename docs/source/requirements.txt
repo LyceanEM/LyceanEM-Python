@@ -1,6 +1,7 @@
 setuptools==63.2.0
 numpy
 meshio
+pyvista
 cupy
 matplotlib
 numba
