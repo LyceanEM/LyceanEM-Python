@@ -5,6 +5,9 @@
 numpy~=1.21.6
 lyceanem~=0.0.1
 tqdm~=4.62.2
+meshio
+pyvista
+pygmsh
 matplotlib~=3.3.4
 scipy~=1.6.2
 importlib_resources~=5.2.0
