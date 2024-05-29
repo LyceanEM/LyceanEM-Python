@@ -58,16 +58,16 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
     point_data = mesh.point_data
         
 
-    if 'normals' in mesh.point_data:
+    if 'Normals' in mesh.point_data:
         #rotate normals cloud
-        normals = mesh.point_data['normals']
+        normals = mesh.point_data['Normals']
         rotated_normals = r.apply(normals)
-        point_data['normals'] = rotated_normals
-    if 'normals' in mesh.cell_data:
+        point_data['Normals'] = rotated_normals
+    if 'Normals' in mesh.cell_data:
         #rotate normals cloud
-        normals = mesh.cell_data['normals']
+        normals = mesh.cell_data['Normals']
         rotated_normals = r.apply(normals)
-        cell_data['normals'] = rotated_normals
+        cell_data['Normals'] = rotated_normals
 
     mesh_return = meshio.Mesh(points=rotated_points, cells=mesh.cells)
     mesh_return.point_data = point_data
@@ -91,6 +91,44 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
             return_mesh.point_data['Normals'][i]= np.dot(transform_matrix, np.append(mesh.point_data['Normals'][i], 0))[:3]
     return return_mesh
 
+def compute_normals(mesh):
+    """
+    Computes the Cell Normals for meshio mesh objects, this does not currently calculate the point normals, but this will be done soon.
+
+    Parameters
+    ----------
+    mesh
+
+    Returns
+    -------
+
+    """
+    cell_normal_list = []
+    for inc, cell in enumerate(mesh.cells):
+        print(cell.type, cell.data.shape[0])
+        if cell.type == 'vertex':
+            vertex_normals = np.zeros((cell.data.shape[0], 3))
+            cell_normal_list.append(vertex_normals)
+        if cell.type == 'line':
+            line_normals = np.zeros((cell.data.shape[0], 3))
+            cell_normal_list.append(line_normals)
+        if cell.type == 'triangle':
+            # print(inc)
+            edge1 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 1], :]
+            edge2 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 2], :]
+            tri_cell_normals = np.cross(edge1, edge2)
+            tri_cell_normals *= (1 / np.linalg.norm(tri_cell_normals, axis=1)).reshape(-1, 1)
+            cell_normal_list.append(tri_cell_normals)
+        if cell.type == 'tetra':
+            # print(inc)
+            edge1 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 1], :]
+            edge2 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 2], :]
+            tetra_cell_normals = np.cross(edge1, edge2)
+            tetra_cell_normals *= (1 / np.linalg.norm(tetra_cell_normals, axis=1)).reshape(-1, 1)
+            cell_normal_list.append(tetra_cell_normals)
+
+    mesh.cell_data['Normals'] = cell_normal_list
+    return mesh
 
 def mesh_conversion(conversion_object):
     """

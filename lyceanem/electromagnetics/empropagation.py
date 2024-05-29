@@ -1266,10 +1266,27 @@ def freqdomainisokernal(
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
         wave_vector = (2.0 * cmath.pi) / wavelength
         # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
-        loss = cmath.exp(-lengths * wave_vector * 1j) * (
-            wavelength / (4 * cmath.pi * lengths)
+        alpha = 0.0
+        beta = (2.0 * cmath.pi) / wavelength[0]
+        loss = lossy_propagation(
+            calc_sep(
+                point_information[network_index[cu_ray_num, 0] - 1],
+                point_information[network_index[cu_ray_num, 1] - 1],
+                float(0)
+            ),
+            alpha,
+            beta
         )
-        ray_component[0] = loss
+        for i in range(1,network_index.shape[1] - 1):
+            if network_index[cu_ray_num, i + 1] != 0:
+
+                loss *= lossy_propagation(calc_sep(point_information[network_index[cu_ray_num, i] - 1],
+                                                   point_information[network_index[cu_ray_num, i + 1] - 1],
+                                                   float(0)),
+                                          alpha,
+                                          beta
+                                          )
+        ray_component[0] *= loss
         # ray_component[1]=loss
         # ray_component[2]=loss
         # print(ray_component[0].real,ray_component[1].real,ray_component[2].real)
@@ -1419,9 +1436,26 @@ def timedomainkernal(
             i = i + 1
 
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
-        wave_vector = (2.0 * cmath.pi) / wavelength[0]
-        # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
-        loss = wavelength[0] / (4 * cmath.pi * lengths)
+        alpha = 0.0
+        beta = (2.0 * cmath.pi) / wavelength[0]
+        loss = lossy_propagation(
+            calc_sep(
+                point_information[full_index[cu_ray_num, 0] - 1],
+                point_information[full_index[cu_ray_num, 1] - 1],
+                float(0)
+            ),
+            alpha,
+            beta
+        )
+        for i in range(1,full_index.shape[1] - 1):
+            if full_index[cu_ray_num, i + 1] != 0:
+
+                loss *= lossy_propagation(calc_sep(point_information[full_index[cu_ray_num, i] - 1],
+                                                   point_information[full_index[cu_ray_num, i + 1] - 1],
+                                                   float(0)),
+                                          alpha,
+                                          beta
+                                          )
 
         ray_component[0] *= loss
         ray_component[1] *= loss
@@ -3629,7 +3663,7 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     global_vector
 
     """
-    point_vector = point_normal.astype(local_E_vector.dtype)
+    point_vector = np.matmul(point_normal.astype(local_E_vector.dtype),rotation_matrix)
     local_axes = np.eye(3)
     uvn_axes = np.zeros((3, 3), dtype=local_E_vector.dtype)
     uvn_axes[2, :] = point_vector
@@ -3644,7 +3678,7 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     if abs(z_orth) == 0:
         # cannot use z axis as reference, so point normal is aligned with z axis, therefore face_u should be the on the
         # antenna y_axis, therefore face_v can be used to define backwards.
-        uvn_axes[0, :] = np.cross(point_vector, local_axes[0, :]) / np.linalg.norm(
+        uvn_axes[0, :] = np.cross(local_axes[0, :],point_vector) / np.linalg.norm(
             np.cross(local_axes[0, :], point_vector)
         )
 
@@ -3676,7 +3710,7 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     )
     # print('uvn',uvn_axes)
 
-    # convert uvn vector to local axes, and then rotate into global axes
+    # convert uvn vector to local axes, and then rotate into global axes if required
     global_vector = np.matmul(local_E_vector, uvn_axes)
     return global_vector
 

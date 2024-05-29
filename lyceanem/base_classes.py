@@ -119,7 +119,7 @@ class points(object3d):
             """
             mesh_vertices = points.reshape(-1, 3)
             mesh_normals = normals.reshape(-1, 3)
-            new_point_cloud = meshio.Mesh(points=mesh_vertices, cells=[], point_data={"normals": mesh_normals})
+            new_point_cloud = meshio.Mesh(points=mesh_vertices, cells=[], point_data={"Normals": mesh_normals})
 
             self.add_points(new_point_cloud)
 
@@ -373,6 +373,9 @@ class antenna_structures(object3d):
         else:
             point_cloud = self.points.export_points(point_index=point_index)
 
+        point_cloud = GF.mesh_transform(point_cloud, self.pose, False)
+
+
         return point_cloud
 
     def excitation_function(
@@ -389,8 +392,10 @@ class antenna_structures(object3d):
             aperture_points = self.export_all_points()
         else:
             aperture_points = self.export_all_points(point_index=point_index)
+
+        #as export all points imposes the transformation from local to global frame on the points and associated normal vectors, no rotation is required within calculate_conformalVectors
         aperture_weights = EM.calculate_conformalVectors(
-            desired_e_vector, aperture_points.point_data['Normals'], self.pose[:3, :3]
+            desired_e_vector, aperture_points.point_data['Normals'], np.eye(3)
         )
         if phase_shift == "wavefront":
             source_points = np.asarray(aperture_points.points)
@@ -569,10 +574,10 @@ class antenna_pattern(object3d):
         vista_pattern['Imag']=np.imag(np.append(np.append(ex.transpose().ravel().reshape(ex.size,1),
                                                           ey.transpose().ravel().reshape(ex.size,1),axis=1),
                                                 ez.transpose().ravel().reshape(ex.size,1),axis=1))
-        vista_pattern['E($\Theta$) Magnitude']=np.abs(et.transpose().ravel())
-        vista_pattern['E($\Theta$) Phase']=np.angle(et.transpose().ravel())
-        vista_pattern['E($\Phi$) Magnitude']=np.abs(ep.transpose().ravel())
-        vista_pattern['E($\Phi$) Phase']=np.angle(ep.transpose().ravel())
+        vista_pattern['E(theta) Magnitude']=np.abs(et.transpose().ravel())
+        vista_pattern['E(theta) Phase']=np.angle(et.transpose().ravel())
+        vista_pattern['E(phi) Magnitude']=np.abs(ep.transpose().ravel())
+        vista_pattern['E(phi) Phase']=np.angle(ep.transpose().ravel())
         vista_pattern['Magnitude']=np.abs(vista_pattern['Real']+1j*vista_pattern['Imag'])
         vista_pattern['Phase']=np.angle(vista_pattern['Real']+1j*vista_pattern['Imag'])
         return vista_pattern

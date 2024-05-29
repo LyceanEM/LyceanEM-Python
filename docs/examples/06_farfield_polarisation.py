@@ -36,7 +36,7 @@ import meshio
 
 point1=np.asarray([0.0,0,0]).reshape(1,3)
 normal1=np.asarray([0.00,0.0,1.0]).reshape(1,3)
-aperture_coords = meshio.Mesh(points=point1, cells=[], point_data={"normals": normal1})
+aperture_coords = meshio.Mesh(points=point1, cells=[], point_data={"Normals": normal1})
 #aperture_coords.points=o3d.utility.Vector3dVector(point1)
 #aperture_coords.normals=o3d.utility.Vector3dVector(normal1)
 aperture=points([aperture_coords])

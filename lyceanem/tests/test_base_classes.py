@@ -33,14 +33,15 @@ def cube():
                 [1, 4, 5]]
     ## put into meshio mesh
     cube = meshio.Mesh(points=cube_points, cells=[("triangle", cube_cells)])
-
+    from ..geometry.geometryfunctions import compute_normals
+    cube=compute_normals(cube)
     return cube
 
 
 def point():
     # a single point on the +x center of the cube with consistent normal vector
 
-    pc_mesh = meshio.Mesh(points=np.array([[0.5, 0, 0]]), cells=[], point_data={"normals": np.array([[1.0, 0, 0]])})
+    pc_mesh = meshio.Mesh(points=np.array([[0.5, 0, 0]]), cells=[], point_data={"Normals": np.array([[1.0, 0, 0]])})
     return pc_mesh
 
 
@@ -54,6 +55,7 @@ def antenna():
 @pytest.fixture
 def standard_antenna():
     return antenna()
+
 
 
 def test_excitation_function_x_u(standard_antenna):

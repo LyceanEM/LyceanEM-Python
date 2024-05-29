@@ -5,8 +5,7 @@ import copy
 import numpy as np
 import meshio
 import pyvista as pv
-import scipy.stats
-import solid as sd
+import pygmsh
 from importlib_resources import files
 from scipy.spatial.transform import Rotation as R
 
@@ -57,7 +56,7 @@ def NasaAlmond(resolution="quarter"):
 
     nasa.compute_normals(inplace=True)
 
-    NasaAlmond.point_data["normals"] = nasa.point_normals
+    NasaAlmond.point_data["Normals"] = nasa.point_normals
 
     # points=np.asarray(NasaAlmond.vertices)
     # normals=np.asarray(NasaAlmond.vertex_normals)
@@ -301,32 +300,119 @@ def meshedHorn(
     )
     mesh_points = GF.translate_mesh(mesh_points, [0, 0, 1e-6])
 
+    mesh_points = GF.translate_mesh(mesh_points, [0, 0, 1e-6])
+
     return structure, mesh_points
 
-def coneReflector(radius, height):
-    """
-    create a primative of the right size, assuming always orientated
-    with normal aligned with zenith, and major axis with x,
-    adjust position so the face is centred on (0,0,1)
-    """
-    resolution = 200000
-    split = 1
-    reflector1 = o3d.geometry.TriangleMesh.create_cone(
-        radius, height, resolution, split
-    )
-    translate_dist = np.array([0, 0, 3])
-    reflector1 = GF.open3drotate(
-        reflector1,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_axis_angle(
-            np.array([0.0, np.radians(180), 0.0])
-        ),
-        center=True,
-    )
-    reflector1.compute_vertex_normals()
-    reflector1.paint_uniform_color([0.79, 0.50, 0.24])
-    reflector1.translate(translate_dist, relative=True)
 
-    return reflector1
+def parabolic_aperture(diameter, focal_length, thickness, mesh_size, sides='front'):
+    # Define function for parabola equation (y^2 = 4*focal_length*x)
+    def parabola(x):
+        return (1 / (4 * focal_length)) * x ** 2
+
+    with pygmsh.occ.Geometry() as geom:
+        geom.characteristic_length_max = mesh_size
+        # Define points
+        cp1 = geom.add_point([0, 0, 0])  # Center point
+        cp2 = geom.add_point([diameter * 0.5 * (1 / 6), 0, parabola(diameter * 0.5 * (1 / 6))])
+        cp3 = geom.add_point([diameter * 0.5 * (2 / 6), 0, parabola(diameter * 0.5 * (2 / 6))])
+        cp4 = geom.add_point([diameter * 0.5 * (3 / 6), 0, parabola(diameter * 0.5 * (3 / 6))])
+        cp5 = geom.add_point([diameter * 0.5 * (4 / 6), 0, parabola(diameter * 0.5 * (4 / 6))])
+        cp6 = geom.add_point([diameter * 0.5 * (5 / 6), 0, parabola(diameter * 0.5 * (5 / 6))])
+        cp7 = geom.add_point([diameter * 0.5 * (6 / 6), 0, parabola(diameter * 0.5 * (6 / 6))])
+
+        # Define top line based on points
+        line = geom.add_bspline([cp1, cp2, cp3, cp4, cp5, cp6, cp7])
+
+        _, surface, _ = geom.extrude(line, translation_axis=[0.0, 0.0, -thickness])
+
+        # Revolve line to create revolution surface
+        volume_list = []
+        _, b, _ = geom.revolve(surface, rotation_axis=[0.0, 0.0, 1.0], point_on_axis=[0.0, 0.0, 0.0],
+                               angle=0.25 * np.pi)
+        volume_list.append(b)
+        for inc in range(7):
+
+            geom.rotate(surface, point=[0.0, 0.0, 0.0], angle=(1 / 4) * np.pi, axis=[0.0, 0.0, 1.0])
+            _, b2, _ = geom.revolve(surface, rotation_axis=[0.0, 0.0, 1.0], point_on_axis=[0.0, 0.0, 0.0],
+                                    angle=0.25 * np.pi)
+            volume_list.append(b2)
+
+        full_reflector = geom.boolean_union(volume_list)
+
+        mesh_temp = geom.generate_mesh(dim=2)
+    for inc, cell in enumerate(mesh_temp.cells):
+        if cell.type == 'triangle':
+            triangle_index = inc
+
+    import meshio
+    triangle_cells = [("triangle", mesh_temp.cells[triangle_index].data)]
+    mesh = meshio.Mesh(mesh_temp.points, triangle_cells)
+
+    x_space = np.linspace(
+        mesh_size,
+        (diameter / 2),
+        int(np.max(np.asarray([2, np.ceil((diameter * 0.5) / (mesh_size))]))),
+    )
+    z_space = (1 / (4 * focal_length)) * x_space ** 2
+    c_space = np.ceil((2 * np.pi * x_space) / mesh_size).astype(int)
+    normal_gradiant_vector = np.array(
+        [
+            np.ones((len(x_space))),
+            np.zeros((len(x_space))),
+            -1 / (1 / (2 * focal_length) * x_space),
+        ]
+    )
+    source = np.array([x_space, np.zeros((len(x_space))), z_space]).transpose()
+    target = (normal_gradiant_vector * -x_space).transpose()
+    base_directions = np.zeros((x_space.shape[0], 3), dtype=np.float32)
+    norm_length = np.zeros((x_space.shape[0], 1), dtype=np.float32)
+    base_directions, norm_length = math_functions.calc_dv_norm(
+        source, target, base_directions, norm_length
+    )
+    source_coords = np.empty(((1, 3)), dtype=np.float32)
+    source_coords[0, :] = 0
+    source_normals = np.empty(((1, 3)), dtype=np.float32)
+    source_normals[0, :] = 0
+    source_normals[0, 2] = 1
+    for r_index in range(x_space.shape[0]):
+        source_coords = np.append(
+            source_coords,
+            np.array(
+                [
+                    x_space[r_index]
+                    * np.cos(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
+                    x_space[r_index]
+                    * np.sin(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
+                    z_space[r_index] * np.ones(c_space[r_index] - 1),
+                ]
+            ).transpose(),
+            axis=0,
+        )
+        source_normals = np.append(
+            source_normals,
+            np.array(
+                [
+                    base_directions[r_index, 0]
+                    * np.cos(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
+                    base_directions[r_index, 0]
+                    * np.sin(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
+                    base_directions[r_index, 2] * np.ones(c_space[r_index] - 1),
+                ]
+            ).transpose(),
+            axis=0,
+        )
+
+    mesh_vertices = source_coords + np.array([0, 0, 1e-6])
+    mesh_normals = source_normals
+    aperture_points = meshio.Mesh(points=mesh_vertices,
+                                  cells=[("vertex", np.array([[i, ] for i in range(len(mesh_vertices))]))],
+                                  point_data={'Normals': mesh_normals})
+
+    return mesh, aperture_points
+
+
+
 
 
 
