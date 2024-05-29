@@ -28,7 +28,6 @@ be predicted using the :func:`lyceanem.models.frequency_domain.aperture_projecti
 import copy
 
 import numpy as np
-import open3d as o3d
 
 # %%
 # Setting Farfield Resolution and Wavelength
@@ -54,8 +53,7 @@ import lyceanem.tests.reflectordata as data
 
 body, array, _ = data.exampleUAV(10e9)
 
-# visualise UAV and Array
-o3d.visualization.draw_geometries([body, array])
+
 
 # %%
 ## .. image:: ../_static/open3d_structure.png
@@ -63,12 +61,9 @@ o3d.visualization.draw_geometries([body, array])
 # crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to
 # the hidden surfaces, but correctly an aperture will only have an outer face.
 surface_array = copy.deepcopy(array)
-surface_array.triangles = o3d.utility.Vector3iVector(
-    np.asarray(array.triangles)[: len(array.triangles) // 2, :]
-)
-surface_array.triangle_normals = o3d.utility.Vector3dVector(
-    np.asarray(array.triangle_normals)[: len(array.triangle_normals) // 2, :]
-)
+surface_array.cells[0].data = np.asarray(array.cells[0].data)[: (array.cells[0].data).shape[0] // 2, :]
+
+surface_array.cell_data["Normals"] = np.array(array.cell_data["Normals"])[: (array.cells[0].data).shape[0] // 2]
 
 # %%
 # Structures
@@ -104,7 +99,6 @@ directivity_envelope, pcd = aperture_projection(
 # also as an open3d point cloud. This allows easy visualisation using :func:`open3d.visualization.draw_geometries`.
 # %%
 
-o3d.visualization.draw_geometries([body, surface_array, pcd])
 
 # %%
 # .. image:: ../_static/open3d_results_rendering.png

@@ -7,7 +7,6 @@ import pathlib
 
 import cupy as cp
 import numpy as np
-import open3d as o3d
 import scipy.stats
 from numba import cuda, float32, float64, complex64, njit, guvectorize
 from numpy.linalg import norm
@@ -749,7 +748,38 @@ def scatteringkernalv3(
         scattering_matrix[sink_index, 2] = scattering_matrix[sink_index, 2] + (
             ray_component[2] * loss1
         )
+@cuda.jit(device=True)
+def clip(a,a_min,a_max):
+    if a< a_min:
+        a=a_min
+    elif a> a_max:
+        a=a_max
 
+    return a
+@cuda.jit(device=True)
+def lossy_propagation(lengths,alpha,beta):
+    # calculate loss using improved Rayliegh-Summerfeld
+    #outgoing_dir = cuda.local.array(shape=(3), dtype=np.float32)
+    #calc_dv(
+    #    point1,
+    #    point2,
+    #    outgoing_dir,
+    #)
+    #normal = cuda.local.array(shape=(3), dtype=np.float32)
+    #normal[0] = point1["nx"]
+    #normal[1] = point1["ny"]
+    #normal[2] = point1["nz"]
+    #angle=cmath.acos(clip(dot_vec(outgoing_dir,normal),-1.0,1.0))
+    front=-(1/(2*cmath.pi))
+    G=(cmath.exp(-(alpha+1j*beta)*lengths))/lengths
+    #dG=cmath.cos(angle)*(-(alpha+1j*beta)-(1/lengths))*G
+    dG=(-(alpha+1j*beta)-(1/lengths))*G
+    loss=front*dG
+
+    #test replacement with old loss funciton
+    #loss = cmath.exp(-1j * beta * lengths)
+    #loss = loss * (((2*cmath.pi)/beta) / (4 * (cmath.pi) * (lengths)))
+    return loss
 
 @cuda.jit
 def scatteringkernalv4(
@@ -1130,21 +1160,30 @@ def freqdomainkernal(
                 scatter_index = i
 
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
-        wave_vector = (2.0 * cmath.pi) / wavelength[0]
-        # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
-        if scatter_index == 0:
-            loss = cmath.exp(-lengths * wave_vector * 1j) * (
-                wavelength[0] / (4 * cmath.pi * lengths)
-            )
-        elif scatter_index == 1:
-            loss = cmath.exp(-lengths * wave_vector * 1j) * (
-                wavelength[0] / (4 * cmath.pi * lengths)
-            )
-        elif scatter_index == 2:
-            loss = cmath.exp(-lengths * wave_vector * 1j) * (
-                wavelength[0] / (4 * cmath.pi * lengths)
-            )
 
+        # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
+        alpha = 0.0
+        beta = (2.0 * cmath.pi) / wavelength[0]
+        loss = lossy_propagation(
+            calc_sep(
+                point_information[network_index[cu_ray_num, 0] - 1],
+                point_information[network_index[cu_ray_num, 1] - 1],
+                float(0)
+            ),
+            alpha,
+            beta
+        )
+        for i in range(1,network_index.shape[1] - 1):
+            if network_index[cu_ray_num, i + 1] != 0:
+
+                loss *= lossy_propagation(calc_sep(point_information[network_index[cu_ray_num, i] - 1],
+                                                   point_information[network_index[cu_ray_num, i + 1] - 1],
+                                                   float(0)),
+                                          alpha,
+                                          beta
+                                          )
+            
+                
         ray_component[0] *= loss
         ray_component[1] *= loss
         ray_component[2] *= loss
@@ -1227,10 +1266,27 @@ def freqdomainisokernal(
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
         wave_vector = (2.0 * cmath.pi) / wavelength
         # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
-        loss = cmath.exp(-lengths * wave_vector * 1j) * (
-            wavelength / (4 * cmath.pi * lengths)
+        alpha = 0.0
+        beta = (2.0 * cmath.pi) / wavelength[0]
+        loss = lossy_propagation(
+            calc_sep(
+                point_information[network_index[cu_ray_num, 0] - 1],
+                point_information[network_index[cu_ray_num, 1] - 1],
+                float(0)
+            ),
+            alpha,
+            beta
         )
-        ray_component[0] = loss
+        for i in range(1,network_index.shape[1] - 1):
+            if network_index[cu_ray_num, i + 1] != 0:
+
+                loss *= lossy_propagation(calc_sep(point_information[network_index[cu_ray_num, i] - 1],
+                                                   point_information[network_index[cu_ray_num, i + 1] - 1],
+                                                   float(0)),
+                                          alpha,
+                                          beta
+                                          )
+        ray_component[0] *= loss
         # ray_component[1]=loss
         # ray_component[2]=loss
         # print(ray_component[0].real,ray_component[1].real,ray_component[2].real)
@@ -1380,9 +1436,26 @@ def timedomainkernal(
             i = i + 1
 
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
-        wave_vector = (2.0 * cmath.pi) / wavelength[0]
-        # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
-        loss = wavelength[0] / (4 * cmath.pi * lengths)
+        alpha = 0.0
+        beta = (2.0 * cmath.pi) / wavelength[0]
+        loss = lossy_propagation(
+            calc_sep(
+                point_information[full_index[cu_ray_num, 0] - 1],
+                point_information[full_index[cu_ray_num, 1] - 1],
+                float(0)
+            ),
+            alpha,
+            beta
+        )
+        for i in range(1,full_index.shape[1] - 1):
+            if full_index[cu_ray_num, i + 1] != 0:
+
+                loss *= lossy_propagation(calc_sep(point_information[full_index[cu_ray_num, i] - 1],
+                                                   point_information[full_index[cu_ray_num, i + 1] - 1],
+                                                   float(0)),
+                                          alpha,
+                                          beta
+                                          )
 
         ray_component[0] *= loss
         ray_component[1] *= loss
@@ -3563,49 +3636,7 @@ def EMGPUWrapper(source_num, sink_num, full_index, point_information, wavelength
     return resultant_rays
 
 
-def DisplayESources(
-    source_display_coords, E_vectors, source_type="E", arrow_length=0.1
-):
-    # create a set of arrows, coloured depending on the type of source
-    E_colour = np.array([0.08, 0, 1])
-    M_colour = np.array([1, 0.04, 0.04])
-    if source_type == "E":
-        arrow_color = E_colour
-    else:
-        arrow_color = M_colour
 
-    quiver_set = o3d.geometry.TriangleMesh.create_arrow(
-        cone_height=0.2 * arrow_length,
-        cone_radius=0.06 * arrow_length,
-        cylinder_height=0.8 * arrow_length,
-        cylinder_radius=0.04 * arrow_length,
-    )
-    rot_mat = GF.axes_from_normal(E_vectors[0, :], boresight_along="z")
-    quiver_set = GF.open3drotate(quiver_set, rot_mat)
-    quiver_set.translate(
-        source_display_coords[0, :] + E_vectors[0, :] * (-0.5 * arrow_length)
-    )
-    quiver_set.paint_uniform_color(arrow_color)
-    quiver_set.compute_vertex_normals()
-
-    for arrow_num in range(1, source_display_coords.shape[0]):
-        mesh_arrow = o3d.geometry.TriangleMesh.create_arrow(
-            cone_height=0.2 * arrow_length,
-            cone_radius=0.06 * arrow_length,
-            cylinder_height=0.8 * arrow_length,
-            cylinder_radius=0.04 * arrow_length,
-        )
-        rot_mat = GF.axes_from_normal(E_vectors[arrow_num, :], boresight_along="z")
-        mesh_arrow = GF.open3drotate(mesh_arrow, rot_mat)
-        mesh_arrow.translate(
-            source_display_coords[arrow_num]
-            + E_vectors[arrow_num, :] * (-0.5 * arrow_length)
-        )
-        mesh_arrow.paint_uniform_color(arrow_color)
-        mesh_arrow.compute_vertex_normals()
-        quiver_set = quiver_set + mesh_arrow
-
-    return quiver_set
 
 
 # @njit(cache=True, nogil=True)
@@ -3632,7 +3663,7 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     global_vector
 
     """
-    point_vector = point_normal.astype(local_E_vector.dtype)
+    point_vector = np.matmul(point_normal.astype(local_E_vector.dtype),rotation_matrix)
     local_axes = np.eye(3)
     uvn_axes = np.zeros((3, 3), dtype=local_E_vector.dtype)
     uvn_axes[2, :] = point_vector
@@ -3647,7 +3678,7 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     if abs(z_orth) == 0:
         # cannot use z axis as reference, so point normal is aligned with z axis, therefore face_u should be the on the
         # antenna y_axis, therefore face_v can be used to define backwards.
-        uvn_axes[0, :] = np.cross(point_vector, local_axes[0, :]) / np.linalg.norm(
+        uvn_axes[0, :] = np.cross(local_axes[0, :],point_vector) / np.linalg.norm(
             np.cross(local_axes[0, :], point_vector)
         )
 
@@ -3679,7 +3710,7 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     )
     # print('uvn',uvn_axes)
 
-    # convert uvn vector to local axes, and then rotate into global axes
+    # convert uvn vector to local axes, and then rotate into global axes if required
     global_vector = np.matmul(local_E_vector, uvn_axes)
     return global_vector
 
@@ -3802,27 +3833,7 @@ def face_centric_E_vectors(sink_normals, major_axis, scatter_map):
     return new_scatter_map
 
 
-def definePatch(wavelength, width, length, substrate_dielectric=1, mode="Single"):
-    # define a patch antenna
-    # try sources, mapped a tenth of a wavelength along, and given appropriate weights
-    # x_mesh=np.linspace(-length/2,length/2,np.int(np.ceil(length/(wavelength*0.1))+1))
-    if mode == "Single":
-        sources = np.zeros((1, 3), dtype=np.float32)
-        patch_normals = np.zeros((1, 3), dtype=np.float32)
-        patch_normals[:, 2] = 1
-        patch_sources = o3d.geometry.PointCloud()
-        patch_sources.points = o3d.utility.Vector3dVector(sources)
-        patch_sources.normals = o3d.utility.Vector3dVector(patch_normals)
 
-    patch_structure = o3d.geometry.TriangleMesh.create_box(length, width, 1e-4)
-    translate_dist = np.array([-length / 2.0, -width / 2.0, -(1e-4)])
-    # fine_mesh=reflector1.subdivide_midpoint(3)
-    patch_structure.compute_vertex_normals()
-    patch_structure.paint_uniform_color([184 / 256, 115 / 256, 51 / 256])
-    patch_structure.translate(translate_dist, relative=True)
-    patch_weights = np.ones((sources.shape[0]), dtype=np.complex64)
-
-    return patch_sources, patch_weights, patch_structure
 
 
 def importDat(fileaddress):

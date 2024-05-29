@@ -11,6 +11,7 @@ weights.
 
 """
 import numpy as np
+import pygmsh
 
 # %%
 # Setting Farfield Resolution and Wavelength
@@ -34,11 +35,11 @@ wavelength = 3e8 / 10e9
 from lyceanem.base_classes import points,structures,antenna_structures
 
 from lyceanem.geometry.targets import meshedHorn
-structure,array_points=meshedHorn(3*wavelength, 1*wavelength, 4*wavelength, 0.05*wavelength,np.radians(10),wavelength*0.5)
+structure,array_points=meshedHorn(3*wavelength, 1*wavelength, 4*wavelength, 1*wavelength,np.radians(10),wavelength*0.5)
+
 
 horn_antenna=antenna_structures(structures(solids=[structure]), points(points=[array_points]))
 
-horn_antenna.visualise_antenna()
 
 from lyceanem.models.frequency_domain import calculate_farfield
 
@@ -128,7 +129,6 @@ from scipy.spatial.transform import Rotation as R
 
 r=R.from_euler('xyz', np.radians(np.asarray([45.0,45.0,0.0])))
 horn_antenna.rotate_antenna(r.as_matrix())
-horn_antenna.visualise_antenna()
 
 
 desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
