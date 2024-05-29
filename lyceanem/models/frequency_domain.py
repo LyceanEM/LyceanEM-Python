@@ -757,9 +757,11 @@ def calculate_scattering(
             scatter_map = EM.EMGPUFreqDomain(
                 num_sources, num_sinks, full_index, point_informationv2, wavelength
             )
+
             Ex = np.dot(np.ones((num_sources)), scatter_map[:, :, 0])
             Ey = np.dot(np.ones((num_sources)), scatter_map[:, :, 1])
             Ez = np.dot(np.ones((num_sources)), scatter_map[:, :, 2])
+
 
         # convert to etheta,ephi
 
@@ -820,5 +822,6 @@ def calculate_scattering(
                 
 
     return Ex, Ey, Ez
+
 
 
