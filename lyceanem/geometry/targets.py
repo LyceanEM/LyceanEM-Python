@@ -234,9 +234,9 @@ def meshedReflector(majorsize, minorsize, thickness, grid_resolution, sides="all
 
     Returns
     -------
-    reflector : :class:`open3d.geometry.TriangleMesh`
+    reflector : meshio object
         the defined cuboid
-    mesh_points : :class:`open3d.geometry.PointCloud`
+    mesh_points : meshio object
         the scattering points, spaced at grid_resolution seperation between each point, and with normal vectors from
         the populating surfaces
 
@@ -286,9 +286,9 @@ def meshedHorn(
 
     Returns
     -------
-    structure : :class:`open3d.geometry.TriangleMesh`
+    structure : meshio object
         the physical structure of the horn
-    mesh_points : :class:`open3d.geometry.PointCloud`
+    mesh_points : meshio object
         the source points for the horn aperture
     """
     print("HIHIH")
