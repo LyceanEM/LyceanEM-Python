@@ -574,10 +574,10 @@ class antenna_pattern(object3d):
         vista_pattern['Imag']=np.imag(np.append(np.append(ex.transpose().ravel().reshape(ex.size,1),
                                                           ey.transpose().ravel().reshape(ex.size,1),axis=1),
                                                 ez.transpose().ravel().reshape(ex.size,1),axis=1))
-        vista_pattern['E($\Theta$) Magnitude']=np.abs(et.transpose().ravel())
-        vista_pattern['E($\Theta$) Phase']=np.angle(et.transpose().ravel())
-        vista_pattern['E($\Phi$) Magnitude']=np.abs(ep.transpose().ravel())
-        vista_pattern['E($\Phi$) Phase']=np.angle(ep.transpose().ravel())
+        vista_pattern['E(theta) Magnitude']=np.abs(et.transpose().ravel())
+        vista_pattern['E(theta) Phase']=np.angle(et.transpose().ravel())
+        vista_pattern['E(phi) Magnitude']=np.abs(ep.transpose().ravel())
+        vista_pattern['E(phi) Phase']=np.angle(ep.transpose().ravel())
         vista_pattern['Magnitude']=np.abs(vista_pattern['Real']+1j*vista_pattern['Imag'])
         vista_pattern['Phase']=np.angle(vista_pattern['Real']+1j*vista_pattern['Imag'])
         return vista_pattern
