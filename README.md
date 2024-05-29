@@ -58,7 +58,6 @@ environment, and installing both cudatoolkit and cupy.
 
    $ conda install -c conda-forge cudatoolkit
    $ conda install -c conda-forge cupy
-   $ conda install -c open3d-admin open3d==0.9.0
    $ pip install lyceanem
 
 ```

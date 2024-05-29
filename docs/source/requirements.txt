@@ -1,6 +1,6 @@
 setuptools==63.2.0
 numpy
-open3d
+meshio
 cupy
 matplotlib
 numba

@@ -14,14 +14,14 @@ rather than an aperture antenna such as a horn.
 
 """
 
+
 import numpy as np
-import open3d as o3d
 
 # %%
 # Frequency and Mesh Resolution
 # ------------------------------
 #
-freq = np.asarray(15.0e9)
+freq = np.asarray(16.0e9)
 wavelength = 3e8 / freq
 mesh_resolution = 0.5 * wavelength
 
@@ -32,9 +32,11 @@ mesh_resolution = 0.5 * wavelength
 import lyceanem.geometry.targets as TL
 import lyceanem.geometry.geometryfunctions as GF
 
+
 transmit_horn_structure, transmitting_antenna_surface_coords = TL.meshedHorn(
     58e-3, 58e-3, 128e-3, 2e-3, 0.21, mesh_resolution
 )
+
 receive_horn_structure, receiving_antenna_surface_coords = TL.meshedHorn(
     58e-3, 58e-3, 128e-3, 2e-3, 0.21, mesh_resolution
 )
@@ -43,43 +45,38 @@ receive_horn_structure, receiving_antenna_surface_coords = TL.meshedHorn(
 # Position Transmitter
 # ----------------------
 # rotate the transmitting antenna to the desired orientation, and then translate to final position.
-# :func:`lyceanem.geometryfunctions.open3drotate` allows both the center of rotation to be defined, and ensures the
-# right syntax is used for Open3d, as it was changed from 0.9.0 to 0.10.0 and onwards.
+# :func:`lyceanem.geometryfunctions.mesh_rotate` and :func:`lyceanem.geometryfunctions.translate_mesh` are used to achive this
 #
 rotation_vector1 = np.radians(np.asarray([90.0, 0.0, 0.0]))
 rotation_vector2 = np.radians(np.asarray([0.0, 0.0, -90.0]))
-transmit_horn_structure = GF.open3drotate(
+rotation_vector3 = np.radians(np.asarray([0.0, 0.0, 90.0]))
+transmit_horn_structure = GF.mesh_rotate(
     transmit_horn_structure,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
+    rotation_vector1
 )
-transmit_horn_structure = GF.open3drotate(
-    transmit_horn_structure,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2),
-)
-transmit_horn_structure.translate(np.asarray([2.695, 0, 0]), relative=True)
-transmitting_antenna_surface_coords = GF.open3drotate(
-    transmitting_antenna_surface_coords,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-)
-transmitting_antenna_surface_coords = GF.open3drotate(
-    transmitting_antenna_surface_coords,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2),
-)
-transmitting_antenna_surface_coords.translate(np.asarray([2.695, 0, 0]), relative=True)
+transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure,rotation_vector2)
+
+transmit_horn_structure = GF.translate_mesh(transmit_horn_structure,np.asarray([2.695, 0, 0]))
+
+transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords,rotation_vector1)
+
+transmitting_antenna_surface_coords = GF.mesh_rotate(
+    transmitting_antenna_surface_coords,rotation_vector2)
+
+transmitting_antenna_surface_coords = GF.translate_mesh(transmitting_antenna_surface_coords,np.asarray([2.695, 0, 0]))
 # %%
 # Position Receiver
 # ------------------
 # rotate the receiving horn to desired orientation and translate to final position.
-receive_horn_structure = GF.open3drotate(
-    receive_horn_structure,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-)
-receive_horn_structure.translate(np.asarray([0, 1.427, 0]), relative=True)
-receiving_antenna_surface_coords = GF.open3drotate(
-    receiving_antenna_surface_coords,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-)
-receiving_antenna_surface_coords.translate(np.asarray([0, 1.427, 0]), relative=True)
+
+receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector1)
+#receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector3)
+receive_horn_structure = GF.translate_mesh(receive_horn_structure,np.asarray([0, 1.427, 0]))
+receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector1)
+#receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector3)
+receiving_antenna_surface_coords = GF.translate_mesh(receiving_antenna_surface_coords,np.asarray([0, 1.427, 0]))
+
+
 
 # %%
 # Create Scattering Plate
@@ -89,18 +86,19 @@ receiving_antenna_surface_coords.translate(np.asarray([0, 1.427, 0]), relative=T
 reflectorplate, scatter_points = TL.meshedReflector(
     0.3, 0.3, 6e-3, wavelength * 0.5, sides="front"
 )
+
 position_vector = np.asarray([29e-3, 0.0, 0])
 rotation_vector1 = np.radians(np.asarray([0.0, 90.0, 0.0]))
-scatter_points = GF.open3drotate(
+scatter_points = GF.mesh_rotate(
     scatter_points,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
+   rotation_vector1
 )
-reflectorplate = GF.open3drotate(
+reflectorplate = GF.mesh_rotate(
     reflectorplate,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
+    rotation_vector1
 )
-reflectorplate.translate(position_vector, relative=True)
-scatter_points.translate(position_vector, relative=True)
+reflectorplate = GF.translate_mesh(reflectorplate,position_vector)
+scatter_points = GF.translate_mesh(scatter_points,position_vector)
 
 # %%
 # Specify Reflection Angle
@@ -110,13 +108,12 @@ scatter_points.translate(position_vector, relative=True)
 plate_orientation_angle = 45.0
 
 rotation_vector = np.radians(np.asarray([0.0, 0.0, plate_orientation_angle]))
-scatter_points = GF.open3drotate(
+scatter_points = GF.mesh_rotate(
     scatter_points,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-)
-reflectorplate = GF.open3drotate(
+    rotation_vector)
+reflectorplate = GF.mesh_rotate(
     reflectorplate,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
+    rotation_vector
 )
 
 from lyceanem.base_classes import structures
@@ -126,28 +123,22 @@ blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_str
 # %%
 # Visualise the Scene Geometry
 # ------------------------------
-# Use open3d function :func:`open3d.visualization.draw_geometries` to visualise the scene and ensure that all the
-# relavent sources and scatter points are correct. Point normal vectors can be displayed by pressing 'n' while the
-# window is open.
-mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-    size=0.5, origin=[0, 0, 0]
-)
-o3d.visualization.draw_geometries(
-    [
-        transmitting_antenna_surface_coords,
-        receiving_antenna_surface_coords,
-        scatter_points,
-        reflectorplate,
-        mesh_frame,
-        receive_horn_structure,
-        transmit_horn_structure,
-    ]
-)
-# %%
-# .. image:: ../_static/03_frequency_domain_channel_model_picture_01.png
-#
-
-# %%
+#############################################NEED TO FIX THIS with pyvista
+import pyvista as pv
+def structure_cells(array):
+    ## add collumn of 3s to beggining of each row
+    array = np.append(np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1)
+    return array
+pyvista_mesh = pv.PolyData(reflectorplate.points, structure_cells(reflectorplate.cells[0].data))
+pyvista_mesh2 = pv.PolyData(receive_horn_structure.points, structure_cells(receive_horn_structure.cells[0].data))
+pyvista_mesh3 = pv.PolyData(transmit_horn_structure.points, structure_cells(transmit_horn_structure.cells[0].data))
+## plot the mesh
+plotter = pv.Plotter()
+plotter.add_mesh(pyvista_mesh, color="white", show_edges=True)
+plotter.add_mesh(pyvista_mesh2, color="blue", show_edges=True)
+plotter.add_mesh(pyvista_mesh3, color="red", show_edges=True)
+plotter.add_axes_at_origin()
+plotter.show()
 # Specify desired Transmit Polarisation
 # --------------------------------------
 # The transmit polarisation has a significant effect on the channel characteristics. In this example the transmit
@@ -174,7 +165,9 @@ Ex, Ey, Ez = FD.calculate_scattering(
     scatter_points=scatter_points,
     wavelength=wavelength,
     scattering=1,
+    project_vectors=False
 )
+
 
 # %%
 # Examine Scattering
@@ -184,7 +177,9 @@ Ex, Ey, Ez = FD.calculate_scattering(
 # through different angles from 0 to 90 degrees in 1 degree steps.
 
 
-angle_values = np.linspace(0, 90, 91)
+
+
+angle_values = np.linspace(0, 90, 181)
 angle_increment = np.diff(angle_values)[0]
 responsex = np.zeros((len(angle_values)), dtype="complex")
 responsey = np.zeros((len(angle_values)), dtype="complex")
@@ -193,41 +188,48 @@ responsez = np.zeros((len(angle_values)), dtype="complex")
 plate_orientation_angle = -45.0
 
 rotation_vector = np.radians(
-    np.asarray([0.0, 0.0, plate_orientation_angle + angle_increment])
+    np.asarray([0.0, 0.0, plate_orientation_angle + 0.0])
 )
-scatter_points = GF.open3drotate(
-    scatter_points,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-)
-reflectorplate = GF.open3drotate(
-    reflectorplate,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-)
+scatter_points = GF.mesh_rotate(scatter_points,rotation_vector)
+reflectorplate = GF.mesh_rotate(reflectorplate,rotation_vector)
+import copy
 
 from tqdm import tqdm
 
 for angle_inc in tqdm(range(len(angle_values))):
-    rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_increment]))
-    scatter_points = GF.open3drotate(
-        scatter_points,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-    )
-    reflectorplate = GF.open3drotate(
-        reflectorplate,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-    )
+    rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_values[angle_inc]]))
+    scatter_points_temp = GF.mesh_rotate(copy.deepcopy(scatter_points),rotation_vector)
+    reflectorplate_temp = GF.mesh_rotate(copy.deepcopy(reflectorplate),rotation_vector)
+    blockers = structures([reflectorplate_temp, receive_horn_structure, transmit_horn_structure])
+    # pyvista_mesh = pv.PolyData(reflectorplate_temp.points, structure_cells(reflectorplate_temp.cells[0].data))
+    # pyvista_mesh2 = pv.PolyData(receive_horn_structure.points, structure_cells(receive_horn_structure.cells[0].data))
+    # pyvista_mesh3 = pv.PolyData(transmit_horn_structure.points, structure_cells(transmit_horn_structure.cells[0].data))
+    # pyvista_mesh4 = pv.PolyData(scatter_points_temp.points)
+    # ## plot the mesh
+    # plotter = pv.Plotter()
+    # plotter.add_mesh(pyvista_mesh, color="white", show_edges=True)
+    # plotter.add_mesh(pyvista_mesh2, color="blue", show_edges=True)
+    # plotter.add_mesh(pyvista_mesh3, color="red", show_edges=True)
+    # plotter.add_mesh(pyvista_mesh4, color="green")
+    # plotter.add_axes_at_origin()
+    # plotter.show()
     Ex, Ey, Ez = FD.calculate_scattering(
         aperture_coords=transmitting_antenna_surface_coords,
         sink_coords=receiving_antenna_surface_coords,
         antenna_solid=blockers,
         desired_E_axis=desired_E_axis,
-        scatter_points=scatter_points,
+        scatter_points=scatter_points_temp,
         wavelength=wavelength,
         scattering=1,
+        project_vectors=False
     )
-    responsex[angle_inc] = Ex
-    responsey[angle_inc] = Ey
-    responsez[angle_inc] = Ez
+    responsex[angle_inc] = np.sum(Ex)
+    responsey[angle_inc] = np.sum(Ey)
+    responsez[angle_inc] = np.sum(Ez)
+
+
+
+
 
 # %%
 # Plot Normalised Response

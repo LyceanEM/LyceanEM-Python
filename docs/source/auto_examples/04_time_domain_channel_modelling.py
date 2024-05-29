@@ -13,8 +13,7 @@ rather than an aperture antenna such as a horn.
 """
 
 import numpy as np
-import open3d as o3d
-
+import meshio
 # %%
 # Frequency and Mesh Resolution
 # ------------------------------
@@ -31,7 +30,7 @@ thermal_noise_power = 4 * kb * 293.15 * receiver_impedence * bandwidth
 noise_power = -80  # dbw
 mean_noise = 0
 
-model_freq = 16e9
+model_freq = 24e9
 wavelength = 3e8 / model_freq
 
 # %%
@@ -57,38 +56,25 @@ receive_horn_structure, receiving_antenna_surface_coords = TL.meshedHorn(
 #
 rotation_vector1 = np.radians(np.asarray([90.0, 0.0, 0.0]))
 rotation_vector2 = np.radians(np.asarray([0.0, 0.0, -90.0]))
-transmit_horn_structure = GF.open3drotate(
-    transmit_horn_structure,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-)
-transmit_horn_structure = GF.open3drotate(
-    transmit_horn_structure,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2),
-)
-transmit_horn_structure.translate(np.asarray([2.695, 0, 0]), relative=True)
-transmitting_antenna_surface_coords = GF.open3drotate(
-    transmitting_antenna_surface_coords,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-)
-transmitting_antenna_surface_coords = GF.open3drotate(
-    transmitting_antenna_surface_coords,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2),
-)
-transmitting_antenna_surface_coords.translate(np.asarray([2.695, 0, 0]), relative=True)
+
+
+
+transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure, rotation_vector1)
+transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure, rotation_vector2)
+transmit_horn_structure = GF.translate_mesh(transmit_horn_structure, np.asarray([2.695, 0, 0]))
+transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords, rotation_vector1)
+transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords, rotation_vector2)
+transmitting_antenna_surface_coords = GF.translate_mesh(transmitting_antenna_surface_coords, np.asarray([2.695, 0, 0]))
 # %%
 # Position Receiver
 # ------------------
 # rotate the receiving horn to desired orientation and translate to final position.
-receive_horn_structure = GF.open3drotate(
-    receive_horn_structure,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-)
-receive_horn_structure.translate(np.asarray([0, 1.427, 0]), relative=True)
-receiving_antenna_surface_coords = GF.open3drotate(
-    receiving_antenna_surface_coords,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-)
-receiving_antenna_surface_coords.translate(np.asarray([0, 1.427, 0]), relative=True)
+
+
+receive_horn_structure = GF.mesh_rotate(receive_horn_structure, rotation_vector1)
+receive_horn_structure = GF.translate_mesh(receive_horn_structure, np.asarray([0, 1.427, 0]))
+receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords, rotation_vector1)
+receiving_antenna_surface_coords = GF.translate_mesh(receiving_antenna_surface_coords, np.asarray([0, 1.427, 0]))
 
 # %%
 # Create Scattering Plate
@@ -100,16 +86,11 @@ reflectorplate, scatter_points = TL.meshedReflector(
 )
 position_vector = np.asarray([29e-3, 0.0, 0])
 rotation_vector1 = np.radians(np.asarray([0.0, 90.0, 0.0]))
-scatter_points = GF.open3drotate(
-    scatter_points,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-)
-reflectorplate = GF.open3drotate(
-    reflectorplate,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-)
-reflectorplate.translate(position_vector, relative=True)
-scatter_points.translate(position_vector, relative=True)
+scatter_points = GF.mesh_rotate(scatter_points, rotation_vector1)
+reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector1)
+reflectorplate = GF.translate_mesh(reflectorplate, position_vector)
+scatter_points = GF.translate_mesh(scatter_points, position_vector)
+
 
 # %%
 # Specify Reflection Angle
@@ -119,41 +100,34 @@ scatter_points.translate(position_vector, relative=True)
 plate_orientation_angle = 45.0
 
 rotation_vector = np.radians(np.asarray([0.0, 0.0, plate_orientation_angle]))
-scatter_points = GF.open3drotate(
-    scatter_points,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-)
-reflectorplate = GF.open3drotate(
-    reflectorplate,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-)
-
+scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
+reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
 from lyceanem.base_classes import structures
 
 blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_structure])
 
+
 # %%
 # Visualise the Scene Geometry
 # ------------------------------
-# Use open3d function :func:`open3d.visualization.draw_geometries` to visualise the scene and ensure that all the
-# relavent sources and scatter points are correct. Point normal vectors can be displayed by pressing 'n' while the
-# window is open.
-mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-    size=0.5, origin=[0, 0, 0]
-)
-o3d.visualization.draw_geometries(
-    [
-        transmitting_antenna_surface_coords,
-        receiving_antenna_surface_coords,
-        scatter_points,
-        reflectorplate,
-        mesh_frame,
-        receive_horn_structure,
-        transmit_horn_structure,
-    ]
-)
-# %%
-# .. image:: ../_static/03_frequency_domain_channel_model_picture_01.png
+
+
+import pyvista as pv
+
+def structure_cells(array):
+    ## add collumn of 3s to beggining of each row
+    array = np.append(np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1)
+    return array
+pyvista_mesh = pv.PolyData(reflectorplate.points, structure_cells(reflectorplate.cells[0].data))
+pyvista_mesh2 = pv.PolyData(receive_horn_structure.points, structure_cells(receive_horn_structure.cells[0].data))
+pyvista_mesh3 = pv.PolyData(transmit_horn_structure.points, structure_cells(transmit_horn_structure.cells[0].data))
+## plot the mesh
+plotter = pv.Plotter()
+plotter.add_mesh(pyvista_mesh, color="white", show_edges=True)
+plotter.add_mesh(pyvista_mesh2, color="blue", show_edges=True)
+plotter.add_mesh(pyvista_mesh3, color="red", show_edges=True)
+plotter.add_axes_at_origin()
+plotter.show()
 
 # %%
 # Specify desired Transmit Polarisation
@@ -183,14 +157,8 @@ plate_orientation_angle = -45.0
 rotation_vector = np.radians(
     np.asarray([0.0, 0.0, plate_orientation_angle + angle_increment])
 )
-scatter_points = GF.open3drotate(
-    scatter_points,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-)
-reflectorplate = GF.open3drotate(
-    reflectorplate,
-    o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-)
+scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
+reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
 
 from tqdm import tqdm
 
@@ -201,14 +169,8 @@ Ez = np.zeros((len(angle_values), num_samples))
 
 for angle_inc in tqdm(range(len(angle_values))):
     rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_increment]))
-    scatter_points = GF.open3drotate(
-        scatter_points,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-    )
-    reflectorplate = GF.open3drotate(
-        reflectorplate,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-    )
+    scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
+    reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
     blockers = structures(
         [reflectorplate, transmit_horn_structure, receive_horn_structure]
     )
@@ -220,7 +182,7 @@ for angle_inc in tqdm(range(len(angle_values))):
     output_amplitude_peak = v_transmit
 
     desired_E_axis = np.zeros((3), dtype=np.float32)
-    desired_E_axis[2] = 1.0
+    desired_E_axis[1] = 1.0
     noise_volts_peak = (10 ** (noise_power / 10) * receiver_impedence) * 0.5
 
     excitation_signal = output_amplitude_rms * sig.chirp(

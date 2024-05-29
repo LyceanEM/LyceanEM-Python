@@ -10,5 +10,5 @@ The most general purpose function in Targets is :func:'source_cloud_from_shape' 
 
 
 .. automodule:: lyceanem.geometry.targets
-    :members: source_cloud_from_shape, meshedHorn, meshedReflector
+    :members: meshedHorn, meshedReflector
 
