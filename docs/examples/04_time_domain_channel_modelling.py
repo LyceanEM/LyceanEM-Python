@@ -51,8 +51,7 @@ receive_horn_structure, receiving_antenna_surface_coords = TL.meshedHorn(
 # Position Transmitter
 # ----------------------
 # rotate the transmitting antenna to the desired orientation, and then translate to final position.
-# :func:`lyceanem.geometry.geometryfunctions.open3drotate` allows both the center of rotation to be defined, and
-# ensures the right syntax is used for Open3d, as it was changed from 0.9.0 to 0.10.0 and onwards.
+# :func:`lyceanem.geometry.geometryfunctions.translate_mesh`, :func:`lyceanem.geometry.geometryfunctions.mesh_rotate` and :func:`lyceanem.geometry.geometryfunctions.mesh_transform` are included, allowing translation, rotation, and transformation of the meshio objects as required.
 #
 rotation_vector1 = np.radians(np.asarray([90.0, 0.0, 0.0]))
 rotation_vector2 = np.radians(np.asarray([0.0, 0.0, -90.0]))
