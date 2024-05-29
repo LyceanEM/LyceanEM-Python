@@ -3678,7 +3678,7 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     if abs(z_orth) == 0:
         # cannot use z axis as reference, so point normal is aligned with z axis, therefore face_u should be the on the
         # antenna y_axis, therefore face_v can be used to define backwards.
-        uvn_axes[0, :] = np.cross(point_vector, local_axes[0, :]) / np.linalg.norm(
+        uvn_axes[0, :] = np.cross(local_axes[0, :],point_vector) / np.linalg.norm(
             np.cross(local_axes[0, :], point_vector)
         )
 
@@ -3710,7 +3710,7 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     )
     # print('uvn',uvn_axes)
 
-    # convert uvn vector to local axes, and then rotate into global axes
+    # convert uvn vector to local axes, and then rotate into global axes if required
     global_vector = np.matmul(local_E_vector, uvn_axes)
     return global_vector
 

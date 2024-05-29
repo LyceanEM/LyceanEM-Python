@@ -392,8 +392,10 @@ class antenna_structures(object3d):
             aperture_points = self.export_all_points()
         else:
             aperture_points = self.export_all_points(point_index=point_index)
+
+        #as export all points imposes the transformation from local to global frame on the points and associated normal vectors, no rotation is required within calculate_conformalVectors
         aperture_weights = EM.calculate_conformalVectors(
-            desired_e_vector, aperture_points.point_data['Normals'], self.pose[:3, :3]
+            desired_e_vector, aperture_points.point_data['Normals'], np.eye(3)
         )
         if phase_shift == "wavefront":
             source_points = np.asarray(aperture_points.points)
