@@ -33,12 +33,6 @@ The Steering Efficiency can then be evaluated using :func:`lyceanem.electromagne
     import numpy as np
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 17-26
 
 Setting Farfield Resolution and Wavelength
@@ -61,18 +55,12 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 32-36
 
 Geometries
 ------------------------
 In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
-:class:`open3d.geometry.TriangleMesh` structures can be accessed by importing the data subpackage
+mesh structures can be accessed by importing the data subpackage
 
 .. GENERATED FROM PYTHON SOURCE LINES 36-42
 
@@ -81,12 +69,6 @@ In order to make things easy to start, an example geometry has been included wit
     import lyceanem.tests.reflectordata as data
 
     body, array, source_coords = data.exampleUAV(10e9)
-
-
-
-
-
-
 
 
 
@@ -104,12 +86,6 @@ In order to make things easy to start, an example geometry has been included wit
     from lyceanem.base_classes import structures
 
     blockers = structures([body, array])
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 51-58
@@ -161,33 +137,6 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
     )
 
 
-
-
-.. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_001.png
-   :alt: 05 array beamforming
-   :srcset: /auto_examples/images/sphx_glr_05_array_beamforming_001.png
-   :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\empropagation.py:3669: ComplexWarning: Casting complex values to real discards the imaginary part
-      uvn_axes[2, :] = point_vector
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\empropagation.py:3686: ComplexWarning: Casting complex values to real discards the imaginary part
-      uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\empropagation.py:3708: ComplexWarning: Casting complex values to real discards the imaginary part
-      uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
-    sources shape (67, 3)
-    sinks shape (6697, 3)
-    environment_points shape (0, 3)
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1097: RuntimeWarning: divide by zero encountered in log10
-      logdata = 10 * np.log10(data)
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 93-94
 
 .. image:: ../_static/sphx_glr_05_array_beamforming_001.png
@@ -216,26 +165,6 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
             np.max(10 * np.log10(directivity_map[:, :, 2]))
         )
     )
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Steering Effciency of 4.0%
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\05_array_beamforming.py:111: RuntimeWarning: divide by zero encountered in log10
-      np.max(10 * np.log10(directivity_map[:, :, 2]))
-    Maximum Directivity of 25.2 dBi
-
-
-
-
-
-.. rst-class:: sphx-glr-timing
-
-   **Total running time of the script:** (0 minutes 59.354 seconds)
 
 
 .. _sphx_glr_download_auto_examples_05_array_beamforming.py:

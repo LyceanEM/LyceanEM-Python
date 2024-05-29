@@ -34,12 +34,6 @@ weights.
     import numpy as np
     import meshio
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 18-27
 
 Setting Farfield Resolution and Wavelength
@@ -62,18 +56,12 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 33-37
 
 Geometries
 ------------------------
 In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
-:class:`open3d.geometry.TriangleMesh` structures can be accessed by importing the data subpackage
+triangle structures can be accessed by importing the data subpackage
 
 .. GENERATED FROM PYTHON SOURCE LINES 37-43
 
@@ -82,12 +70,6 @@ In order to make things easy to start, an example geometry has been included wit
     import lyceanem.tests.reflectordata as data
 
     body, array, source_coords = data.exampleUAV(10e9)
-
-
-
-
-
-
 
 
 
@@ -124,12 +106,6 @@ In order to make things easy to start, an example geometry has been included wit
 
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 69-70
 
 .. image:: ../_static/sourcecloudfromshapeuav.png
@@ -162,26 +138,6 @@ does not produce consistently spaced results.
     )
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\empropagation.py:3669: ComplexWarning: Casting complex values to real discards the imaginary part
-      uvn_axes[2, :] = point_vector
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\empropagation.py:3686: ComplexWarning: Casting complex values to real discards the imaginary part
-      uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\empropagation.py:3708: ComplexWarning: Casting complex values to real discards the imaginary part
-      uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
-    sources shape (67, 3)
-    sinks shape (32761, 3)
-    environment_points shape (0, 3)
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 93-101
 
 Storing and Manipulating Antenna Patterns
@@ -209,38 +165,6 @@ plottype='Contour' to the function.
     UAV_Static_Pattern.display_pattern()
 
 
-
-
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_001.png
-         :alt: Etheta
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_001.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
-         :alt: Ephi
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
-         :class: sphx-glr-multi-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1100: RuntimeWarning: divide by zero encountered in log10
-      logdata = 20 * np.log10(data)
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1103: RuntimeWarning: invalid value encountered in subtract
-      logdata -= np.nanmax(logdata)
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 113-115
 
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_001.png
@@ -254,49 +178,10 @@ plottype='Contour' to the function.
     UAV_Static_Pattern.display_pattern(plottype="Contour")
 
 
-
-
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
-         :alt: Etheta
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
-         :alt: Ephi
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
-         :class: sphx-glr-multi-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    C:\Users\lycea\.conda\envs\SpaceBasedSolar\lib\site-packages\matplotlib\contour.py:1479: UserWarning: Warning: converting a masked element to nan.
-      self.zmax = float(z.max())
-    C:\Users\lycea\.conda\envs\SpaceBasedSolar\lib\site-packages\matplotlib\contour.py:1480: UserWarning: Warning: converting a masked element to nan.
-      self.zmin = float(z.min())
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1227: UserWarning: No contour levels were found within the data range.
-      CS4 = ax.contour(
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 119-121
 
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_003.png
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_004.png
-
-
-.. rst-class:: sphx-glr-timing
-
-   **Total running time of the script:** (0 minutes 23.464 seconds)
 
 
 .. _sphx_glr_download_auto_examples_02_coherently_polarised_array.py:
