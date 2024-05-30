@@ -364,7 +364,7 @@ def visiblespace(
     -------------------
     visible_patterns : m by l by n array of floats
         3D antenna patterns
-    resultant_pcd : open3d pointcloud
+    resultant_pcd : meshio pointcloud
         colour data to scale the points fractional visibility from the source aperture
     """
 

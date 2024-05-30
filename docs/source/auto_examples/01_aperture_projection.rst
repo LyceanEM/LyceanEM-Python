@@ -10,8 +10,8 @@
     .. note::
         :class: sphx-glr-download-link-note
 
-        Click :ref:`here <sphx_glr_download_auto_examples_01_aperture_projection.py>`
-        to download the full example code
+        :ref:`Go to the end <sphx_glr_download_auto_examples_01_aperture_projection.py>`
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -40,17 +40,16 @@ interest.
 As this method is built into a raytracing environment, the maximum performance for an aperture on any platform can also
 be predicted using the :func:`lyceanem.models.frequency_domain.aperture_projection` function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 28-33
+.. GENERATED FROM PYTHON SOURCE LINES 28-32
 
-.. code-block:: default
+.. code-block:: Python
 
     import copy
 
     import numpy as np
-    import open3d as o3d
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-43
+.. GENERATED FROM PYTHON SOURCE LINES 33-42
 
 Setting Farfield Resolution and Wavelength
 -------------------------------------------
@@ -62,9 +61,9 @@ In order to ensure a fast example, 37 points have been used here for both, givin
 The wavelength of interest is also an important variable for antenna array analysis, so we set it now for 10GHz,
 an X band aperture.
 
-.. GENERATED FROM PYTHON SOURCE LINES 43-48
+.. GENERATED FROM PYTHON SOURCE LINES 42-47
 
-.. code-block:: default
+.. code-block:: Python
 
 
     az_res = 37
@@ -72,75 +71,71 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 49-53
+.. GENERATED FROM PYTHON SOURCE LINES 48-52
 
 Geometries
 ------------------------
 In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
-open3d trianglemesh structures can be accessed by importing the data subpackage
+meshio trianglemesh structures can be accessed by importing the data subpackage
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-60
+.. GENERATED FROM PYTHON SOURCE LINES 52-58
 
-.. code-block:: default
+.. code-block:: Python
 
     import lyceanem.tests.reflectordata as data
 
     body, array, _ = data.exampleUAV(10e9)
 
-    # visualise UAV and Array
-    o3d.visualization.draw_geometries([body, array])
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-62
+
+.. GENERATED FROM PYTHON SOURCE LINES 59-60
 
 # .. image:: ../_static/open3d_structure.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-73
+.. GENERATED FROM PYTHON SOURCE LINES 60-68
 
-.. code-block:: default
+.. code-block:: Python
 
 
     # crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to
     # the hidden surfaces, but correctly an aperture will only have an outer face.
     surface_array = copy.deepcopy(array)
-    surface_array.triangles = o3d.utility.Vector3iVector(
-        np.asarray(array.triangles)[: len(array.triangles) // 2, :]
-    )
-    surface_array.triangle_normals = o3d.utility.Vector3dVector(
-        np.asarray(array.triangle_normals)[: len(array.triangle_normals) // 2, :]
-    )
+    surface_array.cells[0].data = np.asarray(array.cells[0].data)[: (array.cells[0].data).shape[0] // 2, :]
+
+    surface_array.cell_data["Normals"] = np.array(array.cell_data["Normals"])[: (array.cells[0].data).shape[0] // 2]
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-80
+.. GENERATED FROM PYTHON SOURCE LINES 69-75
 
 Structures
 --------------
 LyceanEM uses a class named 'structures' to store and maniuplate joined 3D solids. Currently all that is implemented
 is the class itself, and methods to allow translation and rotation of the trianglemesh solids. A structure can be
 passed to the models to provide the environment to be considered as blockers.
-structures are created by calling the class, and passing it a list of the open3d trianglemesh structures to be added.
+structures are created by calling the class, and passing it a list of the meshio trianglemesh structures to be added.
 
-.. GENERATED FROM PYTHON SOURCE LINES 80-84
+.. GENERATED FROM PYTHON SOURCE LINES 75-79
 
-.. code-block:: default
+.. code-block:: Python
 
     from lyceanem.base_classes import structures
 
     blockers = structures([body])
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-91
+.. GENERATED FROM PYTHON SOURCE LINES 80-86
 
 Aperture Projection
 -----------------------
 Aperture Projection is imported from the frequency domain models, requiring the aperture of interest, wavelength to
 be considered, and the azimuth and elevation ranges. The function then returns the directivity envelope as a numpy
-array of floats, and an open3d point cloud with points and colors corresponding to the directivity envelope of the
+array of floats, and a meshio point cloud with points and colors corresponding to the directivity envelope of the
 provided aperture, scaling from yellow at maximum to dark purple at minimum.
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-100
+.. GENERATED FROM PYTHON SOURCE LINES 86-95
 
-.. code-block:: default
+.. code-block:: Python
 
     from lyceanem.models.frequency_domain import aperture_projection
 
@@ -152,29 +147,21 @@ provided aperture, scaling from yellow at maximum to dark purple at minimum.
         elev_range=np.linspace(-90.0, 90.0, elev_res),
     )
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-106
+.. GENERATED FROM PYTHON SOURCE LINES 96-101
 
-Open3D Visualisation
+Visualisation
 ------------------------
 The resultant maximum directivity envelope is provided as both a numpy array of directivities for each angle, but
-also as an open3d point cloud. This allows easy visualisation using :func:`open3d.visualization.draw_geometries`.
+also as an meshio point cloud. This allows easy visualisation using pyvista.
 %%
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-109
-
-.. code-block:: default
-
-
-    o3d.visualization.draw_geometries([body, surface_array, pcd])
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 110-111
+.. GENERATED FROM PYTHON SOURCE LINES 104-105
 
 .. image:: ../_static/open3d_results_rendering.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-120
+.. GENERATED FROM PYTHON SOURCE LINES 105-114
 
-.. code-block:: default
+.. code-block:: Python
 
 
 
@@ -186,18 +173,18 @@ also as an open3d point cloud. This allows easy visualisation using :func:`open3
     )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-127
+.. GENERATED FROM PYTHON SOURCE LINES 115-121
 
 Plotting the Output
 ------------------------
-While the open3d visualisation is very intuitive for examining the results of the aperture projection, it is
+While the pyvista visualisation is very intuitive for examining the results of the aperture projection, it is
 difficult to consider the full 3D space, and cannot be included in documentation in this form. However, matplotlib
 can be used to generate contour plots with 3dB contours to give a more systematic understanding of the resultant
 maximum directivity envelope.
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-173
+.. GENERATED FROM PYTHON SOURCE LINES 121-167
 
-.. code-block:: default
+.. code-block:: Python
 
 
     import matplotlib.pyplot as plt
@@ -247,25 +234,19 @@ maximum directivity envelope.
     fig.show()
 
 
-.. rst-class:: sphx-glr-timing
-
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
-
-
 .. _sphx_glr_download_auto_examples_01_aperture_projection.py:
 
 .. only:: html
 
   .. container:: sphx-glr-footer sphx-glr-footer-example
 
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download Jupyter notebook: 01_aperture_projection.ipynb <01_aperture_projection.ipynb>`
 
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: 01_aperture_projection.py <01_aperture_projection.py>`
-
-    .. container:: sphx-glr-download sphx-glr-download-jupyter
-
-      :download:`Download Jupyter notebook: 01_aperture_projection.ipynb <01_aperture_projection.ipynb>`
 
 
 .. only:: html

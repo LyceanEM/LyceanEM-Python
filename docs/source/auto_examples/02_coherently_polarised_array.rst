@@ -10,8 +10,8 @@
     .. note::
         :class: sphx-glr-download-link-note
 
-        Click :ref:`here <sphx_glr_download_auto_examples_02_coherently_polarised_array.py>`
-        to download the full example code
+        :ref:`Go to the end <sphx_glr_download_auto_examples_02_coherently_polarised_array.py>`
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -25,17 +25,16 @@ This example uses the frequency domain :func:`lyceanem.models.frequency_domain.c
 the farfield pattern for a linearly polarised aperture. This could represent an antenna array without any beamforming
 weights.
 
-.. GENERATED FROM PYTHON SOURCE LINES 13-18
+.. GENERATED FROM PYTHON SOURCE LINES 13-17
 
-.. code-block:: default
+.. code-block:: Python
 
     import copy
 
     import numpy as np
-    import open3d as o3d
+    import meshio
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 19-28
+.. GENERATED FROM PYTHON SOURCE LINES 18-27
 
 Setting Farfield Resolution and Wavelength
 -------------------------------------------
@@ -47,9 +46,9 @@ In order to ensure a fast example, 37 points have been used here for both, givin
 The wavelength of interest is also an important variable for antenna array analysis, so we set it now for 10GHz,
 an X band aperture.
 
-.. GENERATED FROM PYTHON SOURCE LINES 28-33
+.. GENERATED FROM PYTHON SOURCE LINES 27-32
 
-.. code-block:: default
+.. code-block:: Python
 
 
     az_res = 181
@@ -57,58 +56,39 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-38
+.. GENERATED FROM PYTHON SOURCE LINES 33-37
 
 Geometries
 ------------------------
 In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
-:class:`open3d.geometry.TriangleMesh` structures can be accessed by importing the data subpackage
+triangle structures can be accessed by importing the data subpackage
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-42
+.. GENERATED FROM PYTHON SOURCE LINES 37-43
 
-.. code-block:: default
+.. code-block:: Python
 
     import lyceanem.tests.reflectordata as data
 
     body, array, source_coords = data.exampleUAV(10e9)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 43-47
-
-Visualise the Resultant UAV and Array
----------------------------------------
-:func:`open3d.visualization.draw_geometries` can be used to visualise the open3d data
-structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.PointCloud`
-
-.. GENERATED FROM PYTHON SOURCE LINES 47-53
-
-.. code-block:: default
 
 
-    mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-        size=0.5, origin=[0, 0, 0]
-    )
-    o3d.visualization.draw_geometries([body, array, source_coords, mesh_frame])
+.. GENERATED FROM PYTHON SOURCE LINES 44-45
 
+# .. image:: ../_static/open3d_structure.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-55
+.. GENERATED FROM PYTHON SOURCE LINES 45-68
 
-.. image:: ../_static/UAVArraywithPoints.png
-
-.. GENERATED FROM PYTHON SOURCE LINES 55-78
-
-.. code-block:: default
+.. code-block:: Python
 
 
     # crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to
     # the hidden surfaces, but correctly an aperture will only have an outer face.
     surface_array = copy.deepcopy(array)
-    surface_array.triangles = o3d.utility.Vector3iVector(
-        np.asarray(array.triangles)[: len(array.triangles) // 2, :]
-    )
-    surface_array.triangle_normals = o3d.utility.Vector3dVector(
-        np.asarray(array.triangle_normals)[: len(array.triangle_normals) // 2, :]
-    )
+    surface_array.cells[0].data = np.asarray(array.cells[0].data)[: (array.cells[0].data).shape[0] // 2, :]
+
+    surface_array.cell_data["Normals"] = np.array(array.cell_data["Normals"])[: (array.cells[0].data).shape[0] // 2]
 
     from lyceanem.base_classes import structures
 
@@ -116,18 +96,21 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
 
     from lyceanem.models.frequency_domain import calculate_farfield
 
-    from lyceanem.geometry.targets import source_cloud_from_shape
-
-    source_points, _ = source_cloud_from_shape(surface_array, wavelength * 0.5)
-
-    o3d.visualization.draw_geometries([body, array, source_points])
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-80
+
+    import pyvista as pv
+
+
+    source_points = surface_array.points
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 69-70
 
 .. image:: ../_static/sourcecloudfromshapeuav.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-87
+.. GENERATED FROM PYTHON SOURCE LINES 72-77
 
 Drawbacks of :func:`lyceanem.geometry.geometryfunctions.sourcecloudfromshape`
 ------------------------------------------------------------------------------
@@ -135,13 +118,13 @@ As can be seen by comparing the two source point sets, :func:`lyceanem.geometry.
 has a significant drawback when used for complex sharply curved antenna arrays, as the poisson disk sampling method
 does not produce consistently spaced results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-102
+.. GENERATED FROM PYTHON SOURCE LINES 77-92
 
-.. code-block:: default
+.. code-block:: Python
 
 
     desired_E_axis = np.zeros((1, 3), dtype=np.float32)
-    desired_E_axis[0, 2] = 1.0
+    desired_E_axis[0, 1] = 1.0
 
     Etheta, Ephi = calculate_farfield(
         source_coords,
@@ -155,7 +138,7 @@ does not produce consistently spaced results.
     )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-111
+.. GENERATED FROM PYTHON SOURCE LINES 93-101
 
 Storing and Manipulating Antenna Patterns
 ---------------------------------------------
@@ -166,9 +149,9 @@ to :func:`lyceanem.base.antenna_pattern.display_pattern`. This produces 3D polar
 give a better view of the whole pattern, but if contour plots are required, then this can also be produced by passing
 plottype='Contour' to the function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-122
+.. GENERATED FROM PYTHON SOURCE LINES 101-112
 
-.. code-block:: default
+.. code-block:: Python
 
 
     from lyceanem.base_classes import antenna_pattern
@@ -182,28 +165,23 @@ plottype='Contour' to the function.
     UAV_Static_Pattern.display_pattern()
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-125
+.. GENERATED FROM PYTHON SOURCE LINES 113-115
 
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_001.png
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_002.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-128
+.. GENERATED FROM PYTHON SOURCE LINES 115-118
 
-.. code-block:: default
+.. code-block:: Python
 
 
     UAV_Static_Pattern.display_pattern(plottype="Contour")
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-131
+.. GENERATED FROM PYTHON SOURCE LINES 119-121
 
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_003.png
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_004.png
-
-
-.. rst-class:: sphx-glr-timing
-
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_auto_examples_02_coherently_polarised_array.py:
@@ -212,14 +190,13 @@ plottype='Contour' to the function.
 
   .. container:: sphx-glr-footer sphx-glr-footer-example
 
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download Jupyter notebook: 02_coherently_polarised_array.ipynb <02_coherently_polarised_array.ipynb>`
 
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: 02_coherently_polarised_array.py <02_coherently_polarised_array.py>`
-
-    .. container:: sphx-glr-download sphx-glr-download-jupyter
-
-      :download:`Download Jupyter notebook: 02_coherently_polarised_array.ipynb <02_coherently_polarised_array.ipynb>`
 
 
 .. only:: html

@@ -51,8 +51,7 @@ receive_horn_structure, receiving_antenna_surface_coords = TL.meshedHorn(
 # Position Transmitter
 # ----------------------
 # rotate the transmitting antenna to the desired orientation, and then translate to final position.
-# :func:`lyceanem.geometry.geometryfunctions.open3drotate` allows both the center of rotation to be defined, and
-# ensures the right syntax is used for Open3d, as it was changed from 0.9.0 to 0.10.0 and onwards.
+# :func:`lyceanem.geometry.geometryfunctions.translate_mesh`, :func:`lyceanem.geometry.geometryfunctions.mesh_rotate` and :func:`lyceanem.geometry.geometryfunctions.mesh_transform` are included, allowing translation, rotation, and transformation of the meshio objects as required.
 #
 rotation_vector1 = np.radians(np.asarray([90.0, 0.0, 0.0]))
 rotation_vector2 = np.radians(np.asarray([0.0, 0.0, -90.0]))
@@ -106,16 +105,28 @@ from lyceanem.base_classes import structures
 
 blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_structure])
 
+
 # %%
 # Visualise the Scene Geometry
 # ------------------------------
-# Use open3d function :func:`open3d.visualization.draw_geometries` to visualise the scene and ensure that all the
-# relavent sources and scatter points are correct. Point normal vectors can be displayed by pressing 'n' while the
-# window is open.
 
 
-# %%
-# .. image:: ../_static/03_frequency_domain_channel_model_picture_01.png
+import pyvista as pv
+
+def structure_cells(array):
+    ## add collumn of 3s to beggining of each row
+    array = np.append(np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1)
+    return array
+pyvista_mesh = pv.PolyData(reflectorplate.points, structure_cells(reflectorplate.cells[0].data))
+pyvista_mesh2 = pv.PolyData(receive_horn_structure.points, structure_cells(receive_horn_structure.cells[0].data))
+pyvista_mesh3 = pv.PolyData(transmit_horn_structure.points, structure_cells(transmit_horn_structure.cells[0].data))
+## plot the mesh
+plotter = pv.Plotter()
+plotter.add_mesh(pyvista_mesh, color="white", show_edges=True)
+plotter.add_mesh(pyvista_mesh2, color="blue", show_edges=True)
+plotter.add_mesh(pyvista_mesh3, color="red", show_edges=True)
+plotter.add_axes_at_origin()
+plotter.show()
 
 # %%
 # Specify desired Transmit Polarisation

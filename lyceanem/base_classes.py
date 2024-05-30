@@ -407,11 +407,11 @@ class antenna_structures(object3d):
     def excitation_function(
         self,
         desired_e_vector,
-        transmit_amplitude=1,
         point_index=None,
         phase_shift="none",
         wavelength=1.0,
         steering_vector=np.zeros((1, 3)),
+        transmit_power=1.0
     ):
         # generate the local excitation function and then convert into the global coordinate frame.
         if point_index == None:
@@ -429,8 +429,21 @@ class antenna_structures(object3d):
                 source_points, steering_vector, wavelength
             )
             aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
+        if phase_shift =="coherence":
+            source_points = np.asarray(aperture_points.points)
+            phase_weights=BM.ArbitaryCoherenceWeights(source_points, steering_vector, wavelength
+            )
+            aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
 
-        return aperture_weights * transmit_amplitude
+        from .utility.math_functions import discrete_transmit_power
+        if 'Area' in aperture_points.point_data.keys():
+            areas=aperture_points.point_data['Area']
+        else:
+            areas=np.zeros((aperture_points.points.shape[0]))
+            areas[:]=(wavelength*0.5)**2
+
+        calibrated_amplitude_density=discrete_transmit_power(aperture_weights,areas,transmit_power)
+        return calibrated_amplitude_density
 
     
     def export_all_structures(self):
@@ -445,6 +458,10 @@ class antenna_structures(object3d):
     def rotate_antenna(self, rotation_vector):
         self.structures.rotate_structures(rotation_vector)
         self.points.rotate_points(rotation_vector)
+
+    def translate_antenna(self,translation_vector):
+        self.structures.translate_structures(translation_vector)
+        self.points.translate_points(translation_vector)
 
 
 

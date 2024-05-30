@@ -13,8 +13,7 @@ weights.
 import copy
 
 import numpy as np
-import open3d as o3d
-
+import meshio
 # %%
 # Setting Farfield Resolution and Wavelength
 # -------------------------------------------
@@ -34,34 +33,22 @@ wavelength = 3e8 / 10e9
 # Geometries
 # ------------------------
 # In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
-# :class:`open3d.geometry.TriangleMesh` structures can be accessed by importing the data subpackage
+# triangle structures can be accessed by importing the data subpackage
 import lyceanem.tests.reflectordata as data
 
 body, array, source_coords = data.exampleUAV(10e9)
 
-# %%
-# Visualise the Resultant UAV and Array
-# ---------------------------------------
-# :func:`open3d.visualization.draw_geometries` can be used to visualise the open3d data
-# structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.PointCloud`
 
-mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-    size=0.5, origin=[0, 0, 0]
-)
-o3d.visualization.draw_geometries([body, array, source_coords, mesh_frame])
 
 # %%
-# .. image:: ../_static/UAVArraywithPoints.png
+## .. image:: ../_static/open3d_structure.png
 
 # crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to
 # the hidden surfaces, but correctly an aperture will only have an outer face.
 surface_array = copy.deepcopy(array)
-surface_array.triangles = o3d.utility.Vector3iVector(
-    np.asarray(array.triangles)[: len(array.triangles) // 2, :]
-)
-surface_array.triangle_normals = o3d.utility.Vector3dVector(
-    np.asarray(array.triangle_normals)[: len(array.triangle_normals) // 2, :]
-)
+surface_array.cells[0].data = np.asarray(array.cells[0].data)[: (array.cells[0].data).shape[0] // 2, :]
+
+surface_array.cell_data["Normals"] = np.array(array.cell_data["Normals"])[: (array.cells[0].data).shape[0] // 2]
 
 from lyceanem.base_classes import structures
 
@@ -69,11 +56,14 @@ blockers = structures([body, array])
 
 from lyceanem.models.frequency_domain import calculate_farfield
 
-from lyceanem.geometry.targets import source_cloud_from_shape
 
-source_points, _ = source_cloud_from_shape(surface_array, wavelength * 0.5)
 
-o3d.visualization.draw_geometries([body, array, source_points])
+
+import pyvista as pv
+
+
+source_points = surface_array.points
+
 
 # %%
 # .. image:: ../_static/sourcecloudfromshapeuav.png
@@ -86,7 +76,7 @@ o3d.visualization.draw_geometries([body, array, source_points])
 # does not produce consistently spaced results.
 
 desired_E_axis = np.zeros((1, 3), dtype=np.float32)
-desired_E_axis[0, 2] = 1.0
+desired_E_axis[0, 1] = 1.0
 
 Etheta, Ephi = calculate_farfield(
     source_coords,

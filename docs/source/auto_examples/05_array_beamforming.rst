@@ -10,8 +10,8 @@
     .. note::
         :class: sphx-glr-download-link-note
 
-        Click :ref:`here <sphx_glr_download_auto_examples_05_array_beamforming.py>`
-        to download the full example code
+        :ref:`Go to the end <sphx_glr_download_auto_examples_05_array_beamforming.py>`
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -26,15 +26,14 @@ the farfield patterns for a linearly polarised aperture with multiple elements. 
 
 The Steering Efficiency can then be evaluated using :func:`lyceanem.electromagnetics.beamforming.Steering_Efficiency` for the resultant achieved beamforming.
 
-.. GENERATED FROM PYTHON SOURCE LINES 14-17
+.. GENERATED FROM PYTHON SOURCE LINES 14-16
 
-.. code-block:: default
+.. code-block:: Python
 
     import numpy as np
-    import open3d as o3d
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 18-27
+.. GENERATED FROM PYTHON SOURCE LINES 17-26
 
 Setting Farfield Resolution and Wavelength
 -------------------------------------------
@@ -46,9 +45,9 @@ In order to ensure a fast example, 37 points have been used here for both, givin
 The wavelength of interest is also an important variable for antenna array analysis, so we set it now for 10GHz,
 an X band aperture.
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-32
+.. GENERATED FROM PYTHON SOURCE LINES 26-31
 
-.. code-block:: default
+.. code-block:: Python
 
 
     az_res = 181
@@ -56,47 +55,31 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 33-37
+.. GENERATED FROM PYTHON SOURCE LINES 32-36
 
 Geometries
 ------------------------
 In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
-:class:`open3d.geometry.TriangleMesh` structures can be accessed by importing the data subpackage
+mesh structures can be accessed by importing the data subpackage
 
-.. GENERATED FROM PYTHON SOURCE LINES 37-41
+.. GENERATED FROM PYTHON SOURCE LINES 36-42
 
-.. code-block:: default
+.. code-block:: Python
 
     import lyceanem.tests.reflectordata as data
 
     body, array, source_coords = data.exampleUAV(10e9)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 42-46
-
-Visualise the Resultant UAV and Array
----------------------------------------
-:func:`open3d.visualization.draw_geometries` can be used to visualise the open3d data
-structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.PointCloud`
-
-.. GENERATED FROM PYTHON SOURCE LINES 46-52
-
-.. code-block:: default
 
 
-    mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-        size=0.5, origin=[0, 0, 0]
-    )
-    o3d.visualization.draw_geometries([body, array, source_coords, mesh_frame])
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 53-54
+.. GENERATED FROM PYTHON SOURCE LINES 43-44
 
 .. image:: ../_static/UAVArraywithPoints.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-60
+.. GENERATED FROM PYTHON SOURCE LINES 44-50
 
-.. code-block:: default
+.. code-block:: Python
 
 
 
@@ -105,7 +88,7 @@ structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.Point
     blockers = structures([body, array])
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-68
+.. GENERATED FROM PYTHON SOURCE LINES 51-58
 
 Model Farfield Array Patterns
 -------------------------------
@@ -115,14 +98,14 @@ elevation points, and azimuth points. These can then be beamformed using the des
 currently includes two open loop algorithms for phase weights :func:`lyceanem.electromagnetics.beamforming.EGCWeights`,
 and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-102
+.. GENERATED FROM PYTHON SOURCE LINES 58-92
 
-.. code-block:: default
+.. code-block:: Python
 
     from lyceanem.models.frequency_domain import calculate_farfield
 
     desired_E_axis = np.zeros((1, 3), dtype=np.float32)
-    desired_E_axis[0, 2] = 1.0
+    desired_E_axis[0, 1] = 1.0
 
     Etheta, Ephi = calculate_farfield(
         source_coords,
@@ -154,13 +137,13 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
     )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-104
+.. GENERATED FROM PYTHON SOURCE LINES 93-94
 
 .. image:: ../_static/sphx_glr_05_array_beamforming_001.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-124
+.. GENERATED FROM PYTHON SOURCE LINES 94-114
 
-.. code-block:: default
+.. code-block:: Python
 
 
     from lyceanem.electromagnetics.beamforming import Steering_Efficiency
@@ -184,25 +167,19 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
     )
 
 
-.. rst-class:: sphx-glr-timing
-
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
-
-
 .. _sphx_glr_download_auto_examples_05_array_beamforming.py:
 
 .. only:: html
 
   .. container:: sphx-glr-footer sphx-glr-footer-example
 
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download Jupyter notebook: 05_array_beamforming.ipynb <05_array_beamforming.ipynb>`
 
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: 05_array_beamforming.py <05_array_beamforming.py>`
-
-    .. container:: sphx-glr-download sphx-glr-download-jupyter
-
-      :download:`Download Jupyter notebook: 05_array_beamforming.ipynb <05_array_beamforming.ipynb>`
 
 
 .. only:: html

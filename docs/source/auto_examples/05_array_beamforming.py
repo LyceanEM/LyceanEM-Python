@@ -12,7 +12,6 @@ The Steering Efficiency can then be evaluated using :func:`lyceanem.electromagne
 
 """
 import numpy as np
-import open3d as o3d
 
 # %%
 # Setting Farfield Resolution and Wavelength
@@ -33,21 +32,12 @@ wavelength = 3e8 / 10e9
 # Geometries
 # ------------------------
 # In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
-# :class:`open3d.geometry.TriangleMesh` structures can be accessed by importing the data subpackage
+# mesh structures can be accessed by importing the data subpackage
 import lyceanem.tests.reflectordata as data
 
 body, array, source_coords = data.exampleUAV(10e9)
 
-# %%
-# Visualise the Resultant UAV and Array
-# ---------------------------------------
-# :func:`open3d.visualization.draw_geometries` can be used to visualise the open3d data
-# structures :class:`open3d.geometry.PointCloud` and :class:`open3d.geometry.PointCloud`
 
-mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-    size=0.5, origin=[0, 0, 0]
-)
-o3d.visualization.draw_geometries([body, array, source_coords, mesh_frame])
 
 # %%
 # .. image:: ../_static/UAVArraywithPoints.png
@@ -68,7 +58,7 @@ blockers = structures([body, array])
 from lyceanem.models.frequency_domain import calculate_farfield
 
 desired_E_axis = np.zeros((1, 3), dtype=np.float32)
-desired_E_axis[0, 2] = 1.0
+desired_E_axis[0, 1] = 1.0
 
 Etheta, Ephi = calculate_farfield(
     source_coords,

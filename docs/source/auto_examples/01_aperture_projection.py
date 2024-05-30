@@ -28,7 +28,6 @@ be predicted using the :func:`lyceanem.models.frequency_domain.aperture_projecti
 import copy
 
 import numpy as np
-import open3d as o3d
 
 # %%
 # Setting Farfield Resolution and Wavelength
@@ -49,13 +48,12 @@ wavelength = 3e8 / 10e9
 # Geometries
 # ------------------------
 # In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
-# open3d trianglemesh structures can be accessed by importing the data subpackage
+# meshio trianglemesh structures can be accessed by importing the data subpackage
 import lyceanem.tests.reflectordata as data
 
 body, array, _ = data.exampleUAV(10e9)
 
-# visualise UAV and Array
-o3d.visualization.draw_geometries([body, array])
+
 
 # %%
 ## .. image:: ../_static/open3d_structure.png
@@ -63,12 +61,9 @@ o3d.visualization.draw_geometries([body, array])
 # crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to
 # the hidden surfaces, but correctly an aperture will only have an outer face.
 surface_array = copy.deepcopy(array)
-surface_array.triangles = o3d.utility.Vector3iVector(
-    np.asarray(array.triangles)[: len(array.triangles) // 2, :]
-)
-surface_array.triangle_normals = o3d.utility.Vector3dVector(
-    np.asarray(array.triangle_normals)[: len(array.triangle_normals) // 2, :]
-)
+surface_array.cells[0].data = np.asarray(array.cells[0].data)[: (array.cells[0].data).shape[0] // 2, :]
+
+surface_array.cell_data["Normals"] = np.array(array.cell_data["Normals"])[: (array.cells[0].data).shape[0] // 2]
 
 # %%
 # Structures
@@ -76,7 +71,7 @@ surface_array.triangle_normals = o3d.utility.Vector3dVector(
 # LyceanEM uses a class named 'structures' to store and maniuplate joined 3D solids. Currently all that is implemented
 # is the class itself, and methods to allow translation and rotation of the trianglemesh solids. A structure can be
 # passed to the models to provide the environment to be considered as blockers.
-# structures are created by calling the class, and passing it a list of the open3d trianglemesh structures to be added.
+# structures are created by calling the class, and passing it a list of the meshio trianglemesh structures to be added.
 from lyceanem.base_classes import structures
 
 blockers = structures([body])
@@ -86,7 +81,7 @@ blockers = structures([body])
 # -----------------------
 # Aperture Projection is imported from the frequency domain models, requiring the aperture of interest, wavelength to
 # be considered, and the azimuth and elevation ranges. The function then returns the directivity envelope as a numpy
-# array of floats, and an open3d point cloud with points and colors corresponding to the directivity envelope of the
+# array of floats, and a meshio point cloud with points and colors corresponding to the directivity envelope of the
 # provided aperture, scaling from yellow at maximum to dark purple at minimum.
 from lyceanem.models.frequency_domain import aperture_projection
 
@@ -98,13 +93,12 @@ directivity_envelope, pcd = aperture_projection(
     elev_range=np.linspace(-90.0, 90.0, elev_res),
 )
 # %%
-# Open3D Visualisation
+# Visualisation
 # ------------------------
 # The resultant maximum directivity envelope is provided as both a numpy array of directivities for each angle, but
-# also as an open3d point cloud. This allows easy visualisation using :func:`open3d.visualization.draw_geometries`.
+# also as an meshio point cloud. This allows easy visualisation using pyvista.
 # %%
 
-o3d.visualization.draw_geometries([body, surface_array, pcd])
 
 # %%
 # .. image:: ../_static/open3d_results_rendering.png
@@ -120,7 +114,7 @@ print(
 # %%
 # Plotting the Output
 # ------------------------
-# While the open3d visualisation is very intuitive for examining the results of the aperture projection, it is
+# While the pyvista visualisation is very intuitive for examining the results of the aperture projection, it is
 # difficult to consider the full 3D space, and cannot be included in documentation in this form. However, matplotlib
 # can be used to generate contour plots with 3dB contours to give a more systematic understanding of the resultant
 # maximum directivity envelope.
