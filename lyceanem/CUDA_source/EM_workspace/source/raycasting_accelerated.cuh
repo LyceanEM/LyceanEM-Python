@@ -466,7 +466,7 @@ __device__ __inline__ complex_float3 ray_launch2(const complex_float3 & e_field,
 }
 
 
-__device__ __inline__ complex_float3 em_wave2(int ray_wave, const float4& ray, const PointData& origin, const PointData& end,float wave_length) {
+__device__ __inline__ complex_float3 em_wave2(int ray_wave, const float4& ray, const PointData& origin, const PointData& end,float wave_length, float alpha, float beta) {
 
 
     complex_float3 ray_field;
@@ -495,8 +495,6 @@ __device__ __inline__ complex_float3 em_wave2(int ray_wave, const float4& ray, c
 
     cuFloatComplex loss;
     float spherical_expansion_loss = (wave_length / (4 * CUDART_PI_F * ray.w));
-    float beta = 51.36360519;
-    float alpha = 1.53516927E-5;
 
     cuFloatComplex loss_phase;
     sincosf(-ray.w*beta, &loss_phase.y, &loss_phase.x);
@@ -521,7 +519,7 @@ __device__ __inline__ complex_float3 em_wave2(int ray_wave, const float4& ray, c
 
 
 __global__ void raycast2(float3 *source, float3 *end, float4 *ray, int source_num, int end_num, int flag, float3 *tri_vertex,int3 *binned_triangles, int2* tri_num_in_bin, int ray_num,
-     int2 *ray_index, int x_offset, int y_offset, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,PointData* points, float wave_length, complex_float3* scattering_network)
+     int2 *ray_index, int x_offset, int y_offset, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,PointData* points, float wave_length, complex_float3* scattering_network, float alpha, float beta)
 {
     int thread = threadIdx.x + blockIdx.x * blockDim.x;
     int stride = blockDim.x * gridDim.x;
@@ -533,7 +531,7 @@ __global__ void raycast2(float3 *source, float3 *end, float4 *ray, int source_nu
 
         DDA(source, end, ray,ray_index,i,binned_triangles,tri_vertex,tri_num_in_bin,num_bins,end_num,flag,x_offset,y_offset,x_top_bottom,y_range,z_range);
         if(ray_index[i].x != -1){
-            complex_float3 ray_field = em_wave2(0,ray[i],points[ray_index[i].x],points[ray_index[i].y],wave_length);
+            complex_float3 ray_field = em_wave2(0,ray[i],points[ray_index[i].x],points[ray_index[i].y],wave_length,alpha,beta);
             scattering_network[i] = ray_field;
         }
 
@@ -564,14 +562,13 @@ __global__ void printer(int2 *ray_index, int ray_num)
 
 
 
-void raycast_wrapper2 (int scatter_depth,float *source, float *end, float* scatter, int source_num, int end_num, int scatter_num, float3 *d_tri_vertex,int3 *d_binned_triangles, int2* d_tri_num_per_bin, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,
-    PointData* points, float wave_length, complex_float3* h_scattering_network)
+void raycast_wrapper2 (float *source, float *end, int source_num, int end_num, float3 *d_tri_vertex,int3 *d_binned_triangles, int2* d_tri_num_per_bin, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,
+    PointData* points, float wave_length, complex_float3* h_scattering_network,float alpha,float beta)
 {
     // declare device memory
     float3 *d_source;
     float3 *d_end;
 
-    float3 *d_scatter;
     float4 *d_ray;
     int2 *d_ray_index;
 
@@ -580,18 +577,10 @@ void raycast_wrapper2 (int scatter_depth,float *source, float *end, float* scatt
     // calculate size of arrays
     int source_size = source_num * sizeof(float3);
     int end_size = end_num * sizeof(float3);
-    int scatter_size = scatter_num * sizeof(float3);
 
-    int ray_size = (source_num * end_num+ source_num * scatter_num + scatter_num * end_num + scatter_num * scatter_num) * sizeof(float4);
-    int ray_index_size = (source_num * end_num+ source_num * scatter_num + scatter_num * end_num + scatter_num * scatter_num) * sizeof(int2);
-    if(scatter_depth == 0){
-        scatter_size = 0;
-        ray_size = (source_num * end_num) * sizeof(float4);
-        ray_index_size = (source_num * end_num) * sizeof(int2);
-        scatter_num = 0;
-        
-        
-    }
+    int ray_size = (source_num * end_num+ source_num ) * sizeof(float4);
+    int ray_index_size = (source_num * end_num+ source_num ) * sizeof(int2);
+
 
     // allocate memory on device
     cudaMalloc((void**)&d_source, source_size);
@@ -603,9 +592,7 @@ void raycast_wrapper2 (int scatter_depth,float *source, float *end, float* scatt
     total_free += free;
     
     cudaMalloc((void**)&d_end, end_size);
-    if(scatter_depth != 0){
-        
-    cudaMalloc((void**)&d_scatter, scatter_size);}
+
     
     cudaMalloc((void**)&d_ray, ray_size);
     cudaMalloc((void**)&d_ray_index, ray_index_size);
@@ -618,8 +605,7 @@ void raycast_wrapper2 (int scatter_depth,float *source, float *end, float* scatt
     cudaMemcpy(d_source,(float3*) source, source_size, cudaMemcpyHostToDevice);
     cudaMemcpy(d_end,(float3*) end, end_size, cudaMemcpyHostToDevice);
 
-    if(scatter_depth != 0){
-        cudaMemcpy(d_scatter,(float3*) scatter, scatter_size, cudaMemcpyHostToDevice);}
+
     
     gpuErrchk( cudaGetLastError() );
 
@@ -628,7 +614,7 @@ void raycast_wrapper2 (int scatter_depth,float *source, float *end, float* scatt
     float3 zero = make_float3(0,0,0);
 
     cudaMemset(d_ray, 0, ray_size);
-    set_values<<<32,256>>>(d_ray_index, (source_num * end_num+ source_num * scatter_num + scatter_num * end_num + scatter_num * scatter_num),make_int2(-1,-1));
+    set_values<<<32,256>>>(d_ray_index, (source_num * end_num),make_int2(-1,-1));
     gpuErrchk( cudaGetLastError() );
 
 
@@ -641,7 +627,7 @@ void raycast_wrapper2 (int scatter_depth,float *source, float *end, float* scatt
     complex_float3* d_scattering_network;
 
     // calculate size of arrays
-    int points_size = (source_num+scatter_num+end_num) * sizeof(PointData);
+    int points_size = (source_num+end_num) * sizeof(PointData);
 
     int scattering_network_size = (end_num*source_num) * sizeof(complex_float3);
     auto start = std::chrono::high_resolution_clock::now();
@@ -662,7 +648,7 @@ void raycast_wrapper2 (int scatter_depth,float *source, float *end, float* scatt
     cudaMemset(d_scattering_network, 0, scattering_network_size);
     cudaDeviceSynchronize();
 
-    raycast2<<<32,256>>>(d_source,d_end,d_ray,source_num,end_num,not_self_to_self,d_tri_vertex,d_binned_triangles,d_tri_num_per_bin,source_num*end_num, d_ray_index,0,source_num,num_bins,x_top_bottom,y_range,z_range,d_points,wave_length,d_scattering_network);
+    raycast2<<<32,256>>>(d_source,d_end,d_ray,source_num,end_num,not_self_to_self,d_tri_vertex,d_binned_triangles,d_tri_num_per_bin,source_num*end_num, d_ray_index,0,source_num,num_bins,x_top_bottom,y_range,z_range,d_points,wave_length,d_scattering_network,alpha,beta);
     //get last error
     gpuErrchk( cudaGetLastError() );
 
@@ -706,8 +692,7 @@ void raycast_wrapper2 (int scatter_depth,float *source, float *end, float* scatt
     cudaFree(d_scattering_network);
     cudaFree(d_ray);
     cudaFree(d_ray_index);
-if(scatter_depth != 0){
-    cudaFree(d_scatter);}
+
     
     gpuErrchk( cudaGetLastError() );
     
