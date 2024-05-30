@@ -89,13 +89,13 @@ def discrete_transmit_power(weights,element_area,transmit_power=100.0,impedance=
 
     """
     #to start with assume area per element is consistent
-    power_at_point=np.abs(weights.reshape(-1,1))*element_area.reshape(-1,1) # calculate power
+    power_at_point=np.linalg.norm(weights,axis=1).reshape(-1,1)*element_area.reshape(-1,1) # calculate power
     #integrate power over aperture and normalise to desired power for whole aperture
     power_normalisation=transmit_power/np.sum(power_at_point)
     transmit_power_density=(power_at_point*power_normalisation)/element_area.reshape(-1,1)
     #calculate amplitude density
     transmit_amplitude_density=(transmit_power_density*impedance)**0.5
-    transmit_excitation=transmit_amplitude_density.reshape(-1,1)*element_area.reshape(-1,1)*np.exp(1j*np.angle(weights.reshape(-1,1)))
+    transmit_excitation=transmit_amplitude_density.reshape(-1,1)*element_area.reshape(-1,1)*(weights/np.linalg.norm(weights,axis=1).reshape(-1,1))
     return transmit_excitation
 
 @guvectorize(

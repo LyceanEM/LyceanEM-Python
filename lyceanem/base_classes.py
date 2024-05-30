@@ -403,13 +403,18 @@ class antenna_structures(object3d):
                 source_points, steering_vector, wavelength
             )
             aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
+        if phase_shift =="coherence":
+            source_points = np.asarray(aperture_points.points)
+            phase_weights=BM.ArbitaryCoherenceWeights(source_points, steering_vector, wavelength
+            )
+            aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
 
         from .utility.math_functions import discrete_transmit_power
         if 'Area' in aperture_points.point_data.keys():
             areas=aperture_points.point_data['Area']
         else:
             areas=np.zeros((aperture_points.points.shape[0]))
-            areas[:]=wavelength**2
+            areas[:]=(wavelength*0.5)**2
 
         calibrated_amplitude_density=discrete_transmit_power(aperture_weights,areas,transmit_power)
         return calibrated_amplitude_density
@@ -427,6 +432,10 @@ class antenna_structures(object3d):
     def rotate_antenna(self, rotation_vector):
         self.structures.rotate_structures(rotation_vector)
         self.points.rotate_points(rotation_vector)
+
+    def translate_antenna(self,translation_vector):
+        self.structures.translate_structures(translation_vector)
+        self.points.translate_points(translation_vector)
 
 
 
