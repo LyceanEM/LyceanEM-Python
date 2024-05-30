@@ -9,6 +9,7 @@ from ..geometry import targets as TL
 from ..raycasting import rayfunctions as RF
 from ..utility.math_functions import calc_dv_norm
 import meshio
+from ..em import calculate_scattering as calculate_scattering_wave
 
 
 def aperture_projection(
