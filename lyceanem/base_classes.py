@@ -429,9 +429,9 @@ class antenna_structures(object3d):
                 objects[item] = GF.mesh_transform(objects[item], self.pose, False)
 
         return objects
-    def rotate_antenna(self, rotation_vector):
-        self.structures.rotate_structures(rotation_vector)
-        self.points.rotate_points(rotation_vector)
+    def rotate_antenna(self, rotation_vector,rotation_centre=np.zeros((3, 1), dtype=np.float32)):
+        self.structures.rotate_structures(rotation_vector,rotation_centre)
+        self.points.rotate_points(rotation_vector,rotation_centre)
 
     def translate_antenna(self,translation_vector):
         self.structures.translate_structures(translation_vector)
@@ -461,9 +461,10 @@ class antenna_structures(object3d):
             return array
 
         for item in triangle_meshes:
-            new_mesh = pv.PolyData(item.points, structure_cells(item.cells[0].data))
-            # need to transfer across the point data and cell data
-            structure_meshes.append(new_mesh)
+            if item is not None:
+                new_mesh = pv.PolyData(item.points, structure_cells(item.cells[0].data))
+                # need to transfer across the point data and cell data
+                structure_meshes.append(new_mesh)
 
         point_sets = [self.export_all_points()]
         for item in point_sets:
