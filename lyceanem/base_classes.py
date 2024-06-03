@@ -316,7 +316,7 @@ class structures(object3d):
         None
         """
         for item in range(len(self.solids)):
-            self.solids[item] = GF.translate_mesh(self.solids[item],vector, relative=True)
+            self.solids[item] = GF.translate_mesh(self.solids[item],vector)
 
 
     def triangles_base_raycaster(self):
@@ -437,7 +437,40 @@ class antenna_structures(object3d):
         self.structures.translate_structures(translation_vector)
         self.points.translate_points(translation_vector)
 
+    def pyvista_export(self):
+        """
+        Export the aperture points and structures as easy to visualize pyvista objects.
 
+        Returns
+        -------
+        aperture_meshes : list
+            aperture meshes included in the antenna structure class
+        structure_meshes : list
+            list of the triangle mesh objects in the antenna structure class
+
+        """
+        import pyvista as pv
+        aperture_meshes = []
+        structure_meshes = []
+        # export and convert structures
+        triangle_meshes = self.export_all_structures()
+
+        def structure_cells(array):
+            ## add collumn of 3s to beggining of each row
+            array = np.append(np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1)
+            return array
+
+        for item in triangle_meshes:
+            new_mesh = pv.PolyData(item.points, structure_cells(item.cells[0].data))
+            # need to transfer across the point data and cell data
+            structure_meshes.append(new_mesh)
+
+        point_sets = [self.export_all_points()]
+        for item in point_sets:
+            new_points = pv.PolyData(item.points)
+            aperture_meshes.append(new_points)
+
+        return aperture_meshes, structure_meshes
 
   
 
