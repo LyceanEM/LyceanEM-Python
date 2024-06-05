@@ -116,7 +116,7 @@ def compute_normals(mesh):
     """
     cell_normal_list = []
     for inc, cell in enumerate(mesh.cells):
-        print(cell.type, cell.data.shape[0])
+        #print(cell.type, cell.data.shape[0])
         if cell.type == 'vertex':
             vertex_normals = np.zeros((cell.data.shape[0], 3))
             cell_normal_list.append(vertex_normals)
@@ -139,6 +139,18 @@ def compute_normals(mesh):
             cell_normal_list.append(tetra_cell_normals)
 
     mesh.cell_data['Normals'] = cell_normal_list
+    
+    #calculate vertex normals
+    for inc, cell in enumerate(mesh.cells):
+        if cell.type == 'triangle':
+            point_normals=[]
+            for inc in range(mesh.points.shape[0]):
+                associated_cells=np.where(inc==cell.data)[0]
+                point_normals.append(np.mean(mesh.cell_data['Normals'][0][associated_cells,:],axis=0))
+                
+    mesh.point_data['Normals']=point_normals
+    
+    
     return mesh
 
 def mesh_conversion(conversion_object):

@@ -65,7 +65,8 @@ class points(object3d):
         else:
             self.points = []
             for item in points:
-                self.points.append(item)
+                if item is not None:
+                    self.points.append(item)
             # self.materials = []
             # for item in material_characteristics:
             #    self.materials.append(item)
@@ -203,7 +204,7 @@ class points(object3d):
                     points = np.append(points, self.points[item].points, axis=0)
             point_data = {}
             for key in self.points[0].point_data.keys():
-                for item in point_index:  
+                for item in point_index:
                     if item == 0:
                         point_data[key] = np.array(self.points[item].point_data[key])
                     else:
@@ -239,7 +240,8 @@ class structures(object3d):
         else:
             self.solids = []
             for item in range(len(solids)):
-                self.solids.append(solids[item])
+                if item is not None:
+                    self.solids.append(solids[item])
             # self.materials = []
             # for item in material_characteristics:
             #    self.materials.append(item)
@@ -298,9 +300,10 @@ class structures(object3d):
 
 
         for item in range(len(self.solids)):
-            self.solids[item] = GF.mesh_rotate(
-                self.solids[item], rotation_matrix, rotation_centre
-            )
+            if self.solids[item] is not None:
+                self.solids[item] = GF.mesh_rotate(
+                    self.solids[item], rotation_matrix, rotation_centre
+                )
 
     def translate_structures(self, vector):
         """
@@ -316,7 +319,8 @@ class structures(object3d):
         None
         """
         for item in range(len(self.solids)):
-            self.solids[item] = GF.translate_mesh(self.solids[item],vector)
+            if self.solids[item] is not None:
+                self.solids[item] = GF.translate_mesh(self.solids[item],vector)
 
 
     def triangles_base_raycaster(self):
@@ -468,8 +472,9 @@ class antenna_structures(object3d):
 
         point_sets = [self.export_all_points()]
         for item in point_sets:
-            new_points = pv.PolyData(item.points)
-            aperture_meshes.append(new_points)
+            if item is not None:
+                new_points = pv.PolyData(item.points)
+                aperture_meshes.append(new_points)
 
         return aperture_meshes, structure_meshes
 
