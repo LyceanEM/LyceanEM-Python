@@ -4,7 +4,7 @@ import cmath
 import copy
 import math
 import pathlib
-
+from importlib_resources import files
 import cupy as cp
 import numpy as np
 import scipy.stats
@@ -4698,3 +4698,160 @@ def source_transform3to2(
     )
 
     # return thetaphi_E_vector
+
+
+def oxygen_lines():
+    import lyceanem.electromagnetics.data
+    data = []
+    oxy_data=str(files(lyceanem.electromagnetics.data).joinpath("Oxy.txt"))
+    with open(oxy_data, 'r') as file:
+        for line in file:
+            if line.strip():
+                values = [float(x) for x in line.split()]
+                data.append(values[:7])
+
+    return data
+
+def water_vapour_lines():
+    import lyceanem.electromagnetics.data
+    data = []
+    water_data = str(files(lyceanem.electromagnetics.data).joinpath("Vapour.txt"))
+    with open(water_data, 'r') as file:
+        for line in file:
+            if line.strip():
+                values = [float(x) for x in line.split()]
+                data.append(values[:7])
+
+    return data
+
+def calculate_attenuation_constant(frequency, temperature, pressure, water_vapor_density):
+    """
+    Calculate the attenuation constant as a function of frequency (GHz), temperature (Celsius), atmospheric pressure (hectoPascals) and water vapour density (g/m^3).
+
+    Parameters
+    ----------
+    frequency : float
+        Frequency in GHz
+    temperature : float
+        Temperature in Celsius
+    pressure : float
+        Atmospheric pressure in hectoPascals
+    water_vapor_density : float
+        Water Vapour Density in g/m^3
+
+    Returns
+    -------
+    attenuation_constant : float
+        Attenuation constant in Nepers/m
+
+    Returns
+    -------
+
+    """
+    # Constants
+    T0 = 273.15  # Standard temperature in Kelvin
+    e_s0 = 611  # Saturation vapor pressure at T0 in Pa
+    Lv = 2.5e6  # Latent heat of vaporization of water in J/kg
+    Rv = 461.5  # Specific gas constant for water vapor in J/(kg·K)
+
+    # Convert temperature to Kelvin
+    temperature_K = temperature + T0
+
+    # Saturation vapor pressure at given temperature
+    e_s = e_s0 * math.exp((Lv / Rv) * ((1 / T0) - (1 / temperature_K)))
+
+    # Actual vapor pressure
+    e = water_vapor_density * e_s
+
+    # Pressure in Pa
+    P = pressure * 100  # Convert hPa to Pa
+
+    # Refractivity N(h)
+    N = 77.6 * (P / temperature_K) + (3.73e5 * e) / (temperature_K ** 2)
+
+    # Attenuation constant in dB/km
+    alpha_dB_km = 0.081 * frequency ** 2 / (N + 1.34e7 / frequency ** 2)
+
+    # Attenuation constant in Np/m
+    alpha_Np_m = alpha_dB_km * 0.115129
+
+    return alpha_Np_m
+
+
+def calculate_phase_constant(frequency, temperature, pressure, water_vapor_density):
+    """
+    Calculate the phase constant as a function of frequency (GHz), temperature (Celsius), atmospheric pressure (hectoPascals) and water vapour density (g/m^3).
+
+    Parameters
+    ----------
+    frequency : float
+        Frequency in GHz
+    temperature : float
+        Temperature in Celsius
+    pressure : float
+        Atmospheric pressure in hectoPascals
+    water_vapor_density : float
+        Water Vapour Density in g/m^3
+
+    Returns
+    -------
+    phase_constant : float
+        Phase constant in radians/m
+
+    """
+    # Constants
+    from scipy.constants import speed_of_light
+    #c = 3e8  # Speed of light in vacuum (m/s)
+    T0 = 273.15  # Standard temperature in Kelvin
+    e_s0 = 611  # Saturation vapor pressure at T0 in Pa
+    Lv = 2.5e6  # Latent heat of vaporization of water in J/kg
+    Rv = 461.5  # Specific gas constant for water vapor in J/(kg·K)
+
+    # Convert temperature to Kelvin
+    temperature_K = temperature + T0
+
+    # Saturation vapor pressure at given temperature
+    e_s = e_s0 * math.exp((Lv / Rv) * ((1 / T0) - (1 / temperature_K)))
+
+    # Actual vapor pressure
+    e = water_vapor_density * e_s
+
+    # Pressure in Pa
+    P = pressure * 100  # Convert hPa to Pa
+
+    # Refractivity N(h)
+    N = 77.6 * (P / temperature_K) + (3.73e5 * e) / (temperature_K ** 2)
+
+    # Refractive index n
+    n = 1 + N * 1e-6
+
+    # Phase constant beta
+    beta = (2 * math.pi * frequency * 1e9 * n) / speed_of_light
+
+    return beta
+
+
+def calculate_propagation_constant(frequency, temperature, pressure, water_vapor_density):
+    """
+    Calculate the propagation constant as a function of frequency (GHz), temperature (Celsius), atmospheric pressure (hectoPascals) and water vapour density (g/m^3).
+
+    Parameters
+    ----------
+    frequency : float
+        Frequency in GHz
+    temperature : float
+        Temperature in Celsius
+    pressure : float
+        Atmospheric pressure in hectoPascals
+    water_vapor_density : float
+        Water Vapour Density in g/m^3
+
+    Returns
+    -------
+    propagation constant : complex
+
+    """
+    alpha = calculate_attenuation_constant(frequency, temperature, pressure, water_vapor_density)
+    beta = calculate_phase_constant(frequency, temperature, pressure, water_vapor_density)
+    gamma = alpha + 1j * beta
+    return gamma
