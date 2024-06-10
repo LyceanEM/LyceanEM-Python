@@ -16,7 +16,7 @@ import lyceanem.electromagnetics.empropagation as EM
 from ..utility import math_functions as math_functions
 import meshio
 
-EPSILON = 1e-6  # how close to zero do we consider zero? example used 1e-7
+EPSILON = 1e-7  # how close to zero do we consider zero? example used 1e-7
 
 
 @cuda.jit(device=True)

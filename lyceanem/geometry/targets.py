@@ -192,7 +192,7 @@ def shapeTrapezoid(x_size, y_size, length, flare_angle):
     mesh = meshio.Mesh(
         points=mesh_vertices,
         cells=[("triangle", triangle_list)],)
-    print(mesh)
+    #print(mesh)
     triangle_list = np.insert(triangle_list, 0, 3, axis=1)
     
     pv_mesh = pv.PolyData( mesh_vertices, faces = triangle_list)
@@ -291,7 +291,7 @@ def meshedHorn(
     mesh_points : meshio object
         the source points for the horn aperture
     """
-    print("HIHIH")
+    #print("HIHIH")
     structure = shapeTrapezoid(
         majorsize + (edge_width * 2), minorsize + (edge_width * 2), length, flare_angle
     )
@@ -299,7 +299,7 @@ def meshedHorn(
         majorsize, minorsize, 1e-6, grid_resolution, sides
     )
 
-    mesh_points = GF.translate_mesh(mesh_points, [0, 0, 1e-6])
+    mesh_points = GF.translate_mesh(mesh_points, [0, 0, EPSILON*2])
 
     return structure, mesh_points
 
