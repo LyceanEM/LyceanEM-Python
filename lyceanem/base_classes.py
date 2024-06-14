@@ -189,7 +189,7 @@ class points(object3d):
                         point_data_element = np.array(self.points[item].point_data[key])
                         point_data[key] = np.append(point_data[key], point_data_element, axis=0)
 
-            combinded_points = meshio.Mesh(points, cells = [], point_data=point_data)
+            combinded_points = meshio.Mesh(points, cells = [("vertex", np.array([[i, ] for i in range(points.shape[0])]))], point_data=point_data)
             combinded_points = GF.mesh_transform(combinded_points, self.pose, False)
             return combinded_points
                     
@@ -466,14 +466,12 @@ class antenna_structures(object3d):
 
         for item in triangle_meshes:
             if item is not None:
-                new_mesh = pv.PolyData(item.points, structure_cells(item.cells[0].data))
-                # need to transfer across the point data and cell data
-                structure_meshes.append(new_mesh)
+                new_mesh = pv.utilities.from_meshio(item)
 
         point_sets = [self.export_all_points()]
         for item in point_sets:
             if item is not None:
-                new_points = pv.PolyData(item.points)
+                new_points = pv.utilities.from_meshio(item)
                 aperture_meshes.append(new_points)
 
         return aperture_meshes, structure_meshes
