@@ -10,8 +10,8 @@
     .. note::
         :class: sphx-glr-download-link-note
 
-        Click :ref:`here <sphx_glr_download_auto_examples_04_time_domain_channel_modelling.py>`
-        to download the full example code
+        :ref:`Go to the end <sphx_glr_download_auto_examples_04_time_domain_channel_modelling.py>`
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -27,24 +27,23 @@ This model allows for a very wide range of antennas and antenna arrays to be con
 antennas will be included in this example. The simplest case would be a single source point and single receive point,
 rather than an aperture antenna such as a horn.
 
-.. GENERATED FROM PYTHON SOURCE LINES 14-18
+.. GENERATED FROM PYTHON SOURCE LINES 14-17
 
-.. code-block:: default
+.. code-block:: Python
 
 
     import numpy as np
-    import open3d as o3d
+    import meshio
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 19-22
+.. GENERATED FROM PYTHON SOURCE LINES 18-21
 
 Frequency and Mesh Resolution
 ------------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 22-37
+.. GENERATED FROM PYTHON SOURCE LINES 21-36
 
-.. code-block:: default
+.. code-block:: Python
 
     sampling_freq = 60e9
     model_time = 1e-7
@@ -58,19 +57,19 @@ Frequency and Mesh Resolution
     noise_power = -80  # dbw
     mean_noise = 0
 
-    model_freq = 16e9
+    model_freq = 24e9
     wavelength = 3e8 / model_freq
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-41
+.. GENERATED FROM PYTHON SOURCE LINES 37-40
 
 Setup transmitters and receivers
 -----------------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 41-51
+.. GENERATED FROM PYTHON SOURCE LINES 40-50
 
-.. code-block:: default
+.. code-block:: Python
 
     import lyceanem.geometry.targets as TL
     import lyceanem.geometry.geometryfunctions as GF
@@ -83,71 +82,57 @@ Setup transmitters and receivers
     )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-58
+.. GENERATED FROM PYTHON SOURCE LINES 51-56
 
 Position Transmitter
 ----------------------
 rotate the transmitting antenna to the desired orientation, and then translate to final position.
-:func:`lyceanem.geometry.geometryfunctions.open3drotate` allows both the center of rotation to be defined, and
-ensures the right syntax is used for Open3d, as it was changed from 0.9.0 to 0.10.0 and onwards.
+:func:`lyceanem.geometry.geometryfunctions.translate_mesh`, :func:`lyceanem.geometry.geometryfunctions.mesh_rotate` and :func:`lyceanem.geometry.geometryfunctions.mesh_transform` are included, allowing translation, rotation, and transformation of the meshio objects as required.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-78
+.. GENERATED FROM PYTHON SOURCE LINES 56-67
 
-.. code-block:: default
+.. code-block:: Python
 
     rotation_vector1 = np.radians(np.asarray([90.0, 0.0, 0.0]))
     rotation_vector2 = np.radians(np.asarray([0.0, 0.0, -90.0]))
-    transmit_horn_structure = GF.open3drotate(
-        transmit_horn_structure,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-    )
-    transmit_horn_structure = GF.open3drotate(
-        transmit_horn_structure,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2),
-    )
-    transmit_horn_structure.translate(np.asarray([2.695, 0, 0]), relative=True)
-    transmitting_antenna_surface_coords = GF.open3drotate(
-        transmitting_antenna_surface_coords,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-    )
-    transmitting_antenna_surface_coords = GF.open3drotate(
-        transmitting_antenna_surface_coords,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector2),
-    )
-    transmitting_antenna_surface_coords.translate(np.asarray([2.695, 0, 0]), relative=True)
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-82
+
+
+    transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure, rotation_vector1)
+    transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure, rotation_vector2)
+    transmit_horn_structure = GF.translate_mesh(transmit_horn_structure, np.asarray([2.695, 0, 0]))
+    transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords, rotation_vector1)
+    transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords, rotation_vector2)
+    transmitting_antenna_surface_coords = GF.translate_mesh(transmitting_antenna_surface_coords, np.asarray([2.695, 0, 0]))
+
+.. GENERATED FROM PYTHON SOURCE LINES 68-71
 
 Position Receiver
 ------------------
 rotate the receiving horn to desired orientation and translate to final position.
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-93
+.. GENERATED FROM PYTHON SOURCE LINES 71-78
 
-.. code-block:: default
-
-    receive_horn_structure = GF.open3drotate(
-        receive_horn_structure,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-    )
-    receive_horn_structure.translate(np.asarray([0, 1.427, 0]), relative=True)
-    receiving_antenna_surface_coords = GF.open3drotate(
-        receiving_antenna_surface_coords,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-    )
-    receiving_antenna_surface_coords.translate(np.asarray([0, 1.427, 0]), relative=True)
+.. code-block:: Python
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 94-97
+
+    receive_horn_structure = GF.mesh_rotate(receive_horn_structure, rotation_vector1)
+    receive_horn_structure = GF.translate_mesh(receive_horn_structure, np.asarray([0, 1.427, 0]))
+    receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords, rotation_vector1)
+    receiving_antenna_surface_coords = GF.translate_mesh(receiving_antenna_surface_coords, np.asarray([0, 1.427, 0]))
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 79-82
 
 Create Scattering Plate
 --------------------------
 Create a Scattering plate a source of multipath reflections
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-114
+.. GENERATED FROM PYTHON SOURCE LINES 82-94
 
-.. code-block:: default
+.. code-block:: Python
 
 
     reflectorplate, scatter_points = TL.meshedReflector(
@@ -155,101 +140,88 @@ Create a Scattering plate a source of multipath reflections
     )
     position_vector = np.asarray([29e-3, 0.0, 0])
     rotation_vector1 = np.radians(np.asarray([0.0, 90.0, 0.0]))
-    scatter_points = GF.open3drotate(
-        scatter_points,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-    )
-    reflectorplate = GF.open3drotate(
-        reflectorplate,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector1),
-    )
-    reflectorplate.translate(position_vector, relative=True)
-    scatter_points.translate(position_vector, relative=True)
+    scatter_points = GF.mesh_rotate(scatter_points, rotation_vector1)
+    reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector1)
+    reflectorplate = GF.translate_mesh(reflectorplate, position_vector)
+    scatter_points = GF.translate_mesh(scatter_points, position_vector)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-118
+
+.. GENERATED FROM PYTHON SOURCE LINES 95-98
 
 Specify Reflection Angle
 --------------------------
 Rotate the scattering plate to the optimum angle for reflection from the transmitting to receiving horn
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-135
+.. GENERATED FROM PYTHON SOURCE LINES 98-109
 
-.. code-block:: default
+.. code-block:: Python
 
 
     plate_orientation_angle = 45.0
 
     rotation_vector = np.radians(np.asarray([0.0, 0.0, plate_orientation_angle]))
-    scatter_points = GF.open3drotate(
-        scatter_points,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-    )
-    reflectorplate = GF.open3drotate(
-        reflectorplate,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-    )
-
+    scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
+    reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
     from lyceanem.base_classes import structures
 
     blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_structure])
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-141
+
+.. GENERATED FROM PYTHON SOURCE LINES 110-112
 
 Visualise the Scene Geometry
 ------------------------------
-Use open3d function :func:`open3d.visualization.draw_geometries` to visualise the scene and ensure that all the
-relavent sources and scatter points are correct. Point normal vectors can be displayed by pressing 'n' while the
-window is open.
 
-.. GENERATED FROM PYTHON SOURCE LINES 141-155
+.. GENERATED FROM PYTHON SOURCE LINES 112-131
 
-.. code-block:: default
+.. code-block:: Python
 
-    mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
-        size=0.5, origin=[0, 0, 0]
-    )
-    o3d.visualization.draw_geometries(
-        [
-            transmitting_antenna_surface_coords,
-            receiving_antenna_surface_coords,
-            scatter_points,
-            reflectorplate,
-            mesh_frame,
-            receive_horn_structure,
-            transmit_horn_structure,
-        ]
-    )
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-157
 
-.. image:: ../_static/03_frequency_domain_channel_model_picture_01.png
+    import pyvista as pv
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-162
+    def structure_cells(array):
+        ## add collumn of 3s to beggining of each row
+        array = np.append(np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1)
+        return array
+    pyvista_mesh = pv.PolyData(reflectorplate.points, structure_cells(reflectorplate.cells[0].data))
+    pyvista_mesh2 = pv.PolyData(receive_horn_structure.points, structure_cells(receive_horn_structure.cells[0].data))
+    pyvista_mesh3 = pv.PolyData(transmit_horn_structure.points, structure_cells(transmit_horn_structure.cells[0].data))
+    ## plot the mesh
+    plotter = pv.Plotter()
+    plotter.add_mesh(pyvista_mesh, color="white", show_edges=True)
+    plotter.add_mesh(pyvista_mesh2, color="blue", show_edges=True)
+    plotter.add_mesh(pyvista_mesh3, color="red", show_edges=True)
+    plotter.add_axes_at_origin()
+    plotter.show()
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 132-135
 
 Specify desired Transmit Polarisation
 --------------------------------------
 The transmit polarisation has a significant effect on the channel characteristics. In this example the transmit horn will be vertically polarised, (e-vector aligned with the z direction)
 
-.. GENERATED FROM PYTHON SOURCE LINES 162-166
+.. GENERATED FROM PYTHON SOURCE LINES 135-139
 
-.. code-block:: default
+.. code-block:: Python
 
 
     desired_E_axis = np.zeros((1, 3), dtype=np.float32)
     desired_E_axis[0, 1] = 1.0
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-170
+.. GENERATED FROM PYTHON SOURCE LINES 140-143
 
 Time Domain Scattering
 ----------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 170-260
+.. GENERATED FROM PYTHON SOURCE LINES 143-221
 
-.. code-block:: default
+.. code-block:: Python
 
     import scipy.signal as sig
     import lyceanem.models.time_domain as TD
@@ -267,14 +239,8 @@ Time Domain Scattering
     rotation_vector = np.radians(
         np.asarray([0.0, 0.0, plate_orientation_angle + angle_increment])
     )
-    scatter_points = GF.open3drotate(
-        scatter_points,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-    )
-    reflectorplate = GF.open3drotate(
-        reflectorplate,
-        o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-    )
+    scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
+    reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
 
     from tqdm import tqdm
 
@@ -285,14 +251,8 @@ Time Domain Scattering
 
     for angle_inc in tqdm(range(len(angle_values))):
         rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_increment]))
-        scatter_points = GF.open3drotate(
-            scatter_points,
-            o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-        )
-        reflectorplate = GF.open3drotate(
-            reflectorplate,
-            o3d.geometry.TriangleMesh.get_rotation_matrix_from_xyz(rotation_vector),
-        )
+        scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
+        reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
         blockers = structures(
             [reflectorplate, transmit_horn_structure, receive_horn_structure]
         )
@@ -304,7 +264,7 @@ Time Domain Scattering
         output_amplitude_peak = v_transmit
 
         desired_E_axis = np.zeros((3), dtype=np.float32)
-        desired_E_axis[2] = 1.0
+        desired_E_axis[1] = 1.0
         noise_volts_peak = (10 ** (noise_power / 10) * receiver_impedence) * 0.5
 
         excitation_signal = output_amplitude_rms * sig.chirp(
@@ -342,15 +302,15 @@ Time Domain Scattering
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 261-264
+.. GENERATED FROM PYTHON SOURCE LINES 222-225
 
 Plot Normalised Response
 ----------------------------
 Using matplotlib, plot the results
 
-.. GENERATED FROM PYTHON SOURCE LINES 264-323
+.. GENERATED FROM PYTHON SOURCE LINES 225-284
 
-.. code-block:: default
+.. code-block:: Python
 
 
 
@@ -412,11 +372,11 @@ Using matplotlib, plot the results
     Ezf = fft(Ez)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 324-325
+.. GENERATED FROM PYTHON SOURCE LINES 285-286
 
 .. image:: ../_static/sphx_glr_04_time_domain_channel_modelling_001.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 327-332
+.. GENERATED FROM PYTHON SOURCE LINES 288-293
 
 Frequency Specific Results
 -------------------------------
@@ -424,9 +384,9 @@ The time of flight plot is useful to displaying the output of the model, giving 
 physically happening in the channel, but to get an idea of the behaviour in the frequency domain we need to use a
 fourier transform to move from time and voltages to frequency.
 
-.. GENERATED FROM PYTHON SOURCE LINES 332-352
+.. GENERATED FROM PYTHON SOURCE LINES 293-313
 
-.. code-block:: default
+.. code-block:: Python
 
 
     s21x = 20 * np.log10(np.abs(Exf[:, 1600] / newinput))
@@ -449,14 +409,9 @@ fourier transform to move from time and voltages to frequency.
     plt.show()
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 353-354
+.. GENERATED FROM PYTHON SOURCE LINES 314-315
 
 .. image:: ../_static/sphx_glr_04_time_domain_channel_modelling_002.png
-
-
-.. rst-class:: sphx-glr-timing
-
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_auto_examples_04_time_domain_channel_modelling.py:
@@ -465,14 +420,13 @@ fourier transform to move from time and voltages to frequency.
 
   .. container:: sphx-glr-footer sphx-glr-footer-example
 
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download Jupyter notebook: 04_time_domain_channel_modelling.ipynb <04_time_domain_channel_modelling.ipynb>`
 
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: 04_time_domain_channel_modelling.py <04_time_domain_channel_modelling.py>`
-
-    .. container:: sphx-glr-download sphx-glr-download-jupyter
-
-      :download:`Download Jupyter notebook: 04_time_domain_channel_modelling.ipynb <04_time_domain_channel_modelling.ipynb>`
 
 
 .. only:: html

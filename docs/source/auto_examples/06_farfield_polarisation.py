@@ -11,7 +11,6 @@ weights.
 
 """
 import numpy as np
-import open3d as o3d
 
 # %%
 # Setting Farfield Resolution and Wavelength
@@ -33,12 +32,13 @@ wavelength = 3e8 / 10e9
 # ----------------------------------------------------------------------------------------------
 
 from lyceanem.base_classes import points,structures,antenna_structures
+import meshio
 
-aperture_coords=o3d.geometry.PointCloud()
 point1=np.asarray([0.0,0,0]).reshape(1,3)
-normal1=np.asarray([0,0,1.0]).reshape(1,3)
-aperture_coords.points=o3d.utility.Vector3dVector(point1)
-aperture_coords.normals=o3d.utility.Vector3dVector(normal1)
+normal1=np.asarray([0.00,0.0,1.0]).reshape(1,3)
+aperture_coords = meshio.Mesh(points=point1, cells=[], point_data={"Normals": normal1})
+#aperture_coords.points=o3d.utility.Vector3dVector(point1)
+#aperture_coords.normals=o3d.utility.Vector3dVector(normal1)
 aperture=points([aperture_coords])
 blockers=structures([None])
 point_antenna=antenna_structures(blockers, aperture)
@@ -52,7 +52,7 @@ from lyceanem.models.frequency_domain import calculate_farfield
 desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
 desired_E_axis[0, 0] = 1.0
 Etheta, Ephi = calculate_farfield(
-    point_antenna.export_all_points(),
+    aperture_coords,
     point_antenna.export_all_structures(),
     point_antenna.excitation_function(desired_e_vector=desired_E_axis),
     az_range=np.linspace(-180, 180, az_res),
@@ -129,57 +129,57 @@ n_pattern.display_pattern(desired_pattern='Power')
 # %%
 # The point source can then be rotated, by providing a rotation matrix, and the u,v,n directions are moved with it in a consistent way.
 
-point_antenna.rotate_antenna(o3d.geometry.get_rotation_matrix_from_axis_angle(np.radians(np.asarray([90.0,0.0,0.0]))))
+# point_antenna.rotate_antenna(o3d.geometry.get_rotation_matrix_from_axis_angle(np.radians(np.asarray([90.0,0.0,0.0]))))
 
-desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
-desired_E_axis[0, 0] = 1.0
-Etheta, Ephi = calculate_farfield(
-    point_antenna.export_all_points(),
-    point_antenna.export_all_structures(),
-    point_antenna.excitation_function(desired_e_vector=desired_E_axis),
-    az_range=np.linspace(-180, 180, az_res),
-    el_range=np.linspace(-90, 90, elev_res),
-    wavelength=wavelength,
-    farfield_distance=20,
-    elements=False,
-    project_vectors=False,
-)
-u_pattern.pattern[:, :, 0] = Etheta
-u_pattern.pattern[:, :, 1] = Ephi
-u_pattern.display_pattern(desired_pattern='Power')
-
-
-desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
-desired_E_axis[0, 1] = 1.0
-Etheta, Ephi = calculate_farfield(
-    point_antenna.export_all_points(),
-    point_antenna.export_all_structures(),
-    point_antenna.excitation_function(desired_e_vector=desired_E_axis),
-    az_range=np.linspace(-180, 180, az_res),
-    el_range=np.linspace(-90, 90, elev_res),
-    wavelength=wavelength,
-    farfield_distance=20,
-    elements=False,
-    project_vectors=False,
-)
-v_pattern.pattern[:, :, 0] = Etheta
-v_pattern.pattern[:, :, 1] = Ephi
-v_pattern.display_pattern(desired_pattern='Power')
+# desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
+# desired_E_axis[0, 0] = 1.0
+# Etheta, Ephi = calculate_farfield(
+#     point_antenna.export_all_points(),
+#     point_antenna.export_all_structures(),
+#     point_antenna.excitation_function(desired_e_vector=desired_E_axis),
+#     az_range=np.linspace(-180, 180, az_res),
+#     el_range=np.linspace(-90, 90, elev_res),
+#     wavelength=wavelength,
+#     farfield_distance=20,
+#     elements=False,
+#     project_vectors=False,
+# )
+# u_pattern.pattern[:, :, 0] = Etheta
+# u_pattern.pattern[:, :, 1] = Ephi
+# u_pattern.display_pattern(desired_pattern='Power')
 
 
-desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
-desired_E_axis[0, 2] = 1.0
-Etheta, Ephi = calculate_farfield(
-    point_antenna.export_all_points(),
-    point_antenna.export_all_structures(),
-    point_antenna.excitation_function(desired_e_vector=desired_E_axis),
-    az_range=np.linspace(-180, 180, az_res),
-    el_range=np.linspace(-90, 90, elev_res),
-    wavelength=wavelength,
-    farfield_distance=20,
-    elements=False,
-    project_vectors=False,
-)
-n_pattern.pattern[:, :, 0] = Etheta
-n_pattern.pattern[:, :, 1] = Ephi
-n_pattern.display_pattern(desired_pattern='Power')
+# desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
+# desired_E_axis[0, 1] = 1.0
+# Etheta, Ephi = calculate_farfield(
+#     point_antenna.export_all_points(),
+#     point_antenna.export_all_structures(),
+#     point_antenna.excitation_function(desired_e_vector=desired_E_axis),
+#     az_range=np.linspace(-180, 180, az_res),
+#     el_range=np.linspace(-90, 90, elev_res),
+#     wavelength=wavelength,
+#     farfield_distance=20,
+#     elements=False,
+#     project_vectors=False,
+# )
+# v_pattern.pattern[:, :, 0] = Etheta
+# v_pattern.pattern[:, :, 1] = Ephi
+# v_pattern.display_pattern(desired_pattern='Power')
+
+
+# desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
+# desired_E_axis[0, 2] = 1.0
+# Etheta, Ephi = calculate_farfield(
+#     point_antenna.export_all_points(),
+#     point_antenna.export_all_structures(),
+#     point_antenna.excitation_function(desired_e_vector=desired_E_axis),
+#     az_range=np.linspace(-180, 180, az_res),
+#     el_range=np.linspace(-90, 90, elev_res),
+#     wavelength=wavelength,
+#     farfield_distance=20,
+#     elements=False,
+#     project_vectors=False,
+# )
+# n_pattern.pattern[:, :, 0] = Etheta
+# n_pattern.pattern[:, :, 1] = Ephi
+# n_pattern.display_pattern(desired_pattern='Power')

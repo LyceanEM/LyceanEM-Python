@@ -10,8 +10,8 @@
     .. note::
         :class: sphx-glr-download-link-note
 
-        Click :ref:`here <sphx_glr_download_auto_examples_06_farfield_polarisation.py>`
-        to download the full example code
+        :ref:`Go to the end <sphx_glr_download_auto_examples_06_farfield_polarisation.py>`
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -25,15 +25,20 @@ This example uses the frequency domain :func:`lyceanem.models.frequency_domain.c
 the farfield pattern for a linearly polarised aperture. This could represent an antenna array without any beamforming
 weights.
 
-.. GENERATED FROM PYTHON SOURCE LINES 13-16
+.. GENERATED FROM PYTHON SOURCE LINES 13-15
 
-.. code-block:: default
+.. code-block:: Python
 
     import numpy as np
-    import open3d as o3d
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 17-26
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 16-25
 
 Setting Farfield Resolution and Wavelength
 -------------------------------------------
@@ -45,9 +50,9 @@ In order to ensure a fast example, 37 points have been used here for both, givin
 The wavelength of interest is also an important variable for antenna array analysis, so we set it now for 10GHz,
 an X band aperture.
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-31
+.. GENERATED FROM PYTHON SOURCE LINES 25-30
 
-.. code-block:: default
+.. code-block:: Python
 
 
     az_res = 37
@@ -55,23 +60,30 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 32-34
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 31-33
 
 Generating consistent point source to explore farfield polarisations, and rotating the source
 ----------------------------------------------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-49
+.. GENERATED FROM PYTHON SOURCE LINES 33-49
 
-.. code-block:: default
+.. code-block:: Python
 
 
     from lyceanem.base_classes import points,structures,antenna_structures
+    import meshio
 
-    aperture_coords=o3d.geometry.PointCloud()
     point1=np.asarray([0.0,0,0]).reshape(1,3)
-    normal1=np.asarray([0,0,1.0]).reshape(1,3)
-    aperture_coords.points=o3d.utility.Vector3dVector(point1)
-    aperture_coords.normals=o3d.utility.Vector3dVector(normal1)
+    normal1=np.asarray([0.00,0.0,1.0]).reshape(1,3)
+    aperture_coords = meshio.Mesh(points=point1, cells=[], point_data={"Normals": normal1})
+    #aperture_coords.points=o3d.utility.Vector3dVector(point1)
+    #aperture_coords.normals=o3d.utility.Vector3dVector(normal1)
     aperture=points([aperture_coords])
     blockers=structures([None])
     point_antenna=antenna_structures(blockers, aperture)
@@ -80,19 +92,25 @@ Generating consistent point source to explore farfield polarisations, and rotati
     from lyceanem.models.frequency_domain import calculate_farfield
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 50-51
 
 The first source polarisation is based upon the u-vector of the source point. When the excitation_function method of the antenna structure class is used, it will calculate the appropriate polarisation vectors based upon the local normal vectors.
 
 .. GENERATED FROM PYTHON SOURCE LINES 51-66
 
-.. code-block:: default
+.. code-block:: Python
 
 
     desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
     desired_E_axis[0, 0] = 1.0
     Etheta, Ephi = calculate_farfield(
-        point_antenna.export_all_points(),
+        aperture_coords,
         point_antenna.export_all_structures(),
         point_antenna.excitation_function(desired_e_vector=desired_E_axis),
         az_range=np.linspace(-180, 180, az_res),
@@ -104,6 +122,23 @@ The first source polarisation is based upon the u-vector of the source point. Wh
     )
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Structure does not exist
+    sources shape (1, 3)
+    sinks shape (1369, 3)
+    environment_points shape (0, 3)
+    C:\Users\lycea\.conda\envs\SpaceBasedSolar\lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 6 will likely result in GPU under-utilization due to low occupancy.
+      warn(NumbaPerformanceWarning(msg))
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 67-69
 
 Antenna Pattern class is used to manipulate and record antenna patterns
@@ -111,7 +146,7 @@ Antenna Pattern class is used to manipulate and record antenna patterns
 
 .. GENERATED FROM PYTHON SOURCE LINES 69-80
 
-.. code-block:: default
+.. code-block:: Python
 
 
 
@@ -125,13 +160,24 @@ Antenna Pattern class is used to manipulate and record antenna patterns
     u_pattern.display_pattern(desired_pattern='Power')
 
 
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_06_farfield_polarisation_001.png
+   :alt: Power Pattern
+   :srcset: /auto_examples/images/sphx_glr_06_farfield_polarisation_001.png
+   :class: sphx-glr-single-img
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 81-82
 
 The second source polarisation is based upon the v-vector of the source point.
 
 .. GENERATED FROM PYTHON SOURCE LINES 82-105
 
-.. code-block:: default
+.. code-block:: Python
 
 
     desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
@@ -157,13 +203,35 @@ The second source polarisation is based upon the v-vector of the source point.
     v_pattern.display_pattern(desired_pattern='Power')
 
 
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_06_farfield_polarisation_002.png
+   :alt: Power Pattern
+   :srcset: /auto_examples/images/sphx_glr_06_farfield_polarisation_002.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Structure does not exist
+    sources shape (1, 3)
+    sinks shape (1369, 3)
+    environment_points shape (0, 3)
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1097: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 106-107
 
 The third source polarisation is based upon the n-vector of the source point. Aligned with the source point normal.
 
 .. GENERATED FROM PYTHON SOURCE LINES 107-129
 
-.. code-block:: default
+.. code-block:: Python
 
 
     desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
@@ -188,73 +256,99 @@ The third source polarisation is based upon the n-vector of the source point. Al
     n_pattern.display_pattern(desired_pattern='Power')
 
 
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_06_farfield_polarisation_003.png
+   :alt: Power Pattern
+   :srcset: /auto_examples/images/sphx_glr_06_farfield_polarisation_003.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Structure does not exist
+    sources shape (1, 3)
+    sinks shape (1369, 3)
+    environment_points shape (0, 3)
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 130-131
 
 The point source can then be rotated, by providing a rotation matrix, and the u,v,n directions are moved with it in a consistent way.
 
 .. GENERATED FROM PYTHON SOURCE LINES 131-185
 
-.. code-block:: default
+.. code-block:: Python
 
 
-    point_antenna.rotate_antenna(o3d.geometry.get_rotation_matrix_from_axis_angle(np.radians(np.asarray([90.0,0.0,0.0]))))
+    # point_antenna.rotate_antenna(o3d.geometry.get_rotation_matrix_from_axis_angle(np.radians(np.asarray([90.0,0.0,0.0]))))
 
-    desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
-    desired_E_axis[0, 0] = 1.0
-    Etheta, Ephi = calculate_farfield(
-        point_antenna.export_all_points(),
-        point_antenna.export_all_structures(),
-        point_antenna.excitation_function(desired_e_vector=desired_E_axis),
-        az_range=np.linspace(-180, 180, az_res),
-        el_range=np.linspace(-90, 90, elev_res),
-        wavelength=wavelength,
-        farfield_distance=20,
-        elements=False,
-        project_vectors=False,
-    )
-    u_pattern.pattern[:, :, 0] = Etheta
-    u_pattern.pattern[:, :, 1] = Ephi
-    u_pattern.display_pattern(desired_pattern='Power')
-
-
-    desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
-    desired_E_axis[0, 1] = 1.0
-    Etheta, Ephi = calculate_farfield(
-        point_antenna.export_all_points(),
-        point_antenna.export_all_structures(),
-        point_antenna.excitation_function(desired_e_vector=desired_E_axis),
-        az_range=np.linspace(-180, 180, az_res),
-        el_range=np.linspace(-90, 90, elev_res),
-        wavelength=wavelength,
-        farfield_distance=20,
-        elements=False,
-        project_vectors=False,
-    )
-    v_pattern.pattern[:, :, 0] = Etheta
-    v_pattern.pattern[:, :, 1] = Ephi
-    v_pattern.display_pattern(desired_pattern='Power')
+    # desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
+    # desired_E_axis[0, 0] = 1.0
+    # Etheta, Ephi = calculate_farfield(
+    #     point_antenna.export_all_points(),
+    #     point_antenna.export_all_structures(),
+    #     point_antenna.excitation_function(desired_e_vector=desired_E_axis),
+    #     az_range=np.linspace(-180, 180, az_res),
+    #     el_range=np.linspace(-90, 90, elev_res),
+    #     wavelength=wavelength,
+    #     farfield_distance=20,
+    #     elements=False,
+    #     project_vectors=False,
+    # )
+    # u_pattern.pattern[:, :, 0] = Etheta
+    # u_pattern.pattern[:, :, 1] = Ephi
+    # u_pattern.display_pattern(desired_pattern='Power')
 
 
-    desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
-    desired_E_axis[0, 2] = 1.0
-    Etheta, Ephi = calculate_farfield(
-        point_antenna.export_all_points(),
-        point_antenna.export_all_structures(),
-        point_antenna.excitation_function(desired_e_vector=desired_E_axis),
-        az_range=np.linspace(-180, 180, az_res),
-        el_range=np.linspace(-90, 90, elev_res),
-        wavelength=wavelength,
-        farfield_distance=20,
-        elements=False,
-        project_vectors=False,
-    )
-    n_pattern.pattern[:, :, 0] = Etheta
-    n_pattern.pattern[:, :, 1] = Ephi
-    n_pattern.display_pattern(desired_pattern='Power')
+    # desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
+    # desired_E_axis[0, 1] = 1.0
+    # Etheta, Ephi = calculate_farfield(
+    #     point_antenna.export_all_points(),
+    #     point_antenna.export_all_structures(),
+    #     point_antenna.excitation_function(desired_e_vector=desired_E_axis),
+    #     az_range=np.linspace(-180, 180, az_res),
+    #     el_range=np.linspace(-90, 90, elev_res),
+    #     wavelength=wavelength,
+    #     farfield_distance=20,
+    #     elements=False,
+    #     project_vectors=False,
+    # )
+    # v_pattern.pattern[:, :, 0] = Etheta
+    # v_pattern.pattern[:, :, 1] = Ephi
+    # v_pattern.display_pattern(desired_pattern='Power')
+
+
+    # desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
+    # desired_E_axis[0, 2] = 1.0
+    # Etheta, Ephi = calculate_farfield(
+    #     point_antenna.export_all_points(),
+    #     point_antenna.export_all_structures(),
+    #     point_antenna.excitation_function(desired_e_vector=desired_E_axis),
+    #     az_range=np.linspace(-180, 180, az_res),
+    #     el_range=np.linspace(-90, 90, elev_res),
+    #     wavelength=wavelength,
+    #     farfield_distance=20,
+    #     elements=False,
+    #     project_vectors=False,
+    # )
+    # n_pattern.pattern[:, :, 0] = Etheta
+    # n_pattern.pattern[:, :, 1] = Ephi
+    # n_pattern.display_pattern(desired_pattern='Power')
+
+
+
+
+
+
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** (0 minutes 0.565 seconds)
 
 
 .. _sphx_glr_download_auto_examples_06_farfield_polarisation.py:
@@ -263,14 +357,13 @@ The point source can then be rotated, by providing a rotation matrix, and the u,
 
   .. container:: sphx-glr-footer sphx-glr-footer-example
 
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download Jupyter notebook: 06_farfield_polarisation.ipynb <06_farfield_polarisation.ipynb>`
 
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: 06_farfield_polarisation.py <06_farfield_polarisation.py>`
-
-    .. container:: sphx-glr-download sphx-glr-download-jupyter
-
-      :download:`Download Jupyter notebook: 06_farfield_polarisation.ipynb <06_farfield_polarisation.ipynb>`
 
 
 .. only:: html

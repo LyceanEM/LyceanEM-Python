@@ -4,4 +4,3 @@ Geometry
 
 .. toctree::
     targets
-    geometryfunctions

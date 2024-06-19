@@ -32,7 +32,7 @@ wavelength = 3e8 / 10e9
 # Geometries
 # ------------------------
 # In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
-# :class:`open3d.geometry.TriangleMesh` structures can be accessed by importing the data subpackage
+# mesh structures can be accessed by importing the data subpackage
 import lyceanem.tests.reflectordata as data
 
 body, array, source_coords = data.exampleUAV(10e9)

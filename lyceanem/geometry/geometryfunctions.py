@@ -43,7 +43,17 @@ def tri_centroids(triangle_mesh):
 
 def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float32)):
     """
-    Rotate a mesh by a given rotation vector about a given center.
+    Rotate the provided meshio mesh about an arbitary center using either rotation vector or rotation matrix.
+
+    Parameters
+    ----------
+    mesh
+    rotation
+    rotation_centre
+
+    Returns
+    -------
+    mesh
     """
     if rotation.shape == (3,):
         r = R.from_rotvec(rotation)

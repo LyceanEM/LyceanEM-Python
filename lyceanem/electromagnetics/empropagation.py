@@ -1456,10 +1456,11 @@ def timedomainkernal(
                                           alpha,
                                           beta
                                           )
+        loss_magnitude,loss_phase=cmath.polar(loss)
 
-        ray_component[0] *= loss
-        ray_component[1] *= loss
-        ray_component[2] *= loss
+        ray_component[0] *= loss_magnitude
+        ray_component[1] *= loss_magnitude
+        ray_component[2] *= loss_magnitude
         arrival_time[cu_ray_num] = (lengths / scipy.constants.c) + time_delay
         # print(arrival_time[cu_ray_num] * 1e9)
 

@@ -18,6 +18,10 @@ from glob import glob
 
 from sphinx_gallery.scrapers import figure_rst
 
+import pyvista
+from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
+pyvista.BUILDING_GALLERY = True
+os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
 try:
     from importlib import metadata
 except ImportError: # for Python<3.8
@@ -33,29 +37,29 @@ except metadata.PackageNotFoundError:
 # for example take major/minor
 version = '.'.join(__version__.split('.')[:2])
 
-class PNGScraper(object):
-    def __init__(self):
-        self.seen = set()
+#class PNGScraper(object):
+#    def __init__(self):
+#        self.seen = set()
 
-    def __repr__(self):
-        return 'PNGScraper'
+#    def __repr__(self):
+#        return 'PNGScraper'
 
-    def __call__(self, block, block_vars, gallery_conf):
+#    def __call__(self, block, block_vars, gallery_conf):
         # Find all PNG files in the directory of this example.
-        path_current_example = os.path.dirname(block_vars['src_file'])
-        pngs = sorted(glob(os.path.join(path_current_example, '*.png')))
+#        path_current_example = os.path.dirname(block_vars['src_file'])
+#        pngs = sorted(glob(os.path.join(path_current_example, '*.png')))
 
         # Iterate through PNGs, copy them to the sphinx-gallery output directory
-        image_names = list()
-        image_path_iterator = block_vars['image_path_iterator']
-        for png in pngs:
-            if png not in self.seen:
-                self.seen |= set(png)
-                this_image_path = image_path_iterator.next()
-                image_names.append(this_image_path)
-                shutil.move(png, this_image_path)
+#        image_names = list()
+#        image_path_iterator = block_vars['image_path_iterator']
+#        for png in pngs:
+#            if png not in self.seen:
+#                self.seen |= set(png)
+#                this_image_path = image_path_iterator.next()
+#                image_names.append(this_image_path)
+#                shutil.move(png, this_image_path)
         # Use the `figure_rst` helper function to generate rST for image files
-        return figure_rst(image_names, gallery_conf['src_dir'])
+#        return figure_rst(image_names, gallery_conf['src_dir'])
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../../'))
@@ -101,9 +105,7 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org/', None),
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-    'open3d': ('http://www.open3d.org/docs/0.9.0/', None),
-    'numba': ('https://numba.readthedocs.io/en/stable/', None),
-    'solidpython': ('https://solidpython.readthedocs.io/en/latest/', None)
+    'numba': ('https://numba.readthedocs.io/en/stable/', None)
 }
 
 #Sphinx Gallery Configuration
@@ -111,7 +113,7 @@ sphinx_gallery_conf = {
     'examples_dirs':['../examples'],
     'gallery_dirs': ['auto_examples'],
     'filename_pattern': re.escape(os.sep),
-    'image_scrapers': ('matplotlib', PNGScraper()),
+    'image_scrapers': ('matplotlib','pyvista'),
     'matplotlib_animations': True,
     'run_stale_examples': False,
     'first_notebook_cell': ("# This cell is added by sphinx-gallery\n"
@@ -133,7 +135,7 @@ sphinx_gallery_conf = {
 #
 #html_theme = 'classic'
 html_theme = 'sphinx_rtd_theme'
-html_logo = "_static/lynx.png"
+html_logo = "_static/LY_logo_RGB_2000px.jpg"
 html_theme_options = {
     'logo_only' : True,
     'display_version' : False,

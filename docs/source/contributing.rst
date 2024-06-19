@@ -1,6 +1,6 @@
 .. _contributing:
 Contributing
-=============
+===============
 The `LyceanEM` project welcomes interested contributors. This isn't limited to programming, and additional examples, documention, or demonstrations are welcomed.
 
 If you are unsure where to start or how you can contribute reach out on the `GitHub <https://github.com/LyceanEM/LyceanEM-Python>`_ by opening an issue or commenting on an issue you are interested in.
@@ -24,5 +24,5 @@ Here are some specific ways that users can contribute to the development of `Lyc
 Your contributions will help to make `LyceanEM` the best possible electromagnetics simulation software for a wide range of users. Thank you for your support!
 
 Documentation
------------
+--------------
 `NumPy Doc` style documentation is used for `LyceanEM`, generated using `Sphinx`.
