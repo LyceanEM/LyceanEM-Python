@@ -8,22 +8,31 @@ package:
 source:
   path: ..
 
-build:
-  noarch: python
-  script: "{{ PYTHON }} -m pip install . -vv"
-  number: 0
+
 
 requirements:
   build:
-    - python=3.10
+    - python
     - pip
     - conda-forge::pybind11
-    - conda-forge::cudatoolkit
+    - nvidia::cuda
     - conda-forge::cupy
     - conda-forge::cmake
     - conda-forge::ninja
     - conda-forge::scikit-build
-    - conda-forge::gcc_linux-64
+    - conda-forge::cxx-compiler
+
+  run:
+    - python
+    - conda-forge::numpy
+    - conda-forge::scipy
+    - conda-forge::meshio
+    - conda-forge::numba
+    - conda-forge::cudatoolkit
+    - conda-forge::cupy
+    - conda-forge::importlib_resources
+    - conda-forge::meshio
+    - conda-forge::pyvista
 
 
 about:
@@ -38,6 +47,9 @@ about:
 extra:
   recipe-maintainers:
     - LyceanEM
+
 test:
   imports:
     - lyceanem
+    - lyceanem.em
+    - lyceanem.em

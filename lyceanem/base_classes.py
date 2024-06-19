@@ -364,7 +364,9 @@ class structures(object3d):
                 mesh_point_normals = np.append(mesh_point_normals, copy_mesh.point_data['Normals'], axis=0)
             if 'Normals' in copy_mesh.cell_data:
                 mesh_cell_normals = np.append(mesh_cell_normals, copy_mesh.cell_data['Normals'], axis=0)
-        combined_mesh = meshio.Mesh(points=mesh_points, cells=[("triangle", mesh_triangles)], point_data={"Normals": mesh_point_normals}, cell_data={"Normals": mesh_cell_normals})
+
+        combined_mesh = meshio.Mesh(points=mesh_points, cells=[("triangle", mesh_triangles)], point_data={"Normals": mesh_point_normals})
+        combined_mesh.cell_data["Normals"] = [mesh_cell_normals]
         return combined_mesh
             
 

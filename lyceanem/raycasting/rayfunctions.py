@@ -13,36 +13,11 @@ from scipy.spatial import distance
 
 import lyceanem.base_types as base_types
 import lyceanem.electromagnetics.empropagation as EM
-from ..utility import math_functions as math_functions
+from lyceanem.utility import math_functions as math_functions
 import meshio
-from lyceanem.em import bin_counts_to_numpy, bin_triangles_to_numpy
 EPSILON = 1e-6  # how close to zero do we consider zero? example used 1e-7
 
-def tile_acceleration_structure_builder(blocking_mesh,n_cells):
-    """
-    tile_acceleration_structure_builder creates a tiling acceleration structure for the blocking mesh
-    blocking_mesh is a meshio mesh object
-    """
-    max_x = np.max(blocking_mesh.points[:, 0])
-    min_x = np.min(blocking_mesh.points[:, 0])
-    max_y = np.max(blocking_mesh.points[:, 1])
-    min_y = np.min(blocking_mesh.points[:, 1])
-    max_z = np.max(blocking_mesh.points[:, 2])
-    min_z = np.min(blocking_mesh.points[:, 2])
 
-    diff_x = max_x - min_x
-    diff_y = max_y - min_y
-    diff_z = max_z - min_z
-    diff = min( diff_y, diff_z)
-    diff/=n_cells
-    ncellsy = int(diff_y/diff) +1
-    ncellsz = int(diff_z/diff) +1
-
-    ## time with timeit
-    bin_counts = bin_counts_to_numpy(np.array(blocking_mesh.points), np.array(blocking_mesh.cells[0].data), ncellsy, ncellsz, min_y, diff, min_z)
-    binned_triangles = bin_triangles_to_numpy(n, triangles, ncellsy, ncellsz, min_y, diff, min_z, bin_counts, np.sum(bin_counts))
-
-    return binned_triangles,bin_counts
 @cuda.jit(device=True)
 def dot(ax1, ay1, az1, ax2, ay2, az2):
     result = ax1 * ax2 + ay1 * ay2 + az1 * az2

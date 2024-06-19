@@ -178,12 +178,12 @@ def mesh_conversion_to_meshio(conversion_object):
     elif isinstance(conversion_object, meshio.Mesh):
         meshio_mesh = conversion_object
     elif isinstance(conversion_object, list):
-        print("list hasn't been implemented yet")
         assert False
     else:
         print("no structures")
         print(type(conversion_object))
         meshio_mesh = None
+    return meshio_mesh
 
 def axes_from_normal(boresight_vector, boresight_along="x"):
     """

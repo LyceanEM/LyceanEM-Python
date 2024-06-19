@@ -1,4 +1,5 @@
-from skbuild import setup  # This line replaces 'from setuptools import setup'
+from skbuild import setup
+from setuptools import find_packages  # This line replaces 'from setuptools import setup'
 import os
 import sys
 
@@ -24,15 +25,14 @@ setup(
     long_description=metadata.get("long_description"),
     long_description_content_type=metadata.get("long_description_content_type"),
     url=metadata.get("url"),
-    packages =["lyceanem"],
     python_requires=metadata.get("python_requires"),
     install_requires=metadata.get("install_requires"),
     classifiers=metadata.get("classifiers", "").split("\n"),
     license=metadata.get("license"),
     license_file=metadata.get("license_file"),
-    include_package_data=metadata.get("include_package_data", False),
+    packages = find_packages(),
+    include_package_data=True,
     cmake_install_dir=
         "lyceanem/",
-    cmake_args=[ 'Unix Makefiles',
-    ]
+    
 )

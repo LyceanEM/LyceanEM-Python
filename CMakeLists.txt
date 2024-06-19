@@ -1,38 +1,27 @@
 cmake_minimum_required(VERSION 3.22)
-message(STATUS "CMake version: ${CMAKE_VERSION}")
-set (PYBIND11_PYTHON_VERSION "3.10.9") 
-#find_package(CUDA REQUIRED)
-
-project(frequency_domain LANGUAGES CXX CUDA)
-find_package(CUDAToolkit REQUIRED)
-message(STATUS "Found CUDA: ${CUDA_VERSION_STRING}")
-
-# set  -std=c++20
-set(CMAKE_CXX_STANDARD 23)
-
-#set(CMAKE_CXX_COMPILER /usr/bin/g++)
-#set(CMAKE_FIND_DEBUG_MODE 1)
-
-find_package(pybind11  REQUIRED)
-
+find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
+message(STATUS "Python_version: ${Python_VERSION}")
+find_package(pybind11 CONFIG REQUIRED)
+project(test LANGUAGES CXX CUDA)
 find_package( PkgConfig )
- 
-# Set the source file for the C++ extension module
-set(EMSOURCE  lyceanem/CUDA_source/EM_workspace/source/frequency_domain_models.cu)
+# build release with debug info
 
 
+# Find CUDA
+find_package(CUDAToolkit REQUIRED)
+# print done
+# Include Pybind11
+# Add executable
+pybind11_add_module(em lyceanem/CUDA_source/EM_workspace/source/frequency_domain_models.cu)
+## all architecture abobe and including turing
 
-# Add the C++ extension module
+set_property(TARGET em PROPERTY CUDA_ARCHITECTURES 75)
 
+# Link CUDA
+target_link_libraries(em PRIVATE ${CUDA_LIBRARIES})
 
-pybind11_add_module(em ${EMSOURCE})
+# Include CUDA headers
+target_include_directories(em PRIVATE ${CUDA_INCLUDE_DIRS})
 
-
-
-target_include_directories(em PRIVATE lyceanem/CUDA_source/EM_workspace/source)
-target_compile_options(em PRIVATE --expt-relaxed-constexpr -arch=sm_75)
-target_compile_options(em PRIVATE -lineinfo)
-
+#install
 install(TARGETS em DESTINATION .)
-
-
