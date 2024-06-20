@@ -21,7 +21,7 @@ else:
 conda = os.environ["CONDA"]
 
 # Set the path to the conda-bld directory.
-conda_bld = os.path.join(conda, "envs", "sire_build", "conda-bld")
+conda_bld = os.path.join(conda, "envs", "build_env", "conda-bld")
 
 print(f"conda_bld = {conda_bld}")
 

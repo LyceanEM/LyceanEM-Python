@@ -34,26 +34,18 @@ jobs:
               shell: "bash -l {0}"
             }
     environment:
-      name: sire-build
+      name: build_env
     defaults:
       run:
         shell: ${{ matrix.platform.shell }}
     env:
-      SIRE_DONT_PHONEHOME: 1
-      SIRE_SILENT_PHONEHOME: 1
       REPO: "${{ github.event.pull_request.head.repo.full_name || github.repository }}"
     steps:
-#     Need to install and use VS 2017 for conda-compliant builds
-      - name: Set up Visual Studio 2017 Build Tools (required for Python modules)
-        run: |
-          choco install visualstudio2017-workload-vctools
-        if: matrix.platform.name == 'windows'
-#
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-          activate-environment: sire_build
+          activate-environment: build_env
           miniforge-version: latest
           miniforge-variant: Mambaforge
           use-mamba: true
@@ -69,41 +61,16 @@ jobs:
       - name: Setup Conda
         run: mamba install -y -c conda-forge boa anaconda-client packaging=21 pip-requirements-parser
 #
-      - name: Update Conda recipe
-        run:
-          python ${{ github.workspace }}/Sire/actions/update_recipe.py
-#
-      - name: Prepare build location
-        run: mkdir ${{ github.workspace }}/build
+
 #
       - name: Build Conda package using mamba build
-        run: conda mambabuild -c conda-forge -c michellab/label/dev ${{ github.workspace }}/Sire/recipes/sire
+        run: conda mambabuild lyceanem/conda/
 #
-#      - name: Collect failed artifacts
-#        run:
-#          python ${{ github.workspace }}/Sire/actions/collect_failed.py
-#        env:
-#          BUILD_DIR: ${{ github.workspace }}/build
-#        if: ${{ failure() }}
-#
-#      - uses: actions/upload-artifact@v3
-#        with:
-#          name: build-${{ matrix.platform.name }}-${{matrix.python-version}}-${{ github.sha }}
-#          path: ${{ github.workspace }}/build/*/sire-*.tar.bz2
-#          retention-days: 10
-#        if: ${{ success() }}
-#
-#      - uses: actions/upload-artifact@v3
-#        with:
-#          name: failed-${{ matrix.platform.name }}-${{matrix.python-version}}-${{ github.sha }}
-#          path: ${{ github.workspace }}/build/failed.tar.bz2
-#          retention-days: 1
-#        if: ${{ failure() }}
+
 #
       - name: Upload Conda package
         run: python ${{ github.workspace }}/Sire/actions/upload_package.py
         env:
-          SRC_DIR: ${{ github.workspace }}/Sire
-          BUILD_DIR: ${{ github.workspace }}/build
+
           ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
         if: github.event_name != 'pull_request'
