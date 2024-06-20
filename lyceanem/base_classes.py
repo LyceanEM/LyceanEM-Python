@@ -65,7 +65,8 @@ class points(object3d):
         else:
             self.points = []
             for item in points:
-                self.points.append(item)
+                if item is not None:
+                    self.points.append(item)
             # self.materials = []
             # for item in material_characteristics:
             #    self.materials.append(item)
@@ -203,7 +204,7 @@ class points(object3d):
                     points = np.append(points, self.points[item].points, axis=0)
             point_data = {}
             for key in self.points[0].point_data.keys():
-                for item in point_index:  
+                for item in point_index:
                     if item == 0:
                         point_data[key] = np.array(self.points[item].point_data[key])
                     else:
@@ -239,7 +240,8 @@ class structures(object3d):
         else:
             self.solids = []
             for item in range(len(solids)):
-                self.solids.append(solids[item])
+                if item is not None:
+                    self.solids.append(solids[item])
             # self.materials = []
             # for item in material_characteristics:
             #    self.materials.append(item)
@@ -298,9 +300,10 @@ class structures(object3d):
 
 
         for item in range(len(self.solids)):
-            self.solids[item] = GF.mesh_rotate(
-                self.solids[item], rotation_matrix, rotation_centre
-            )
+            if self.solids[item] is not None:
+                self.solids[item] = GF.mesh_rotate(
+                    self.solids[item], rotation_matrix, rotation_centre
+                )
 
     def translate_structures(self, vector):
         """
@@ -316,7 +319,8 @@ class structures(object3d):
         None
         """
         for item in range(len(self.solids)):
-            self.solids[item] = GF.translate_mesh(self.solids[item],vector, relative=True)
+            if self.solids[item] is not None:
+                self.solids[item] = GF.translate_mesh(self.solids[item],vector)
 
 
     def triangles_base_raycaster(self):
@@ -457,15 +461,50 @@ class antenna_structures(object3d):
                 objects[item] = GF.mesh_transform(objects[item], self.pose, False)
 
         return objects
-    def rotate_antenna(self, rotation_vector):
-        self.structures.rotate_structures(rotation_vector)
-        self.points.rotate_points(rotation_vector)
+    def rotate_antenna(self, rotation_vector,rotation_centre=np.zeros((3, 1), dtype=np.float32)):
+        self.structures.rotate_structures(rotation_vector,rotation_centre)
+        self.points.rotate_points(rotation_vector,rotation_centre)
 
     def translate_antenna(self,translation_vector):
         self.structures.translate_structures(translation_vector)
         self.points.translate_points(translation_vector)
 
+    def pyvista_export(self):
+        """
+        Export the aperture points and structures as easy to visualize pyvista objects.
 
+        Returns
+        -------
+        aperture_meshes : list
+            aperture meshes included in the antenna structure class
+        structure_meshes : list
+            list of the triangle mesh objects in the antenna structure class
+
+        """
+        import pyvista as pv
+        aperture_meshes = []
+        structure_meshes = []
+        # export and convert structures
+        triangle_meshes = self.export_all_structures()
+
+        def structure_cells(array):
+            ## add collumn of 3s to beggining of each row
+            array = np.append(np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1)
+            return array
+
+        for item in triangle_meshes:
+            if item is not None:
+                new_mesh = pv.PolyData(item.points, structure_cells(item.cells[0].data))
+                # need to transfer across the point data and cell data
+                structure_meshes.append(new_mesh)
+
+        point_sets = [self.export_all_points()]
+        for item in point_sets:
+            if item is not None:
+                new_points = pv.PolyData(item.points)
+                aperture_meshes.append(new_points)
+
+        return aperture_meshes, structure_meshes
 
   
 
