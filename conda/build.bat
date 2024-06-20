@@ -1,2 +1,3 @@
-"%PYTHON%"  -m pip install . -vv
+echo "hifrom batters"
+python  -m pip install . -vv
 if errorlevel 1 exit 1
