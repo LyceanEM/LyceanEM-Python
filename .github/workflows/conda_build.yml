@@ -47,8 +47,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           activate-environment: build_env
           miniforge-version: latest
-          miniforge-variant: Mambaforge
-          use-mamba: true
 #
       - name: Clone the devel branch (push to devel)
         run: git clone https://github.com/${{ env.REPO }}
@@ -59,7 +57,7 @@ jobs:
         if: github.event_name == 'pull_request'
 #
       - name: Setup Conda
-        run: mamba install -y -c conda-forge boa anaconda-client packaging=21 pip-requirements-parser
+        run: conda install -y -c conda-forge boa anaconda-client 
 #
 
 #

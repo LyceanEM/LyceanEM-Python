@@ -1,5 +1,9 @@
+{% set name = "lyceanem" %}
+{% set version = "0.0.1" %}
+
 package:
-  name: lyceanem
+  name: {{ name }}
+  version: {{ version }}
 
 source:
   path: ..
