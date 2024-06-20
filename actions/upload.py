@@ -39,6 +39,7 @@ packages = pkg_lycean
 print(f"Uploading packages:")
 
 
+packages = " ".join(packages)
 
 
 
