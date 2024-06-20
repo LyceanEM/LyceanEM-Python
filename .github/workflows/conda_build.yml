@@ -1,0 +1,38 @@
+name: Conda Build
+
+on:
+  push:
+    branches:
+      - feature/cuda_integration  # Adjust to your branch names as needed
+  pull_request:
+    branches:
+      - feature/cuda_integration  # Adjust to your branch names as needed
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.9, 3.10, 3.11, 3.12]  # Adjust Python versions as needed
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: base
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install conda-build
+        run: |
+          conda install -c conda-forge boa
+        run: |
+          conda config --set anaconda_upload yes
+
+      - name: Build conda package
+        run: |
+          conda mambabuild lyceanem/conda/
