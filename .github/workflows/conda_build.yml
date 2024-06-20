@@ -64,7 +64,7 @@ jobs:
 
 #
       - name: Build Conda package using mamba build
-        run: conda mambabuild lyceanem/conda/
+        run: conda mambabuild ${{ github.workspace }}/LyceanEM-Python/conda/
 #
 
 #
