@@ -14,7 +14,7 @@ from numpy.linalg import norm
 import lyceanem.base_types as base_types
 import lyceanem.geometry.geometryfunctions as GF
 import lyceanem.raycasting.rayfunctions as RF
-
+from lyceanem.electromagnetics.data.propagation_constants import water_vapour_lines, oxygen_lines
 
 @cuda.jit(device=True)
 def dot(ax1, ay1, az1, ax2, ay2, az2):
@@ -4700,82 +4700,84 @@ def source_transform3to2(
     # return thetaphi_E_vector
 
 
-def oxygen_lines():
-    import lyceanem.electromagnetics.data
-    data = []
-    oxy_data=str(files(lyceanem.electromagnetics.data).joinpath("Oxy.txt"))
-    with open(oxy_data, 'r') as file:
-        for line in file:
-            if line.strip():
-                values = [float(x) for x in line.split()]
-                data.append(values[:7])
 
-    return data
 
-def water_vapour_lines():
-    import lyceanem.electromagnetics.data
-    data = []
-    water_data = str(files(lyceanem.electromagnetics.data).joinpath("Vapour.txt"))
-    with open(water_data, 'r') as file:
-        for line in file:
-            if line.strip():
-                values = [float(x) for x in line.split()]
-                data.append(values[:7])
-
-    return data
-
-def calculate_attenuation_constant(frequency, temperature, pressure, water_vapor_density):
+def calculate_oxygen_attenuation(frequency, pressure, temperature, oxygen_lines):
     """
-    Calculate the attenuation constant as a function of frequency (GHz), temperature (Celsius), atmospheric pressure (hectoPascals) and water vapour density (g/m^3).
+    Calculate the specific attenuation due to oxygen using the ITU-R P.676-11 model.
 
-    Parameters
-    ----------
-    frequency : float
-        Frequency in GHz
-    temperature : float
-        Temperature in Celsius
-    pressure : float
-        Atmospheric pressure in hectoPascals
-    water_vapor_density : float
-        Water Vapour Density in g/m^3
+    Parameters:
+    frequency (GHz): The frequency of the signal in GHz.
+    pressure (hPa): The atmospheric pressure in hectopascals.
+    temperature (C): The temperature in degrees Celsius.
+    oxygen_lines (list): A list of spectroscopic data lines for oxygen.
 
-    Returns
-    -------
-    attenuation_constant : float
-        Attenuation constant in Nepers/m
-
-    Returns
-    -------
-
+    Returns:
+    float: The calculated oxygen attenuation in dB/km.
     """
-    # Constants
-    T0 = 273.15  # Standard temperature in Kelvin
-    e_s0 = 611  # Saturation vapor pressure at T0 in Pa
-    Lv = 2.5e6  # Latent heat of vaporization of water in J/kg
-    Rv = 461.5  # Specific gas constant for water vapor in J/(kg·K)
+    temperature_k = temperature + 273.15
+    theta = 300 / temperature_k
+    specific_attenuation = 0
 
-    # Convert temperature to Kelvin
-    temperature_K = temperature + T0
+    for line in oxygen_lines:
+        f_line, a1, a2, a3, a4, a5, a6 = line
+        S = a1 * 10 ** -7 * pressure * theta ** 3 * math.exp(a2 * (1 - theta))
+        ffo = a3 * 10 ** -4 * (pressure * theta ** (0.8 - a4) + 1.1 * pressure * theta)
+        delta = (a5 + a6 * theta) * 10 ** -4 * (pressure) * theta ** 0.8
+        F = (frequency / f_line) * ((ffo - delta * (f_line - frequency)) / ((f_line - frequency) ** 2 + ffo ** 2)+(ffo - delta * (f_line + frequency)) / ((f_line + frequency) ** 2 + ffo ** 2))
+        specific_attenuation += (frequency / f_line) * S * F
 
-    # Saturation vapor pressure at given temperature
-    e_s = e_s0 * math.exp((Lv / Rv) * ((1 / T0) - (1 / temperature_K)))
+    return specific_attenuation
 
-    # Actual vapor pressure
-    e = water_vapor_density * e_s
+def calculate_water_vapor_attenuation(frequency, pressure, temperature, water_vapor_lines):
+    """
+    Calculate the specific attenuation due to water vapor using the ITU-R P.676-11 model.
 
-    # Pressure in Pa
-    P = pressure * 100  # Convert hPa to Pa
+    Parameters:
+    frequency (GHz): The frequency of the signal in GHz.
+    pressure (hPa): The atmospheric pressure in hectopascals.
+    temperature (C): The temperature in degrees Celsius.
+    water_vapor_lines (list): A list of spectroscopic data lines for water vapor.
 
-    # Refractivity N(h)
-    N = 77.6 * (P / temperature_K) + (3.73e5 * e) / (temperature_K ** 2)
+    Returns:
+    float: The calculated water vapor attenuation in dB/km.
+    """
+    temperature_k = temperature + 273.15
+    theta = 300 / temperature_k
+    e = pressure * 0.622 / (0.622 + 0.378)  # Partial pressure of water vapor (hPa)
+    specific_attenuation = 0
 
-    # Attenuation constant in dB/km
-    alpha_dB_km = 0.081 * frequency ** 2 / (N + 1.34e7 / frequency ** 2)
+    for line in water_vapor_lines:
+        f_line, a1, a2, a3, a4, a5, a6 = line
+        S = a1 * 10 ** -1 * e * theta ** 3.5 * math.exp(a2 * (1 - theta))
+        ffo = a3 * 10 ** -4 * (pressure * theta ** a4 + a5 * e * theta ** a6)
+        F = (frequency / f_line) * ((ffo - 0 * (f_line - frequency)) / ((f_line - frequency) ** 2 + ffo ** 2) + (
+                    ffo - 0 * (f_line + frequency)) / ((f_line + frequency) ** 2 + ffo ** 2))
+        specific_attenuation += (frequency / f_line) * S * F
 
-    # Attenuation constant in Np/m
-    alpha_Np_m = alpha_dB_km * 0.115129
+    return specific_attenuation
 
-    return alpha_Np_m
+def calculate_total_gaseous_attenuation(frequency, pressure, temperature, oxygen_lines=oxygen_lines(), water_vapor_lines=water_vapour_lines()):
+    """
+    Calculate the total gaseous attenuation due to both oxygen and water vapor.
+
+    Parameters:
+    frequency (GHz): The frequency of the signal in GHz.
+    pressure (hPa): The atmospheric pressure in hectopascals.
+    temperature (C): The temperature in degrees Celsius.
+    oxygen_lines (list): A list of spectroscopic data lines for oxygen.
+    water_vapor_lines (list): A list of spectroscopic data lines for water vapor.
+
+    Returns:
+    float: The calculated total gaseous attenuation in Np/m.
+    """
+    # Calculate specific attenuation
+    oxygen_attenuation = calculate_oxygen_attenuation(frequency, pressure, temperature, oxygen_lines)
+    water_vapor_attenuation = calculate_water_vapor_attenuation(frequency, pressure, temperature, water_vapor_lines)
+    specific_attenuation = 0.1820 * frequency * (oxygen_attenuation + water_vapor_attenuation)
+    specific_attenuation = specific_attenuation / (8.686 * 1000)
+
+    return specific_attenuation
 
 
 def calculate_phase_constant(frequency, temperature, pressure, water_vapor_density):
@@ -4831,7 +4833,7 @@ def calculate_phase_constant(frequency, temperature, pressure, water_vapor_densi
     return beta
 
 
-def calculate_propagation_constant(frequency, temperature, pressure, water_vapor_density):
+def calculate_atmospheric_propagation_constant(frequency, temperature, pressure, water_vapor_density):
     """
     Calculate the propagation constant as a function of frequency (GHz), temperature (Celsius), atmospheric pressure (hectoPascals) and water vapour density (g/m^3).
 
