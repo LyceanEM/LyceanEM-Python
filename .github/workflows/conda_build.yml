@@ -4,9 +4,9 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    branches: [ devel ]
+    branches: [ master ]
   pull_request:
-    branches: [ devel ]
+    branches: [ master ]
 
 jobs:
   build:
@@ -28,11 +28,7 @@ jobs:
               os: "ubuntu-latest",
               shell: "bash -l {0}"
             }
-          - {
-              name: "macos",
-              os: "macos-latest",
-              shell: "bash -l {0}"
-            }
+
     environment:
       name: build_env
     defaults:
