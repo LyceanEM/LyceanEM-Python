@@ -1,6 +1,5 @@
 name: Build
 
-
 on:
   workflow_dispatch:
   push:
@@ -18,31 +17,21 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         platform:
-          - {
-              name: "windows",
-              os: "windows-latest",
-              shell: "pwsh"
-            }
-          - {
-              name: "linux",
-              os: "ubuntu-latest",
-              shell: "bash -l {0}"
-            }
+          - { name: "windows", os: "windows-latest", shell: "cmd" }
+          - { name: "linux", os: "ubuntu-latest", shell: "bash -l {0}" }
 
     environment:
       name: build_env
-    defaults:
-      run:
-        shell: ${{ matrix.platform.shell }}
-    env:
-      REPO: "${{ github.event.pull_request.head.repo.full_name || github.repository }}"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Set up Visual Studio 2015 environment
+        if: matrix.platform.name == 'windows'
         run: |
-          "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x64
+          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x64
+        shell: cmd
 
       - uses: conda-incubator/setup-miniconda@v2
         with:
@@ -50,28 +39,23 @@ jobs:
           python-version: ${{ matrix.python-version }}
           activate-environment: build_env
           miniforge-version: latest
-#
+
       - name: Clone the devel branch (push to devel)
         run: git clone --branch master https://github.com/${{ env.REPO }}
         if: github.event_name != 'pull_request'
-#
+
       - name: Clone the feature branch (pull request to devel)
         run: git clone -b ${{ github.head_ref }} --single-branch https://github.com/${{ env.REPO }}
         if: github.event_name == 'pull_request'
-#
-      - name: Setup Conda
-        run: conda install -y -c conda-forge boa anaconda-client 
-#
 
-#
+      - name: Setup Conda
+        run: conda install -y -c conda-forge boa anaconda-client
+
       - name: Build Conda package using mamba build
         run: conda mambabuild ${{ github.workspace }}/LyceanEM-Python/conda/
-#
 
-#
       - name: Upload Conda package
         run: python ${{ github.workspace }}/LyceanEM-Python/actions/upload.py
         env:
-
           ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
         if: github.event_name != 'pull_request'
