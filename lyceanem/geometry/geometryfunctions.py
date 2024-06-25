@@ -75,9 +75,10 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
         point_data['Normals'] = rotated_normals
     if 'Normals' in mesh.cell_data:
         #rotate normals cloud
-        normals = mesh.cell_data['Normals']
-        rotated_normals = r.apply(normals)
-        cell_data['Normals'] = rotated_normals
+        for i,rotated_normals in enumerate(mesh.cell_data['Normals']):
+            rotated_normals = r.apply(rotated_normals)
+            cell_data['Normals'][i] = rotated_normals
+
 
     mesh_return = meshio.Mesh(points=rotated_points, cells=mesh.cells)
     mesh_return.point_data = point_data
@@ -98,6 +99,10 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
         for i in range(mesh.points.shape[0]):
             return_mesh.points[i] = np.dot(transform_matrix, np.append(mesh.points[i], 1))[:3]
             return_mesh.point_data['Normals'][i]= np.dot(transform_matrix, np.append(mesh.point_data['Normals'][i], 0))[:3]
+        if 'Normals' in mesh.cell_data:
+            for i in range(len(mesh.cell_data['Normals'])):
+                for j in range(mesh.cell_data['Normals'][i].shape[0]):
+                    return_mesh.cell_data['Normals'][i][j] = np.dot(transform_matrix, np.append(mesh.cell_data['Normals'][i][j], 0))[:3]
     
 
     return return_mesh

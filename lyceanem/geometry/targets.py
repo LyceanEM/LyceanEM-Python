@@ -199,7 +199,7 @@ def shapeTrapezoid(x_size, y_size, length, flare_angle):
     pv_mesh.compute_normals(inplace=True,consistent_normals=False)
 
     mesh.point_data["Normals"] = np.asarray(pv_mesh.point_normals)
-    mesh.cell_data["Normals"] = np.asarray(pv_mesh.cell_normals)
+    mesh.cell_data["Normals"] = [np.asarray(pv_mesh.cell_normals)]
 
     red = np.zeros((8, 1), dtype=np.float32) 
     green = np.ones((8, 1), dtype=np.float32) * 0.259
