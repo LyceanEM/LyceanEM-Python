@@ -49,7 +49,7 @@ jobs:
           miniforge-version: latest
 #
       - name: Clone the devel branch (push to devel)
-        run: git clone https://github.com/${{ env.REPO }}
+        run: git clone --branch master https://github.com/${{ env.REPO }}
         if: github.event_name != 'pull_request'
 #
       - name: Clone the feature branch (pull request to devel)
