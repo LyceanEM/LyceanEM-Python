@@ -347,7 +347,7 @@ def parabolic_aperture(diameter, focal_length, thickness, mesh_size, sides='fron
     import meshio
     triangle_cells = [("triangle", mesh_temp.cells[triangle_index].data)]
     mesh = meshio.Mesh(mesh_temp.points, triangle_cells)
-
+    mesh = GF.compute_normals(mesh)
     x_space = np.linspace(
         mesh_size,
         (diameter / 2),

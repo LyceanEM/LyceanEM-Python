@@ -467,6 +467,7 @@ class antenna_structures(object3d):
         for item in triangle_meshes:
             if item is not None:
                 new_mesh = pv.utilities.from_meshio(item)
+                structure_meshes.append(new_mesh)
 
         point_sets = [self.export_all_points()]
         for item in point_sets:

@@ -104,7 +104,7 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
 
 def compute_normals(mesh):
     """
-    Computes the Cell Normals for meshio mesh objects, this does not currently calculate the point normals, but this will be done soon.
+    Computes the Cell Normals for meshio mesh objects, the point normals will also be calculated for all points which are connected to a triangle, isolated points will be propulated with a normal vector of nan.
 
     Parameters
     ----------
@@ -143,12 +143,13 @@ def compute_normals(mesh):
     #calculate vertex normals
     for inc, cell in enumerate(mesh.cells):
         if cell.type == 'triangle':
-            point_normals=[]
+            point_normals=np.empty((0,3))
             for inc in range(mesh.points.shape[0]):
                 associated_cells=np.where(inc==cell.data)[0]
-                point_normals.append(np.mean(mesh.cell_data['Normals'][0][associated_cells,:],axis=0))
+                print(associated_cells)
+                point_normals=np.append(point_normals,np.mean(mesh.cell_data['Normals'][0][associated_cells,:],axis=0).reshape(1,3),axis=0)
                 
-    mesh.point_data['Normals']=point_normals
+    mesh.point_data['Normals']=point_normals/np.linalg.norm(point_normals,axis=1).reshape(-1,1)
     
     
     return mesh
