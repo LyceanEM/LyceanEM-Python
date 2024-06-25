@@ -304,13 +304,16 @@ def meshedHorn(
     return structure, mesh_points
 
 
-def parabolic_aperture(diameter, focal_length, thickness, mesh_size, sides='front'):
+def parabolic_aperture(diameter, focal_length, thickness, mesh_size, sides='front', lip=False, lip_height=1e-3,
+                       lip_width=1e-3):
     # Define function for parabola equation (y^2 = 4*focal_length*x)
+    import lyceanem.geometry.geometryfunctions as GF
+    import lyceanem.utility.math_functions as math_functions
     def parabola(x):
         return (1 / (4 * focal_length)) * x ** 2
 
     with pygmsh.occ.Geometry() as geom:
-        geom.characteristic_length_max = mesh_size
+        geom.characteristic_length_max = mesh_size * 0.8
         # Define points
         cp1 = geom.add_point([0, 0, 0])  # Center point
         cp2 = geom.add_point([diameter * 0.5 * (1 / 6), 0, parabola(diameter * 0.5 * (1 / 6))])
@@ -331,11 +334,19 @@ def parabolic_aperture(diameter, focal_length, thickness, mesh_size, sides='fron
                                angle=0.25 * np.pi)
         volume_list.append(b)
         for inc in range(7):
-
             geom.rotate(surface, point=[0.0, 0.0, 0.0], angle=(1 / 4) * np.pi, axis=[0.0, 0.0, 1.0])
             _, b2, _ = geom.revolve(surface, rotation_axis=[0.0, 0.0, 1.0], point_on_axis=[0.0, 0.0, 0.0],
                                     angle=0.25 * np.pi)
             volume_list.append(b2)
+
+        if lip:
+            axis1 = np.array([0.0, 0.0, -lip_height])
+
+            start_point = np.array([0.0, 0.0, parabola(diameter * 0.5)])
+            cylinder1 = geom.add_cylinder(start_point.ravel(), axis1, diameter / 2)
+            cylinder2 = geom.add_cylinder(start_point.ravel(), axis1, diameter / 2 + lip_width)
+            final = geom.boolean_difference([cylinder2], [cylinder1])
+            volume_list.append(final)
 
         full_reflector = geom.boolean_union(volume_list)
 
@@ -409,10 +420,6 @@ def parabolic_aperture(diameter, focal_length, thickness, mesh_size, sides='fron
                                   point_data={'Normals': mesh_normals})
 
     return mesh, aperture_points
-
-
-
-
 
 
 def gridedReflectorPoints(

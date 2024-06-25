@@ -146,9 +146,9 @@ def compute_normals(mesh):
     mesh.cell_data['Normals'] = cell_normal_list
     
     #calculate vertex normals
+    point_normals=np.empty((0,3))
     for inc, cell in enumerate(mesh.cells):
         if cell.type == 'triangle':
-            point_normals=np.empty((0,3))
             for inc in range(mesh.points.shape[0]):
                 associated_cells=np.where(inc==cell.data)[0]
                 print(associated_cells)

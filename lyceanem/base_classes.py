@@ -174,20 +174,18 @@ class points(object3d):
         combined points
         """
         if point_index == None:
-            
+            points=np.empty((0,3))
             for item in range(len(self.points)):
                 if item == 0:
-                    points = np.array(self.points[item].points)
+                    points = np.append(points,np.array(self.points[item].points),axis=0)
                 else:
                     points = np.append(points, self.points[item].points, axis=0)
             point_data = {}
             for key in self.points[0].point_data.keys():
+                point_data[key] = np.empty((0,self.points[0].point_data[key].shape[1]))
                 for item in range(len(self.points)):  
-                    if item == 0:
-                        point_data[key] = np.array(self.points[item].point_data[key])
-                    else:
-                        point_data_element = np.array(self.points[item].point_data[key])
-                        point_data[key] = np.append(point_data[key], point_data_element, axis=0)
+                    point_data_element = np.array(self.points[item].point_data[key])
+                    point_data[key] = np.append(point_data[key], point_data_element, axis=0)
 
             combinded_points = meshio.Mesh(points, cells = [("vertex", np.array([[i, ] for i in range(points.shape[0])]))], point_data=point_data)
             combinded_points = GF.mesh_transform(combinded_points, self.pose, False)
@@ -197,22 +195,21 @@ class points(object3d):
 
 
         else:
+            points=np.empty((0,3))
             for item in point_index:
                 if item == 0:
-                    points = np.array(self.points[item].points)
+                    points = np.append(points,np.array(self.points[item].points),axis=0)
                 else:
                     points = np.append(points, self.points[item].points, axis=0)
             point_data = {}
-            for key in self.points[0].point_data.keys():
+            for key in self.points[point_index[0]].point_data.keys():
+                point_data[key] = np.empty((0,self.points[point_index[0]].point_data[key].shape[1]))
                 for item in point_index:
-                    if item == 0:
-                        point_data[key] = np.array(self.points[item].point_data[key])
-                    else:
-                        point_data_element = np.array(self.points[item].point_data[key])
-                        point_data[key] = np.append(point_data[key], point_data_element, axis=0)
+                    point_data_element = np.array(self.points[item].point_data[key])
+                    point_data[key] = np.append(point_data[key], point_data_element, axis=0)
                 
 
-            combinded_points = meshio.Mesh(points, point_data=point_data)
+            combinded_points = meshio.Mesh(points, cells = [("vertex", np.array([[i, ] for i in range(points.shape[0])]))], point_data=point_data)
             combinded_points = GF.mesh_transform(combinded_points, self.pose, False)
 
         
@@ -1044,7 +1041,7 @@ class antenna_pattern(object3d):
             the maximum directivity for each pattern
 
         """
-        Dtheta, Dphi, Dtotal, Dmax = BM.directivity_transformv2(
+        Dtheta, Dphi, Dtotal, Dmax = BM.directivity_transform(
             self.pattern[:, :, 0],
             self.pattern[:, :, 1],
             az_range=self.az_mesh[0, :],
