@@ -562,6 +562,8 @@ def gridedReflectorPoints(
         mesh_vertices = source_coords
         mesh_normals = source_normals
 
-    mesh_points = meshio.Mesh(points=mesh_vertices, cells=[], point_data={"Normals": mesh_normals})
+    mesh_points = meshio.Mesh(points=mesh_vertices,
+                              cells=[("vertex", np.array([[i, ] for i in range(len(mesh_vertices))]))],
+                              point_data={"Normals": mesh_normals})
 
     return mesh_points
