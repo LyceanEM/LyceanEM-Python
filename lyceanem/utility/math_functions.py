@@ -130,3 +130,7 @@ def calc_dv_norm(source, target, direction, length):
     )
     direction = (target - source) / length
     return direction, length
+
+def FindAlignedVector(command_vector,directions):
+    index_vector=np.argmax(np.einsum('nm,nm->n',np.tile(command_vector,(directions.shape[0],1)),directions))
+    return index_vector

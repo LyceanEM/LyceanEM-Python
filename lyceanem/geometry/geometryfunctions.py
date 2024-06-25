@@ -151,13 +151,30 @@ def compute_normals(mesh):
         if cell.type == 'triangle':
             for inc in range(mesh.points.shape[0]):
                 associated_cells=np.where(inc==cell.data)[0]
-                print(associated_cells)
+                #print(associated_cells)
                 point_normals=np.append(point_normals,np.mean(mesh.cell_data['Normals'][0][associated_cells,:],axis=0).reshape(1,3),axis=0)
                 
     mesh.point_data['Normals']=point_normals/np.linalg.norm(point_normals,axis=1).reshape(-1,1)
     
     
     return mesh
+
+def theta_phi_r(field_data):
+    """
+    Calculate the spherical coordinates for the provided field data relative to the origin
+
+    Parameters
+    ----------
+    field_data
+
+    Returns
+    -------
+
+    """
+    field_data.point_data['Radial Distance (m)']=np.linalg.norm(field_data.points-np.zeros((1,3)),axis=1)
+    field_data.point_data['theta (Radians)']=np.arccos(field_data.points[:,2]/field_data.point_data['Radial Distance (m)'])
+    field_data.point_data['phi (Radians)']=np.arctan2(field_data.points[:,1],field_data.points[:,0])
+    return field_data
 
 def mesh_conversion(conversion_object):
     """
