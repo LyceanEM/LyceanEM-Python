@@ -50,9 +50,9 @@ def field_magnitude_phase(field_data):
 
     return field_data
 def extract_electric_fields(field_data):
-    fields = np.array([field_data.point_data['Ex - Real'] + 1j * field_data.point_data['Ex - Imag'],
-                       field_data.point_data['Ey - Real'] + 1j * field_data.point_data['Ey - Imag'],
-                       field_data.point_data['Ez - Real'] + 1j * field_data.point_data['Ez - Imag'],
+    fields = np.array([field_data.point_data['Ex - Real'][:,0] + 1j * field_data.point_data['Ex - Imag'][:,0],
+                       field_data.point_data['Ey - Real'][:,0] + 1j * field_data.point_data['Ey - Imag'][:,0],
+                       field_data.point_data['Ez - Real'][:,0] + 1j * field_data.point_data['Ez - Imag'][:,0],
                        ]).transpose()
 
     return fields
@@ -93,9 +93,9 @@ def EthetaEphi_to_Exyz(field_data):
 
 def Exyz_to_EthetaEphi(field_data):
     # this function assumes a spherical field definition, will need to write a function which works based on the poynting vector/normal vector of the point
-    electric_fields = extract_electric_fields()
-    theta = field_data.point_Data['theta (Radians)']
-    phi = field_data.point_Data['phi (Radians)']
+    electric_fields = extract_electric_fields(field_data)
+    theta = field_data.point_data['theta (Radians)']
+    phi = field_data.point_data['phi (Radians)']
     etheta = electric_fields[:, 0] * np.cos(phi) * np.cos(theta) + electric_fields[:, 1] * np.sin(phi) * np.cos(
         theta) - electric_fields[:, 2] * np.sin(theta)
     ephi = -electric_fields[:, 0] * np.sin(phi) + electric_fields[:, 1] * np.cos(phi)
@@ -169,7 +169,7 @@ def PoyntingVector(field_data):
 
 def Directivity(field_data):
     # calculate directivity for the given pattern
-    field_area = field_data.area
+
     if not all(k in field_data.point_data.keys() for k in ('theta (Radians)', 'phi (Radians)')):
         # theta and phi don't exist in the dataset
         field_data = theta_phi_r(field_data)

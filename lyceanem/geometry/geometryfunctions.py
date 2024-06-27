@@ -107,6 +107,49 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
 
     return return_mesh
 
+
+def compute_areas(field_data):
+    cell_areas = []
+    for inc, cell in enumerate(field_data.cells):
+
+        if cell.type == 'triangle':
+            # Heron's Formula
+            edge1 = np.linalg.norm(field_data.points[cell.data[:, 0], :] - field_data.points[cell.data[:, 1], :],
+                                   axis=1)
+            edge2 = np.linalg.norm(field_data.points[cell.data[:, 1], :] - field_data.points[cell.data[:, 2], :],
+                                   axis=1)
+            edge3 = np.linalg.norm(field_data.points[cell.data[:, 2], :] - field_data.points[cell.data[:, 0], :],
+                                   axis=1)
+            s = (edge1 + edge2 + edge3) / 2
+            areas = (s * (s - edge1) * (s - edge2) * (s - edge3)) ** 0.5
+            cell_areas.append(areas)
+        if cell.type == 'quad':
+            # Heron's Formula twice
+            edge1 = np.linalg.norm(field_data.points[cell.data[:, 0], :] - field_data.points[cell.data[:, 1], :],
+                                   axis=1)
+            edge2 = np.linalg.norm(field_data.points[cell.data[:, 1], :] - field_data.points[cell.data[:, 2], :],
+                                   axis=1)
+            edge3 = np.linalg.norm(field_data.points[cell.data[:, 2], :] - field_data.points[cell.data[:, 0], :],
+                                   axis=1)
+            edge4 = np.linalg.norm(field_data.points[cell.data[:, 2], :] - field_data.points[cell.data[:, 3], :],
+                                   axis=1)
+            edge5 = np.linalg.norm(field_data.points[cell.data[:, 3], :] - field_data.points[cell.data[:, 0], :],
+                                   axis=1)
+
+            s1 = (edge1 + edge2 + edge3) / 2
+            s2 = (edge3 + edge4 + edge5) / 2
+            areas = (s1 * (s1 - edge1) * (s1 - edge2) * (s1 - edge3)) ** 0.5 + (
+                        s2 * (s2 - edge3) * (s2 - edge4) * (s2 - edge5)) ** 0.5
+            cell_areas.append(areas)
+
+    field_data.cell_data['Area'] = cell_areas
+    field_data.point_data['Area']=np.zeros((field_data.points.shape[0]))
+    for inc, cell in enumerate(field_data.cells):
+        for point_inc in range(field_data.points.shape[0]):
+            field_data.point_data['Area'][point_inc] =np.mean(field_data.cell_data['Area'][inc][np.where(field_data.cells[inc].data == point_inc)[0]])
+
+    return field_data
+
 def compute_normals(mesh):
     """
     Computes the Cell Normals for meshio mesh objects, the point normals will also be calculated for all points which are connected to a triangle, isolated points will be propulated with a normal vector of nan.
