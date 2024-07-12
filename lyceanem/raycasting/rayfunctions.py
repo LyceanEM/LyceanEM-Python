@@ -2753,8 +2753,8 @@ def workchunkingv2(
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.8).astype(np.int64)
     ray_limit = (
-        np.floor(np.floor((max_mem - environment.nbytes) / base_types.ray_t.size) / 1e7)
-        * 1e7
+        np.floor(np.floor((max_mem - environment.nbytes) / base_types.ray_t.size) )
+        
     ).astype(np.int64)
     # establish index boundaries
     source_index = np.arange(1, sources.shape[0] + 1).reshape(
