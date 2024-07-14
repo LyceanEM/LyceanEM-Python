@@ -182,10 +182,17 @@ class points(object3d):
                     points = np.append(points, self.points[item].points, axis=0)
             point_data = {}
             for key in self.points[0].point_data.keys():
-                point_data[key] = np.empty((0,self.points[0].point_data[key].shape[1]))
+                if len(self.points[0].point_data[key].shape)<2:
+                    point_data[key] = np.empty((0,1))
+                else:
+                    point_data[key] = np.empty((0,self.points[0].point_data[key].shape[1]))
+                    
                 for item in range(len(self.points)):  
                     point_data_element = np.array(self.points[item].point_data[key])
-                    point_data[key] = np.append(point_data[key], point_data_element, axis=0)
+                    if len(point_data_element.shape)<2:
+                        point_data[key] = np.append(point_data[key], point_data_element.reshape(-1,1), axis=0)    
+                    else:
+                        point_data[key] = np.append(point_data[key], point_data_element, axis=0)
 
             combinded_points = meshio.Mesh(points, cells = [("vertex", np.array([[i, ] for i in range(points.shape[0])]))], point_data=point_data)
             combinded_points = GF.mesh_transform(combinded_points, self.pose, False)

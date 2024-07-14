@@ -489,7 +489,7 @@ def calculate_scattering(
                 desired_E_axis, np.asarray(aperture_coords.point_data["Normals"]), antenna_axes
             )
         else:
-            print("hi from here", aperture_coords.cell_data)
+            #print("hi from here", aperture_coords.cell_data)
             if desired_E_axis.shape[0] == np.asarray(aperture_coords.point_data["Normals"]).shape[0]:
                 conformal_E_vectors = copy.deepcopy(desired_E_axis)
             else:

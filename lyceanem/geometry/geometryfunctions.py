@@ -8,6 +8,7 @@ from .. import base_classes as base_classes
 from .. import base_types as base_types
 from ..raycasting import rayfunctions as RF
 
+
 def tri_areas(triangle_mesh):
     """
     Calculate the area of each triangle in a triangle mesh.
@@ -25,21 +26,25 @@ def tri_areas(triangle_mesh):
     v2 = triangle_mesh.points[triangle_indices[:, 2]]
     return 0.5 * np.linalg.norm(np.cross(v1 - v0, v2 - v0), axis=1)
 
-def tri_centroids(triangle_mesh):
+
+def cell_centroids(field_data):
     """
     In order to calculate the centroid of the triangle, take vertices from meshio triangle mesh, then put each triangle
     into origin space, creating oa,ob,oc vectors, then the centroid is a third of the sum of oa+ob+oc, converted back
     into global coordinates
     """
-    
-    assert triangle_mesh.cells[0].type == "triangle", "Only triangle meshes are supported."
-    triangle_indices = triangle_mesh.cells[0].data
-    v0 = triangle_mesh.points[triangle_indices[:, 0], :]
-    v1 = triangle_mesh.points[triangle_indices[:, 1]]
-    v2 = triangle_mesh.points[triangle_indices[:, 2]]
-    centroids = (1 / 3) * (v0 +v1+v2)
-    centroid_cloud = meshio.Mesh(points=centroids, cells=[], point_data=triangle_mesh.cell_data)
-    return centroids, centroid_cloud
+    for inc, cell in enumerate(field_data.cells):
+
+        if cell.type == 'triangle':
+            v0 = field_data.points[cell.data[:, 0], :]
+            v1 = field_data.points[cell.data[:, 1], :]
+            v2 = field_data.points[cell.data[:, 2], :]
+            centroids = (1 / 3) * (v0 + v1 + v2)
+
+    centroid_cloud = meshio.Mesh(points=centroids, cells=[], point_data=field_data.cell_data)
+
+    return centroid_cloud
+
 
 def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float32)):
     """
@@ -57,16 +62,15 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
     """
     if rotation.shape == (3,):
         r = R.from_rotvec(rotation)
-    elif rotation.shape == (3,3):
+    elif rotation.shape == (3, 3):
         r = R.from_matrix(rotation)
     else:
         raise ValueError("Rotation  must be a 3x1 or 3x3 array")
-    if rotation_centre.shape == (3,) or rotation_centre.shape == (3,1):
+    if rotation_centre.shape == (3,) or rotation_centre.shape == (3, 1):
         rotation_centre = rotation_centre.reshape(1, 3)
     rotated_points = r.apply(mesh.points - rotation_centre) + rotation_centre
     cell_data = mesh.cell_data
     point_data = mesh.point_data
-        
 
     if 'Normals' in mesh.point_data:
         #rotate normals cloud
@@ -75,35 +79,35 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
         point_data['Normals'] = rotated_normals
     if 'Normals' in mesh.cell_data:
         #rotate normals cloud
-        for i,rotated_normals in enumerate(mesh.cell_data['Normals']):
+        for i, rotated_normals in enumerate(mesh.cell_data['Normals']):
             rotated_normals = r.apply(rotated_normals)
             cell_data['Normals'][i] = rotated_normals
-
 
     mesh_return = meshio.Mesh(points=rotated_points, cells=mesh.cells)
     mesh_return.point_data = point_data
     mesh_return.cell_data = cell_data
 
+    return mesh_return
 
-    
-    return mesh_return 
 
 def mesh_transform(mesh, transform_matrix, rotate_only):
     return_mesh = mesh
     if rotate_only:
         for i in range(mesh.points.shape[0]):
             return_mesh.points[i] = np.dot(transform_matrix, np.append(mesh.points[i], 0))[:3]
-            return_mesh.point_data['Normals'][i] = np.dot(transform_matrix, np.append(mesh.point_data['Normals'][i], 0))[:3]
+            return_mesh.point_data['Normals'][i] = np.dot(transform_matrix,
+                                                          np.append(mesh.point_data['Normals'][i], 0))[:3]
 
     else:
         for i in range(mesh.points.shape[0]):
             return_mesh.points[i] = np.dot(transform_matrix, np.append(mesh.points[i], 1))[:3]
-            return_mesh.point_data['Normals'][i]= np.dot(transform_matrix, np.append(mesh.point_data['Normals'][i], 0))[:3]
+            return_mesh.point_data['Normals'][i] = np.dot(transform_matrix,
+                                                          np.append(mesh.point_data['Normals'][i], 0))[:3]
         if 'Normals' in mesh.cell_data:
             for i in range(len(mesh.cell_data['Normals'])):
                 for j in range(mesh.cell_data['Normals'][i].shape[0]):
-                    return_mesh.cell_data['Normals'][i][j] = np.dot(transform_matrix, np.append(mesh.cell_data['Normals'][i][j], 0))[:3]
-    
+                    return_mesh.cell_data['Normals'][i][j] = np.dot(transform_matrix,
+                                                                    np.append(mesh.cell_data['Normals'][i][j], 0))[:3]
 
     return return_mesh
 
@@ -139,16 +143,18 @@ def compute_areas(field_data):
             s1 = (edge1 + edge2 + edge3) / 2
             s2 = (edge3 + edge4 + edge5) / 2
             areas = (s1 * (s1 - edge1) * (s1 - edge2) * (s1 - edge3)) ** 0.5 + (
-                        s2 * (s2 - edge3) * (s2 - edge4) * (s2 - edge5)) ** 0.5
+                    s2 * (s2 - edge3) * (s2 - edge4) * (s2 - edge5)) ** 0.5
             cell_areas.append(areas)
 
     field_data.cell_data['Area'] = cell_areas
-    field_data.point_data['Area']=np.zeros((field_data.points.shape[0]))
+    field_data.point_data['Area'] = np.zeros((field_data.points.shape[0]))
     for inc, cell in enumerate(field_data.cells):
         for point_inc in range(field_data.points.shape[0]):
-            field_data.point_data['Area'][point_inc] =np.mean(field_data.cell_data['Area'][inc][np.where(field_data.cells[inc].data == point_inc)[0]])
+            field_data.point_data['Area'][point_inc] = np.mean(
+                field_data.cell_data['Area'][inc][np.where(field_data.cells[inc].data == point_inc)[0]])
 
     return field_data
+
 
 def compute_normals(mesh):
     """
@@ -187,20 +193,23 @@ def compute_normals(mesh):
             cell_normal_list.append(tetra_cell_normals)
 
     mesh.cell_data['Normals'] = cell_normal_list
-    
+
     #calculate vertex normals
-    point_normals=np.empty((0,3))
+    point_normals = np.empty((0, 3))
     for inc, cell in enumerate(mesh.cells):
         if cell.type == 'triangle':
             for inc in range(mesh.points.shape[0]):
-                associated_cells=np.where(inc==cell.data)[0]
+                associated_cells = np.where(inc == cell.data)[0]
                 #print(associated_cells)
-                point_normals=np.append(point_normals,np.mean(mesh.cell_data['Normals'][0][associated_cells,:],axis=0).reshape(1,3),axis=0)
-                
-    mesh.point_data['Normals']=point_normals/np.linalg.norm(point_normals,axis=1).reshape(-1,1)
-    
-    
+                point_normals = np.append(point_normals,
+                                          np.mean(mesh.cell_data['Normals'][0][associated_cells, :], axis=0).reshape(1,
+                                                                                                                     3),
+                                          axis=0)
+
+    mesh.point_data['Normals'] = point_normals / np.linalg.norm(point_normals, axis=1).reshape(-1, 1)
+
     return mesh
+
 
 def theta_phi_r(field_data):
     """
@@ -214,10 +223,12 @@ def theta_phi_r(field_data):
     -------
 
     """
-    field_data.point_data['Radial Distance (m)']=np.linalg.norm(field_data.points-np.zeros((1,3)),axis=1)
-    field_data.point_data['theta (Radians)']=np.arccos(field_data.points[:,2]/field_data.point_data['Radial Distance (m)'])
-    field_data.point_data['phi (Radians)']=np.arctan2(field_data.points[:,1],field_data.points[:,0])
+    field_data.point_data['Radial Distance (m)'] = np.linalg.norm(field_data.points - np.zeros((1, 3)), axis=1)
+    field_data.point_data['theta (Radians)'] = np.arccos(
+        field_data.points[:, 2] / field_data.point_data['Radial Distance (m)'])
+    field_data.point_data['phi (Radians)'] = np.arctan2(field_data.points[:, 1], field_data.points[:, 0])
     return field_data
+
 
 def mesh_conversion(conversion_object):
     """
@@ -290,6 +301,8 @@ def axes_from_normal(boresight_vector, boresight_along="x"):
     rotation, _ = R.align_vectors(replacement_vector.reshape(1, 3), alignment_vector)
 
     return rotation.as_matrix()
+
+
 def get_cross_prod_mat(pVec_Arr):
     # pVec_Arr shape (3)
     qCross_prod_mat = np.array(
@@ -313,12 +326,14 @@ def calculate_align_mat(pVec_Arr):
     z_c_vec_mat = get_cross_prod_mat(z_c_vec)
 
     qTrans_Mat = (
-        np.eye(3, 3)
-        + z_c_vec_mat
-        + np.matmul(z_c_vec_mat, z_c_vec_mat) / (1 + np.dot(z_unit_Arr, pVec_Arr))
+            np.eye(3, 3)
+            + z_c_vec_mat
+            + np.matmul(z_c_vec_mat, z_c_vec_mat) / (1 + np.dot(z_unit_Arr, pVec_Arr))
     )
     qTrans_Mat *= scale
     return qTrans_Mat
+
+
 @vectorize(["(float32(float32))", "(float64(float64))"])
 def elevationtotheta(el):
     # converting elevation in degrees to theta in degrees
@@ -330,6 +345,7 @@ def elevationtotheta(el):
         theta = np.abs(el) + 90.0
 
     return theta
+
 
 def translate_mesh(mesh, translation_vector):
     """

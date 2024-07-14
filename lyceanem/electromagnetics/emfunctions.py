@@ -119,12 +119,12 @@ def field_vectors(field_data):
     return directions
 
 def update_electric_fields(field_data,ex,ey,ez):
-    field_data.point_data['Ex - Real']=np.zeros((field_data.points.shape[0]))
-    field_data.point_data['Ey - Real']=np.zeros((field_data.points.shape[0]))
-    field_data.point_data['Ez - Real']=np.zeros((field_data.points.shape[0]))
-    field_data.point_data['Ex - Imag']=np.zeros((field_data.points.shape[0]))
-    field_data.point_data['Ey - Imag']=np.zeros((field_data.points.shape[0]))
-    field_data.point_data['Ez - Imag']=np.zeros((field_data.points.shape[0]))
+    field_data.point_data['Ex - Real']=np.zeros((field_data.points.shape[0],1))
+    field_data.point_data['Ey - Real']=np.zeros((field_data.points.shape[0],1))
+    field_data.point_data['Ez - Real']=np.zeros((field_data.points.shape[0],1))
+    field_data.point_data['Ex - Imag']=np.zeros((field_data.points.shape[0],1))
+    field_data.point_data['Ey - Imag']=np.zeros((field_data.points.shape[0],1))
+    field_data.point_data['Ez - Imag']=np.zeros((field_data.points.shape[0],1))
     field_data.point_data['Ex - Real']=np.array([np.real(ex)]).transpose()
     field_data.point_data['Ex - Imag']=np.array([np.imag(ex)]).transpose()
     field_data.point_data['Ey - Real']=np.array([np.real(ey)]).transpose()
@@ -160,10 +160,11 @@ def PoyntingVector(field_data):
         # use normal vectors instead
         # poynting_vector_complex=field_data.point_data['Normals']*((np.linalg.norm(electric_field_vectors,axis=1)**2)/eta).reshape(-1,1)
         poynting_vector_complex = ((np.linalg.norm(electric_field_vectors, axis=1) ** 2) / eta).reshape(-1, 1)
-
-    field_data.point_data['Poynting Vector (Magnitude)'] = np.linalg.norm(poynting_vector_complex, axis=1)
+    field_data.point_data['Poynting Vector (Magnitude)'] =np.zeros((field_data.points.shape[0],1))
+    field_data.point_data['Poynting Vector (Magnitude (dB))'] = np.zeros((field_data.points.shape[0], 1))
+    field_data.point_data['Poynting Vector (Magnitude)'] = np.linalg.norm(poynting_vector_complex, axis=1).reshape(-1,1)
     field_data.point_data['Poynting Vector (Magnitude (dB))'] = 10 * np.log10(
-        np.linalg.norm(poynting_vector_complex, axis=1))
+        np.linalg.norm(poynting_vector_complex.reshape(-1,1), axis=1))
     return field_data
 
 
