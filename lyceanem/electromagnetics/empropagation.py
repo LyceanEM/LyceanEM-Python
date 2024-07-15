@@ -775,12 +775,12 @@ def lossy_propagation(point1,point2,alpha,beta):
     normal[0] = point1["nx"]
     normal[1] = point1["ny"]
     normal[2] = point1["nz"]
-    angle=cmath.acos(clip(dot_vec(outgoing_dir,normal),-1.0,1.0))
+    projection_dot=dot_vec(outgoing_dir,normal)
     front=-(1/(2*cmath.pi))
     G=(cmath.exp(-(alpha+1j*beta)*length))/length
     #dG=cmath.cos(angle)*(-(alpha+1j*beta)-(1/lengths))*G
     dG=(-(alpha+1j*beta)-(1/length))*G
-    loss=front*dG*cmath.cos(angle)
+    loss=front*dG*projection_dot
     #loss = G
 
     #test replacement with old loss funciton
