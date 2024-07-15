@@ -40,8 +40,12 @@ def cell_centroids(field_data):
             v1 = field_data.points[cell.data[:, 1], :]
             v2 = field_data.points[cell.data[:, 2], :]
             centroids = (1 / 3) * (v0 + v1 + v2)
+            triangle_inc=inc
 
-    centroid_cloud = meshio.Mesh(points=centroids, cells=[], point_data=field_data.cell_data)
+    centroid_cloud = meshio.Mesh(points=centroids, cells=[("vertex", np.array([[i, ] for i in range(len(centroids))]))])
+    for key in field_data.cell_data.keys():
+        centroid_cloud.point_data[key]=field_data.cell_data[key][triangle_inc]
+    
 
     return centroid_cloud
 
