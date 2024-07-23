@@ -1,7 +1,7 @@
 import numpy as np
 import pyvista as pv
 
-from lyceanem.geometry.geometryfunctions import theta_phi_r
+
 
 
 def fresnel_zone(pointA,pointB,wavelength,zone=1):
@@ -57,10 +57,14 @@ def extract_electric_fields(field_data):
 
     return fields
 def EthetaEphi_to_Exyz(field_data):
+    if not all(k in field_data.point_data.keys() for k in ('theta (Radians)', 'phi (Radians)')):
+        # theta and phi don't exist in the dataset
+        from lyceanem.geometry.geometryfunctions import theta_phi_r
+        field_data = theta_phi_r(field_data)
     #    # output Ex,Ey,Ez on point data.
-    Espherical = np.array([field_data.point_data['E(theta) - Real'] + 1j * field_data.point_data['E(theta) - Imag'],
-                           field_data.point_data['E(phi) - Real'] + 1j * field_data.point_data['E(phi) - Imag'],
-                           np.zeros(field_data.points.shape[0])]).transpose()
+    Espherical = np.array([(field_data.point_data['E(theta) - Real'] + 1j * field_data.point_data['E(theta) - Imag']).ravel(),
+                           (field_data.point_data['E(phi) - Real'] + 1j * field_data.point_data['E(phi) - Imag']).ravel(),
+                           np.zeros((field_data.points.shape[0]))]).transpose()
     # local_coordinates=field_data.points-field_data.center
     # radial_distance=np.linalg.norm(local_coordinates,axis=1)
     # theta=np.arccos(local_coordinates[:,2]/radial_distance)
@@ -118,6 +122,53 @@ def field_vectors(field_data):
     directions = np.abs(fields)
     return directions
 
+def transform_em(field_data, r):
+    """
+    Transform the electric current vectors into the new coordinate system defined by the rotation matrix.
+
+    Parameters
+    ----------
+    field_data: meshio.Mesh
+    r: scipy.rotation
+
+    Returns
+    -------
+
+    """
+    if all(k in field_data.point_data.keys() for k in ("Ex - Real", "Ey - Real", "Ez - Real")):
+        # print("Rotating Ex,Ey,Ez")
+        fields = np.array([field_data.point_data['Ex - Real'] + 1j * field_data.point_data['Ex - Imag'],
+                           field_data.point_data['Ey - Real'] + 1j * field_data.point_data['Ey - Imag'],
+                           field_data.point_data['Ez - Real'] + 1j * field_data.point_data['Ez - Imag'],
+                           np.zeros((field_data.point_data['Ex - Real'].shape[0]))]).transpose()
+        rot_fields = r.apply(fields)
+        field_data.point_data['Ex - Real'] = np.real(
+            rot_fields[:, 0])  # np.array([np.real(rot_fields[:,0]),np.imag(rot_fields[:,0])]).transpose()
+        field_data.point_data['Ey - Real'] = np.real(rot_fields[:, 1])
+        field_data.point_data['Ez - Real'] = np.real(rot_fields[:, 2])
+        field_data.point_data['Ex - Imag'] = np.imag(
+            rot_fields[:, 0])  # np.array([np.real(rot_fields[:,0]),np.imag(rot_fields[:,0])]).transpose()
+        field_data.point_data['Ey - Imag'] = np.imag(rot_fields[:, 1])
+        field_data.point_data['Ez - Imag'] = np.imag(rot_fields[:, 2])
+        # if all(k in field_data.point_data.keys() for k in ('E(theta)','E(phi)')):
+    elif all(k in field_data.point_data.keys() for k in ('E(theta)', 'E(phi)')):
+        # print("Converting Fields and Rotating Ex,Ey,Ez")
+        from lyceanem.geometry.geometryfunctions import theta_phi_r
+        field_data = theta_phi_r(field_data)
+        field_data = EthetaEphi_to_Exyz(field_data)
+        fields = np.array([field_data.point_data['Ex - Real'] + 1j * field_data.point_data['Ex - Imag'],
+                           field_data.point_data['Ey - Real'] + 1j * field_data.point_data['Ey - Imag'],
+                           field_data.point_data['Ez - Real'] + 1j * field_data.point_data['Ez - Imag'],
+                           np.zeros((field_data.point_data['Ex - Real'].shape[0]))]).transpose()
+        rot_fields = r.apply(fields)
+        field_data.point_data['Ex - Real'] = np.real(rot_fields[:, 0])
+        field_data.point_data['Ey - Real'] = np.real(rot_fields[:, 1])
+        field_data.point_data['Ez - Real'] = np.real(rot_fields[:, 2])
+        field_data.point_data['Ex - Imag'] = np.imag(rot_fields[:, 0])
+        field_data.point_data['Ey - Imag'] = np.imag(rot_fields[:, 1])
+        field_data.point_data['Ez - Imag'] = np.imag(rot_fields[:, 2])
+    return field_data
+
 def update_electric_fields(field_data,ex,ey,ez):
     field_data.point_data['Ex - Real']=np.zeros((field_data.points.shape[0],1))
     field_data.point_data['Ey - Real']=np.zeros((field_data.points.shape[0],1))
@@ -173,6 +224,7 @@ def Directivity(field_data):
 
     if not all(k in field_data.point_data.keys() for k in ('theta (Radians)', 'phi (Radians)')):
         # theta and phi don't exist in the dataset
+        from lyceanem.geometry.geometryfunctions import theta_phi_r
         field_data = theta_phi_r(field_data)
 
     if not all(k in field_data.point_data.keys() for k in ('E(theta) - Real', 'E(phi) - Real')):

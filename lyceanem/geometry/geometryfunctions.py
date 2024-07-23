@@ -1,5 +1,6 @@
 import numpy as np
 import meshio
+import copy
 from numba import vectorize
 from packaging import version
 from scipy.spatial.transform import Rotation as R
@@ -7,6 +8,7 @@ from scipy.spatial.transform import Rotation as R
 from .. import base_classes as base_classes
 from .. import base_types as base_types
 from ..raycasting import rayfunctions as RF
+from ..electromagnetics.emfunctions import transform_em
 
 
 def tri_areas(triangle_mesh):
@@ -53,6 +55,7 @@ def cell_centroids(field_data):
 def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float32)):
     """
     Rotate the provided meshio mesh about an arbitary center using either rotation vector or rotation matrix.
+    This function will also rotate the cartesian electric field vectors if present, or convert spherical vectors to cartesian then rotate.
 
     Parameters
     ----------
@@ -90,6 +93,18 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
     mesh_return = meshio.Mesh(points=rotated_points, cells=mesh.cells)
     mesh_return.point_data = point_data
     mesh_return.cell_data = cell_data
+
+    # if field data is present, rotate fields
+    if all(k in mesh.point_data.keys() for k in ("Ex - Real", "Ey - Real", "Ez - Real")):
+        #rotate field data
+        fields=transform_em(copy.deepcopy(mesh),r)
+        for key in ("Ex - Real","Ex - Imag", "Ey - Real","Ey - Imag", "Ez - Real","Ez - Imag"):
+            mesh_return.point_data[key]=fields.point_data[key]
+
+    elif all(k in mesh.point_data.keys() for k in ('E(theta)', 'E(phi)')):
+        fields=transform_em(copy.deepcopy(mesh),r)
+        for key in ("Ex - Real", "Ex - Imag", "Ey - Real", "Ey - Imag", "Ez - Real", "Ez - Imag"):
+            mesh_return.point_data[key] = fields.point_data[key]
 
     return mesh_return
 
