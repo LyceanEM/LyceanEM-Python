@@ -177,7 +177,8 @@ def compute_areas(field_data):
 
 def compute_normals(mesh):
     """
-    Computes the Cell Normals for meshio mesh objects, the point normals will also be calculated for all points which are connected to a triangle, isolated points will be propulated with a normal vector of nan.
+    Computes the Cell Normals for meshio mesh objects, the point normals will also be calculated for all points which are connected to a triangle, quad, or vertex, isolated points will be propulated with a normal vector of nan.
+    If the only cells are vertex cells, then the normals will be from the mesh origin to each vertex.
 
     Parameters
     ----------
@@ -191,7 +192,8 @@ def compute_normals(mesh):
     for inc, cell in enumerate(mesh.cells):
         #print(cell.type, cell.data.shape[0])
         if cell.type == 'vertex':
-            vertex_normals = np.zeros((cell.data.shape[0], 3))
+            # assume outward pointing normals from centroid
+            vertex_normals = mesh.points[cell.data[:, 0], :]/np.linalg.norm(mesh.points[cell.data[:, 0], :],axis=1).reshape(-1,1)
             cell_normal_list.append(vertex_normals)
         if cell.type == 'line':
             line_normals = np.zeros((cell.data.shape[0], 3))
@@ -217,6 +219,14 @@ def compute_normals(mesh):
     point_normals = np.empty((0, 3))
     for inc, cell in enumerate(mesh.cells):
         if cell.type == 'triangle':
+            for inc in range(mesh.points.shape[0]):
+                associated_cells = np.where(inc == cell.data)[0]
+                #print(associated_cells)
+                point_normals = np.append(point_normals,
+                                          np.mean(mesh.cell_data['Normals'][0][associated_cells, :], axis=0).reshape(1,
+                                                                                                                     3),
+                                          axis=0)
+        if cell.type == 'vertex':
             for inc in range(mesh.points.shape[0]):
                 associated_cells = np.where(inc == cell.data)[0]
                 #print(associated_cells)
