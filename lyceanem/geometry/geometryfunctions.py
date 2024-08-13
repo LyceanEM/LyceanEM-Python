@@ -191,7 +191,7 @@ def compute_areas(field_data):
                 - field_data.points[cell.data[:, 0], :],
                 axis=1,
             )
-            s = (edge1 + edge2 + edge3) / 2
+            s = (edge1 + edge2 + edge3) / 2.0
             areas = (s * (s - edge1) * (s - edge2) * (s - edge3)) ** 0.5
             cell_areas.append(areas)
         if cell.type == "quad":
@@ -222,9 +222,9 @@ def compute_areas(field_data):
                 axis=1,
             )
 
-            s1 = (edge1 + edge2 + edge3) / 2
-            s2 = (edge3 + edge4 + edge5) / 2
-            areas = (s1 * (s1 - edge1) * (s1 - edge2) * (s1 - edge3)) ** 0.5 + (
+            s1 = (edge1 + edge2 + edge3) / 2.0
+            s2 = (edge3 + edge4 + edge5) / 2.0
+            areas = (s1 * ((s1 - edge1) * (s1 - edge2) * (s1 - edge3))) ** 0.5 + (
                 s2 * (s2 - edge3) * (s2 - edge4) * (s2 - edge5)
             ) ** 0.5
             cell_areas.append(areas)
