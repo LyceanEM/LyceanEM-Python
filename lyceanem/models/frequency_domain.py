@@ -86,6 +86,8 @@ def calculate_farfield(
     los=True,
     project_vectors=False,
     antenna_axes=np.eye(3),
+        alpha=0.0,
+        beta=(np.pi*2)/1.0
 ):
     """
     Based upon the aperture coordinates and solids, predict the farfield for the antenna.
@@ -373,7 +375,7 @@ def calculate_farfield(
             # unified_weights[0:num_sources, :] = 0.0
             # unified_weights[element, :] = (conformal_E_vectors[element, :] / num_sources)*v_transmit
             scatter_map = EM.EMGPUFreqDomain(
-                num_sources, sinks.shape[0], full_index, point_informationv2, wavelength
+                num_sources, sinks.shape[0], full_index, point_informationv2, wavelength, alpha, beta
             )
             Ex[element, :, :] = np.dot(
                 np.ones((num_sources)), scatter_map[:, :, 0]
@@ -403,7 +405,7 @@ def calculate_farfield(
         Ey = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)
         Ez = np.zeros((el_range.shape[0], az_range.shape[0]), dtype=np.complex64)
         scatter_map = EM.EMGPUFreqDomain(
-            num_sources, num_sinks, full_index, point_informationv2, wavelength
+            num_sources, num_sinks, full_index, point_informationv2, wavelength, alpha, beta
         )
 
         Ex[:, :] = np.sum(scatter_map[:, :, 0], axis=0).reshape(
@@ -439,7 +441,9 @@ def calculate_scattering(
     mesh_resolution=0.5,
     project_vectors=False,
     antenna_axes=np.eye(3),
-    multiE=False
+    multiE=False,
+        alpha=0.0,
+        beta=(np.pi*2)/1.0
 ):
     """
     calculating the scattering from the provided source coordinates, to the provided sink coordinates in the environment.
@@ -748,14 +752,14 @@ def calculate_scattering(
                 point_informationv2[:]["ey"] = unified_weights[:, 1]
                 point_informationv2[:]["ez"] = unified_weights[:, 2]
                 scatter_map = EM.EMGPUFreqDomain(
-                    num_sources, num_sinks, full_index, point_informationv2, wavelength
+                    num_sources, num_sinks, full_index, point_informationv2, wavelength, alpha, beta
                 )
                 Ex[e_inc] = np.dot(np.ones((num_sources)), scatter_map[:, :, 0])
                 Ey[e_inc] = np.dot(np.ones((num_sources)), scatter_map[:, :, 1])
                 Ez[e_inc] = np.dot(np.ones((num_sources)), scatter_map[:, :, 2])
         else:
             scatter_map = EM.EMGPUFreqDomain(
-                num_sources, num_sinks, full_index, point_informationv2, wavelength
+                num_sources, num_sinks, full_index, point_informationv2, wavelength, alpha, beta
             )
 
             Ex = np.dot(np.ones((num_sources)), scatter_map[:, :, 0])
@@ -799,6 +803,8 @@ def calculate_scattering(
                         full_index,
                         point_informationv2,
                         wavelength,
+                        alpha,
+                        beta
                     )
                     Ex[element, :, e_inc] = np.dot(
                         np.ones((num_sources)), scatter_map[:, :, 0]
@@ -814,7 +820,7 @@ def calculate_scattering(
             Ey = np.zeros((num_sources, num_sinks), dtype=np.complex64)
             Ez = np.zeros((num_sources, num_sinks), dtype=np.complex64)
             scatter_map = EM.EMGPUFreqDomain(
-                num_sources, num_sinks, full_index, point_informationv2, wavelength
+                num_sources, num_sinks, full_index, point_informationv2, wavelength, alpha, beta
             )
             Ex = scatter_map[:, :, 0]
             Ey = scatter_map[:, :, 1]

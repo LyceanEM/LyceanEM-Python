@@ -26,7 +26,9 @@ def calculate_scattering(
     num_samples=10000,
     mesh_resolution=0.5,
     antenna_axes=np.eye(3),
-    project_vectors=True
+    project_vectors=True,
+        alpha=0.0,
+        beta=(np.pi*2)/1.0
 ):
     """
     Based upon the parameters given, calculate the time domain scattering for the apertures and sinks.
@@ -322,6 +324,8 @@ def calculate_scattering(
                     excitation_function,
                     sampling_freq,
                     num_samples,
+                    alpha,
+                    beta
                 )
                 wake_index = np.digitize(WakeTimes, time_index)
                 Ex[e_inc, wake_index:] = np.dot(
@@ -361,6 +365,8 @@ def calculate_scattering(
                 excitation_function,
                 sampling_freq,
                 num_samples,
+                alpha,
+                beta
             )
             wake_index = np.digitize(WakeTimes, time_index)
             Ex[wake_index:] = np.dot(
@@ -429,6 +435,8 @@ def calculate_scattering(
                         excitation_function,
                         sampling_freq,
                         num_samples,
+                        alpha,
+                        beta
                     )
                     wake_index = np.digitize(WakeTimes, time_index)
                     Ex[element, wake_index:] = np.dot(
@@ -485,6 +493,8 @@ def calculate_scattering(
                     excitation_function,
                     sampling_freq,
                     num_samples,
+                    alpha,
+                    beta
                 )
                 Ex[element, :, :] = np.dot(
                     np.ones((num_sources)),

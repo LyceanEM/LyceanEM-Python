@@ -1069,7 +1069,7 @@ def polaranddistance(network_index, point_information, polar_coefficients, dista
 
 @cuda.jit
 def freqdomainkernal(
-    network_index, point_information, source_sink_index, wavelength, scattering_network
+    network_index, point_information, source_sink_index, wavelength, scattering_network, alpha, beta
 ):
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
@@ -1169,8 +1169,8 @@ def freqdomainkernal(
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
 
         # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
-        alpha = 0.0
-        beta = (2.0 * cmath.pi) / wavelength[0]
+        #alpha = 0.0
+        #beta = (2.0 * cmath.pi) / wavelength[0]
         loss = lossy_propagation(
 
                 point_information[network_index[cu_ray_num, 0] - 1],
@@ -1327,6 +1327,8 @@ def timedomainkernal(
     arrival_time,
     wake_time,
     time_map,
+        alpha,
+        beta
 ):
     # this kernal is planned to calculate the time domain response for a given input signal
     # for flexibility this should probably start out as smn port pairs
@@ -1438,8 +1440,8 @@ def timedomainkernal(
             i = i + 1
 
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
-        alpha = 0.0
-        beta = (2.0 * cmath.pi) / wavelength[0]
+        #alpha = 0.0
+        #beta = (2.0 * cmath.pi) / wavelength[0]
         loss = lossy_propagation(
 
                 point_information[full_index[cu_ray_num, 0] - 1],
@@ -2167,7 +2169,7 @@ def EMGPUJointPathLengthandPolar(source_num, sink_num, full_index, point_informa
     return path_lengths, polar_coefficients
 
 
-def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelength):
+def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelength, alpha, beta):
     """
     Wrapper for the GPU EM processer
     At present, the indexing only supports processing the rays for line of sight and single or double bounces
@@ -2220,6 +2222,8 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
         )
         d_point_information = cuda.to_device(point_information)
         d_wavelength = cuda.device_array((1), dtype=np.complex64)
+        d_alpha = cuda.to_device(np.ones((1), dtype=np.float64) * alpha)
+        d_beta = cuda.to_device(np.ones((1), dtype=np.float64) * beta)
         d_wavelength = cuda.to_device(
             np.csingle(np.ones((1), dtype=np.complex64) * wavelength)
         )
@@ -2284,6 +2288,8 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
                 d_temp_target_index,
                 d_wavelength,
                 temp_scattering_network,
+                d_alpha,
+                d_beta
             )
             # polaranddistance(d_full_index,d_point_information,polar_c,paths)
             # cuda.profile_stop()
@@ -2317,6 +2323,8 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
         )
         d_point_information = cuda.to_device(point_information)
         d_wavelength = cuda.device_array((1), dtype=np.complex64)
+        d_alpha = cuda.to_device(np.ones((1), dtype=np.float64) * alpha)
+        d_beta = cuda.to_device(np.ones((1), dtype=np.float64) * beta)
         d_wavelength = cuda.to_device(
             np.csingle(np.ones((1), dtype=np.complex64) * wavelength)
         )
@@ -2349,6 +2357,8 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
             d_target_index,
             d_wavelength,
             d_scattering_network,
+            d_alpha,
+            d_beta
         )
         # polaranddistance(d_full_index,d_point_information,polar_c,paths)
         # cuda.profile_stop()
@@ -2875,6 +2885,8 @@ def TimeDomainv3(
     excitation_signal,
     sampling_freq,
     num_samples,
+        alpha,
+        beta
 ):
     """
     New wrapper to run time domain propagation on the GPU, allowing for faster simulations.
@@ -2950,6 +2962,8 @@ def TimeDomainv3(
             d_excitation = cuda.to_device(excitation_signal)
             d_wavelength = cuda.device_array((1), dtype=np.complex64)
             d_wavelength = cuda.to_device(np.ones((1), dtype=np.float64) * wavelength)
+            d_alpha = cuda.to_device(np.ones((1), dtype=np.float64) * alpha)
+            d_beta = cuda.to_device(np.ones((1), dtype=np.float64) * beta)
             d_sampling_freq = cuda.device_array((1), dtype=np.float64)
             d_sampling_freq = cuda.to_device(
                 np.ones((1), dtype=np.float64) * sampling_freq
@@ -3000,6 +3014,8 @@ def TimeDomainv3(
                 d_arrival_times,
                 d_wake_time,
                 d_temp_map,
+                d_alpha,
+                d_beta
             )
             # print(source_chunking[n],source_chunking[n+1])
 
