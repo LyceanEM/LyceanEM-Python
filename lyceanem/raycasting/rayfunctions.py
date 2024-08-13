@@ -293,6 +293,7 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
 
     return final_index
 
+
 # @njit
 def patterntocloud(pattern_data, shell_coords, maxarea):
     # takes the pattern_data and shell_coordinates, and creates an open3d point cloud based upon the data.
@@ -305,8 +306,10 @@ def patterntocloud(pattern_data, shell_coords, maxarea):
     point_cloud.point_data["red"] = np_colors[:, 0]
     point_cloud.point_data["green"] = np_colors[:, 1]
     point_cloud.point_data["blue"] = np_colors[:, 2]
-    
+
     return point_cloud
+
+
 def visiblespace(
     source_coords,
     source_normals,
@@ -481,7 +484,6 @@ def patterncreator(az_range, elev_range, source_coords, pointingindex, hit_index
     return visible_patterns
 
 
-
 def quickpatterncreator(
     az_range, elev_range, source_coords, angles, vertex_area, hit_index
 ):
@@ -510,9 +512,6 @@ def quickpatterncreator(
     return visible_patterns
 
 
-
-
-
 def azeltocart(az_data, el_data, radius):
     # convert from az,el and radius data to xyz
     x_data = radius * np.cos(np.deg2rad(el_data)) * np.cos(np.deg2rad(az_data))
@@ -528,11 +527,11 @@ def convertTriangles(triangle_object):
     if triangle_object == None:
         triangles = np.empty(0, dtype=base_types.triangle_t)
     else:
-        #assert triangle_object.cells[1].type == "triangle", "Not a triangle mesh"
+        # assert triangle_object.cells[1].type == "triangle", "Not a triangle mesh"
         for idx in range(len(triangle_object.cells)):
-            if (triangle_object.cells[idx].type=="triangle"):
-                triangle_cell_index=idx
-                
+            if triangle_object.cells[idx].type == "triangle":
+                triangle_cell_index = idx
+
         vertices = np.asarray(triangle_object.points)
         tri_index = np.asarray(triangle_object.cells[triangle_cell_index].data)
         triangles = np.empty(len(tri_index), dtype=base_types.triangle_t)
@@ -548,8 +547,6 @@ def convertTriangles(triangle_object):
             triangles[idx]["v2z"] = np.single(vertices[tri_index[idx, 2], 2])
 
     return triangles
-
-
 
 
 def points2pointcloud(xyz):
@@ -1965,9 +1962,9 @@ def launchRaycaster1Dv2(
         kernel1Dv2[grids, threads](d_chunk_payload, d_environment)
         # cuda.profile_stop()
         # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-        first_ray_payload[
-            ray_chunks[n] : ray_chunks[n + 1]
-        ] = d_chunk_payload.copy_to_host()
+        first_ray_payload[ray_chunks[n] : ray_chunks[n + 1]] = (
+            d_chunk_payload.copy_to_host()
+        )
         # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']=d_chunk_payload['intersect'].copy_to_host()
         # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['dist']=d_chunk_payload['dist'].copy_to_host()
 
@@ -2121,9 +2118,9 @@ def chunkingRaycaster1Dv2(
         # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
         # second_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
         # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
-        second_ray_payload[
-            ray_chunks[n] : ray_chunks[n + 1]
-        ] = d_chunk_payload.copy_to_host()
+        second_ray_payload[ray_chunks[n] : ray_chunks[n + 1]] = (
+            d_chunk_payload.copy_to_host()
+        )
 
     # cuda.close()
     kernel_dt = timer() - raystart
@@ -2399,12 +2396,12 @@ def chunkingRaycaster1Dv3(
     #         # ctx = cuda.current_context()
     #         # ctx.reset()
     # else:
-        
-        # deallocate memory on gpu
-        # ctx = cuda.current_context()
-        # deallocs = ctx.deallocations
-        # deallocs.clear()
-        # print("Second Stage: Prep {:3.1f} s, Raycasting  {:3.1f} s, Path Processing {:3.1f} s".format(prep_dt,kernel_dt,mem_dt) )
+
+    # deallocate memory on gpu
+    # ctx = cuda.current_context()
+    # deallocs = ctx.deallocations
+    # deallocs.clear()
+    # print("Second Stage: Prep {:3.1f} s, Raycasting  {:3.1f} s, Path Processing {:3.1f} s".format(prep_dt,kernel_dt,mem_dt) )
     return filtered_index2, final_index2, RAYS_CAST
 
 
@@ -2474,42 +2471,42 @@ def ray_charge_core_final_vector(
         directions, norm_length = math_functions.calc_dv_norm(
             local_sources[:, -3:], targets, directions, norm_length
         )
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "ox"
-        ] = local_sources[:, -3]
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "oy"
-        ] = local_sources[:, -2]
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "oz"
-        ] = local_sources[:, -1]
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "dx"
-        ] = directions[:, 0]
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "dy"
-        ] = directions[:, 1]
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "dz"
-        ] = directions[:, 2]
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["ox"] = (
+            local_sources[:, -3]
+        )
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["oy"] = (
+            local_sources[:, -2]
+        )
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["oz"] = (
+            local_sources[:, -1]
+        )
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["dx"] = (
+            directions[:, 0]
+        )
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["dy"] = (
+            directions[:, 1]
+        )
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["dz"] = (
+            directions[:, 2]
+        )
         # temp_ray_payload[source_chunking[n]:source_chunking[n+1]]['tx']=targets[:,0]
         # temp_ray_payload[source_chunking[n]:source_chunking[n+1]]['ty']=targets[:,1]
         # temp_ray_payload[source_chunking[n]:source_chunking[n+1]]['tz']=targets[:,2]
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "dist"
-        ] = norm_length[:, 0]
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["dist"] = (
+            norm_length[:, 0]
+        )
         temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
             "intersect"
         ] = False
         origins[source_chunking[n] : source_chunking[n + 1], -origin_width:] = sources[
             n, :
         ]
-        source_sink_index[
-            source_chunking[n] : source_chunking[n + 1], 0
-        ] = point_indexing[n, 0]
-        source_sink_index[
-            source_chunking[n] : source_chunking[n + 1], 1
-        ] = target_indexing.ravel()
+        source_sink_index[source_chunking[n] : source_chunking[n + 1], 0] = (
+            point_indexing[n, 0]
+        )
+        source_sink_index[source_chunking[n] : source_chunking[n + 1], 1] = (
+            target_indexing.ravel()
+        )
 
     return temp_ray_payload, origins, source_sink_index
 
@@ -2753,8 +2750,7 @@ def workchunkingv2(
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.8).astype(np.int64)
     ray_limit = (
-        np.floor(np.floor((max_mem - environment.nbytes) / base_types.ray_t.size) )
-        
+        np.floor(np.floor((max_mem - environment.nbytes) / base_types.ray_t.size))
     ).astype(np.int64)
     # establish index boundaries
     source_index = np.arange(1, sources.shape[0] + 1).reshape(

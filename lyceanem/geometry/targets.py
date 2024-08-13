@@ -99,34 +99,31 @@ def converttostl():
         p.wait()
 
 
-
-
-
 def rectReflector(majorsize, minorsize, thickness):
     """
     create a primative of the right size, assuming always orientated
     with normal aligned with zenith, and major axis with x,
     adjust position so the face is centred on (0,0,0)
     """
-    print("majorsize",majorsize)
-    print("minorsize",minorsize)
-    print("thickness",thickness)
+    print("majorsize", majorsize)
+    print("minorsize", minorsize)
+    print("thickness", thickness)
 
     halfMajor = majorsize / 2.0
     halfMinor = minorsize / 2.0
-    pv_mesh = pv.Box((-halfMajor, halfMajor, -halfMinor, halfMinor, -(thickness+EPSILON),- EPSILON))
+    pv_mesh = pv.Box(
+        (-halfMajor, halfMajor, -halfMinor, halfMinor, -(thickness + EPSILON), -EPSILON)
+    )
     pv_mesh = pv_mesh.triangulate()
-    pv_mesh.compute_normals(inplace=True,consistent_normals=False)
-    triangles = np.reshape(np.array(pv_mesh.faces),(12,4))
-    triangles = triangles[:,1:]
+    pv_mesh.compute_normals(inplace=True, consistent_normals=False)
+    triangles = np.reshape(np.array(pv_mesh.faces), (12, 4))
+    triangles = triangles[:, 1:]
 
     mesh = meshio.Mesh(pv_mesh.points, {"triangle": triangles})
 
-
-
     mesh.point_data["Normals"] = pv_mesh.point_normals
     mesh.cell_data["Normals"] = pv_mesh.cell_normals
-    red = np.zeros((8, 1), dtype=np.float32) 
+    red = np.zeros((8, 1), dtype=np.float32)
     green = np.ones((8, 1), dtype=np.float32) * 0.259
     blue = np.ones((8, 1), dtype=np.float32) * 0.145
 
@@ -191,17 +188,18 @@ def shapeTrapezoid(x_size, y_size, length, flare_angle):
     triangle_list[11, :] = [6, 5, 7]
     mesh = meshio.Mesh(
         points=mesh_vertices,
-        cells=[("triangle", triangle_list)],)
-    #print(mesh)
+        cells=[("triangle", triangle_list)],
+    )
+    # print(mesh)
     triangle_list = np.insert(triangle_list, 0, 3, axis=1)
-    
-    pv_mesh = pv.PolyData( mesh_vertices, faces = triangle_list)
-    pv_mesh.compute_normals(inplace=True,consistent_normals=False)
+
+    pv_mesh = pv.PolyData(mesh_vertices, faces=triangle_list)
+    pv_mesh.compute_normals(inplace=True, consistent_normals=False)
 
     mesh.point_data["Normals"] = np.asarray(pv_mesh.point_normals)
     mesh.cell_data["Normals"] = [np.asarray(pv_mesh.cell_normals)]
 
-    red = np.zeros((8, 1), dtype=np.float32) 
+    red = np.zeros((8, 1), dtype=np.float32)
     green = np.ones((8, 1), dtype=np.float32) * 0.259
     blue = np.ones((8, 1), dtype=np.float32) * 0.145
 
@@ -209,7 +207,6 @@ def shapeTrapezoid(x_size, y_size, length, flare_angle):
     mesh.point_data["green"] = green
     mesh.point_data["blue"] = blue
     return mesh
-
 
 
 def meshedReflector(majorsize, minorsize, thickness, grid_resolution, sides="all"):
@@ -250,10 +247,6 @@ def meshedReflector(majorsize, minorsize, thickness, grid_resolution, sides="all
     return reflector, mesh_points
 
 
-
-
-
-
 def meshedHorn(
     majorsize,
     minorsize,
@@ -291,7 +284,7 @@ def meshedHorn(
     mesh_points : meshio object
         the source points for the horn aperture
     """
-    #print("HIHIH")
+    # print("HIHIH")
     structure = shapeTrapezoid(
         majorsize + (edge_width * 2), minorsize + (edge_width * 2), length, flare_angle
     )
@@ -299,29 +292,50 @@ def meshedHorn(
         majorsize, minorsize, 1e-6, grid_resolution, sides
     )
 
-    mesh_points = GF.translate_mesh(mesh_points, [0, 0, EPSILON*2])
+    mesh_points = GF.translate_mesh(mesh_points, [0, 0, EPSILON * 2])
 
     return structure, mesh_points
 
 
-def parabolic_aperture(diameter, focal_length, thickness, mesh_size, sides='front', lip=False, lip_height=1e-3,
-                       lip_width=1e-3):
+def parabolic_aperture(
+    diameter,
+    focal_length,
+    thickness,
+    mesh_size,
+    sides="front",
+    lip=False,
+    lip_height=1e-3,
+    lip_width=1e-3,
+):
     # Define function for parabola equation (y^2 = 4*focal_length*x)
     import lyceanem.geometry.geometryfunctions as GF
     import lyceanem.utility.math_functions as math_functions
+
     def parabola(x):
-        return (1 / (4 * focal_length)) * x ** 2
+        return (1 / (4 * focal_length)) * x**2
 
     with pygmsh.occ.Geometry() as geom:
         geom.characteristic_length_max = mesh_size * 0.8
         # Define points
         cp1 = geom.add_point([0, 0, 0])  # Center point
-        cp2 = geom.add_point([diameter * 0.5 * (1 / 6), 0, parabola(diameter * 0.5 * (1 / 6))])
-        cp3 = geom.add_point([diameter * 0.5 * (2 / 6), 0, parabola(diameter * 0.5 * (2 / 6))])
-        cp4 = geom.add_point([diameter * 0.5 * (3 / 6), 0, parabola(diameter * 0.5 * (3 / 6))])
-        cp5 = geom.add_point([diameter * 0.5 * (4 / 6), 0, parabola(diameter * 0.5 * (4 / 6))])
-        cp6 = geom.add_point([diameter * 0.5 * (5 / 6), 0, parabola(diameter * 0.5 * (5 / 6))])
-        cp7 = geom.add_point([diameter * 0.5 * (6 / 6), 0, parabola(diameter * 0.5 * (6 / 6))])
+        cp2 = geom.add_point(
+            [diameter * 0.5 * (1 / 6), 0, parabola(diameter * 0.5 * (1 / 6))]
+        )
+        cp3 = geom.add_point(
+            [diameter * 0.5 * (2 / 6), 0, parabola(diameter * 0.5 * (2 / 6))]
+        )
+        cp4 = geom.add_point(
+            [diameter * 0.5 * (3 / 6), 0, parabola(diameter * 0.5 * (3 / 6))]
+        )
+        cp5 = geom.add_point(
+            [diameter * 0.5 * (4 / 6), 0, parabola(diameter * 0.5 * (4 / 6))]
+        )
+        cp6 = geom.add_point(
+            [diameter * 0.5 * (5 / 6), 0, parabola(diameter * 0.5 * (5 / 6))]
+        )
+        cp7 = geom.add_point(
+            [diameter * 0.5 * (6 / 6), 0, parabola(diameter * 0.5 * (6 / 6))]
+        )
 
         # Define top line based on points
         line = geom.add_bspline([cp1, cp2, cp3, cp4, cp5, cp6, cp7])
@@ -330,13 +344,26 @@ def parabolic_aperture(diameter, focal_length, thickness, mesh_size, sides='fron
 
         # Revolve line to create revolution surface
         volume_list = []
-        _, b, _ = geom.revolve(surface, rotation_axis=[0.0, 0.0, 1.0], point_on_axis=[0.0, 0.0, 0.0],
-                               angle=0.25 * np.pi)
+        _, b, _ = geom.revolve(
+            surface,
+            rotation_axis=[0.0, 0.0, 1.0],
+            point_on_axis=[0.0, 0.0, 0.0],
+            angle=0.25 * np.pi,
+        )
         volume_list.append(b)
         for inc in range(7):
-            geom.rotate(surface, point=[0.0, 0.0, 0.0], angle=(1 / 4) * np.pi, axis=[0.0, 0.0, 1.0])
-            _, b2, _ = geom.revolve(surface, rotation_axis=[0.0, 0.0, 1.0], point_on_axis=[0.0, 0.0, 0.0],
-                                    angle=0.25 * np.pi)
+            geom.rotate(
+                surface,
+                point=[0.0, 0.0, 0.0],
+                angle=(1 / 4) * np.pi,
+                axis=[0.0, 0.0, 1.0],
+            )
+            _, b2, _ = geom.revolve(
+                surface,
+                rotation_axis=[0.0, 0.0, 1.0],
+                point_on_axis=[0.0, 0.0, 0.0],
+                angle=0.25 * np.pi,
+            )
             volume_list.append(b2)
 
         if lip:
@@ -344,7 +371,9 @@ def parabolic_aperture(diameter, focal_length, thickness, mesh_size, sides='fron
 
             start_point = np.array([0.0, 0.0, parabola(diameter * 0.5)])
             cylinder1 = geom.add_cylinder(start_point.ravel(), axis1, diameter / 2)
-            cylinder2 = geom.add_cylinder(start_point.ravel(), axis1, diameter / 2 + lip_width)
+            cylinder2 = geom.add_cylinder(
+                start_point.ravel(), axis1, diameter / 2 + lip_width
+            )
             final = geom.boolean_difference([cylinder2], [cylinder1])
             volume_list.append(final)
 
@@ -352,10 +381,11 @@ def parabolic_aperture(diameter, focal_length, thickness, mesh_size, sides='fron
 
         mesh_temp = geom.generate_mesh(dim=2)
     for inc, cell in enumerate(mesh_temp.cells):
-        if cell.type == 'triangle':
+        if cell.type == "triangle":
             triangle_index = inc
 
     import meshio
+
     triangle_cells = [("triangle", mesh_temp.cells[triangle_index].data)]
     mesh = meshio.Mesh(mesh_temp.points, triangle_cells)
     mesh = GF.compute_normals(mesh)
@@ -364,7 +394,7 @@ def parabolic_aperture(diameter, focal_length, thickness, mesh_size, sides='fron
         (diameter / 2),
         int(np.max(np.asarray([2, np.ceil((diameter * 0.5) / (mesh_size))]))),
     )
-    z_space = (1 / (4 * focal_length)) * x_space ** 2
+    z_space = (1 / (4 * focal_length)) * x_space**2
     c_space = np.ceil((2 * np.pi * x_space) / mesh_size).astype(int)
     normal_gradiant_vector = np.array(
         [
@@ -415,9 +445,23 @@ def parabolic_aperture(diameter, focal_length, thickness, mesh_size, sides='fron
 
     mesh_vertices = source_coords + np.array([0, 0, 1e-6])
     mesh_normals = source_normals
-    aperture_points = meshio.Mesh(points=mesh_vertices,
-                                  cells=[("vertex", np.array([[i, ] for i in range(len(mesh_vertices))]))],
-                                  point_data={'Normals': mesh_normals})
+    aperture_points = meshio.Mesh(
+        points=mesh_vertices,
+        cells=[
+            (
+                "vertex",
+                np.array(
+                    [
+                        [
+                            i,
+                        ]
+                        for i in range(len(mesh_vertices))
+                    ]
+                ),
+            )
+        ],
+        point_data={"Normals": mesh_normals},
+    )
 
     return mesh, aperture_points
 
@@ -569,8 +613,22 @@ def gridedReflectorPoints(
         mesh_vertices = source_coords
         mesh_normals = source_normals
 
-    mesh_points = meshio.Mesh(points=mesh_vertices,
-                              cells=[("vertex", np.array([[i, ] for i in range(len(mesh_vertices))]))],
-                              point_data={"Normals": mesh_normals})
+    mesh_points = meshio.Mesh(
+        points=mesh_vertices,
+        cells=[
+            (
+                "vertex",
+                np.array(
+                    [
+                        [
+                            i,
+                        ]
+                        for i in range(len(mesh_vertices))
+                    ]
+                ),
+            )
+        ],
+        point_data={"Normals": mesh_normals},
+    )
 
     return mesh_points

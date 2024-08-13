@@ -14,7 +14,11 @@ from numpy.linalg import norm
 import lyceanem.base_types as base_types
 import lyceanem.geometry.geometryfunctions as GF
 import lyceanem.raycasting.rayfunctions as RF
-from lyceanem.electromagnetics.data.propagation_constants import water_vapour_lines, oxygen_lines
+from lyceanem.electromagnetics.data.propagation_constants import (
+    water_vapour_lines,
+    oxygen_lines,
+)
+
 
 @cuda.jit(device=True)
 def dot(ax1, ay1, az1, ax2, ay2, az2):
@@ -748,23 +752,23 @@ def scatteringkernalv3(
         scattering_matrix[sink_index, 2] = scattering_matrix[sink_index, 2] + (
             ray_component[2] * loss1
         )
+
+
 @cuda.jit(device=True)
-def clip(a,a_min,a_max):
-    if a< a_min:
-        a=a_min
-    elif a> a_max:
-        a=a_max
+def clip(a, a_min, a_max):
+    if a < a_min:
+        a = a_min
+    elif a > a_max:
+        a = a_max
 
     return a
+
+
 @cuda.jit(device=True)
-def lossy_propagation(point1,point2,alpha,beta):
+def lossy_propagation(point1, point2, alpha, beta):
     # calculate loss using improved Rayliegh-Summerfeld
     length = float(0)
-    length=calc_sep(
-        point1,
-        point2,
-        length
-    )
+    length = calc_sep(point1, point2, length)
     outgoing_dir = cuda.local.array(shape=(3), dtype=np.float32)
     calc_dv(
         point1,
@@ -775,18 +779,19 @@ def lossy_propagation(point1,point2,alpha,beta):
     normal[0] = point1["nx"]
     normal[1] = point1["ny"]
     normal[2] = point1["nz"]
-    projection_dot=dot_vec(outgoing_dir,normal)
-    front=-(1/(2*cmath.pi))
-    G=(cmath.exp(-(alpha+1j*beta)*length))/length
-    #dG=cmath.cos(angle)*(-(alpha+1j*beta)-(1/lengths))*G
-    dG=(-(alpha+1j*beta)-(1/length))*G
-    loss=front*dG*projection_dot
-    #loss = G
+    projection_dot = dot_vec(outgoing_dir, normal)
+    front = -(1 / (2 * cmath.pi))
+    G = (cmath.exp(-(alpha + 1j * beta) * length)) / length
+    # dG=cmath.cos(angle)*(-(alpha+1j*beta)-(1/lengths))*G
+    dG = (-(alpha + 1j * beta) - (1 / length)) * G
+    loss = front * dG * projection_dot
+    # loss = G
 
-    #test replacement with old loss funciton
-    #loss = cmath.exp(-1j * beta * lengths)
-    #loss = loss * (((2*cmath.pi)/beta) / (4 * (cmath.pi) * (lengths)))
+    # test replacement with old loss funciton
+    # loss = cmath.exp(-1j * beta * lengths)
+    # loss = loss * (((2*cmath.pi)/beta) / (4 * (cmath.pi) * (lengths)))
     return loss
+
 
 @cuda.jit
 def scatteringkernalv4(
@@ -1069,7 +1074,13 @@ def polaranddistance(network_index, point_information, polar_coefficients, dista
 
 @cuda.jit
 def freqdomainkernal(
-    network_index, point_information, source_sink_index, wavelength, scattering_network, alpha, beta
+    network_index,
+    point_information,
+    source_sink_index,
+    wavelength,
+    scattering_network,
+    alpha,
+    beta,
 ):
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
@@ -1169,27 +1180,24 @@ def freqdomainkernal(
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
 
         # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
-        #alpha = 0.0
-        #beta = (2.0 * cmath.pi) / wavelength[0]
+        # alpha = 0.0
+        # beta = (2.0 * cmath.pi) / wavelength[0]
         loss = lossy_propagation(
-
-                point_information[network_index[cu_ray_num, 0] - 1],
-                point_information[network_index[cu_ray_num, 1] - 1],
-
-
+            point_information[network_index[cu_ray_num, 0] - 1],
+            point_information[network_index[cu_ray_num, 1] - 1],
             alpha,
-            beta
+            beta,
         )
-        for i in range(1,network_index.shape[1] - 1):
+        for i in range(1, network_index.shape[1] - 1):
             if network_index[cu_ray_num, i + 1] != 0:
 
-                loss *= lossy_propagation(point_information[network_index[cu_ray_num, i] - 1],
-                                          point_information[network_index[cu_ray_num, i + 1] - 1],
-                                          alpha,
-                                          beta
-                                          )
-            
-                
+                loss *= lossy_propagation(
+                    point_information[network_index[cu_ray_num, i] - 1],
+                    point_information[network_index[cu_ray_num, i + 1] - 1],
+                    alpha,
+                    beta,
+                )
+
         ray_component[0] *= loss
         ray_component[1] *= loss
         ray_component[2] *= loss
@@ -1275,19 +1283,20 @@ def freqdomainisokernal(
         alpha = 0.0
         beta = (2.0 * cmath.pi) / wavelength[0]
         loss = lossy_propagation(
-                point_information[network_index[cu_ray_num, 0] - 1],
-                point_information[network_index[cu_ray_num, 1] - 1],
+            point_information[network_index[cu_ray_num, 0] - 1],
+            point_information[network_index[cu_ray_num, 1] - 1],
             alpha,
-            beta
+            beta,
         )
-        for i in range(1,network_index.shape[1] - 1):
+        for i in range(1, network_index.shape[1] - 1):
             if network_index[cu_ray_num, i + 1] != 0:
 
-                loss *= lossy_propagation(point_information[network_index[cu_ray_num, i] - 1],
-                                          point_information[network_index[cu_ray_num, i + 1] - 1],
-                                          alpha,
-                                          beta
-                                          )
+                loss *= lossy_propagation(
+                    point_information[network_index[cu_ray_num, i] - 1],
+                    point_information[network_index[cu_ray_num, i + 1] - 1],
+                    alpha,
+                    beta,
+                )
         ray_component[0] *= loss
         # ray_component[1]=loss
         # ray_component[2]=loss
@@ -1327,8 +1336,8 @@ def timedomainkernal(
     arrival_time,
     wake_time,
     time_map,
-        alpha,
-        beta
+    alpha,
+    beta,
 ):
     # this kernal is planned to calculate the time domain response for a given input signal
     # for flexibility this should probably start out as smn port pairs
@@ -1440,25 +1449,24 @@ def timedomainkernal(
             i = i + 1
 
         # print(cu_ray_num,source_sink_index[cu_ray_num,0],source_sink_index[cu_ray_num,1])
-        #alpha = 0.0
-        #beta = (2.0 * cmath.pi) / wavelength[0]
+        # alpha = 0.0
+        # beta = (2.0 * cmath.pi) / wavelength[0]
         loss = lossy_propagation(
-
-                point_information[full_index[cu_ray_num, 0] - 1],
-                point_information[full_index[cu_ray_num, 1] - 1],
-
+            point_information[full_index[cu_ray_num, 0] - 1],
+            point_information[full_index[cu_ray_num, 1] - 1],
             alpha,
-            beta
+            beta,
         )
-        for i in range(1,full_index.shape[1] - 1):
+        for i in range(1, full_index.shape[1] - 1):
             if full_index[cu_ray_num, i + 1] != 0:
 
-                loss *= lossy_propagation(point_information[full_index[cu_ray_num, i] - 1],
-                                          point_information[full_index[cu_ray_num, i + 1] - 1],
-                                          alpha,
-                                          beta
-                                          )
-        loss_magnitude,loss_phase=cmath.polar(loss)
+                loss *= lossy_propagation(
+                    point_information[full_index[cu_ray_num, i] - 1],
+                    point_information[full_index[cu_ray_num, i + 1] - 1],
+                    alpha,
+                    beta,
+                )
+        loss_magnitude, loss_phase = cmath.polar(loss)
 
         ray_component[0] *= loss_magnitude
         ray_component[1] *= loss_magnitude
@@ -2169,7 +2177,9 @@ def EMGPUJointPathLengthandPolar(source_num, sink_num, full_index, point_informa
     return path_lengths, polar_coefficients
 
 
-def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelength, alpha, beta):
+def EMGPUFreqDomain(
+    source_num, sink_num, full_index, point_information, wavelength, alpha, beta
+):
     """
     Wrapper for the GPU EM processer
     At present, the indexing only supports processing the rays for line of sight and single or double bounces
@@ -2289,7 +2299,7 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
                 d_wavelength,
                 temp_scattering_network,
                 d_alpha,
-                d_beta
+                d_beta,
             )
             # polaranddistance(d_full_index,d_point_information,polar_c,paths)
             # cuda.profile_stop()
@@ -2358,7 +2368,7 @@ def EMGPUFreqDomain(source_num, sink_num, full_index, point_information, wavelen
             d_wavelength,
             d_scattering_network,
             d_alpha,
-            d_beta
+            d_beta,
         )
         # polaranddistance(d_full_index,d_point_information,polar_c,paths)
         # cuda.profile_stop()
@@ -2885,8 +2895,8 @@ def TimeDomainv3(
     excitation_signal,
     sampling_freq,
     num_samples,
-        alpha,
-        beta
+    alpha,
+    beta,
 ):
     """
     New wrapper to run time domain propagation on the GPU, allowing for faster simulations.
@@ -3015,7 +3025,7 @@ def TimeDomainv3(
                 d_wake_time,
                 d_temp_map,
                 d_alpha,
-                d_beta
+                d_beta,
             )
             # print(source_chunking[n],source_chunking[n+1])
 
@@ -3576,9 +3586,9 @@ def EMGPUScatteringWrapper(
                 d_wavelength,
             )
             # cuda.profile_stop()
-            temp_rays[
-                ray_chunks[n] : ray_chunks[n + 1], :
-            ] = d_scatter_matrix.copy_to_host()
+            temp_rays[ray_chunks[n] : ray_chunks[n + 1], :] = (
+                d_scatter_matrix.copy_to_host()
+            )
             # ray_components[ray_chunks[n]:ray_chunks[n+1],:]=d_scatter_matrix.copy_to_host()
             # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
             # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
@@ -3653,9 +3663,6 @@ def EMGPUWrapper(source_num, sink_num, full_index, point_information, wavelength
     return resultant_rays
 
 
-
-
-
 # @njit(cache=True, nogil=True)
 def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     """
@@ -3680,7 +3687,7 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     global_vector
 
     """
-    point_vector = np.matmul(point_normal.astype(local_E_vector.dtype),rotation_matrix)
+    point_vector = np.matmul(point_normal.astype(local_E_vector.dtype), rotation_matrix)
     local_axes = np.eye(3)
     uvn_axes = np.zeros((3, 3), dtype=local_E_vector.dtype)
     uvn_axes[2, :] = point_vector
@@ -3695,7 +3702,7 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     if abs(z_orth) == 0:
         # cannot use z axis as reference, so point normal is aligned with z axis, therefore face_u should be the on the
         # antenna y_axis, therefore face_v can be used to define backwards.
-        uvn_axes[0, :] = np.cross(local_axes[0, :],point_vector) / np.linalg.norm(
+        uvn_axes[0, :] = np.cross(local_axes[0, :], point_vector) / np.linalg.norm(
             np.cross(local_axes[0, :], point_vector)
         )
 
@@ -3848,9 +3855,6 @@ def face_centric_E_vectors(sink_normals, major_axis, scatter_map):
             )
 
     return new_scatter_map
-
-
-
 
 
 def importDat(fileaddress):
@@ -4716,8 +4720,6 @@ def source_transform3to2(
     # return thetaphi_E_vector
 
 
-
-
 def calculate_oxygen_attenuation(frequency, pressure, temperature, oxygen_lines):
     """
     Calculate the specific attenuation due to oxygen using the ITU-R P.676-11 model.
@@ -4737,15 +4739,22 @@ def calculate_oxygen_attenuation(frequency, pressure, temperature, oxygen_lines)
 
     for line in oxygen_lines:
         f_line, a1, a2, a3, a4, a5, a6 = line
-        S = a1 * 10 ** -7 * pressure * theta ** 3 * math.exp(a2 * (1 - theta))
-        ffo = a3 * 10 ** -4 * (pressure * theta ** (0.8 - a4) + 1.1 * pressure * theta)
-        delta = (a5 + a6 * theta) * 10 ** -4 * (pressure) * theta ** 0.8
-        F = (frequency / f_line) * ((ffo - delta * (f_line - frequency)) / ((f_line - frequency) ** 2 + ffo ** 2)+(ffo - delta * (f_line + frequency)) / ((f_line + frequency) ** 2 + ffo ** 2))
+        S = a1 * 10**-7 * pressure * theta**3 * math.exp(a2 * (1 - theta))
+        ffo = a3 * 10**-4 * (pressure * theta ** (0.8 - a4) + 1.1 * pressure * theta)
+        delta = (a5 + a6 * theta) * 10**-4 * (pressure) * theta**0.8
+        F = (frequency / f_line) * (
+            (ffo - delta * (f_line - frequency)) / ((f_line - frequency) ** 2 + ffo**2)
+            + (ffo - delta * (f_line + frequency))
+            / ((f_line + frequency) ** 2 + ffo**2)
+        )
         specific_attenuation += (frequency / f_line) * S * F
 
     return specific_attenuation
 
-def calculate_water_vapor_attenuation(frequency, pressure, temperature, water_vapor_lines):
+
+def calculate_water_vapor_attenuation(
+    frequency, pressure, temperature, water_vapor_lines
+):
     """
     Calculate the specific attenuation due to water vapor using the ITU-R P.676-11 model.
 
@@ -4765,15 +4774,24 @@ def calculate_water_vapor_attenuation(frequency, pressure, temperature, water_va
 
     for line in water_vapor_lines:
         f_line, a1, a2, a3, a4, a5, a6 = line
-        S = a1 * 10 ** -1 * e * theta ** 3.5 * math.exp(a2 * (1 - theta))
-        ffo = a3 * 10 ** -4 * (pressure * theta ** a4 + a5 * e * theta ** a6)
-        F = (frequency / f_line) * ((ffo - 0 * (f_line - frequency)) / ((f_line - frequency) ** 2 + ffo ** 2) + (
-                    ffo - 0 * (f_line + frequency)) / ((f_line + frequency) ** 2 + ffo ** 2))
+        S = a1 * 10**-1 * e * theta**3.5 * math.exp(a2 * (1 - theta))
+        ffo = a3 * 10**-4 * (pressure * theta**a4 + a5 * e * theta**a6)
+        F = (frequency / f_line) * (
+            (ffo - 0 * (f_line - frequency)) / ((f_line - frequency) ** 2 + ffo**2)
+            + (ffo - 0 * (f_line + frequency)) / ((f_line + frequency) ** 2 + ffo**2)
+        )
         specific_attenuation += (frequency / f_line) * S * F
 
     return specific_attenuation
 
-def calculate_total_gaseous_attenuation(frequency, pressure, temperature, oxygen_lines=oxygen_lines(), water_vapor_lines=water_vapour_lines()):
+
+def calculate_total_gaseous_attenuation(
+    frequency,
+    pressure,
+    temperature,
+    oxygen_lines=oxygen_lines(),
+    water_vapor_lines=water_vapour_lines(),
+):
     """
     Calculate the total gaseous attenuation due to both oxygen and water vapor.
 
@@ -4788,9 +4806,15 @@ def calculate_total_gaseous_attenuation(frequency, pressure, temperature, oxygen
     float: The calculated total gaseous attenuation in Np/m.
     """
     # Calculate specific attenuation
-    oxygen_attenuation = calculate_oxygen_attenuation(frequency, pressure, temperature, oxygen_lines)
-    water_vapor_attenuation = calculate_water_vapor_attenuation(frequency, pressure, temperature, water_vapor_lines)
-    specific_attenuation = 0.1820 * frequency * (oxygen_attenuation + water_vapor_attenuation)
+    oxygen_attenuation = calculate_oxygen_attenuation(
+        frequency, pressure, temperature, oxygen_lines
+    )
+    water_vapor_attenuation = calculate_water_vapor_attenuation(
+        frequency, pressure, temperature, water_vapor_lines
+    )
+    specific_attenuation = (
+        0.1820 * frequency * (oxygen_attenuation + water_vapor_attenuation)
+    )
     specific_attenuation = specific_attenuation / (8.686 * 1000)
 
     return specific_attenuation
@@ -4819,7 +4843,8 @@ def calculate_phase_constant(frequency, temperature, pressure, water_vapor_densi
     """
     # Constants
     from scipy.constants import speed_of_light
-    #c = 3e8  # Speed of light in vacuum (m/s)
+
+    # c = 3e8  # Speed of light in vacuum (m/s)
     T0 = 273.15  # Standard temperature in Kelvin
     e_s0 = 611  # Saturation vapor pressure at T0 in Pa
     Lv = 2.5e6  # Latent heat of vaporization of water in J/kg
@@ -4838,7 +4863,7 @@ def calculate_phase_constant(frequency, temperature, pressure, water_vapor_densi
     P = pressure * 100  # Convert hPa to Pa
 
     # Refractivity N(h)
-    N = 77.6 * (P / temperature_K) + (3.73e5 * e) / (temperature_K ** 2)
+    N = 77.6 * (P / temperature_K) + (3.73e5 * e) / (temperature_K**2)
 
     # Refractive index n
     n = 1 + N * 1e-6
@@ -4849,7 +4874,9 @@ def calculate_phase_constant(frequency, temperature, pressure, water_vapor_densi
     return beta
 
 
-def calculate_atmospheric_propagation_constant(frequency, temperature, pressure, water_vapor_density):
+def calculate_atmospheric_propagation_constant(
+    frequency, temperature, pressure, water_vapor_density
+):
     """
     Calculate the propagation constant as a function of frequency (GHz), temperature (Celsius), atmospheric pressure (hectoPascals) and water vapour density (g/m^3).
 
@@ -4869,7 +4896,11 @@ def calculate_atmospheric_propagation_constant(frequency, temperature, pressure,
     propagation constant : complex
 
     """
-    alpha = calculate_attenuation_constant(frequency, temperature, pressure, water_vapor_density)
-    beta = calculate_phase_constant(frequency, temperature, pressure, water_vapor_density)
+    alpha = calculate_attenuation_constant(
+        frequency, temperature, pressure, water_vapor_density
+    )
+    beta = calculate_phase_constant(
+        frequency, temperature, pressure, water_vapor_density
+    )
     gamma = alpha + 1j * beta
     return gamma

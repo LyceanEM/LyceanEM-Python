@@ -27,8 +27,8 @@ def calculate_scattering(
     mesh_resolution=0.5,
     antenna_axes=np.eye(3),
     project_vectors=True,
-        alpha=0.0,
-        beta=(np.pi*2)/1.0
+    alpha=0.0,
+    beta=(np.pi * 2) / 1.0,
 ):
     """
     Based upon the parameters given, calculate the time domain scattering for the apertures and sinks.
@@ -76,24 +76,33 @@ def calculate_scattering(
 
     num_sources = len(np.asarray(aperture_coords.points))
     num_sinks = len(np.asarray(sink_coords.points))
-    environment_triangles=GF.mesh_conversion(antenna_solid)
+    environment_triangles = GF.mesh_conversion(antenna_solid)
 
     if not multiE:
         if project_vectors:
             conformal_E_vectors = EM.calculate_conformalVectors(
-                desired_E_axis, np.asarray(aperture_coords.point_data["Normals"]), antenna_axes
+                desired_E_axis,
+                np.asarray(aperture_coords.point_data["Normals"]),
+                antenna_axes,
             )
         else:
-            if desired_E_axis.shape[0] == np.asarray(aperture_coords.point_data["Normals"]).shape[0]:
+            if (
+                desired_E_axis.shape[0]
+                == np.asarray(aperture_coords.point_data["Normals"]).shape[0]
+            ):
                 conformal_E_vectors = copy.deepcopy(desired_E_axis)
             else:
                 conformal_E_vectors = np.repeat(
-                    desired_E_axis.reshape(1, 3).astype(np.complex64), num_sources, axis=0
+                    desired_E_axis.reshape(1, 3).astype(np.complex64),
+                    num_sources,
+                    axis=0,
                 )
     else:
         if project_vectors:
             conformal_E_vectors = EM.calculate_conformalVectors(
-                desired_E_axis, np.asarray(aperture_coords.point_data["Normals"]), antenna_axes
+                desired_E_axis,
+                np.asarray(aperture_coords.point_data["Normals"]),
+                antenna_axes,
             )
         else:
             if desired_E_axis.size == 3:
@@ -105,7 +114,9 @@ def calculate_scattering(
 
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
-        scatter_points = meshio.Mesh(points = np.empty((0,3), dtype=np.float32), cells=[])
+        scatter_points = meshio.Mesh(
+            points=np.empty((0, 3), dtype=np.float32), cells=[]
+        )
 
         unified_model = np.append(
             np.asarray(aperture_coords.points).astype(np.float32),
@@ -119,11 +130,11 @@ def calculate_scattering(
         )
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
         unified_weights[0:num_sources, :] = (
-            conformal_E_vectors #/ num_sources
-        )  # set total amplitude to 1 for the aperture
+            conformal_E_vectors  # / num_sources  # set total amplitude to 1 for the aperture
+        )
         unified_weights[num_sources : num_sources + num_sinks, :] = (
-            1 #/ num_sinks
-        )  # set total amplitude to 1 for the aperture
+            1  # / num_sinks  # set total amplitude to 1 for the aperture
+        )
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
         # set all sources as magnetic current sources, and permittivity and permeability as free space
         point_informationv2[:]["Electric"] = True
@@ -202,14 +213,14 @@ def calculate_scattering(
         )
         unified_weights = np.ones((unified_model.shape[0], 3), dtype=np.complex64)
         unified_weights[0:num_sources, :] = (
-            conformal_E_vectors #/ num_sources
-        )  # set total amplitude to 1 for the aperture
+            conformal_E_vectors  # / num_sources  # set total amplitude to 1 for the aperture
+        )
         unified_weights[num_sources : num_sources + num_sinks, :] = (
-            1 #/ num_sinks
-        )  # set total amplitude to 1 for the aperture
-        unified_weights[num_sources + num_sinks :, :] = 1 #/ len(
-          #  np.asarray(scatter_points.points)
-        #)  # set total amplitude to 1 for the aperture
+            1  # / num_sinks  # set total amplitude to 1 for the aperture
+        )
+        unified_weights[num_sources + num_sinks :, :] = 1  # / len(
+        #  np.asarray(scatter_points.points)
+        # )  # set total amplitude to 1 for the aperture
         point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
         # set all sources as magnetic current sources, and permittivity and permeability as free space
         point_informationv2[:]["Electric"] = True
@@ -307,9 +318,11 @@ def calculate_scattering(
             for e_inc in range(desired_E_axis.shape[0]):
                 conformal_E_vectors = EM.calculate_conformalVectors(
                     desired_E_axis[e_inc, :],
-                    np.asarray(aperture_coords.point_data["Normals"]).astype(np.float32),
+                    np.asarray(aperture_coords.point_data["Normals"]).astype(
+                        np.float32
+                    ),
                 )
-                unified_weights[0:num_sources, :] = conformal_E_vectors #/ num_sources
+                unified_weights[0:num_sources, :] = conformal_E_vectors  # / num_sources
                 point_informationv2[:]["ex"] = unified_weights[:, 0]
                 point_informationv2[:]["ey"] = unified_weights[:, 1]
                 point_informationv2[:]["ez"] = unified_weights[:, 2]
@@ -325,7 +338,7 @@ def calculate_scattering(
                     sampling_freq,
                     num_samples,
                     alpha,
-                    beta
+                    beta,
                 )
                 wake_index = np.digitize(WakeTimes, time_index)
                 Ex[e_inc, wake_index:] = np.dot(
@@ -366,7 +379,7 @@ def calculate_scattering(
                 sampling_freq,
                 num_samples,
                 alpha,
-                beta
+                beta,
             )
             wake_index = np.digitize(WakeTimes, time_index)
             Ex[wake_index:] = np.dot(
@@ -405,7 +418,10 @@ def calculate_scattering(
             for e_inc in range(desired_E_axis.shape[1]):
                 conformal_E_vectors = EM.calculate_conformalVectors(
                     desired_E_axis[e_inc, :],
-                    np.asarray(aperture_coords.point_data["Normals"]).astype(np.float32),antenna_axes
+                    np.asarray(aperture_coords.point_data["Normals"]).astype(
+                        np.float32
+                    ),
+                    antenna_axes,
                 )
                 for element in range(num_sources):
                     point_informationv2[0:num_sources]["ex"] = 0.0
@@ -436,7 +452,7 @@ def calculate_scattering(
                         sampling_freq,
                         num_samples,
                         alpha,
-                        beta
+                        beta,
                     )
                     wake_index = np.digitize(WakeTimes, time_index)
                     Ex[element, wake_index:] = np.dot(
@@ -494,7 +510,7 @@ def calculate_scattering(
                     sampling_freq,
                     num_samples,
                     alpha,
-                    beta
+                    beta,
                 )
                 Ex[element, :, :] = np.dot(
                     np.ones((num_sources)),

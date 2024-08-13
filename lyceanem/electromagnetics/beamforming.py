@@ -893,7 +893,6 @@ def MaximumfieldMapDiscrete(
     return efield_map
 
 
-
 @njit(cache=True, nogil=True)
 def directivity_transform(
     Etheta,
@@ -1347,21 +1346,30 @@ def GPUBeamformingMap(Etheta, Ephi, DirectivityMap, az_range, el_range, waveleng
         DirectivityMap[az_inc, el_inc] = 0
 
 
-def create_display_mesh(field_data, field_radius=1.0, label='Poynting Vector (Magnitude)', log_type='amplitude',
-                        plot_max=None):
+def create_display_mesh(
+    field_data,
+    field_radius=1.0,
+    label="Poynting Vector (Magnitude)",
+    log_type="amplitude",
+    plot_max=None,
+):
     pattern_mesh = copy.deepcopy(field_data).clean(tolerance=1e-6)
     # pattern_mesh=pv.PolyData(normals).delaunay_2d(inplace=True)
     # pattern_mesh.compute_normals(inplace=True,flip_normals=False) # for some reason the computed normals are all inwards unless I set flip_normals to True
 
-    if log_type == 'amplitude':
+    if log_type == "amplitude":
         log_multiplier = 20.0
-    elif log_type == 'power':
+    elif log_type == "power":
         log_multiplier = 10.0
         # create Normed dB Values for labelled value
     if len(pattern_mesh.point_data[label].shape) > 1:
         # assumes complex data in iq format is to be plotted.
         logdata = log_multiplier * np.log10(
-            np.abs(pattern_mesh.point_data[label][:, 0] + 1j * pattern_mesh.point_data[label][:, 1]))
+            np.abs(
+                pattern_mesh.point_data[label][:, 0]
+                + 1j * pattern_mesh.point_data[label][:, 1]
+            )
+        )
     else:
         logdata = log_multiplier * np.log10(pattern_mesh.point_data[label])
     if np.nanmax(logdata) <= 0.0:
@@ -1379,20 +1387,37 @@ def create_display_mesh(field_data, field_radius=1.0, label='Poynting Vector (Ma
     normed_logdata[normed_logdata < pattern_min] = pattern_min
 
     norm_log = ((normed_logdata - pattern_min) / np.abs(pattern_min)) * field_radius
-    pattern_mesh.point_data['Normed Power'] = norm_log
-    pattern_mesh.point_data['Gain (dB)'] = logdata
-    pattern_mesh.points = pattern_mesh.center + pattern_mesh['Normals'] * norm_log.reshape(-1, 1)
+    pattern_mesh.point_data["Normed Power"] = norm_log
+    pattern_mesh.point_data["Gain (dB)"] = logdata
+    pattern_mesh.points = pattern_mesh.center + pattern_mesh[
+        "Normals"
+    ] * norm_log.reshape(-1, 1)
     return pattern_mesh
-def AnimatedPatterns(pattern_list, command_vectors, field_radius=1.0, plot_scalar='Poynting Vector (Magnitude)',
-                     log_type='amplitude', plot_max=None, filename="BeamformingExport.mp4"):
+
+
+def AnimatedPatterns(
+    pattern_list,
+    command_vectors,
+    field_radius=1.0,
+    plot_scalar="Poynting Vector (Magnitude)",
+    log_type="amplitude",
+    plot_max=None,
+    filename="BeamformingExport.mp4",
+):
     pattern_max = plot_max
 
     pattern_min = pattern_max - 40
     display_list = []
     for inc in range(len(pattern_list)):
         display_list.append(
-            create_display_mesh(pattern_list[inc], field_radius=field_radius, label=plot_scalar, log_type=log_type,
-                                plot_max=plot_max))
+            create_display_mesh(
+                pattern_list[inc],
+                field_radius=field_radius,
+                label=plot_scalar,
+                log_type=log_type,
+                plot_max=plot_max,
+            )
+        )
 
     time_horizontal_fraction = 0.25
     screen_size = 3008
@@ -1400,20 +1425,33 @@ def AnimatedPatterns(pattern_list, command_vectors, field_radius=1.0, plot_scala
     # Open a movie file
     pl.open_movie(filename)
     pl.ren_win.SetSize([screen_size, screen_size])
-    actor = pl.add_mesh(display_list[0], scalars='Gain (dB)', clim=[pattern_min, pattern_max])
+    actor = pl.add_mesh(
+        display_list[0], scalars="Gain (dB)", clim=[pattern_min, pattern_max]
+    )
     steering_vector = pl.add_text(
-        "Command Vector = ({:3.0f},{:3.0f})".format(command_vectors[0, 0], command_vectors[0, 1]),
-        position=(time_horizontal_fraction * screen_size, 0.95 * screen_size), font_size=50)
+        "Command Vector = ({:3.0f},{:3.0f})".format(
+            command_vectors[0, 0], command_vectors[0, 1]
+        ),
+        position=(time_horizontal_fraction * screen_size, 0.95 * screen_size),
+        font_size=50,
+    )
     pl.add_axes()
     pl.write_frame()
     from tqdm import tqdm
+
     for frame in tqdm(range(len(pattern_list))):
         pl.remove_actor(actor)
         pl.remove_actor(steering_vector)
-        actor = pl.add_mesh(display_list[frame], scalars='Gain (dB)', clim=[pattern_min, pattern_max])
+        actor = pl.add_mesh(
+            display_list[frame], scalars="Gain (dB)", clim=[pattern_min, pattern_max]
+        )
         steering_vector = pl.add_text(
-            "Command Vector = ({:3.0f},{:3.0f})".format(command_vectors[frame, 0], command_vectors[frame, 1]),
-            position=(time_horizontal_fraction * screen_size, 0.95 * screen_size), font_size=50)
+            "Command Vector = ({:3.0f},{:3.0f})".format(
+                command_vectors[frame, 0], command_vectors[frame, 1]
+            ),
+            position=(time_horizontal_fraction * screen_size, 0.95 * screen_size),
+            font_size=50,
+        )
         pl.write_frame()
 
     pl.close()

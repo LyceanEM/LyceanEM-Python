@@ -47,25 +47,29 @@ def exampleUAV(frequency):
     array = GF.mesh_rotate(array, rotation_vector1)
     array = GF.mesh_rotate(array, rotation_vector2)
 
-
-    body = GF.translate_mesh(body, np.array([0.25, 0, 0])+np.array([-0.18, 0, 0.0125]))
-    array = GF.translate_mesh(array, np.array([0.25, 0, 0])+np.array([-0.18, 0, 0.0125])
+    body = GF.translate_mesh(
+        body, np.array([0.25, 0, 0]) + np.array([-0.18, 0, 0.0125])
+    )
+    array = GF.translate_mesh(
+        array, np.array([0.25, 0, 0]) + np.array([-0.18, 0, 0.0125])
     )
 
     def structure_cells(array):
         ## add collumn of 3s to beggining of each row
-        array = np.append(np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1)
+        array = np.append(
+            np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1
+        )
         return array
+
     pyvista_array = pv.PolyData(array.points, structure_cells(array.cells[0].data))
     pyvista_body = pv.PolyData(body.points, structure_cells(body.cells[0].data))
     pyvista_array.compute_normals(inplace=True)
     pyvista_body.compute_normals(inplace=True)
 
-    array.point_data['Normals'] = pyvista_array.point_normals
-    body.point_data['Normals'] = pyvista_body.point_normals
-    array.cell_data['Normals'] = pyvista_array.cell_normals
-    body.cell_data['Normals'] = pyvista_body.cell_normals
-
+    array.point_data["Normals"] = pyvista_array.point_normals
+    body.point_data["Normals"] = pyvista_body.point_normals
+    array.cell_data["Normals"] = pyvista_array.cell_normals
+    body.cell_data["Normals"] = pyvista_body.cell_normals
 
     wavelength = 3e8 / frequency
     mesh_sep = wavelength * 0.5
@@ -195,8 +199,7 @@ def exampleUAV(frequency):
         axis=0,
     ) + np.array([0.1025, 0, -0.025])
     source_pcd = RF.points2pointcloud(total_array)
-    source_pcd.point_data['Normals'] = total_array_normals
+    source_pcd.point_data["Normals"] = total_array_normals
     source_pcd = GF.translate_mesh(source_pcd, np.array([-0.18, 0, 0.0125]))
-
 
     return body, array, source_pcd
