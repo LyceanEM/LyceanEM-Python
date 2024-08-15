@@ -165,7 +165,8 @@ Ex, Ey, Ez = FD.calculate_scattering(
     scatter_points=scatter_points,
     wavelength=wavelength,
     scattering=1,
-    project_vectors=False
+    project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 
 

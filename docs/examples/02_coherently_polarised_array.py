@@ -87,6 +87,7 @@ Etheta, Ephi = calculate_farfield(
     wavelength=wavelength,
     farfield_distance=20,
     project_vectors=True,
+    beta=(2*np.pi)/wavelength
 )
 
 # %%

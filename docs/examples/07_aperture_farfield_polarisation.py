@@ -58,6 +58,7 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 
 # %%
@@ -89,6 +90,7 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 
 
@@ -114,6 +116,7 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 
 n_pattern = antenna_pattern(
@@ -143,6 +146,7 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 u_pattern.pattern[:, :, 0] = Etheta
 u_pattern.pattern[:, :, 1] = Ephi
@@ -161,6 +165,7 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 v_pattern.pattern[:, :, 0] = Etheta
 v_pattern.pattern[:, :, 1] = Ephi
@@ -179,6 +184,7 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 n_pattern.pattern[:, :, 0] = Etheta
 n_pattern.pattern[:, :, 1] = Ephi
