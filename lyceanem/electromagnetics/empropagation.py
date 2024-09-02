@@ -4,11 +4,13 @@ import cmath
 import copy
 import math
 import pathlib
+
+import numba
 from importlib_resources import files
 import cupy as cp
 import numpy as np
 import scipy.stats
-from numba import cuda, float32, float64, complex64, njit, guvectorize
+from numba import cuda, float32, float64, complex64, complex128, njit, guvectorize, complex128
 from numpy.linalg import norm
 
 import lyceanem.base_types as base_types
@@ -767,29 +769,26 @@ def clip(a, a_min, a_max):
 @cuda.jit(device=True)
 def lossy_propagation(point1, point2, alpha, beta):
     # calculate loss using improved Rayliegh-Summerfeld
-    length = float(0)
-    length = calc_sep(point1, point2, length)
+    length = cuda.local.array(shape=(1), dtype=np.float32)
+    length[0] = calc_sep(point1, point2, length[0])
     outgoing_dir = cuda.local.array(shape=(3), dtype=np.float32)
     calc_dv(
         point1,
         point2,
         outgoing_dir,
     )
+
     normal = cuda.local.array(shape=(3), dtype=np.float32)
     normal[0] = point1["nx"]
     normal[1] = point1["ny"]
     normal[2] = point1["nz"]
     projection_dot = dot_vec(outgoing_dir, normal)
     front = -(1 / (2 * cmath.pi))
-    G = (cmath.exp(-(alpha + 1j * beta) * length)) / length
-    # dG=cmath.cos(angle)*(-(alpha+1j*beta)-(1/lengths))*G
-    dG = (-(alpha + 1j * beta) - (1 / length)) * G
-    loss = front * dG * projection_dot
-    # loss = G
+    G = (cmath.exp(-(alpha[0] + 1j * beta[0]) * length[0])) / length[0]
 
-    # test replacement with old loss funciton
-    # loss = cmath.exp(-1j * beta * lengths)
-    # loss = loss * (((2*cmath.pi)/beta) / (4 * (cmath.pi) * (lengths)))
+    dG = (-(alpha[0] + 1j * beta[0]) - complex64((1 / length[0]))) * G
+    loss = front * dG * projection_dot
+
     return loss
 
 

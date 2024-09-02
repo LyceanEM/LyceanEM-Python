@@ -85,12 +85,12 @@ def field_magnitude_phase(field_data):
 def extract_electric_fields(field_data):
     fields = np.array(
         [
-            field_data.point_data["Ex - Real"][:, 0]
-            + 1j * field_data.point_data["Ex - Imag"][:, 0],
-            field_data.point_data["Ey - Real"][:, 0]
-            + 1j * field_data.point_data["Ey - Imag"][:, 0],
-            field_data.point_data["Ez - Real"][:, 0]
-            + 1j * field_data.point_data["Ez - Imag"][:, 0],
+            field_data.point_data["Ex - Real"]
+            + 1j * field_data.point_data["Ex - Imag"],
+            field_data.point_data["Ey - Real"]
+            + 1j * field_data.point_data["Ey - Imag"],
+            field_data.point_data["Ez - Real"]
+            + 1j * field_data.point_data["Ez - Imag"],
         ]
     ).transpose()
 
@@ -279,7 +279,19 @@ def update_electric_fields(field_data, ex, ey, ez):
     return field_data
 
 
-def PoyntingVector(field_data):
+def PoyntingVector(field_data,measurement=False,aperture=None):
+    """
+    Calculate the poynting vector for the given field data. If the magnetic field data is present, then the poynting vector is calculated using the cross product of the electric and magnetic field vectors.
+    If the magnetic field data is not present, then the poynting vector is calculated using the electric field vectors and the impedance of the material. If material parameters are not included in the field data, then the impedance is assumed to be that of free space.
+    Measurement is a boolean value which indicates whether the field data represents measurements with a finite aperture, rather than point data. If measurement is True, then the aperture parameter must be provided, which is the area of the measurement aperture. This allows the power density at each measurement location to be calculated consistently with the point approach.
+    field_data: meshio.Mesh
+
+    measurement: bool
+
+    aperture: float
+        The area of the measurement aperture, if measurement is True, so the field data represents measurements with a finite aperture, rather than point data.
+
+    """
     if all(
         k in field_data.point_data.keys()
         for k in (
@@ -340,6 +352,10 @@ def PoyntingVector(field_data):
         poynting_vector_complex = (
             (np.linalg.norm(electric_field_vectors, axis=1) ** 2) / eta
         ).reshape(-1, 1)
+
+    if measurement:
+        poynting_vector_complex = poynting_vector_complex/aperture
+
     field_data.point_data["Poynting Vector (Magnitude)"] = np.zeros(
         (field_data.points.shape[0], 1)
     )
@@ -370,7 +386,7 @@ def Directivity(field_data):
         k in field_data.point_data.keys() for k in ("E(theta) - Real", "E(phi) - Real")
     ):
         # E(theta) and E(phi) are not present in the data
-        field_data = Exyz_to_EthetaEphi()
+        field_data = Exyz_to_EthetaEphi(field_data)
 
     Utheta = np.abs(
         (

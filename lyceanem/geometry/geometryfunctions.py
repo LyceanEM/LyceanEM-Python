@@ -161,11 +161,19 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
                 transform_matrix, np.append(mesh.point_data["Normals"][i], 0)
             )[:3]
         if "Normals" in mesh.cell_data:
-            for i in range(len(mesh.cell_data["Normals"])):
-                for j in range(mesh.cell_data["Normals"][i].shape[0]):
-                    return_mesh.cell_data["Normals"][i][j] = np.dot(
-                        transform_matrix, np.append(mesh.cell_data["Normals"][i][j], 0)
-                    )[:3]
+            if isinstance(mesh.cell_data["Normals"], list):
+                #multiple cell types
+                for i in range(len(mesh.cell_data["Normals"])):
+                    for j in range(mesh.cell_data["Normals"][i].shape[0]):
+                        return_mesh.cell_data["Normals"][i][j] = np.dot(
+                            transform_matrix, np.append(mesh.cell_data["Normals"][i][j], 0)
+                        )[:3]
+            else:
+                #single cell type
+                for i in range(len(mesh.cell_data["Normals"])):
+                        return_mesh.cell_data["Normals"][i] = np.dot(
+                            transform_matrix, np.append(mesh.cell_data["Normals"][i], 0)
+                        )[:3]
 
     return return_mesh
 
