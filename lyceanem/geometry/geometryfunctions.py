@@ -300,8 +300,8 @@ def compute_normals(mesh):
     point_normals = np.empty((0, 3))
     for inc, cell in enumerate(mesh.cells):
         if cell.type == "triangle":
-            for inc in range(mesh.points.shape[0]):
-                associated_cells = np.where(inc == cell.data)[0]
+            for inc_b in range(mesh.points.shape[0]):
+                associated_cells = np.where(inc_b == cell.data)[0]
                 # print(associated_cells)
                 point_normals = np.append(
                     point_normals,
@@ -311,8 +311,8 @@ def compute_normals(mesh):
                     axis=0,
                 )
         if cell.type == "vertex":
-            for inc in range(mesh.points.shape[0]):
-                associated_cells = np.where(inc == cell.data)[0]
+            for inc_b in range(mesh.points.shape[0]):
+                associated_cells = np.where(inc_b == cell.data)[0]
                 # print(associated_cells)
                 point_normals = np.append(
                     point_normals,

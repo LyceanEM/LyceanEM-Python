@@ -784,6 +784,8 @@ def lossy_propagation(point1, point2, alpha, beta):
     normal[2] = point1["nz"]
     projection_dot = dot_vec(outgoing_dir, normal)
     front = -(1 / (2 * cmath.pi))
+    s=2.5
+    #distance_loss=1.0/((1+length[0]**2)**)**(1/s)
     G = (cmath.exp(-(alpha[0] + 1j * beta[0]) * length[0])) / length[0]
 
     dG = (-(alpha[0] + 1j * beta[0]) - complex64((1 / length[0]))) * G

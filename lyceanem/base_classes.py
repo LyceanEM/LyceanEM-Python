@@ -437,6 +437,7 @@ class antenna_structures(object3d):
         wavelength=1.0,
         steering_vector=np.zeros((1, 3)),
         transmit_power=1.0,
+        local_projection=True
     ):
         # generate the local excitation function and then convert into the global coordinate frame.
         if point_index == None:
@@ -444,10 +445,14 @@ class antenna_structures(object3d):
         else:
             aperture_points = self.export_all_points(point_index=point_index)
 
+        if local_projection:
         # as export all points imposes the transformation from local to global frame on the points and associated normal vectors, no rotation is required within calculate_conformalVectors
-        aperture_weights = EM.calculate_conformalVectors(
-            desired_e_vector, aperture_points.point_data["Normals"], np.eye(3)
-        )
+            aperture_weights = EM.calculate_conformalVectors(
+                desired_e_vector, aperture_points.point_data["Normals"], np.eye(3)
+            )
+        else:
+            aperture_weights=np.repeat(desired_e_vector,aperture_points.points.shape[0],axis=0)
+            
         if phase_shift == "wavefront":
             source_points = np.asarray(aperture_points.points)
             phase_weights = BM.WavefrontWeights(
