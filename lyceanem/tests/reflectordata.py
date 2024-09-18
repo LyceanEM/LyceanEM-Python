@@ -7,7 +7,7 @@ import math
 import numpy as np
 import meshio
 import scipy.io as io
-from importlib_resources import files
+from importlib.resources import files
 import pyvista as pv
 
 import lyceanem.geometry.geometryfunctions as GF

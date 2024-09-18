@@ -6,7 +6,7 @@ import numpy as np
 import meshio
 import pyvista as pv
 import pygmsh
-from importlib_resources import files
+from importlib.resources import files
 from scipy.spatial.transform import Rotation as R
 
 from ..base_classes import antenna_structures, structures, points

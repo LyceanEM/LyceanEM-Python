@@ -85,12 +85,12 @@ def field_magnitude_phase(field_data):
 def extract_electric_fields(field_data):
     fields = np.array(
         [
-            field_data.point_data["Ex - Real"]
-            + 1j * field_data.point_data["Ex - Imag"],
-            field_data.point_data["Ey - Real"]
-            + 1j * field_data.point_data["Ey - Imag"],
-            field_data.point_data["Ez - Real"]
-            + 1j * field_data.point_data["Ez - Imag"],
+            field_data.point_data["Ex - Real"].ravel()
+            + 1j * field_data.point_data["Ex - Imag"].ravel(),
+            field_data.point_data["Ey - Real"].ravel()
+            + 1j * field_data.point_data["Ey - Imag"].ravel(),
+            field_data.point_data["Ez - Real"].ravel()
+            + 1j * field_data.point_data["Ez - Imag"].ravel(),
         ]
     ).transpose()
 
@@ -405,7 +405,7 @@ def Directivity(field_data):
     Utotal = Utheta + Uphi
     sin_factor = np.abs(
         np.sin(field_data.point_data["theta (Radians)"])
-    )  # only want positive factor
+    ).reshape(-1,1)  # only want positive factor
     power_sum = np.sum(np.abs(Utheta * sin_factor)) + np.sum(np.abs(Uphi * sin_factor))
     # need to dynamically account for the average contribution of each point, this is only true for a theta step of 1 degree, and phi step of 10 degrees
     Uav = (power_sum * (np.radians(1.0) * np.radians(10.0))) / (4 * np.pi)
