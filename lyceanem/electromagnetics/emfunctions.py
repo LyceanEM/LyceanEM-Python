@@ -372,7 +372,7 @@ def PoyntingVector(field_data,measurement=False,aperture=None):
 
 
 def Directivity(field_data):
-    # calculate directivity for the given pattern
+    # Directivity is defined in terms of the radiation intensity in a given direction which is the power per unit solid angle, divided by the average power per unit solid angle
 
     if not all(
         k in field_data.point_data.keys() for k in ("theta (Radians)", "phi (Radians)")
@@ -387,6 +387,13 @@ def Directivity(field_data):
     ):
         # E(theta) and E(phi) are not present in the data
         field_data = Exyz_to_EthetaEphi(field_data)
+    
+    if not all(
+            k in field_data.point_data.keys() for k in ("Area")
+        ):
+        from lyceanem.geometry.geometryfunctions import compute_areas
+        # E(theta) and E(phi) are not present in the data
+        field_data = compute_areas(field_data)
 
     Utheta = np.abs(
         (
@@ -402,13 +409,17 @@ def Directivity(field_data):
         )
         ** 2
     )
+    #Calculate Solid Angle
+    solid_angle=field_data.point_data["Area"]/field_data.point_data["Radial Distance (m)"]**2
     Utotal = Utheta + Uphi
-    sin_factor = np.abs(
-        np.sin(field_data.point_data["theta (Radians)"])
-    ).reshape(-1,1)  # only want positive factor
-    power_sum = np.sum(np.abs(Utheta * sin_factor)) + np.sum(np.abs(Uphi * sin_factor))
+    
+    Uav=(np.sum(Utotal.ravel()*solid_angle)/(4*np.pi))
+    #sin_factor = np.abs(
+    #    np.sin(field_data.point_data["theta (Radians)"])
+    #).reshape(-1,1)  # only want positive factor
+    #power_sum = np.sum(np.abs(Utheta * sin_factor)) + np.sum(np.abs(Uphi * sin_factor))
     # need to dynamically account for the average contribution of each point, this is only true for a theta step of 1 degree, and phi step of 10 degrees
-    Uav = (power_sum * (np.radians(1.0) * np.radians(10.0))) / (4 * np.pi)
+    #Uav = (power_sum * (np.radians(1.0) * np.radians(10.0))) / (4 * np.pi)
     Dtheta = Utheta / Uav
     Dphi = Uphi / Uav
     Dtot = Utotal / Uav
