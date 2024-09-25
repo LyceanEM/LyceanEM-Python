@@ -104,9 +104,7 @@ def discrete_transmit_power(
         power_at_point * power_normalisation
     ) / element_area.reshape(-1, 1)
     # calculate amplitude (V/m)
-    transmit_amplitude = ((transmit_power_density * impedance) ** 0.5) * (
-        weights / np.linalg.norm(weights, axis=1).reshape(-1, 1)
-    )
+    transmit_amplitude = ((transmit_power_density * impedance) ** 0.5)
     # transmit_excitation=transmit_amplitude_density.reshape(-1,1)*element_area.reshape(-1,1)
     return transmit_amplitude
 

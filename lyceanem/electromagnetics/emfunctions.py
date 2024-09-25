@@ -160,6 +160,14 @@ def EthetaEphi_to_Exyz(field_data):
 
 def Exyz_to_EthetaEphi(field_data):
     # this function assumes a spherical field definition, will need to write a function which works based on the poynting vector/normal vector of the point
+    if not all(
+        k in field_data.point_data.keys() for k in ("theta (Radians)", "phi (Radians)")
+    ):
+        # theta and phi don't exist in the dataset
+        from lyceanem.geometry.geometryfunctions import theta_phi_r
+
+        field_data = theta_phi_r(field_data)
+        
     electric_fields = extract_electric_fields(field_data)
     theta = field_data.point_data["theta (Radians)"]
     phi = field_data.point_data["phi (Radians)"]
@@ -372,7 +380,7 @@ def PoyntingVector(field_data,measurement=False,aperture=None):
 
 
 def Directivity(field_data):
-    # Directivity is defined in terms of the radiation intensity in a given direction which is the power per unit solid angle, divided by the average power per unit solid angle
+    # calculate directivity for the given pattern
 
     if not all(
         k in field_data.point_data.keys() for k in ("theta (Radians)", "phi (Radians)")
@@ -387,7 +395,7 @@ def Directivity(field_data):
     ):
         # E(theta) and E(phi) are not present in the data
         field_data = Exyz_to_EthetaEphi(field_data)
-    
+
     if not all(
             k in field_data.point_data.keys() for k in ("Area")
         ):
@@ -412,8 +420,8 @@ def Directivity(field_data):
     #Calculate Solid Angle
     solid_angle=field_data.point_data["Area"]/field_data.point_data["Radial Distance (m)"]**2
     Utotal = Utheta + Uphi
-    
-    Uav=(np.sum(Utotal.ravel()*solid_angle)/(4*np.pi))
+
+    Uav=(np.nansum(Utotal.ravel()*solid_angle)/(4*np.pi))
     #sin_factor = np.abs(
     #    np.sin(field_data.point_data["theta (Radians)"])
     #).reshape(-1,1)  # only want positive factor

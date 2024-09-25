@@ -951,14 +951,14 @@ def CalculatePoyntingVectors(
     """
     max_path_divergence = 2.0
     if len(total_network) == 0:
-        sourcenum = np.int(np.nanmax(scattering_index[:, 0])) + 1
-        sinknum = np.int(np.nanmax(scattering_index[:, 1])) + 1
+        sourcenum = np.nanmax(scattering_index[:, 0]).astype(int) + 1
+        sinknum = np.nanmax(scattering_index[:, 1]).astype(int) + 1
         aoa_spectrum = np.zeros((sinknum, az_bins.shape[0]), dtype=np.float32)
         delay_spectrum = np.zeros((sinknum, az_bins.shape[0]), dtype=np.float32)
     else:
         wave_vector = (2 * np.pi) / wavelength
-        sourcenum = np.int(np.nanmax(scattering_index[:, 0])) + 1
-        sinknum = np.int(np.nanmax(scattering_index[:, 1])) + 1
+        sourcenum = np.nanmax(scattering_index[:, 0]).astype(int) + 1
+        sinknum = np.nanmax(scattering_index[:, 1]).astype(int) + 1
         scatterdepth = int((len(total_network[0, :]) - 3) / 3)
         impulse_response = np.zeros((len(time_bins), sinknum), dtype="complex")
         angle_response = np.zeros((len(az_bins), sinknum), dtype="complex")
@@ -1485,8 +1485,8 @@ def VectorNetworkProcessv2(
     #
     """
     if scattering_index.shape[0] == 0:
-        sourcenum = np.int(np.nanmax(scattering_index[:, 0])) + 1
-        sinknum = np.int(np.nanmax(scattering_index[:, 1])) + 1
+        sourcenum = np.nanmax(scattering_index[:, 0]).astype(int) + 1
+        sinknum = np.nanmax(scattering_index[:, 1]).astype(int) + 1
         scatter_map = np.zeros((sourcenum, sinknum, 1), dtype="complex")
     else:
         unified_model = np.append(
@@ -1766,8 +1766,8 @@ def scatter_net_sortTimeEM(
 def BaseNetworkProcess(total_network, wavelength, scattering_index):
     # take the total_network matrix, and work out the path length of each connection, and hence superposition
     wave_vector = (2 * np.pi) / wavelength
-    sourcenum = np.int(np.nanmax(scattering_index[:, 0])) + 1
-    sinknum = np.int(np.nanmax(scattering_index[:, 1])) + 1
+    sourcenum = np.nanmax(scattering_index[:, 0]).astype(int) + 1
+    sinknum = np.nanmax(scattering_index[:, 1]).astype(int) + 1
     scatterdepth = int((len(total_network[1, :]) - 3) / 3)
     scatter_map = np.zeros((sourcenum, sinknum, scatterdepth), dtype="complex")
     depth_num = 0
@@ -1793,8 +1793,8 @@ def BaseNetworkProcess(total_network, wavelength, scattering_index):
             end_row = np.max(np.where((np.isnan(total_network[:, 6 + ((idx) * 3)]))))
 
         for idr in range(start_row, end_row + 1):
-            source_index = np.int(scattering_index[idr, 0])
-            sink_index = np.int(scattering_index[idr, 1])
+            source_index = scattering_index[idr, 0].astype(int)
+            sink_index = scattering_index[idr, 1].astype(int)
             path_distance = np.zeros((1))
             if idx == 0:
                 path_distance = (
@@ -2894,7 +2894,7 @@ def workchunkingv2(
 
     elif max_scatter == 3:
         full_index = np.empty((0, 4), dtype=np.int32)
-        chunknum = np.minimum(sources.shape[0], np.int(np.ceil(ray_estimate / 2e8)))
+        chunknum = np.minimum(sources.shape[0], np.ceil(ray_estimate / 2e8).astype(int))
         chunknum = np.maximum(2, chunknum)
         source_chunking = np.linspace(0, sources.shape[0], chunknum, dtype=np.int32)
         for chunkindex in range(source_chunking.size - 1):
@@ -2925,9 +2925,8 @@ def workchunkingv2(
                 sources, sinks, scattering_points, filtered_index, environment, False
             )
             if filtered_index2.shape[0] * sinks.shape[0] > 2e8:
-                temp_chunks = np.int(
-                    np.ceil((filtered_index2.shape[0] * sinks.shape[0]) / 2e8)
-                )
+                temp_chunks = np.ceil((filtered_index2.shape[0] * sinks.shape[0]) / 2e8).astype(int)
+                
                 temp_chunking = np.linspace(
                     0, filtered_index2.shape[0], temp_chunks, dtype=np.int32
                 )
@@ -3111,7 +3110,7 @@ def integratedraycastersetup(
     ).reshape((scattering_points.shape[0] - sources - sinks), 1)
     # implement chunking
     full_index = np.empty((0, np.max(scattering_mask) + 2), dtype=np.int32)
-    chunknum = np.minimum(sources, np.int(np.ceil(ray_estimate / 2e8)))
+    chunknum = np.minimum(sources, np.ceil(ray_estimate / 2e8).astype(int))
     chunknum = np.maximum(2, chunknum)
     source_chunking = np.linspace(0, sources, chunknum, dtype=np.int32)
     for chunkindex in range(source_chunking.size - 1):
