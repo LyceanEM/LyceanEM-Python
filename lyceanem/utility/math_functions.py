@@ -80,7 +80,8 @@ def discrete_transmit_power(
     weights, element_area, transmit_power=100.0, impedance=np.pi * 120.0
 ):
     """
-    Calculate the transmitting aperture amplitude density required for a given transmit power in watts.
+    Calculate the transmitting aperture voltages required for a given transmit power in watts.
+
     Parameters
     ----------
     weights
@@ -104,7 +105,7 @@ def discrete_transmit_power(
         power_at_point * power_normalisation
     ) / element_area.reshape(-1, 1)
     # calculate amplitude (V/m)
-    transmit_amplitude = ((transmit_power_density * impedance) ** 0.5)
+    transmit_amplitude = ((transmit_power_density * impedance) ** 0.5)*element_area.reshape(-1,1)
     # transmit_excitation=transmit_amplitude_density.reshape(-1,1)*element_area.reshape(-1,1)
     return transmit_amplitude
 
