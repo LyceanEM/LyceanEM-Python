@@ -209,7 +209,7 @@ class points(object3d):
                             point_data[key], point_data_element, axis=0
                         )
 
-            combinded_points = meshio.Mesh(
+            combined_points = meshio.Mesh(
                 points,
                 cells=[
                     (
@@ -226,8 +226,8 @@ class points(object3d):
                 ],
                 point_data=point_data,
             )
-            combinded_points = GF.mesh_transform(combinded_points, self.pose, False)
-            return combinded_points
+            combined_points = GF.mesh_transform(combined_points, self.pose, False)
+            return combined_points
 
         else:
             points = np.empty((0, 3))
