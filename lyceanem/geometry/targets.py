@@ -317,28 +317,16 @@ def parabolic_aperture(
     with pygmsh.occ.Geometry() as geom:
         geom.characteristic_length_max = mesh_size * 0.8
         # Define points
-        cp1 = geom.add_point([0, 0, 0])  # Center point
-        cp2 = geom.add_point(
-            [diameter * 0.5 * (1 / 6), 0, parabola(diameter * 0.5 * (1 / 6))]
-        )
-        cp3 = geom.add_point(
-            [diameter * 0.5 * (2 / 6), 0, parabola(diameter * 0.5 * (2 / 6))]
-        )
-        cp4 = geom.add_point(
-            [diameter * 0.5 * (3 / 6), 0, parabola(diameter * 0.5 * (3 / 6))]
-        )
-        cp5 = geom.add_point(
-            [diameter * 0.5 * (4 / 6), 0, parabola(diameter * 0.5 * (4 / 6))]
-        )
-        cp6 = geom.add_point(
-            [diameter * 0.5 * (5 / 6), 0, parabola(diameter * 0.5 * (5 / 6))]
-        )
-        cp7 = geom.add_point(
-            [diameter * 0.5 * (6 / 6), 0, parabola(diameter * 0.5 * (6 / 6))]
-        )
+        point_num = 15
+        x_pos = np.linspace(-0.5 * diameter, 0.5 * diameter, point_num)
+        z_pos = parabola(x_pos)
+        coords = np.array([x_pos.ravel(), np.zeros((point_num)), z_pos.ravel()]).transpose()
+        points_list = []
+        for inc in range(point_num):
+            points_list.append(geom.add_point(coords[inc, :].tolist()))
 
         # Define top line based on points
-        line = geom.add_bspline([cp1, cp2, cp3, cp4, cp5, cp6, cp7])
+        line = geom.add_bspline(points_list)
 
         _, surface, _ = geom.extrude(line, translation_axis=[0.0, 0.0, -thickness])
 
@@ -465,6 +453,64 @@ def parabolic_aperture(
 
     return mesh, aperture_points
 
+
+def linear_parabolic_aperture(diameter, focal_length, height, thickness, mesh_size, lip=False, lip_width=1e-3):
+    # Define function for parabola equation (y^2 = 4*focal_length*x)
+
+    def parabola(x):
+        return (1 / (4 * focal_length)) * x ** 2
+
+    with pygmsh.occ.Geometry() as geom:
+        geom.characteristic_length_max = mesh_size * 0.8
+        # Define points
+        point_num = 15
+        x_pos = np.linspace(-0.5 * diameter, 0.5 * diameter, point_num)
+        z_pos = parabola(x_pos)
+        coords = np.array([x_pos.ravel(), np.zeros((point_num)), z_pos.ravel()]).transpose()
+        points_list = []
+        for inc in range(point_num):
+            points_list.append(geom.add_point(coords[inc, :].tolist()))
+
+        # Define top line based on points
+        line = geom.add_bspline(points_list)
+
+        _, surface, _ = geom.extrude(line, translation_axis=[0.0, 0.0, -thickness])
+
+        # Extrude surface to create volume
+        volume_list = []
+        _, b, _ = geom.extrude(surface, translation_axis=[0.0, height, 0.0])
+        volume_list.append(b)
+
+        # for inc in range(7):
+
+        #    geom.extrude(surface, translation_axis=[0.0,height,0.0])
+        #    _, b2, _ = geom.extrude(surface, translation_axis=[0.0,height,0.0])
+        #    volume_list.append(b2)
+
+        if lip:
+            start_point = np.array([0.5 * diameter, 0.0, parabola(diameter * 0.5) - thickness])
+            r1 = geom.add_box(start_point, [lip_width, height, thickness])
+            start_point2 = np.array([-0.5 * diameter - lip_width, 0.0, parabola(diameter * 0.5) - thickness])
+            r2 = geom.add_box(start_point2, [lip_width, height, thickness])
+
+            volume_list.append(r1)
+            volume_list.append(r2)
+
+        if len(volume_list) > 1:
+            full_reflector = geom.boolean_union(volume_list)
+
+        mesh_temp = geom.generate_mesh(dim=2)
+    for inc, cell in enumerate(mesh_temp.cells):
+        if cell.type == 'triangle':
+            triangle_index = inc
+
+    import meshio
+    triangle_cells = [("triangle", mesh_temp.cells[triangle_index].data)]
+    mesh = meshio.Mesh(mesh_temp.points, triangle_cells)
+    mesh = GF.compute_normals(mesh)
+    mesh = GF.compute_areas(mesh)
+    aperture_points = GF.cell_centroids(mesh)
+    return mesh, aperture_points
 
 def gridedReflectorPoints(
     majorsize, minorsize, thickness, grid_resolution, sides="all"

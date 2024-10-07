@@ -60,9 +60,9 @@ def hit(ray, triangle):
         return False, math.inf
 
     # if A is less than zero, then the ray is coming from behind the triangle
-    # cull backface triangles
-    if A < 0:
-        return False, math.inf
+    # don't cull backface triangles
+    #if A < 0:
+    #    return False, math.inf
     # calculate distance from vertice 0 to ray origin
     tvecx = ray.ox - triangle.v0x  # s
     tvecy = ray.oy - triangle.v0y  # s
