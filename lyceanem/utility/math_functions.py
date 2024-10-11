@@ -106,8 +106,12 @@ def discrete_transmit_power(
     ) / element_area.reshape(-1, 1)
     # calculate amplitude (V/m)
     transmit_amplitude = ((transmit_power_density * impedance) ** 0.5)*element_area.reshape(-1,1)
+    
+    polarized_amplitudes=(weights/np.linalg.norm(weights, axis=1).reshape(
+        -1, 1
+    ))*transmit_amplitude
     # transmit_excitation=transmit_amplitude_density.reshape(-1,1)*element_area.reshape(-1,1)
-    return transmit_amplitude
+    return polarized_amplitudes
 
 
 @guvectorize(

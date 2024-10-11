@@ -474,10 +474,10 @@ class antenna_structures(object3d):
             areas = np.zeros((aperture_points.points.shape[0]))
             areas[:] = (wavelength * 0.5) ** 2
 
-        calibrated_amplitude_density = discrete_transmit_power(
+        calibrated_amplitude_weights = discrete_transmit_power(
             aperture_weights, areas, transmit_power
         )
-        return calibrated_amplitude_density
+        return calibrated_amplitude_weights
 
     def export_all_structures(self):
         objects = copy.deepcopy(self.structures.solids)
