@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include "vector_types.h"
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -466,7 +467,7 @@ __device__ __inline__ complex_float3 ray_launch2(const complex_float3 & e_field,
 }
 
 
-__device__ __inline__ complex_float3 em_wave2(int ray_wave, const float4& ray, const PointData& origin, const PointData& end,float wave_length, float alpha, float beta) {
+__device__ __inline__ complex_float3 em_wave2(int ray_wave, const float4& ray, const PointData& origin, const PointData& end,float wave_length) {
 
 
     complex_float3 ray_field;
@@ -493,15 +494,20 @@ __device__ __inline__ complex_float3 em_wave2(int ray_wave, const float4& ray, c
 
 
 
-    cuFloatComplex loss;
-    float spherical_expansion_loss = (wave_length / (4 * CUDART_PI_F * ray.w));
+    
+    float beta = 51.36360519;
+    float alpha = 1.53516927E-5;
 
-    cuFloatComplex loss_phase;
-    sincosf(-ray.w*beta, &loss_phase.y, &loss_phase.x);
-    cuFloatComplex loss_medium;
-    sincosf(-ray.w*alpha, &loss_medium.y, &loss_medium.x);
+    float front = -(1/(2*CUDART_PI_F));
+    cuFloatComplex G;
+    sincosf(-beta*ray.w, &G.y, &G.x);
+    G *= (expf(-alpha*ray.w) / ray.w);
+    cuFloatComplex dG;
+    dG.x = -alpha - (1/ray.w);
+    dG.y = -beta;
+    dG  = cuCmulf(dG,G);
 
-    loss = loss_medium * loss_phase * spherical_expansion_loss;
+    cuFloatComplex loss = dot(origin.normal,make_float3(ray.x,ray.y,ray.z))*front * dG;
 
     // old loss
 
@@ -518,8 +524,12 @@ __device__ __inline__ complex_float3 em_wave2(int ray_wave, const float4& ray, c
 
 
 
+
+
+
+
 __global__ void raycast2(float3 *source, float3 *end, float4 *ray, int source_num, int end_num, int flag, float3 *tri_vertex,int3 *binned_triangles, int2* tri_num_in_bin, int ray_num,
-     int2 *ray_index, int x_offset, int y_offset, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,PointData* points, float wave_length, complex_float3* scattering_network, float alpha, float beta)
+     int2 *ray_index, int x_offset, int y_offset, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,PointData* points, float wave_length, complex_float3* scattering_network)
 {
     int thread = threadIdx.x + blockIdx.x * blockDim.x;
     int stride = blockDim.x * gridDim.x;
@@ -531,7 +541,7 @@ __global__ void raycast2(float3 *source, float3 *end, float4 *ray, int source_nu
 
         DDA(source, end, ray,ray_index,i,binned_triangles,tri_vertex,tri_num_in_bin,num_bins,end_num,flag,x_offset,y_offset,x_top_bottom,y_range,z_range);
         if(ray_index[i].x != -1){
-            complex_float3 ray_field = em_wave2(0,ray[i],points[ray_index[i].x],points[ray_index[i].y],wave_length,alpha,beta);
+            complex_float3 ray_field = em_wave2(0,ray[i],points[ray_index[i].x],points[ray_index[i].y],wave_length);
             scattering_network[i] = ray_field;
         }
 
@@ -563,7 +573,7 @@ __global__ void printer(int2 *ray_index, int ray_num)
 
 
 void raycast_wrapper2 (float *source, float *end, int source_num, int end_num, float3 *d_tri_vertex,int3 *d_binned_triangles, int2* d_tri_num_per_bin, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,
-    PointData* points, float wave_length, complex_float3* h_scattering_network,float alpha,float beta)
+    PointData* points, float wave_length, complex_float3* h_scattering_network)
 {
     // declare device memory
     float3 *d_source;
@@ -648,7 +658,7 @@ void raycast_wrapper2 (float *source, float *end, int source_num, int end_num, f
     cudaMemset(d_scattering_network, 0, scattering_network_size);
     cudaDeviceSynchronize();
 
-    raycast2<<<32,256>>>(d_source,d_end,d_ray,source_num,end_num,not_self_to_self,d_tri_vertex,d_binned_triangles,d_tri_num_per_bin,source_num*end_num, d_ray_index,0,source_num,num_bins,x_top_bottom,y_range,z_range,d_points,wave_length,d_scattering_network,alpha,beta);
+    raycast2<<<32,256>>>(d_source,d_end,d_ray,source_num,end_num,not_self_to_self,d_tri_vertex,d_binned_triangles,d_tri_num_per_bin,source_num*end_num, d_ray_index,0,source_num,num_bins,x_top_bottom,y_range,z_range,d_points,wave_length,d_scattering_network);
     //get last error
     gpuErrchk( cudaGetLastError() );
 
@@ -699,4 +709,5 @@ void raycast_wrapper2 (float *source, float *end, int source_num, int end_num, f
 
 
 }
+
 
