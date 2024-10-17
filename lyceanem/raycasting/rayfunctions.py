@@ -2138,14 +2138,11 @@ def chunkingRaycaster1Dv3(
     sources, sinks, scattering_points, filtered_index, environment_local, terminate_flag
 ):
     start = timer()
+    cuda.current_context().memory_manager.deallocations.clear()
+    
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.5).astype(np.int64)
-    ray_limit = (
-        np.floor(
-            np.floor((max_mem - environment_local.nbytes) / base_types.ray_t.size) / 1e7
-        )
-        * 1e7
-    ).astype(np.int64)
+    ray_limit = np.floor(((max_mem - environment_local.nbytes) / base_types.ray_t.size)).astype(np.int64)
     sink_index = np.arange(
         sources.shape[0] + 1, sources.shape[0] + 1 + sinks.shape[0]
     ).reshape(sinks.shape[0], 1)

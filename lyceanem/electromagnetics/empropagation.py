@@ -2225,6 +2225,9 @@ def EMGPUFreqDomain(
         # print("Number of Chunks",np.ceil(memory_requirements/max_mem).astype(int)+1)
         # create chunks based upon number of chunks required
         num_chunks = np.ceil(memory_requirements / max_mem).astype(int) + 1
+        if num_chunks<0:
+            print(num_chunks)
+            
         source_chunking = np.linspace(0, source_num, num_chunks + 1).astype(np.int32)
         scattering_network = np.zeros(
             (source_num, sink_num, 3, 2),
