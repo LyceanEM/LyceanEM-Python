@@ -2746,6 +2746,8 @@ def workchunkingv2(
         sources.shape[0] * (scattering_points.shape[0] * sinks.shape[0] * (max_scatter))
     )
     # print("Total of {:3.1f} rays required".format(ray_estimate))
+    # Clear GPU memory for simulation
+    cuda.current_context().memory_manager.deallocations.clear()
     # establish memory limits
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.8).astype(np.int64)
@@ -2770,6 +2772,7 @@ def workchunkingv2(
         )
         if io_indexing.shape[0] >= ray_limit:
             # need to split the array and process seperatly
+            
             sub_io = np.array_split(
                 io_indexing, np.ceil(io_indexing.shape[0] / ray_limit).astype(int)
             )

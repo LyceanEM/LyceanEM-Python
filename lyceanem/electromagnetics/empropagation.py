@@ -2208,6 +2208,8 @@ def EMGPUFreqDomain(
     """
     # ctx = cuda.current_context()
     # ctx.reset()
+    #clear GPU memory
+    cuda.current_context().memory_manager.deallocations.clear()
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem).astype(np.int64)
     ray_num = full_index.shape[0]
