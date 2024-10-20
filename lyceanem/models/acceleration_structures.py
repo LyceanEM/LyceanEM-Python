@@ -1,6 +1,6 @@
 import numpy as np
-from lycean.em import bin_counts_to_numpy, bin_triangles_to_numpy
-from lycean.em import calculate_scattering as calculate_scattering
+from lyceanem.em import bin_counts_to_numpy, bin_triangles_to_numpy
+from lyceanem.em import calculate_scattering as calculate_scattering
 import meshio
 
 class Tile_acceleration_structure:
