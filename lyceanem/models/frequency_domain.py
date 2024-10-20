@@ -477,7 +477,10 @@ def calculate_scattering(
     permiativity=8.8541878176e-12,
     permeability=1.25663706212e-6,
     alpha=1.0,
-    beta=1.0
+    beta=1.0,
+    # args for acceleration scructure depending on the type of acceleration structure
+    number_of_tiles = 1
+    
 ):
     """
     calculating the scattering from the provided source coordinates, to the provided sink coordinates in the environment.
@@ -485,7 +488,7 @@ def calculate_scattering(
 
     Parameters
     ----------
-    aperture_coords : :class:`open3d.geometry.PointCloud`
+    aperture_coords : :meshio.mesh
         source coordinates
     sink_coords : :class:`open3d.geometry.PointCloud`
         sink coordinates
@@ -519,8 +522,8 @@ def calculate_scattering(
     num_sinks = len(np.asarray(sink_coords.points))
     num_scatters = 0
     if acceleration_structure is None:
-        environment_mesh=GF.mesh_conversion_to_meshio(antenna_solid[0])
-        tile_acceleration_structure = acceleration_structures.Tile_acceleration_structure(environment_mesh, 1)
+        environment_mesh=GF.mesh_conversion_to_meshio(antenna_solid)
+        tile_acceleration_structure = acceleration_structures.Tile_acceleration_structure(environment_mesh, number_of_tiles)
     else:
         tile_acceleration_structure = acceleration_structure
 
