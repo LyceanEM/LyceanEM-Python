@@ -17,7 +17,7 @@ find_package(CUDAToolkit REQUIRED)
 pybind11_add_module(em lyceanem/CUDA_source/EM_workspace/source/frequency_domain_models.cu)
 ## all architecture abobe and including turing
 
-set_property(TARGET em PROPERTY CUDA_ARCHITECTURES 75 80 86 87)
+set_property(TARGET em PROPERTY CUDA_ARCHITECTURES 75)
 
 
 # Link CUDA
