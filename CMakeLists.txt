@@ -3,6 +3,8 @@ find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 message(STATUS "Python_version: ${Python_VERSION}")
 find_package(pybind11 CONFIG REQUIRED)
 project(test LANGUAGES CXX CUDA)
+
+
 find_package( PkgConfig )
 # build release with debug info
 
@@ -15,7 +17,8 @@ find_package(CUDAToolkit REQUIRED)
 pybind11_add_module(em lyceanem/CUDA_source/EM_workspace/source/frequency_domain_models.cu)
 ## all architecture abobe and including turing
 
-set_property(TARGET em PROPERTY CUDA_ARCHITECTURES 75)
+set_property(TARGET em PROPERTY CUDA_ARCHITECTURES 75 80 86 87)
+
 
 # Link CUDA
 target_link_libraries(em PRIVATE ${CUDA_LIBRARIES})

@@ -54,10 +54,12 @@ int needed_bytes_em(int scatter_depth, int end_num, int source_num, int scatter_
     int em_size = ray_size + ray_index_size + points_size + scatter_network_size;
     return em_size;
 
+
 }
+
 long input_bytes(int source_num, int end_num,int scatter_num, int tri_vertex_num, int binned_triangles_num, int bin_count_num){
     long source_size = source_num * sizeof(float3);
-    //std::cout<<"source size  "<<source_size<<std::endl;
+    //std::cout<<"source size  "<<source_size<<std::en dl;
     long end_size = end_num * sizeof(float3);
     //std::cout<<"end size  "<<end_size<<std::endl;
     long scatter_size = scatter_num * sizeof(float3);
@@ -81,7 +83,7 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
                                                         float wave_length ,
                                                         py::array_t<float> ex_real, py::array_t<float> ex_imag, py::array_t<float> ey_real, py::array_t<float> ey_imag, py::array_t<float> ez_real, py::array_t<float> ez_imag, 
                                                         py::array_t<bool> is_electric, py::array_t<float> permittivity_real, py::array_t<float> permittivity_imag, py::array_t<float> permeability_real, py::array_t<float> permeability_imag,
-                                                        py::array_t<float> normal, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, float tile_size, py::array_t<int> bin_count, py::array_t<int> bin_triangles, int n_cellsx, int n_cellsy, int binned_tri_num, float alpha, float beta){
+                                                        py::array_t<float> normal, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, float tile_size, py::array_t<int> bin_count, py::array_t<int> bin_triangles, int n_cellsx, int n_cellsy, int binned_tri_num){
 
     // validate data about input arrays
     if (source.ndim() != 2 || source.shape(1) != 3){throw std::runtime_error("source must be a 2D array with 3 columns");}
@@ -110,10 +112,7 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
     int end_size = end.shape(0);
     int tri_vertex_size = triangle_vertex.shape(0);
 
-    int points_size = source_size + end_size;
-    printf("source_size %d\n",source_size);
-    printf("end_size %d\n",end_size);
-    printf("points_size %d\n",points_size);
+
 
     if (ex_real.shape(0) != ex_imag.shape(0) ||
         ex_real.shape(0) != ey_real.shape(0) ||
@@ -126,7 +125,7 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
         ex_real.shape(0) != permeability_real.shape(0) ||
         ex_real.shape(0) != permeability_imag.shape(0) ||
         ex_real.shape(0) != normal.shape(0)||
-        ex_real.shape(0) != points_size)
+        ex_real.shape(0) != source_size)
     {
         throw std::runtime_error("All point data arrays must have the same size = source_size + end_size + scatter_size");
     }
@@ -188,11 +187,11 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
     gpuErrchk( cudaGetLastError() );
     printf("hi from post %d\n",source_size);
 
-    std::vector<PointData> points_vec(points_size);
+    std::vector<PointData> points_vec(source_size);
     PointData* points = points_vec.data();
 
 
-    for (int i = 0; i < points_size; i++){
+    for (int i = 0; i < source_size; i++){
         points_vec[i] = create_point_data(ex_real_ptr[i], ex_imag_ptr[i], ey_real_ptr[i], ey_imag_ptr[i], ez_real_ptr[i], ez_imag_ptr[i], is_electric_ptr[i], permittivity_real_ptr[i], permittivity_imag_ptr[i], permeability_real_ptr[i], permeability_imag_ptr[i], normal_ptr[i*3], normal_ptr[i*3+1], normal_ptr[i*3+2]);
     }
     //pointer to the points
@@ -221,16 +220,17 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
     long uuu = needed_enchanced_raycasting(0,1E6,2.5E5,0,1E6,make_int2(100,100));
     //std::cout<< "source size  "<<uuu<<std::endl;
     //std::cout<< "source size  "<<uuu/total_free<<std::endl;
-    std::cout<<"Hi from pre build"<<std::endl;
+    std::cout<<"Hi from pre bduild"<<std::endl;
 
     
 
 
     // declare numpy complex array
     py::array_t<std::complex<float>> scattering_network_py = py::array_t<std::complex<float>>(source_size * end_size *3);
+    std::cout<<"Hi from post declare numpy complex array"<<std::endl;
     std::complex<float>* scattering_network_py_ptr = (std::complex<float>*) scattering_network_py.request().ptr;
 
-
+    std::cout<<"Hi from post getting pointer to numpy complex array"<<std::endl;
     int source_index = 0;
     //std::cout<< "chunk number  "<<chunk_number<<std::endl;
    // std::cout<< "g  "<<num_gpus<<std::endl;
@@ -270,6 +270,7 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
     //std::cout<<"hi"<<std::endl;
     //std::cout<<"source size  "<<source_size<<"end size  "<<end_size<<std::endl;
     std::vector<complex_float3> scattering_network(source_size* end_size);
+    std::cout<<"Hi from post declare scattering network"<<std::endl;
 //std::cout<<"triangle size  "<<triangle_size<<std::endl;
 //std::cout<<"triangle vertex size  "<<tri_vertex_size<<std::endl;
             //pointer to the scattering network
@@ -296,7 +297,7 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
             //std::cout<<"hi4"<<std::endl;
             auto now = std::chrono::high_resolution_clock::now();
              raycast_wrapper2(&source_ptr[source_index], end_ptr, source_size, end_size,d_tri_vertex, d_binned_triangles, d_bin_count
-            ,make_int2(n_cellsx,n_cellsy) , make_float2(xmin,xmax), make_float2(ymin,tile_size), make_float2(zmin,tile_size),points, wave_length,scattering_network_ptr,alpha,beta);
+            ,make_int2(n_cellsx,n_cellsy) , make_float2(xmin,xmax), make_float2(ymin,tile_size), make_float2(zmin,tile_size),points, wave_length,scattering_network_ptr);
 
             auto end_time = std::chrono::high_resolution_clock::now();
             std::cout<<"time taken for raycast_wrapper2  "<<std::chrono::duration_cast<std::chrono::milliseconds>(end_time - now).count() << "ms"<<std::endl;
@@ -309,6 +310,7 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
                 scattering_network_py_ptr[i*3+2] = std::complex<float>(scattering_network_ptr[i].z.x, scattering_network_ptr[i].z.y);
 
 
+                
             }
 
     //std::cout<< "source size  "<<source_size<<std::endl;
