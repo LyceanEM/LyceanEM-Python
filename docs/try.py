@@ -164,22 +164,37 @@ def pyvista_to_meshio(polydata_object):
         point_data=polydata_object.point_data,
     )
     return meshio_object
+import meshio
+def small_meshioonetriangle():
+    points=np.array([[0.0,0.0,1.0],
+                     [1.0,0.0,0.0],
+                     [0.0,1.0,0.0]])
+    points=points*0.02
+    cells=[("triangle",[[0,1,2]])]
+    meshio_object=meshio.Mesh(points=points,cells=cells)
+    return meshio_object
 
 def lycean(weights1,weights2,weights3,transmit_aperture,receive_aperture,wavelength):
     import copy
     import lyceanem.models.frequency_domain as FD
     excitation_function=np.zeros((weights1.shape[0],3),dtype="complex")
+    print(excitation_function.shape)
     excitation_function[:,0]=np.ones((weights1.shape[0]))
     transmit=pyvista_to_meshio(transmit_aperture)
+    print(transmit.points.shape)
+    print("Transmit",transmit.point_data)
+
     receive=pyvista_to_meshio(receive_aperture)
-    Ex,Ey,Ez=FD.calculate_scattering(transmit, 
+    mesh = small_meshioonetriangle()
+    Ex,Ey,Ez,ww=FD.calculate_scattering(transmit, 
                                      receive, 
-                                     [],
                                      excitation_function,
+                                     mesh,
                                      wavelength=wavelength,
                                      scattering=0,
                                      beta=(np.pi*2)/wavelength,
-                                     elements=True
+                                     elements=True,
+                                     number_of_tiles=1
                                      )
     
     sum_axis=0

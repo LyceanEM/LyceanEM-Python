@@ -55,10 +55,10 @@ class Tile_acceleration_structure:
             source_mesh.point_data["permeability"].imag,
             source_mesh.point_data["Normals"],
             self.min_x,
-            self.min_y,
-            self.min_z,
             self.max_x,
+            self.min_y,
             self.max_y,
+            self.min_z,
             self.max_z,
             self.tile_size,
             self.bin_counts,
@@ -68,6 +68,7 @@ class Tile_acceleration_structure:
             self.binned_triangles_count,
             alpha,
             beta)
+        return array.reshape((source_mesh.points.shape[0], sink_mesh.points.shape[0],3))
 
     def calculate_scattering_sliced(self, source_mesh,source_start,source_end, sink_mesh,sink_start,sink_end, alpha, beta,wavelength):
         array =  calculate_scattering(source_mesh.points[source_start:source_end],

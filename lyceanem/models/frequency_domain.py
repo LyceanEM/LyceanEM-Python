@@ -561,9 +561,9 @@ def calculate_scattering(
     aperture_coords.point_data["permittivity"] = np.ones((num_sources), dtype=np.complex64) * permiativity
     aperture_coords.point_data["permeability"] = np.ones((num_sources), dtype=np.complex64) * permeability
     #set e fields
-    aperture_coords.point_data["ex"] = conformal_E_vectors[:, 0]
-    aperture_coords.point_data["ey"] = conformal_E_vectors[:, 1]
-    aperture_coords.point_data["ez"] = conformal_E_vectors[:, 2]
+    aperture_coords.point_data["ex"] = conformal_E_vectors[:, 0].copy()
+    aperture_coords.point_data["ey"] = conformal_E_vectors[:, 1].copy()
+    aperture_coords.point_data["ez"] = conformal_E_vectors[:, 2].copy()
     if scattering > 0:
         num_scatters = len(np.asarray(scatter_points.points))
         scatter_points.point_data["is_electric"] = np.ones((num_scatters), dtype=np.bool)

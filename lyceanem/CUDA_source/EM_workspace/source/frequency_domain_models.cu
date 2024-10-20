@@ -83,7 +83,8 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
                                                         float wave_length ,
                                                         py::array_t<float> ex_real, py::array_t<float> ex_imag, py::array_t<float> ey_real, py::array_t<float> ey_imag, py::array_t<float> ez_real, py::array_t<float> ez_imag, 
                                                         py::array_t<bool> is_electric, py::array_t<float> permittivity_real, py::array_t<float> permittivity_imag, py::array_t<float> permeability_real, py::array_t<float> permeability_imag,
-                                                        py::array_t<float> normal, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, float tile_size, py::array_t<int> bin_count, py::array_t<int> bin_triangles, int n_cellsx, int n_cellsy, int binned_tri_num){
+                                                        py::array_t<float> normal, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, float tile_size, py::array_t<int> bin_count, py::array_t<int> bin_triangles, int n_cellsx, int n_cellsy, int binned_tri_num,
+                                                    float alpha, float beta){
 
     // validate data about input arrays
     if (source.ndim() != 2 || source.shape(1) != 3){throw std::runtime_error("source must be a 2D array with 3 columns");}
@@ -297,7 +298,7 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
             //std::cout<<"hi4"<<std::endl;
             auto now = std::chrono::high_resolution_clock::now();
              raycast_wrapper2(&source_ptr[source_index], end_ptr, source_size, end_size,d_tri_vertex, d_binned_triangles, d_bin_count
-            ,make_int2(n_cellsx,n_cellsy) , make_float2(xmin,xmax), make_float2(ymin,tile_size), make_float2(zmin,tile_size),points, wave_length,scattering_network_ptr);
+            ,make_int2(n_cellsx,n_cellsy) , make_float2(xmin,xmax), make_float2(ymin,tile_size), make_float2(zmin,tile_size),points, wave_length,scattering_network_ptr,alpha, beta);
 
             auto end_time = std::chrono::high_resolution_clock::now();
             std::cout<<"time taken for raycast_wrapper2  "<<std::chrono::duration_cast<std::chrono::milliseconds>(end_time - now).count() << "ms"<<std::endl;
