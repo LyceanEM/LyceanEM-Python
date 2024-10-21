@@ -189,7 +189,10 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
     printf("hi from post %d\n",source_size);
 
     std::vector<PointData> points_vec(source_size);
+    std::cout<<"hi"<<std::endl;
+
     PointData* points = points_vec.data();
+    std::cout<<"hi"<<std::endl;
 
 
     for (int i = 0; i < source_size; i++){
@@ -201,26 +204,7 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
 
 
 
-    int num_gpus;
     
-
-    cudaGetDeviceCount( &num_gpus );
-    int total_free = 0;
-    std::vector<int> gpu_share (num_gpus);
-    
-    for (int i = 0; i < 1; i++){
-        cudaSetDevice(i);
-        cudaMemGetInfo(&free, &total);
-        free *= 0.95;
-        total_free += free;
-        //std::cout<< "free  "<<free<<std::endl;
-        gpu_share[i] = free;
-    }
-    //std::cout<< "total free  "<<total_free<<std::endl;
-    //std::cout<< "source size  "<<total<<std::endl;
-    long uuu = needed_enchanced_raycasting(0,1E6,2.5E5,0,1E6,make_int2(100,100));
-    //std::cout<< "source size  "<<uuu<<std::endl;
-    //std::cout<< "source size  "<<uuu/total_free<<std::endl;
     std::cout<<"Hi from pre bduild"<<std::endl;
 
     
