@@ -189,14 +189,11 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
     printf("hi from post %d\n",source_size);
 
     std::vector<PointData> points_vec(source_size);
-    std::cout<<"hi"<<std::endl;
-
     PointData* points = points_vec.data();
-    std::cout<<"hi"<<std::endl;
 
 
     for (int i = 0; i < source_size; i++){
-        std::cout<<i<<"loop"<<std::endl;
+        std::cout<<"point  "<<i<<std::endl;
         points_vec[i] = create_point_data(ex_real_ptr[i], ex_imag_ptr[i], ey_real_ptr[i], ey_imag_ptr[i], ez_real_ptr[i], ez_imag_ptr[i], is_electric_ptr[i], permittivity_real_ptr[i], permittivity_imag_ptr[i], permeability_real_ptr[i], permeability_imag_ptr[i], normal_ptr[i*3], normal_ptr[i*3+1], normal_ptr[i*3+2]);
     }
     //pointer to the points
@@ -205,7 +202,26 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
 
 
 
+    int num_gpus;
     
+
+    cudaGetDeviceCount( &num_gpus );
+    int total_free = 0;
+    std::vector<int> gpu_share (num_gpus);
+    
+    for (int i = 0; i < 1; i++){
+        cudaSetDevice(i);
+        cudaMemGetInfo(&free, &total);
+        free *= 0.95;
+        total_free += free;
+        //std::cout<< "free  "<<free<<std::endl;
+        gpu_share[i] = free;
+    }
+    //std::cout<< "total free  "<<total_free<<std::endl;
+    //std::cout<< "source size  "<<total<<std::endl;
+    long uuu = needed_enchanced_raycasting(0,1E6,2.5E5,0,1E6,make_int2(100,100));
+    //std::cout<< "source size  "<<uuu<<std::endl;
+    //std::cout<< "source size  "<<uuu/total_free<<std::endl;
     std::cout<<"Hi from pre bduild"<<std::endl;
 
     
@@ -215,20 +231,76 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
     py::array_t<std::complex<float>> scattering_network_py = py::array_t<std::complex<float>>(source_size * end_size *3);
     std::cout<<"Hi from post declare numpy complex array"<<std::endl;
     std::complex<float>* scattering_network_py_ptr = (std::complex<float>*) scattering_network_py.request().ptr;
-    std::cout<<"hi"<<std::endl;
 
+    std::cout<<"Hi from post getting pointer to numpy complex array"<<std::endl;
     int source_index = 0;
-
-    std::cout<<"hi"<<std::endl;
-
+    //std::cout<< "chunk number  "<<chunk_number<<std::endl;
+   // std::cout<< "g  "<<num_gpus<<std::endl;
+    /*
+    for (int j = 0; j < chunk_number; j++){
+        for (int i = 0; i < num_gpus; i++){
+        
+        
+            cudaSetDevice(i);
+            
+            int source_size_gpu = (i == 0) ? ((gpu_share[i] / total_free) * source_size_temp + 1) : ((gpu_share[i] / total_free) * source_size_temp);
+            std::vector<complex_float3> scattering_network(source_size_gpu * end_size);
+            //pointer to the scattering network
             complex_float3* scattering_network_ptr = scattering_network.data();
-    std::cout<<"hi"<<std::endl;
 
+
+
+            std::pair<float4*,int2*> rays = raycast_wrapper(&source_ptr[source_index], end_ptr, scatter_ptr, source_size_gpu, end_size, scatter_size, triangle_vertex_ptr, triangles_ptr, triangle_size);
+            frequency_wrapper( scatter_depth, rays.first, points, rays.second, wave_length, source_size_gpu, scatter_size, end_size,scattering_network_ptr);
+            
+            for (int i = 0; i < scattering_network.size() ; i++){
+                ////std::cout<< "indexes  "<<source_index+i*3<<"  "<<source_size * end_size *3<<std::endl;
+
+
+            }
+            source_index += source_size_gpu;
+        }
+
+
+
+
+
+
+
+
+    }*/
+    //std::cout<<"hi"<<std::endl;
+    //std::cout<<"source size  "<<source_size<<"end size  "<<end_size<<std::endl;
+    std::vector<complex_float3> scattering_network(source_size* end_size);
+    std::cout<<"Hi from post declare scattering network"<<std::endl;
+//std::cout<<"triangle size  "<<triangle_size<<std::endl;
+//std::cout<<"triangle vertex size  "<<tri_vertex_size<<std::endl;
+            //pointer to the scattering network
+            complex_float3* scattering_network_ptr = scattering_network.data();
+
+
+            //std::cout<<"hi1"<<numbuytes<<std::endl;
+
+
+            //std::tuple<int3*,int*,float3*> grid_structure = grid_structure_builder_wrapper(triangle_vertex_ptr, triangles_ptr, triangle_size, make_int2(tile_numy,tile_numz), make_float2(xmin,xmax), make_float2(ymin,tile_size), make_float2(zmin,tile_size), tri_vertex_size);
+            //std::cout<<"hi2"<<std::endl;
+
+            //int3* d_binned_triangles = std::get<0>(grid_structure);
+            
+
+            //std::cout<<"hi3"<<std::endl;
+            //std::cout<<"time taken for raycast_wrapper2  "<<std::chrono::duration_cast<std::chrono::milliseconds>(begin_time2 - end_time).count() << "ms"<<std::endl;
+
+
+           // std::pair<float4*,int2*> rays = raycast_wrapper(source_ptr, end_ptr, scatter_ptr, source_size, end_size, scatter_size, triangle_vertex_ptr, triangles_ptr, triangle_size);
+
+            //frequency_wrapper( 0, rays.first, points, rays.second, wave_length, source_size, scatter_size, end_size,scattering_network_ptr);
+            //std::cout << "Time taken for frequency_wrapper: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time2 - begin_time2).count() << "ms" << std::endl;
+            //std::cout<<"hi4"<<std::endl;
              raycast_wrapper2(&source_ptr[source_index], end_ptr, source_size, end_size,d_tri_vertex, d_binned_triangles, d_bin_count
             ,make_int2(n_cellsx,n_cellsy) , make_float2(xmin,xmax), make_float2(ymin,tile_size), make_float2(zmin,tile_size),points, wave_length,scattering_network_ptr,alpha, beta);
 
-    std::cout<<"hi"<<std::endl;
-
+            std::cout<<"hi5"<<std::endl;
 
 
             for (int i = 0; i < scattering_network.size() ; i++){
@@ -239,8 +311,6 @@ py::array_t<std::complex<float>> calculate_scattering(py::array_t<float> source,
 
                 
             }
-    std::cout<<"hi"<<std::endl;
-
 
     cudaFree(d_binned_triangles);
     cudaFree(d_bin_count);
