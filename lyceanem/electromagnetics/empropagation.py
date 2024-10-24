@@ -4902,7 +4902,7 @@ def calculate_atmospheric_propagation_constant(
     propagation constant : complex
 
     """
-    alpha = calculate_attenuation_constant(
+    alpha = calculate_total_gaseous_attenuation(
         frequency, temperature, pressure, water_vapor_density
     )
     beta = calculate_phase_constant(
