@@ -31,53 +31,53 @@ def field_magnitude_phase(field_data):
     if all(
         k in field_data.point_data.keys()
         for k in (
-            "Ex - Real",
-            "Ex - Imag",
-            "Ey - Real",
-            "Ey - Imag",
-            "Ez - Real",
-            "Ez - Imag",
+            "Ex-Real",
+            "Ex-Imag",
+            "Ey-Real",
+            "Ey-Imag",
+            "Ez-Real",
+            "Ez-Imag",
         )
     ):
         # Exyz exsists in the dataset
         Ex = (
-            field_data.point_data["Ex - Real"] + 1j * field_data.point_data["Ex - Imag"]
+            field_data.point_data["Ex-Real"] + 1j * field_data.point_data["Ex-Imag"]
         )
         Ey = (
-            field_data.point_data["Ey - Real"] + 1j * field_data.point_data["Ey - Imag"]
+            field_data.point_data["Ey-Real"] + 1j * field_data.point_data["Ey-Imag"]
         )
         Ez = (
-            field_data.point_data["Ez - Real"] + 1j * field_data.point_data["Ez - Imag"]
+            field_data.point_data["Ez-Real"] + 1j * field_data.point_data["Ez-Imag"]
         )
-        field_data.point_data["Ex - Magnitude"] = np.abs(Ex)
-        field_data.point_data["Ex - Phase"] = np.angle(Ex)
-        field_data.point_data["Ey - Magnitude"] = np.abs(Ey)
-        field_data.point_data["Ey - Phase"] = np.angle(Ey)
-        field_data.point_data["Ez - Magnitude"] = np.abs(Ez)
-        field_data.point_data["Ez - Phase"] = np.angle(Ez)
+        field_data.point_data["Ex-Magnitude"] = np.abs(Ex)
+        field_data.point_data["Ex-Phase"] = np.angle(Ex)
+        field_data.point_data["Ey-Magnitude"] = np.abs(Ey)
+        field_data.point_data["Ey-Phase"] = np.angle(Ey)
+        field_data.point_data["Ez-Magnitude"] = np.abs(Ez)
+        field_data.point_data["Ez-Phase"] = np.angle(Ez)
 
     if all(
         k in field_data.point_data.keys()
         for k in (
-            "E(theta) - Real",
-            "E(theta) - Imag",
-            "E(phi) - Real",
-            "E(phi) - Imag",
+            "E(theta)-Real",
+            "E(theta)-Imag",
+            "E(phi)-Real",
+            "E(phi)-Imag",
         )
     ):
         # E(theta) and E(phi) are not present in the data
         Etheta = (
-            field_data.point_data["E(theta) - Real"]
-            + 1j * field_data.point_data["E(theta) - Imag"]
+            field_data.point_data["E(theta)-Real"]
+            + 1j * field_data.point_data["E(theta)-Imag"]
         )
         Ephi = (
-            field_data.point_data["E(phi) - Real"]
-            + 1j * field_data.point_data["E(phi) - Imag"]
+            field_data.point_data["E(phi)-Real"]
+            + 1j * field_data.point_data["E(phi)-Imag"]
         )
-        field_data.point_data["E(theta) - Magnitude"] = np.abs(Etheta)
-        field_data.point_data["E(theta) - Phase"] = np.angle(Etheta)
-        field_data.point_data["E(phi) - Magnitude"] = np.abs(Ephi)
-        field_data.point_data["E(phi) - Phase"] = np.angle(Ephi)
+        field_data.point_data["E(theta)-Magnitude"] = np.abs(Etheta)
+        field_data.point_data["E(theta)-Phase"] = np.angle(Etheta)
+        field_data.point_data["E(phi)-Magnitude"] = np.abs(Ephi)
+        field_data.point_data["E(phi)-Phase"] = np.angle(Ephi)
 
     return field_data
 
@@ -85,12 +85,12 @@ def field_magnitude_phase(field_data):
 def extract_electric_fields(field_data):
     fields = np.array(
         [
-            field_data.point_data["Ex - Real"].ravel()
-            + 1j * field_data.point_data["Ex - Imag"].ravel(),
-            field_data.point_data["Ey - Real"].ravel()
-            + 1j * field_data.point_data["Ey - Imag"].ravel(),
-            field_data.point_data["Ez - Real"].ravel()
-            + 1j * field_data.point_data["Ez - Imag"].ravel(),
+            field_data.point_data["Ex-Real"].ravel()
+            + 1j * field_data.point_data["Ex-Imag"].ravel(),
+            field_data.point_data["Ey-Real"].ravel()
+            + 1j * field_data.point_data["Ey-Imag"].ravel(),
+            field_data.point_data["Ez-Real"].ravel()
+            + 1j * field_data.point_data["Ez-Imag"].ravel(),
         ]
     ).transpose()
 
@@ -99,7 +99,7 @@ def extract_electric_fields(field_data):
 
 def EthetaEphi_to_Exyz(field_data):
     if not all(
-        k in field_data.point_data.keys() for k in ("theta (Radians)", "phi (Radians)")
+        k in field_data.point_data.keys() for k in ("theta_(Radians)", "phi_(Radians)")
     ):
         # theta and phi don't exist in the dataset
         from lyceanem.geometry.geometryfunctions import theta_phi_r
@@ -109,12 +109,12 @@ def EthetaEphi_to_Exyz(field_data):
     Espherical = np.array(
         [
             (
-                field_data.point_data["E(theta) - Real"]
-                + 1j * field_data.point_data["E(theta) - Imag"]
+                field_data.point_data["E(theta)-Real"]
+                + 1j * field_data.point_data["E(theta)-Imag"]
             ).ravel(),
             (
-                field_data.point_data["E(phi) - Real"]
-                + 1j * field_data.point_data["E(phi) - Imag"]
+                field_data.point_data["E(phi)-Real"]
+                + 1j * field_data.point_data["E(phi)-Imag"]
             ).ravel(),
             np.zeros((field_data.points.shape[0])),
         ]
@@ -129,39 +129,39 @@ def EthetaEphi_to_Exyz(field_data):
     # conversion matrix from EthetaEphi to Exyz, the inverse operation is via transposing the matrix.
     ex = (
         Espherical[:, 2]
-        * np.sin(field_data.point_data["theta (Radians)"])
-        * np.cos(field_data.point_data["phi (Radians)"])
+        * np.sin(field_data.point_data["theta_(Radians)"])
+        * np.cos(field_data.point_data["phi_(Radians)"])
         + Espherical[:, 0]
-        * np.cos(field_data.point_data["theta (Radians)"])
-        * np.cos(field_data.point_data["phi (Radians)"])
-        - Espherical[:, 1] * np.sin(field_data.point_data["phi (Radians)"])
+        * np.cos(field_data.point_data["theta_(Radians)"])
+        * np.cos(field_data.point_data["phi_(Radians)"])
+        - Espherical[:, 1] * np.sin(field_data.point_data["phi_(Radians)"])
     )
     ey = (
         Espherical[:, 2]
-        * np.sin(field_data.point_data["theta (Radians)"])
-        * np.sin(field_data.point_data["phi (Radians)"])
+        * np.sin(field_data.point_data["theta_(Radians)"])
+        * np.sin(field_data.point_data["phi_(Radians)"])
         + Espherical[:, 0]
-        * np.cos(field_data.point_data["theta (Radians)"])
-        * np.sin(field_data.point_data["phi (Radians)"])
-        + Espherical[:, 1] * np.cos(field_data.point_data["phi (Radians)"])
+        * np.cos(field_data.point_data["theta_(Radians)"])
+        * np.sin(field_data.point_data["phi_(Radians)"])
+        + Espherical[:, 1] * np.cos(field_data.point_data["phi_(Radians)"])
     )
     ez = Espherical[:, 2] * np.cos(
-        field_data.point_data["theta (Radians)"]
-    ) + Espherical[:, 0] * np.sin(field_data.point_data["theta (Radians)"])
+        field_data.point_data["theta_(Radians)"]
+    ) + Espherical[:, 0] * np.sin(field_data.point_data["theta_(Radians)"])
 
-    field_data.point_data["Ex - Real"] = np.array([np.real(ex)]).transpose()
-    field_data.point_data["Ex - Imag"] = np.array([np.imag(ex)]).transpose()
-    field_data.point_data["Ey - Real"] = np.array([np.real(ey)]).transpose()
-    field_data.point_data["Ey - Imag"] = np.array([np.imag(ey)]).transpose()
-    field_data.point_data["Ez - Real"] = np.array([np.real(ez)]).transpose()
-    field_data.point_data["Ez - Imag"] = np.array([np.imag(ez)]).transpose()
+    field_data.point_data["Ex-Real"] = np.array([np.real(ex)]).transpose()
+    field_data.point_data["Ex-Imag"] = np.array([np.imag(ex)]).transpose()
+    field_data.point_data["Ey-Real"] = np.array([np.real(ey)]).transpose()
+    field_data.point_data["Ey-Imag"] = np.array([np.imag(ey)]).transpose()
+    field_data.point_data["Ez-Real"] = np.array([np.real(ez)]).transpose()
+    field_data.point_data["Ez-Imag"] = np.array([np.imag(ez)]).transpose()
     return field_data
 
 
 def Exyz_to_EthetaEphi(field_data):
     # this function assumes a spherical field definition, will need to write a function which works based on the poynting vector/normal vector of the point
     if not all(
-        k in field_data.point_data.keys() for k in ("theta (Radians)", "phi (Radians)")
+        k in field_data.point_data.keys() for k in ("theta_(Radians)", "phi_(Radians)")
     ):
         # theta and phi don't exist in the dataset
         from lyceanem.geometry.geometryfunctions import theta_phi_r
@@ -169,34 +169,34 @@ def Exyz_to_EthetaEphi(field_data):
         field_data = theta_phi_r(field_data)
         
     electric_fields = extract_electric_fields(field_data)
-    theta = field_data.point_data["theta (Radians)"]
-    phi = field_data.point_data["phi (Radians)"]
+    theta = field_data.point_data["theta_(Radians)"]
+    phi = field_data.point_data["phi_(Radians)"]
     etheta = (
         electric_fields[:, 0] * np.cos(phi) * np.cos(theta)
         + electric_fields[:, 1] * np.sin(phi) * np.cos(theta)
         - electric_fields[:, 2] * np.sin(theta)
     )
     ephi = -electric_fields[:, 0] * np.sin(phi) + electric_fields[:, 1] * np.cos(phi)
-    field_data.point_data["E(theta) - Real"] = np.zeros((electric_fields.shape[0]))
-    field_data.point_data["E(phi) - Real"] = np.zeros((electric_fields.shape[0]))
-    field_data.point_data["E(theta) - Imag"] = np.zeros((electric_fields.shape[0]))
-    field_data.point_data["E(phi) - Imag"] = np.zeros((electric_fields.shape[0]))
-    field_data.point_data["E(theta) - Real"] = np.real(etheta)
-    field_data.point_data["E(theta) - Imag"] = np.imag(etheta)
-    field_data.point_data["E(phi) - Real"] = np.real(ephi)
-    field_data.point_data["E(phi) - Imag"] = np.imag(ephi)
+    field_data.point_data["E(theta)-Real"] = np.zeros((electric_fields.shape[0]))
+    field_data.point_data["E(phi)-Real"] = np.zeros((electric_fields.shape[0]))
+    field_data.point_data["E(theta)-Imag"] = np.zeros((electric_fields.shape[0]))
+    field_data.point_data["E(phi)-Imag"] = np.zeros((electric_fields.shape[0]))
+    field_data.point_data["E(theta)-Real"] = np.real(etheta)
+    field_data.point_data["E(theta)-Imag"] = np.imag(etheta)
+    field_data.point_data["E(phi)-Real"] = np.real(ephi)
+    field_data.point_data["E(phi)-Imag"] = np.imag(ephi)
     return field_data
 
 
 def field_vectors(field_data):
     fields = np.array(
         [
-            field_data.point_data["Ex - Real"]
-            + 1j * field_data.point_data["Ex - Imag"],
-            field_data.point_data["Ey - Real"]
-            + 1j * field_data.point_data["Ey - Imag"],
-            field_data.point_data["Ez - Real"]
-            + 1j * field_data.point_data["Ez - Imag"],
+            field_data.point_data["Ex-Real"]
+            + 1j * field_data.point_data["Ex-Imag"],
+            field_data.point_data["Ey-Real"]
+            + 1j * field_data.point_data["Ey-Imag"],
+            field_data.point_data["Ez-Real"]
+            + 1j * field_data.point_data["Ez-Imag"],
         ]
     ).transpose()
     directions = np.abs(fields)
@@ -218,31 +218,31 @@ def transform_em(field_data, r):
     """
     if all(
         k in field_data.point_data.keys()
-        for k in ("Ex - Real", "Ey - Real", "Ez - Real")
+        for k in ("Ex-Real", "Ey-Real", "Ez-Real")
     ):
         # print("Rotating Ex,Ey,Ez")
         fields = np.array(
             [
-                field_data.point_data["Ex - Real"]
-                + 1j * field_data.point_data["Ex - Imag"],
-                field_data.point_data["Ey - Real"]
-                + 1j * field_data.point_data["Ey - Imag"],
-                field_data.point_data["Ez - Real"]
-                + 1j * field_data.point_data["Ez - Imag"],
-                np.zeros((field_data.point_data["Ex - Real"].shape[0])),
+                field_data.point_data["Ex-Real"]
+                + 1j * field_data.point_data["Ex-Imag"],
+                field_data.point_data["Ey-Real"]
+                + 1j * field_data.point_data["Ey-Imag"],
+                field_data.point_data["Ez-Real"]
+                + 1j * field_data.point_data["Ez-Imag"],
+                np.zeros((field_data.point_data["Ex-Real"].shape[0])),
             ]
         ).transpose()
         rot_fields = r.apply(fields)
-        field_data.point_data["Ex - Real"] = np.real(
+        field_data.point_data["Ex-Real"] = np.real(
             rot_fields[:, 0]
         )  # np.array([np.real(rot_fields[:,0]),np.imag(rot_fields[:,0])]).transpose()
-        field_data.point_data["Ey - Real"] = np.real(rot_fields[:, 1])
-        field_data.point_data["Ez - Real"] = np.real(rot_fields[:, 2])
-        field_data.point_data["Ex - Imag"] = np.imag(
+        field_data.point_data["Ey-Real"] = np.real(rot_fields[:, 1])
+        field_data.point_data["Ez-Real"] = np.real(rot_fields[:, 2])
+        field_data.point_data["Ex-Imag"] = np.imag(
             rot_fields[:, 0]
         )  # np.array([np.real(rot_fields[:,0]),np.imag(rot_fields[:,0])]).transpose()
-        field_data.point_data["Ey - Imag"] = np.imag(rot_fields[:, 1])
-        field_data.point_data["Ez - Imag"] = np.imag(rot_fields[:, 2])
+        field_data.point_data["Ey-Imag"] = np.imag(rot_fields[:, 1])
+        field_data.point_data["Ez-Imag"] = np.imag(rot_fields[:, 2])
         # if all(k in field_data.point_data.keys() for k in ('E(theta)','E(phi)')):
     elif all(k in field_data.point_data.keys() for k in ("E(theta)", "E(phi)")):
         # print("Converting Fields and Rotating Ex,Ey,Ez")
@@ -252,38 +252,38 @@ def transform_em(field_data, r):
         field_data = EthetaEphi_to_Exyz(field_data)
         fields = np.array(
             [
-                field_data.point_data["Ex - Real"]
-                + 1j * field_data.point_data["Ex - Imag"],
-                field_data.point_data["Ey - Real"]
-                + 1j * field_data.point_data["Ey - Imag"],
-                field_data.point_data["Ez - Real"]
-                + 1j * field_data.point_data["Ez - Imag"],
-                np.zeros((field_data.point_data["Ex - Real"].shape[0])),
+                field_data.point_data["Ex-Real"]
+                + 1j * field_data.point_data["Ex-Imag"],
+                field_data.point_data["Ey-Real"]
+                + 1j * field_data.point_data["Ey-Imag"],
+                field_data.point_data["Ez-Real"]
+                + 1j * field_data.point_data["Ez-Imag"],
+                np.zeros((field_data.point_data["Ex-Real"].shape[0])),
             ]
         ).transpose()
         rot_fields = r.apply(fields)
-        field_data.point_data["Ex - Real"] = np.real(rot_fields[:, 0])
-        field_data.point_data["Ey - Real"] = np.real(rot_fields[:, 1])
-        field_data.point_data["Ez - Real"] = np.real(rot_fields[:, 2])
-        field_data.point_data["Ex - Imag"] = np.imag(rot_fields[:, 0])
-        field_data.point_data["Ey - Imag"] = np.imag(rot_fields[:, 1])
-        field_data.point_data["Ez - Imag"] = np.imag(rot_fields[:, 2])
+        field_data.point_data["Ex-Real"] = np.real(rot_fields[:, 0])
+        field_data.point_data["Ey-Real"] = np.real(rot_fields[:, 1])
+        field_data.point_data["Ez-Real"] = np.real(rot_fields[:, 2])
+        field_data.point_data["Ex-Imag"] = np.imag(rot_fields[:, 0])
+        field_data.point_data["Ey-Imag"] = np.imag(rot_fields[:, 1])
+        field_data.point_data["Ez-Imag"] = np.imag(rot_fields[:, 2])
     return field_data
 
 
 def update_electric_fields(field_data, ex, ey, ez):
-    field_data.point_data["Ex - Real"] = np.zeros((field_data.points.shape[0], 1))
-    field_data.point_data["Ey - Real"] = np.zeros((field_data.points.shape[0], 1))
-    field_data.point_data["Ez - Real"] = np.zeros((field_data.points.shape[0], 1))
-    field_data.point_data["Ex - Imag"] = np.zeros((field_data.points.shape[0], 1))
-    field_data.point_data["Ey - Imag"] = np.zeros((field_data.points.shape[0], 1))
-    field_data.point_data["Ez - Imag"] = np.zeros((field_data.points.shape[0], 1))
-    field_data.point_data["Ex - Real"] = np.array([np.real(ex)]).transpose()
-    field_data.point_data["Ex - Imag"] = np.array([np.imag(ex)]).transpose()
-    field_data.point_data["Ey - Real"] = np.array([np.real(ey)]).transpose()
-    field_data.point_data["Ey - Imag"] = np.array([np.imag(ey)]).transpose()
-    field_data.point_data["Ez - Real"] = np.array([np.real(ez)]).transpose()
-    field_data.point_data["Ez - Imag"] = np.array([np.imag(ez)]).transpose()
+    field_data.point_data["Ex-Real"] = np.zeros((field_data.points.shape[0], 1))
+    field_data.point_data["Ey-Real"] = np.zeros((field_data.points.shape[0], 1))
+    field_data.point_data["Ez-Real"] = np.zeros((field_data.points.shape[0], 1))
+    field_data.point_data["Ex-Imag"] = np.zeros((field_data.points.shape[0], 1))
+    field_data.point_data["Ey-Imag"] = np.zeros((field_data.points.shape[0], 1))
+    field_data.point_data["Ez-Imag"] = np.zeros((field_data.points.shape[0], 1))
+    field_data.point_data["Ex-Real"] = np.array([np.real(ex)]).transpose()
+    field_data.point_data["Ex-Imag"] = np.array([np.imag(ex)]).transpose()
+    field_data.point_data["Ey-Real"] = np.array([np.real(ey)]).transpose()
+    field_data.point_data["Ey-Imag"] = np.array([np.imag(ey)]).transpose()
+    field_data.point_data["Ez-Real"] = np.array([np.real(ez)]).transpose()
+    field_data.point_data["Ez-Imag"] = np.array([np.imag(ez)]).transpose()
     return field_data
 
 
@@ -303,51 +303,51 @@ def PoyntingVector(field_data,measurement=False,aperture=None):
     if all(
         k in field_data.point_data.keys()
         for k in (
-            "Permittivity - Real",
-            "Permittivity - Imag",
-            "Permeability - Real",
-            "Permeability - Imag",
+            "Permittivity-Real",
+            "Permittivity-Imag",
+            "Permeability-Real",
+            "Permeability-Imag",
             "Conductivity",
         )
     ):
         eta = (
-            field_data.point["Permeability - Real"]
+            field_data.point["Permeability-Real"]
             + 1j
-            * field_data.point["Permeability - Imag"]
-            / field_data.point["Permittivity - Real"]
-            + 1j * field_data.point["Permittivity - Imag"]
+            * field_data.point["Permeability-Imag"]
+            / field_data.point["Permittivity-Real"]
+            + 1j * field_data.point["Permittivity-Imag"]
         ) ** 0.5
     else:
         from scipy.constants import physical_constants
 
         eta = (
-            np.ones((field_data.point_data["Ex - Real"].shape[0]))
+            np.ones((field_data.point_data["Ex-Real"].shape[0]))
             * physical_constants["characteristic impedance of vacuum"][0]
         )
 
     electric_field_vectors = np.array(
         [
-            field_data.point_data["Ex - Real"].ravel()
-            + 1j * field_data.point_data["Ex - Imag"].ravel(),
-            field_data.point_data["Ey - Real"].ravel()
-            + 1j * field_data.point_data["Ey - Imag"].ravel(),
-            field_data.point_data["Ez - Real"].ravel()
-            + 1j * field_data.point_data["Ez - Imag"].ravel(),
+            field_data.point_data["Ex-Real"].ravel()
+            + 1j * field_data.point_data["Ex-Imag"].ravel(),
+            field_data.point_data["Ey-Real"].ravel()
+            + 1j * field_data.point_data["Ey-Imag"].ravel(),
+            field_data.point_data["Ez-Real"].ravel()
+            + 1j * field_data.point_data["Ez-Imag"].ravel(),
         ]
     ).transpose()
     if all(
         k in field_data.point_data.keys()
-        for k in ("Hx - Real", "Hy - Real", "Hz - Real")
+        for k in ("Hx-Real", "Hy-Real", "Hz-Real")
     ):
         # magnetic field data present, so use
         magnetic_field_vectors = np.array(
             [
-                field_data.point_data["Hx - Real"]
-                + 1j * field_data.point_data["Hx - Imag"],
-                field_data.point_data["Hy - Real"]
-                + 1j * field_data.point_data["Hy - Imag"],
-                field_data.point_data["Hz - Real"]
-                + 1j * field_data.point_data["Hz - Imag"],
+                field_data.point_data["Hx-Real"]
+                + 1j * field_data.point_data["Hx-Imag"],
+                field_data.point_data["Hy-Real"]
+                + 1j * field_data.point_data["Hy-Imag"],
+                field_data.point_data["Hz-Real"]
+                + 1j * field_data.point_data["Hz-Imag"],
             ]
         ).transpose()
         # calculate poynting vector using electric and magnetic field vectors
@@ -364,16 +364,16 @@ def PoyntingVector(field_data,measurement=False,aperture=None):
     if measurement:
         poynting_vector_complex = poynting_vector_complex/aperture
 
-    field_data.point_data["Poynting Vector (Magnitude)"] = np.zeros(
+    field_data.point_data["Poynting_Vector_(Magnitude)"] = np.zeros(
         (field_data.points.shape[0], 1)
     )
-    field_data.point_data["Poynting Vector (Magnitude (dB))"] = np.zeros(
+    field_data.point_data["Poynting_Vector_(Magnitude_(dB))"] = np.zeros(
         (field_data.points.shape[0], 1)
     )
-    field_data.point_data["Poynting Vector (Magnitude)"] = np.linalg.norm(
+    field_data.point_data["Poynting_Vector_(Magnitude)"] = np.linalg.norm(
         poynting_vector_complex, axis=1
     ).reshape(-1, 1)
-    field_data.point_data["Poynting Vector (Magnitude (dB))"] = 10 * np.log10(
+    field_data.point_data["Poynting_Vector_(Magnitude_(dB))"] = 10 * np.log10(
         np.linalg.norm(poynting_vector_complex.reshape(-1, 1), axis=1)
     )
     return field_data
@@ -383,7 +383,7 @@ def Directivity(field_data):
     # calculate directivity for the given pattern
 
     if not all(
-        k in field_data.point_data.keys() for k in ("theta (Radians)", "phi (Radians)")
+        k in field_data.point_data.keys() for k in ("theta_(Radians)", "phi_(Radians)")
     ):
         # theta and phi don't exist in the dataset
         from lyceanem.geometry.geometryfunctions import theta_phi_r
@@ -391,7 +391,7 @@ def Directivity(field_data):
         field_data = theta_phi_r(field_data)
 
     if not all(
-        k in field_data.point_data.keys() for k in ("E(theta) - Real", "E(phi) - Real")
+        k in field_data.point_data.keys() for k in ("E(theta)-Real", "E(phi)-Real")
     ):
         # E(theta) and E(phi) are not present in the data
         field_data = Exyz_to_EthetaEphi(field_data)
@@ -405,20 +405,20 @@ def Directivity(field_data):
 
     Utheta = np.abs(
         (
-            field_data.point_data["E(theta) - Real"]
-            + 1j * field_data.point_data["E(theta) - Imag"]
+            field_data.point_data["E(theta)-Real"]
+            + 1j * field_data.point_data["E(theta)-Imag"]
         )
         ** 2
     )
     Uphi = np.abs(
         (
-            field_data.point_data["E(phi) - Real"]
-            + 1j * field_data.point_data["E(phi) - Imag"]
+            field_data.point_data["E(phi)-Real"]
+            + 1j * field_data.point_data["E(phi)-Imag"]
         )
         ** 2
     )
     #Calculate Solid Angle
-    solid_angle=field_data.point_data["Area"]/field_data.point_data["Radial Distance (m)"]**2
+    solid_angle=field_data.point_data["Area"]/field_data.point_data["Radial_Distance_(m)"]**2
     Utotal = Utheta + Uphi
 
     Uav=(np.nansum(Utotal.ravel()*solid_angle)/(4*np.pi))

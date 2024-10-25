@@ -112,29 +112,29 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
 
     # if field data is present, rotate fields
     if all(
-        k in mesh.point_data.keys() for k in ("Ex - Real", "Ey - Real", "Ez - Real")
+        k in mesh.point_data.keys() for k in ("Ex-Real", "Ey-Real", "Ez-Real")
     ):
         # rotate field data
         fields = transform_em(copy.deepcopy(mesh), r)
         for key in (
-            "Ex - Real",
-            "Ex - Imag",
-            "Ey - Real",
-            "Ey - Imag",
-            "Ez - Real",
-            "Ez - Imag",
+            "Ex-Real",
+            "Ex-Imag",
+            "Ey-Real",
+            "Ey-Imag",
+            "Ez-Real",
+            "Ez-Imag",
         ):
             mesh_return.point_data[key] = fields.point_data[key]
 
     elif all(k in mesh.point_data.keys() for k in ("E(theta)", "E(phi)")):
         fields = transform_em(copy.deepcopy(mesh), r)
         for key in (
-            "Ex - Real",
-            "Ex - Imag",
-            "Ey - Real",
-            "Ey - Imag",
-            "Ez - Real",
-            "Ez - Imag",
+            "Ex-Real",
+            "Ex-Imag",
+            "Ey-Real",
+            "Ey-Imag",
+            "Ez-Real",
+            "Ez-Imag",
         ):
             mesh_return.point_data[key] = fields.point_data[key]
 
@@ -341,13 +341,13 @@ def theta_phi_r(field_data):
     -------
 
     """
-    field_data.point_data["Radial Distance (m)"] = np.linalg.norm(
+    field_data.point_data["Radial_Distance_(m)"] = np.linalg.norm(
         field_data.points - np.zeros((1, 3)), axis=1
     )
-    field_data.point_data["theta (Radians)"] = np.arccos(
-        field_data.points[:, 2] / field_data.point_data["Radial Distance (m)"]
+    field_data.point_data["theta_(Radians)"] = np.arccos(
+        field_data.points[:, 2] / field_data.point_data["Radial_Distance_(m)"]
     )
-    field_data.point_data["phi (Radians)"] = np.arctan2(
+    field_data.point_data["phi_(Radians)"] = np.arctan2(
         field_data.points[:, 1], field_data.points[:, 0]
     )
     return field_data
