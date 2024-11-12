@@ -480,14 +480,14 @@ class antenna_structures(object3d):
         return calibrated_amplitude_weights
 
     def export_all_structures(self):
-        objects = copy.deepcopy(self.structures.solids)
-        for item in range(len(objects)):
-            if objects[item] is None:
+        #objects = copy.deepcopy(self.structures.solids)
+        for item in range(len(self.structures.solids)):
+            if self.structures.solids[item] is None:
                 print("Structure does not exist")
             else:
-                objects[item] = GF.mesh_transform(objects[item], self.pose, False)
+                self.structures.solids[item] = GF.mesh_transform(self.structures.solids[item], self.pose, False)
 
-        return objects
+        return self.structures.solids
 
     def rotate_antenna(
         self, rotation_vector, rotation_centre=np.zeros((3, 1), dtype=np.float32)
