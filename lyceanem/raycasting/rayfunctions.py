@@ -348,7 +348,7 @@ def visiblespace(
     """
 
     azaz, elel = np.meshgrid(az_range, elev_range)
-    sourcenum = len(source_coords)
+    sourcenum = source_coords.points.shape[0]
 
     sinks = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
     sinks[:, 0], sinks[:, 1], sinks[:, 2] = azeltocart(
@@ -363,10 +363,10 @@ def visiblespace(
     # need to create farfield sinks in az,elev coordinates, then convert to xyz sink coordinates, and generate index
     # missed_points,hit_points,missed_index,hit_index,shadow_rays=chunkingRaycaster1D(source_coords,sinks,np.zeros((1,3),dtype=np.float32),initial_index,environment,1,terminate_flag=True)
     hit_index, _ = workchunkingv2(
-        source_coords, sinks, np.empty((0, 3), dtype=np.float32), environment, 1
+        source_coords.points, sinks, np.empty((0, 3), dtype=np.float32), environment, 1
     )
     unified_model = np.append(
-        source_coords.astype(np.float32), sinks.astype(np.float32), axis=0
+        source_coords.points.astype(np.float32), sinks.astype(np.float32), axis=0
     )
     # filtered_network2,final_network2,filtered_index2,final_index2,shadow_rays
     directions = np.zeros((len(hit_index), 3), dtype=np.float32)
@@ -386,6 +386,7 @@ def visiblespace(
     )
 
     # angles[np.isnan(angles)]=0
+    vertex_area[np.isnan(vertex_area)]=0
     # visible_patterns=quickpatterncreator(az_range,elev_range,source_coords,angles,vertex_area,hit_index)
     if len(vertex_area) == 1:
         if vertex_area == 0:

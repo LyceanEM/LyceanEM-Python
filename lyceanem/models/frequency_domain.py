@@ -52,14 +52,24 @@ def aperture_projection(
     directivity_envelope = np.zeros(
         (elev_range.shape[0], az_range.shape[0]), dtype=np.float32
     )
-    triangle_centroids, _ = GF.tri_centroids(aperture)
-    triangle_areas = GF.tri_areas(aperture)
-    triangle_normals = np.asarray(aperture.cell_data["Normals"])
+    triangle_centroids = GF.cell_centroids(aperture)
+    aperture = GF.compute_areas(aperture)
+    aperture=GF.compute_normals(aperture)
+    triangle_cell_index=GF.locate_cell_index(aperture)
+    triangle_normals = aperture.cell_data["Normals"][triangle_cell_index]
+    # Ensure no clash with triangles in raycaster
+    triangle_centroids.points+=1e-6*triangle_normals 
+    import pyvista as pv
+    pl=pv.Plotter()
+    pl.add_mesh(pv.from_meshio(aperture),scalars="Area")
+    pl.add_mesh(pv.from_meshio(environment.solids[0]),color="red")
+    pl.add_mesh(pv.from_meshio(triangle_centroids),color="green")
+    pl.show()
     visible_patterns, pcd = RF.visiblespace(
         triangle_centroids,
         triangle_normals,
         blocking_triangles,
-        vertex_area=triangle_areas,
+        vertex_area=aperture.point_data['Area'],
         az_range=az_range,
         elev_range=elev_range,
         shell_range=farfield_distance,

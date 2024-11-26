@@ -61,6 +61,11 @@ from lyceanem.models.frequency_domain import calculate_farfield
 
 import pyvista as pv
 
+pl=pv.Plotter()
+pl.add_mesh(pv.from_meshio(body),color="green")
+pl.add_mesh(pv.from_meshio(array),color="aqua")
+pl.add_axes()
+pl.show()
 
 source_points = surface_array.points
 
@@ -106,9 +111,9 @@ UAV_Static_Pattern = antenna_pattern(
     azimuth_resolution=az_res, elevation_resolution=elev_res
 )
 UAV_Static_Pattern.pattern[:, :, 0] = Etheta
-UAV_Static_Pattern.pattern[:, :, 0] = Ephi
+UAV_Static_Pattern.pattern[:, :, 1] = Ephi
 
-UAV_Static_Pattern.display_pattern()
+UAV_Static_Pattern.display_pattern(desired_pattern='Power')
 
 # %%
 # .. image:: ../_static/sphx_glr_02_coherently_polarised_array_001.png

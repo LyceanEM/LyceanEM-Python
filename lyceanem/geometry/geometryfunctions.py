@@ -11,25 +11,6 @@ from ..raycasting import rayfunctions as RF
 from ..electromagnetics.emfunctions import transform_em
 
 
-def tri_areas(triangle_mesh):
-    """
-    Calculate the area of each triangle in a triangle mesh.
-
-    Args:
-        triangle_mesh (np.ndarray): A (N, 3, 3) array of N triangles, each with 3 vertices.
-
-    Returns:
-        np.ndarray: A (N,) array of the area of each triangle.
-    """
-    assert (
-        triangle_mesh.cells[0].type == "triangle"
-    ), "Only triangle meshes are supported."
-    triangle_indices = triangle_mesh.cells[0].data
-    v0 = triangle_mesh.points[triangle_indices[:, 0]]
-    v1 = triangle_mesh.points[triangle_indices[:, 1]]
-    v2 = triangle_mesh.points[triangle_indices[:, 2]]
-    return 0.5 * np.linalg.norm(np.cross(v1 - v0, v2 - v0), axis=1)
-
 
 def cell_centroids(field_data):
     """
@@ -177,7 +158,13 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
 
     return return_mesh
 
-
+def locate_cell_index(field_data,cell_type='triangle'):
+    for inc, cell in enumerate(field_data.cells):
+        if cell.type==cell_type:
+            desired_index=inc
+            
+    return desired_index
+    
 def compute_areas(field_data):
     cell_areas = []
     for inc, cell in enumerate(field_data.cells):
