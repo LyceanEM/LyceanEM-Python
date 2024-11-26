@@ -768,7 +768,7 @@ def clip(a, a_min, a_max):
 
 @cuda.jit(device=True)
 def lossy_propagation(point1, point2, alpha, beta):
-    # calculate loss using improved Rayliegh-Summerfeld
+    # calculate loss using improved Rayleigh-Summerfeld
     length = cuda.local.array(shape=(1), dtype=np.float32)
     length[0] = calc_sep(point1, point2, length[0])
     outgoing_dir = cuda.local.array(shape=(3), dtype=np.float32)
@@ -779,9 +779,9 @@ def lossy_propagation(point1, point2, alpha, beta):
     )
 
     normal = cuda.local.array(shape=(3), dtype=np.float32)
-    normal[0] = point1["nx"]
-    normal[1] = point1["ny"]
-    normal[2] = point1["nz"]
+    normal[0] = point2["nx"]
+    normal[1] = point2["ny"]
+    normal[2] = point2["nz"]
     projection_dot = dot_vec(outgoing_dir, normal)
     front = -(1 / (2 * cmath.pi))
     s=2.5

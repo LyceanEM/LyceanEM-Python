@@ -443,11 +443,11 @@ def MaximumDirectivityMap(
             )
             WS_weights = WavefrontWeights(source_points, steering_vector, wavelength)
             EGC_weights = EGCWeights(
-                Etheta, Ephi, command_angles, az_range=az_range, elev_range=elev_range
+                Etheta.astype(np.complex64), Ephi.astype(np.complex64), command_angles, az_range=az_range, elev_range=elev_range
             )
             EGC_weights2 = EGCWeights(
-                Etheta,
-                Ephi,
+                Etheta.astype(np.complex64),
+                Ephi.astype(np.complex64),
                 command_angles,
                 az_range=az_range,
                 elev_range=elev_range,

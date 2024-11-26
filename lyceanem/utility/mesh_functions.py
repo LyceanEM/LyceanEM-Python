@@ -18,6 +18,8 @@ def pyvista_to_meshio(polydata_object):
     return meshio_object
 
 def id_cells(faces):
+    import copy
+    #temp_faces=copy.deepcopy(faces)
     import numpy as np
     cell_types ={1 :"vertex",
                 2 :"line",
@@ -30,11 +32,20 @@ def id_cells(faces):
            "quad" :[]
            }
 
-    while (faces.shape[0 ]>=1):
-        trim_num =faces[0]
-        temp_array =faces[1:trim_num +1]
-        cells[cell_types[trim_num]].append(temp_array.tolist())
-        faces =np.delete(faces ,np.arange(0 ,trim_num +1))
+    moving_index=0
+    while moving_index<=faces.shape[0]-1:
+        face_num=faces[moving_index]
+        temp_array=faces[moving_index+1:moving_index+face_num+1]
+        cells[cell_types[face_num]].append(temp_array.tolist())
+        moving_index+=face_num+1
+        
+    # while (temp_faces.shape[0]>=1):
+    #     trim_num =temp_faces[0]
+    #     if trim_num>3:
+    #         print("Cell Face Error")
+    #     temp_array =temp_faces[1:trim_num +1]
+    #     cells[cell_types[trim_num]].append(temp_array.tolist())
+    #     temp_faces =np.delete(temp_faces ,np.arange(0 ,trim_num +1))
 
     meshio_cells =[]
     for key in cells:
