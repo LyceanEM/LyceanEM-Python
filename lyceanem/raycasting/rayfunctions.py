@@ -16,7 +16,7 @@ import lyceanem.electromagnetics.empropagation as EM
 from ..utility import math_functions as math_functions
 import meshio
 
-EPSILON = 1e-6  # how close to zero do we consider zero? example used 1e-7
+EPSILON = 1e-7  # how close to zero do we consider zero? example used 1e-7
 
 
 @cuda.jit(device=True)
@@ -60,9 +60,9 @@ def hit(ray, triangle):
         return False, math.inf
 
     # if A is less than zero, then the ray is coming from behind the triangle
-    # cull backface triangles
-    if A < 0:
-        return False, math.inf
+    # don't cull backface triangles
+    #if A < 0:
+    #    return False, math.inf
     # calculate distance from vertice 0 to ray origin
     tvecx = ray.ox - triangle.v0x  # s
     tvecy = ray.oy - triangle.v0y  # s
@@ -293,6 +293,7 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
 
     return final_index
 
+
 # @njit
 def patterntocloud(pattern_data, shell_coords, maxarea):
     # takes the pattern_data and shell_coordinates, and creates an open3d point cloud based upon the data.
@@ -305,8 +306,10 @@ def patterntocloud(pattern_data, shell_coords, maxarea):
     point_cloud.point_data["red"] = np_colors[:, 0]
     point_cloud.point_data["green"] = np_colors[:, 1]
     point_cloud.point_data["blue"] = np_colors[:, 2]
-    
+
     return point_cloud
+
+
 def visiblespace(
     source_coords,
     source_normals,
@@ -345,7 +348,7 @@ def visiblespace(
     """
 
     azaz, elel = np.meshgrid(az_range, elev_range)
-    sourcenum = len(source_coords)
+    sourcenum = source_coords.points.shape[0]
 
     sinks = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
     sinks[:, 0], sinks[:, 1], sinks[:, 2] = azeltocart(
@@ -360,10 +363,10 @@ def visiblespace(
     # need to create farfield sinks in az,elev coordinates, then convert to xyz sink coordinates, and generate index
     # missed_points,hit_points,missed_index,hit_index,shadow_rays=chunkingRaycaster1D(source_coords,sinks,np.zeros((1,3),dtype=np.float32),initial_index,environment,1,terminate_flag=True)
     hit_index, _ = workchunkingv2(
-        source_coords, sinks, np.empty((0, 3), dtype=np.float32), environment, 1
+        source_coords.points, sinks, np.empty((0, 3), dtype=np.float32), environment, 1
     )
     unified_model = np.append(
-        source_coords.astype(np.float32), sinks.astype(np.float32), axis=0
+        source_coords.points.astype(np.float32), sinks.astype(np.float32), axis=0
     )
     # filtered_network2,final_network2,filtered_index2,final_index2,shadow_rays
     directions = np.zeros((len(hit_index), 3), dtype=np.float32)
@@ -383,6 +386,7 @@ def visiblespace(
     )
 
     # angles[np.isnan(angles)]=0
+    vertex_area[np.isnan(vertex_area)]=0
     # visible_patterns=quickpatterncreator(az_range,elev_range,source_coords,angles,vertex_area,hit_index)
     if len(vertex_area) == 1:
         if vertex_area == 0:
@@ -481,7 +485,6 @@ def patterncreator(az_range, elev_range, source_coords, pointingindex, hit_index
     return visible_patterns
 
 
-
 def quickpatterncreator(
     az_range, elev_range, source_coords, angles, vertex_area, hit_index
 ):
@@ -510,9 +513,6 @@ def quickpatterncreator(
     return visible_patterns
 
 
-
-
-
 def azeltocart(az_data, el_data, radius):
     # convert from az,el and radius data to xyz
     x_data = radius * np.cos(np.deg2rad(el_data)) * np.cos(np.deg2rad(az_data))
@@ -528,11 +528,11 @@ def convertTriangles(triangle_object):
     if triangle_object == None:
         triangles = np.empty(0, dtype=base_types.triangle_t)
     else:
-        #assert triangle_object.cells[1].type == "triangle", "Not a triangle mesh"
+        # assert triangle_object.cells[1].type == "triangle", "Not a triangle mesh"
         for idx in range(len(triangle_object.cells)):
-            if (triangle_object.cells[idx].type=="triangle"):
-                triangle_cell_index=idx
-                
+            if triangle_object.cells[idx].type == "triangle":
+                triangle_cell_index = idx
+
         vertices = np.asarray(triangle_object.points)
         tri_index = np.asarray(triangle_object.cells[triangle_cell_index].data)
         triangles = np.empty(len(tri_index), dtype=base_types.triangle_t)
@@ -548,8 +548,6 @@ def convertTriangles(triangle_object):
             triangles[idx]["v2z"] = np.single(vertices[tri_index[idx, 2], 2])
 
     return triangles
-
-
 
 
 def points2pointcloud(xyz):
@@ -954,14 +952,14 @@ def CalculatePoyntingVectors(
     """
     max_path_divergence = 2.0
     if len(total_network) == 0:
-        sourcenum = np.int(np.nanmax(scattering_index[:, 0])) + 1
-        sinknum = np.int(np.nanmax(scattering_index[:, 1])) + 1
+        sourcenum = np.nanmax(scattering_index[:, 0]).astype(int) + 1
+        sinknum = np.nanmax(scattering_index[:, 1]).astype(int) + 1
         aoa_spectrum = np.zeros((sinknum, az_bins.shape[0]), dtype=np.float32)
         delay_spectrum = np.zeros((sinknum, az_bins.shape[0]), dtype=np.float32)
     else:
         wave_vector = (2 * np.pi) / wavelength
-        sourcenum = np.int(np.nanmax(scattering_index[:, 0])) + 1
-        sinknum = np.int(np.nanmax(scattering_index[:, 1])) + 1
+        sourcenum = np.nanmax(scattering_index[:, 0]).astype(int) + 1
+        sinknum = np.nanmax(scattering_index[:, 1]).astype(int) + 1
         scatterdepth = int((len(total_network[0, :]) - 3) / 3)
         impulse_response = np.zeros((len(time_bins), sinknum), dtype="complex")
         angle_response = np.zeros((len(az_bins), sinknum), dtype="complex")
@@ -1488,8 +1486,8 @@ def VectorNetworkProcessv2(
     #
     """
     if scattering_index.shape[0] == 0:
-        sourcenum = np.int(np.nanmax(scattering_index[:, 0])) + 1
-        sinknum = np.int(np.nanmax(scattering_index[:, 1])) + 1
+        sourcenum = np.nanmax(scattering_index[:, 0]).astype(int) + 1
+        sinknum = np.nanmax(scattering_index[:, 1]).astype(int) + 1
         scatter_map = np.zeros((sourcenum, sinknum, 1), dtype="complex")
     else:
         unified_model = np.append(
@@ -1769,8 +1767,8 @@ def scatter_net_sortTimeEM(
 def BaseNetworkProcess(total_network, wavelength, scattering_index):
     # take the total_network matrix, and work out the path length of each connection, and hence superposition
     wave_vector = (2 * np.pi) / wavelength
-    sourcenum = np.int(np.nanmax(scattering_index[:, 0])) + 1
-    sinknum = np.int(np.nanmax(scattering_index[:, 1])) + 1
+    sourcenum = np.nanmax(scattering_index[:, 0]).astype(int) + 1
+    sinknum = np.nanmax(scattering_index[:, 1]).astype(int) + 1
     scatterdepth = int((len(total_network[1, :]) - 3) / 3)
     scatter_map = np.zeros((sourcenum, sinknum, scatterdepth), dtype="complex")
     depth_num = 0
@@ -1796,8 +1794,8 @@ def BaseNetworkProcess(total_network, wavelength, scattering_index):
             end_row = np.max(np.where((np.isnan(total_network[:, 6 + ((idx) * 3)]))))
 
         for idr in range(start_row, end_row + 1):
-            source_index = np.int(scattering_index[idr, 0])
-            sink_index = np.int(scattering_index[idr, 1])
+            source_index = scattering_index[idr, 0].astype(int)
+            sink_index = scattering_index[idr, 1].astype(int)
             path_distance = np.zeros((1))
             if idx == 0:
                 path_distance = (
@@ -1844,9 +1842,9 @@ def charge_rays_environment1Dv2(sources, sinks, environment_points, point_indexi
         ray payload to be sent to GPU
 
     """
-    print("sources shape", sources.shape)
-    print("sinks shape", sinks.shape)
-    print("environment_points shape", environment_points.shape)
+    #print("sources shape", sources.shape)
+    #print("sinks shape", sinks.shape)
+    #print("environment_points shape", environment_points.shape)
 
     unified_model = np.append(
         np.append(sources, sinks, axis=0), environment_points, axis=0
@@ -1965,9 +1963,9 @@ def launchRaycaster1Dv2(
         kernel1Dv2[grids, threads](d_chunk_payload, d_environment)
         # cuda.profile_stop()
         # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
-        first_ray_payload[
-            ray_chunks[n] : ray_chunks[n + 1]
-        ] = d_chunk_payload.copy_to_host()
+        first_ray_payload[ray_chunks[n] : ray_chunks[n + 1]] = (
+            d_chunk_payload.copy_to_host()
+        )
         # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['intersect']=d_chunk_payload['intersect'].copy_to_host()
         # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]['dist']=d_chunk_payload['dist'].copy_to_host()
 
@@ -2121,9 +2119,9 @@ def chunkingRaycaster1Dv2(
         # distmap[source_chunks[n]:source_chunks[n+1],target_chunks[m]:target_chunks[m+1]] = d_distmap_chunked.copy_to_host()
         # second_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
         # first_ray_payload[ray_chunks[n]:ray_chunks[n+1]]=d_chunk_payload.copy_to_host()
-        second_ray_payload[
-            ray_chunks[n] : ray_chunks[n + 1]
-        ] = d_chunk_payload.copy_to_host()
+        second_ray_payload[ray_chunks[n] : ray_chunks[n + 1]] = (
+            d_chunk_payload.copy_to_host()
+        )
 
     # cuda.close()
     kernel_dt = timer() - raystart
@@ -2141,14 +2139,11 @@ def chunkingRaycaster1Dv3(
     sources, sinks, scattering_points, filtered_index, environment_local, terminate_flag
 ):
     start = timer()
+    cuda.current_context().memory_manager.deallocations.clear()
+    
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.5).astype(np.int64)
-    ray_limit = (
-        np.floor(
-            np.floor((max_mem - environment_local.nbytes) / base_types.ray_t.size) / 1e7
-        )
-        * 1e7
-    ).astype(np.int64)
+    ray_limit = np.floor(((max_mem - environment_local.nbytes) / base_types.ray_t.size)).astype(np.int64)
     sink_index = np.arange(
         sources.shape[0] + 1, sources.shape[0] + 1 + sinks.shape[0]
     ).reshape(sinks.shape[0], 1)
@@ -2399,12 +2394,12 @@ def chunkingRaycaster1Dv3(
     #         # ctx = cuda.current_context()
     #         # ctx.reset()
     # else:
-        
-        # deallocate memory on gpu
-        # ctx = cuda.current_context()
-        # deallocs = ctx.deallocations
-        # deallocs.clear()
-        # print("Second Stage: Prep {:3.1f} s, Raycasting  {:3.1f} s, Path Processing {:3.1f} s".format(prep_dt,kernel_dt,mem_dt) )
+
+    # deallocate memory on gpu
+    # ctx = cuda.current_context()
+    # deallocs = ctx.deallocations
+    # deallocs.clear()
+    # print("Second Stage: Prep {:3.1f} s, Raycasting  {:3.1f} s, Path Processing {:3.1f} s".format(prep_dt,kernel_dt,mem_dt) )
     return filtered_index2, final_index2, RAYS_CAST
 
 
@@ -2474,42 +2469,42 @@ def ray_charge_core_final_vector(
         directions, norm_length = math_functions.calc_dv_norm(
             local_sources[:, -3:], targets, directions, norm_length
         )
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "ox"
-        ] = local_sources[:, -3]
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "oy"
-        ] = local_sources[:, -2]
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "oz"
-        ] = local_sources[:, -1]
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "dx"
-        ] = directions[:, 0]
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "dy"
-        ] = directions[:, 1]
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "dz"
-        ] = directions[:, 2]
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["ox"] = (
+            local_sources[:, -3]
+        )
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["oy"] = (
+            local_sources[:, -2]
+        )
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["oz"] = (
+            local_sources[:, -1]
+        )
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["dx"] = (
+            directions[:, 0]
+        )
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["dy"] = (
+            directions[:, 1]
+        )
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["dz"] = (
+            directions[:, 2]
+        )
         # temp_ray_payload[source_chunking[n]:source_chunking[n+1]]['tx']=targets[:,0]
         # temp_ray_payload[source_chunking[n]:source_chunking[n+1]]['ty']=targets[:,1]
         # temp_ray_payload[source_chunking[n]:source_chunking[n+1]]['tz']=targets[:,2]
-        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
-            "dist"
-        ] = norm_length[:, 0]
+        temp_ray_payload[source_chunking[n] : source_chunking[n + 1]]["dist"] = (
+            norm_length[:, 0]
+        )
         temp_ray_payload[source_chunking[n] : source_chunking[n + 1]][
             "intersect"
         ] = False
         origins[source_chunking[n] : source_chunking[n + 1], -origin_width:] = sources[
             n, :
         ]
-        source_sink_index[
-            source_chunking[n] : source_chunking[n + 1], 0
-        ] = point_indexing[n, 0]
-        source_sink_index[
-            source_chunking[n] : source_chunking[n + 1], 1
-        ] = target_indexing.ravel()
+        source_sink_index[source_chunking[n] : source_chunking[n + 1], 0] = (
+            point_indexing[n, 0]
+        )
+        source_sink_index[source_chunking[n] : source_chunking[n + 1], 1] = (
+            target_indexing.ravel()
+        )
 
     return temp_ray_payload, origins, source_sink_index
 
@@ -2749,12 +2744,13 @@ def workchunkingv2(
         sources.shape[0] * (scattering_points.shape[0] * sinks.shape[0] * (max_scatter))
     )
     # print("Total of {:3.1f} rays required".format(ray_estimate))
+    # Clear GPU memory for simulation
+    cuda.current_context().memory_manager.deallocations.clear()
     # establish memory limits
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.8).astype(np.int64)
     ray_limit = (
-        np.floor(np.floor((max_mem - environment.nbytes) / base_types.ray_t.size) / 1e7)
-        * 1e7
+        np.floor(np.floor((max_mem - environment.nbytes) / base_types.ray_t.size))
     ).astype(np.int64)
     # establish index boundaries
     source_index = np.arange(1, sources.shape[0] + 1).reshape(
@@ -2774,6 +2770,7 @@ def workchunkingv2(
         )
         if io_indexing.shape[0] >= ray_limit:
             # need to split the array and process seperatly
+            
             sub_io = np.array_split(
                 io_indexing, np.ceil(io_indexing.shape[0] / ray_limit).astype(int)
             )
@@ -2898,7 +2895,7 @@ def workchunkingv2(
 
     elif max_scatter == 3:
         full_index = np.empty((0, 4), dtype=np.int32)
-        chunknum = np.minimum(sources.shape[0], np.int(np.ceil(ray_estimate / 2e8)))
+        chunknum = np.minimum(sources.shape[0], np.ceil(ray_estimate / 2e8).astype(int))
         chunknum = np.maximum(2, chunknum)
         source_chunking = np.linspace(0, sources.shape[0], chunknum, dtype=np.int32)
         for chunkindex in range(source_chunking.size - 1):
@@ -2929,9 +2926,8 @@ def workchunkingv2(
                 sources, sinks, scattering_points, filtered_index, environment, False
             )
             if filtered_index2.shape[0] * sinks.shape[0] > 2e8:
-                temp_chunks = np.int(
-                    np.ceil((filtered_index2.shape[0] * sinks.shape[0]) / 2e8)
-                )
+                temp_chunks = np.ceil((filtered_index2.shape[0] * sinks.shape[0]) / 2e8).astype(int)
+                
                 temp_chunking = np.linspace(
                     0, filtered_index2.shape[0], temp_chunks, dtype=np.int32
                 )
@@ -3115,7 +3111,7 @@ def integratedraycastersetup(
     ).reshape((scattering_points.shape[0] - sources - sinks), 1)
     # implement chunking
     full_index = np.empty((0, np.max(scattering_mask) + 2), dtype=np.int32)
-    chunknum = np.minimum(sources, np.int(np.ceil(ray_estimate / 2e8)))
+    chunknum = np.minimum(sources, np.ceil(ray_estimate / 2e8).astype(int))
     chunknum = np.maximum(2, chunknum)
     source_chunking = np.linspace(0, sources, chunknum, dtype=np.int32)
     for chunkindex in range(source_chunking.size - 1):

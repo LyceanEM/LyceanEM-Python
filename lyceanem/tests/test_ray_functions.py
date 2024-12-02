@@ -1,4 +1,4 @@
-from ..raycasting import rayfunctions as RF 
+from ..raycasting import rayfunctions as RF
 import numpy as np
 import pytest
 import lyceanem.base_types as base_types
@@ -6,8 +6,11 @@ from importlib_resources import files
 import lyceanem.tests.data
 import meshio
 
+
 def test_convertTriangles():
-    reference = np.load(files(lyceanem.tests.data).joinpath("triangle_type_array_ref.npy"))
+    reference = np.load(
+        files(lyceanem.tests.data).joinpath("triangle_type_array_ref.npy")
+    )
     mesh = meshio.read(files(lyceanem.tests.data).joinpath("receive_horn.ply"))
     triangles = RF.convertTriangles(mesh)
     for i in range(triangles.size):
@@ -20,6 +23,3 @@ def test_convertTriangles():
         assert np.allclose(triangles[i]["v2x"], reference[i]["v2x"])
         assert np.allclose(triangles[i]["v2y"], reference[i]["v2y"])
         assert np.allclose(triangles[i]["v2z"], reference[i]["v2z"])
-
-
-
