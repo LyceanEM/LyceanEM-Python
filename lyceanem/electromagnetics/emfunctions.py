@@ -229,9 +229,8 @@ def transform_em(field_data, r):
                 + 1j * field_data.point_data["Ey-Imag"],
                 field_data.point_data["Ez-Real"]
                 + 1j * field_data.point_data["Ez-Imag"],
-                np.zeros((field_data.point_data["Ex-Real"].shape[0])),
             ]
-        ).transpose()
+        ).reshape(3,-1).transpose()
         rot_fields = r.apply(fields)
         field_data.point_data["Ex-Real"] = np.real(
             rot_fields[:, 0]
@@ -258,9 +257,8 @@ def transform_em(field_data, r):
                 + 1j * field_data.point_data["Ey-Imag"],
                 field_data.point_data["Ez-Real"]
                 + 1j * field_data.point_data["Ez-Imag"],
-                np.zeros((field_data.point_data["Ex-Real"].shape[0])),
             ]
-        ).transpose()
+        ).reshape(3,-1).transpose()
         rot_fields = r.apply(fields)
         field_data.point_data["Ex-Real"] = np.real(rot_fields[:, 0])
         field_data.point_data["Ey-Real"] = np.real(rot_fields[:, 1])

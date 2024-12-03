@@ -110,8 +110,8 @@ from lyceanem.base_classes import antenna_pattern
 UAV_Static_Pattern = antenna_pattern(
     azimuth_resolution=az_res, elevation_resolution=elev_res
 )
-UAV_Static_Pattern.pattern[:, :, 0] = Etheta
-UAV_Static_Pattern.pattern[:, :, 1] = Ephi
+UAV_Static_Pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+UAV_Static_Pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
 
 UAV_Static_Pattern.display_pattern(desired_pattern='Power')
 

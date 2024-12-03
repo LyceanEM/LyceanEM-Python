@@ -116,13 +116,15 @@ def rectReflector(majorsize, minorsize, thickness):
     )
     pv_mesh = pv_mesh.triangulate()
     pv_mesh.compute_normals(inplace=True, consistent_normals=False)
+    from ..utility.mesh_functions import pyvista_to_meshio
     triangles = np.reshape(np.array(pv_mesh.faces), (12, 4))
     triangles = triangles[:, 1:]
 
-    mesh = meshio.Mesh(pv_mesh.points, {"triangle": triangles})
+    #mesh = meshio.Mesh(pv_mesh.points, {"triangle": triangles})
+    mesh=pyvista_to_meshio(pv_mesh)
 
-    mesh.point_data["Normals"] = pv_mesh.point_normals
-    mesh.cell_data["Normals"] = pv_mesh.cell_normals
+    from .geometryfunctions import compute_normals
+    mesh=compute_normals(mesh)
     red = np.zeros((8, 1), dtype=np.float32)
     green = np.ones((8, 1), dtype=np.float32) * 0.259
     blue = np.ones((8, 1), dtype=np.float32) * 0.145
@@ -198,7 +200,8 @@ def shapeTrapezoid(x_size, y_size, length, flare_angle):
 
     mesh.point_data["Normals"] = np.asarray(pv_mesh.point_normals)
     mesh.cell_data["Normals"] = [np.asarray(pv_mesh.cell_normals)]
-
+    from .geometryfunctions import compute_areas
+    mesh=compute_areas(mesh)
     red = np.zeros((8, 1), dtype=np.float32)
     green = np.ones((8, 1), dtype=np.float32) * 0.259
     blue = np.ones((8, 1), dtype=np.float32) * 0.145
@@ -206,6 +209,7 @@ def shapeTrapezoid(x_size, y_size, length, flare_angle):
     mesh.point_data["red"] = red
     mesh.point_data["green"] = green
     mesh.point_data["blue"] = blue
+    
     return mesh
 
 
@@ -453,6 +457,39 @@ def parabolic_aperture(
 
     return mesh, aperture_points
 
+def spherical_field(az_range,elev_range,outward_normals=False,field_radius=1.0):
+    """
+    Create a spherical field of points, with normals, a triangle mesh, and areas calculated for each triangle and adjusted for each field point.
+
+    Parameters
+    ----------
+    az_range : array_like[float]
+        Azimuthal angle in degrees ``[0, 360]``.
+    elev_range : array_like[float]
+        Elevation angle in degrees ``[-90, 90]``.
+    outward_normals : bool, optional
+        If outward pointing normals are required, set as True
+    field_radius : float, optional
+        The radius of the field, default is 1.0 m
+
+    Returns
+    -------
+    mesh : meshio object
+        spherical field of points at specified azimuth and elevation angles, with meshed triangles
+    """
+    vista_pattern = pv.grid_from_sph_coords(az_range, (90-elev_range), field_radius).extract_surface()
+    if outward_normals:
+        vista_pattern.point_data['Normals']=vista_pattern.points/(np.linalg.norm(vista_pattern.points,axis=1).reshape(-1,1))
+    else:
+        vista_pattern.point_data['Normals'] = (vista_pattern.points / (
+            np.linalg.norm(vista_pattern.points, axis=1).reshape(-1, 1)))*-1.0
+
+    from ..utility.mesh_functions import pyvista_to_meshio
+    mesh=pyvista_to_meshio(vista_pattern.triangulate())
+    from ..geometry.geometryfunctions import compute_areas,theta_phi_r
+    mesh=theta_phi_r(compute_areas(mesh))
+
+    return mesh
 
 def linear_parabolic_aperture(diameter, focal_length, height, thickness, mesh_size, lip=False, lip_width=1e-3):
     # Define function for parabola equation (y^2 = 4*focal_length*x)
@@ -676,5 +713,6 @@ def gridedReflectorPoints(
         ],
         point_data={"Normals": mesh_normals},
     )
+    mesh_points.point_data['Area']=np.ones((mesh_points.points.shape[0]))*(grid_resolution**2)
 
     return mesh_points

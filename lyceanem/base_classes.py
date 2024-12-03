@@ -389,8 +389,8 @@ class structures(object3d):
         """
         triangles = np.empty((0), dtype=base_types.triangle_t)
         for item in range(len(self.solids)):
-            temp_object = copy.deepcopy(self.solids[item])
-            temp_object = GF.mesh_transform(temp_object, self.pose, False)
+            #temp_object = copy.deepcopy(self.solids[item])
+            temp_object = GF.mesh_transform(self.solids[item], self.pose, False)
 
             triangles = np.append(triangles, RF.convertTriangles(temp_object))
 
