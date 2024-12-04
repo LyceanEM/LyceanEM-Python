@@ -429,56 +429,33 @@ class antenna_structures(object3d):
 
         return point_cloud
 
-    def excitation_function(
-        self,
-        desired_e_vector,
-        point_index=None,
-        phase_shift="none",
-        wavelength=1.0,
-        steering_vector=np.zeros((1, 3)),
-        transmit_power=1.0,
-        local_projection=True
-    ):
+    def excitation_function(self,
+                desired_e_vector,
+                point_index=None,
+                phase_shift="none",
+                wavelength=1.0,
+                steering_vector=np.zeros((1, 3)),
+                transmit_power=1.0,
+                local_projection=True
+        ):
         # generate the local excitation function and then convert into the global coordinate frame.
         if point_index == None:
             aperture_points = self.export_all_points()
         else:
             aperture_points = self.export_all_points(point_index=point_index)
 
-        if local_projection:
-        # as export all points imposes the transformation from local to global frame on the points and associated normal vectors, no rotation is required within calculate_conformalVectors
-            aperture_weights = EM.calculate_conformalVectors(
-                desired_e_vector, aperture_points.point_data["Normals"], np.eye(3)
-            )
-        else:
-            aperture_weights=np.repeat(desired_e_vector,aperture_points.points.shape[0],axis=0)
-            
-        if phase_shift == "wavefront":
-            source_points = np.asarray(aperture_points.points)
-            phase_weights = BM.WavefrontWeights(
-                source_points, steering_vector, wavelength
-            )
-            aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
-        if phase_shift == "coherence":
-            source_points = np.asarray(aperture_points.points)
-            phase_weights = BM.ArbitaryCoherenceWeights(
-                source_points, steering_vector, wavelength
-            )
-            aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
+        from .electromagnetics.emfunctions import excitation_function
 
-        from .utility.math_functions import discrete_transmit_power
+        excitation_weights=excitation_function(
+            aperture_points,
+            desired_e_vector,
+            phase_shift=phase_shift,
+            wavelength=wavelength,
+            steering_vector=steering_vector,
+            transmit_power=transmit_power,
+            local_projection=local_projection)
 
-        if "Area" in aperture_points.point_data.keys():
-            areas = aperture_points.point_data["Area"]
-        else:
-            areas = np.zeros((aperture_points.points.shape[0]))
-            areas[:] = (wavelength * 0.5) ** 2
-
-        calibrated_amplitude_weights = discrete_transmit_power(
-            aperture_weights, areas, transmit_power
-        )
-        return calibrated_amplitude_weights
-
+        return excitation_weights
     def export_all_structures(self):
         #objects = copy.deepcopy(self.structures.solids)
         for item in range(len(self.structures.solids)):

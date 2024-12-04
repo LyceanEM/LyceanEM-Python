@@ -2,6 +2,56 @@ import numpy as np
 import pyvista as pv
 
 
+def excitation_function(
+        aperture_points,
+        desired_e_vector,
+        phase_shift="none",
+        wavelength=1.0,
+        steering_vector=np.zeros((1, 3)),
+        transmit_power=1.0,
+        local_projection=True
+):
+    """
+    Calculate the excitation function for the given aperture points, desired electric field vector, phase shift, wavelength, steering vector, transmit power, and local projection. This will generate the normalised field intensities for the desired total transmit power, and beamforming algorithm. The aperture mesh should have Normals and Area associated with each point for full functionality.
+    """
+
+
+    if local_projection:
+        # as export all points imposes the transformation from local to global frame on the points and associated normal vectors, no rotation is required within calculate_conformalVectors
+        from .empropagation import calculate_conformalVectors
+        aperture_weights = calculate_conformalVectors(
+            desired_e_vector, aperture_points.point_data["Normals"], np.eye(3)
+        )
+    else:
+        aperture_weights = np.repeat(desired_e_vector, aperture_points.points.shape[0], axis=0)
+
+    if phase_shift == "wavefront":
+        from .beamforming import WavefrontWeights
+        source_points = np.asarray(aperture_points.points)
+        phase_weights = WavefrontWeights(
+            source_points, steering_vector, wavelength
+        )
+        aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
+    if phase_shift == "coherence":
+        from .beamforming import ArbitaryCoherenceWeights
+        source_points = np.asarray(aperture_points.points)
+        phase_weights = ArbitaryCoherenceWeights(
+            source_points, steering_vector, wavelength
+        )
+        aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
+
+    from ..utility.math_functions import discrete_transmit_power
+
+    if "Area" in aperture_points.point_data.keys():
+        areas = aperture_points.point_data["Area"]
+    else:
+        areas = np.zeros((aperture_points.points.shape[0]))
+        areas[:] = (wavelength * 0.5) ** 2
+
+    calibrated_amplitude_weights = discrete_transmit_power(
+        aperture_weights, areas, transmit_power
+    )
+    return calibrated_amplitude_weights
 def fresnel_zone(pointA, pointB, wavelength, zone=1):
     # based on the provided points, wavelength, and zone number, calculate the fresnel zone. This is defined as an ellipsoid for which the difference in distance between the line AB (line of sight), and AP+PB (reflected wave) is a constant multiple of ($n\dfrac{\lambda}{2}$).
     foci = np.stack([pointA, pointB])
