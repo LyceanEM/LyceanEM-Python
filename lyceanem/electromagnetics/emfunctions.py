@@ -3,37 +3,39 @@ import pyvista as pv
 
 
 def excitation_function(
-        aperture_points,
-        desired_e_vector,
-        phase_shift="none",
-        wavelength=1.0,
-        steering_vector=np.zeros((1, 3)),
-        transmit_power=1.0,
-        local_projection=True
+    aperture_points,
+    desired_e_vector,
+    phase_shift="none",
+    wavelength=1.0,
+    steering_vector=np.zeros((1, 3)),
+    transmit_power=1.0,
+    local_projection=True,
 ):
     """
     Calculate the excitation function for the given aperture points, desired electric field vector, phase shift, wavelength, steering vector, transmit power, and local projection. This will generate the normalised field intensities for the desired total transmit power, and beamforming algorithm. The aperture mesh should have Normals and Area associated with each point for full functionality.
     """
 
-
     if local_projection:
         # as export all points imposes the transformation from local to global frame on the points and associated normal vectors, no rotation is required within calculate_conformalVectors
         from .empropagation import calculate_conformalVectors
+
         aperture_weights = calculate_conformalVectors(
             desired_e_vector, aperture_points.point_data["Normals"], np.eye(3)
         )
     else:
-        aperture_weights = np.repeat(desired_e_vector, aperture_points.points.shape[0], axis=0)
+        aperture_weights = np.repeat(
+            desired_e_vector, aperture_points.points.shape[0], axis=0
+        )
 
     if phase_shift == "wavefront":
         from .beamforming import WavefrontWeights
+
         source_points = np.asarray(aperture_points.points)
-        phase_weights = WavefrontWeights(
-            source_points, steering_vector, wavelength
-        )
+        phase_weights = WavefrontWeights(source_points, steering_vector, wavelength)
         aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
     if phase_shift == "coherence":
         from .beamforming import ArbitaryCoherenceWeights
+
         source_points = np.asarray(aperture_points.points)
         phase_weights = ArbitaryCoherenceWeights(
             source_points, steering_vector, wavelength
@@ -52,6 +54,8 @@ def excitation_function(
         aperture_weights, areas, transmit_power
     )
     return calibrated_amplitude_weights
+
+
 def fresnel_zone(pointA, pointB, wavelength, zone=1):
     # based on the provided points, wavelength, and zone number, calculate the fresnel zone. This is defined as an ellipsoid for which the difference in distance between the line AB (line of sight), and AP+PB (reflected wave) is a constant multiple of ($n\dfrac{\lambda}{2}$).
     foci = np.stack([pointA, pointB])
@@ -90,15 +94,9 @@ def field_magnitude_phase(field_data):
         )
     ):
         # Exyz exsists in the dataset
-        Ex = (
-            field_data.point_data["Ex-Real"] + 1j * field_data.point_data["Ex-Imag"]
-        )
-        Ey = (
-            field_data.point_data["Ey-Real"] + 1j * field_data.point_data["Ey-Imag"]
-        )
-        Ez = (
-            field_data.point_data["Ez-Real"] + 1j * field_data.point_data["Ez-Imag"]
-        )
+        Ex = field_data.point_data["Ex-Real"] + 1j * field_data.point_data["Ex-Imag"]
+        Ey = field_data.point_data["Ey-Real"] + 1j * field_data.point_data["Ey-Imag"]
+        Ez = field_data.point_data["Ez-Real"] + 1j * field_data.point_data["Ez-Imag"]
         field_data.point_data["Ex-Magnitude"] = np.abs(Ex)
         field_data.point_data["Ex-Phase"] = np.angle(Ex)
         field_data.point_data["Ey-Magnitude"] = np.abs(Ey)
@@ -217,7 +215,7 @@ def Exyz_to_EthetaEphi(field_data):
         from lyceanem.geometry.geometryfunctions import theta_phi_r
 
         field_data = theta_phi_r(field_data)
-        
+
     electric_fields = extract_electric_fields(field_data)
     theta = field_data.point_data["theta_(Radians)"]
     phi = field_data.point_data["phi_(Radians)"]
@@ -241,12 +239,9 @@ def Exyz_to_EthetaEphi(field_data):
 def field_vectors(field_data):
     fields = np.array(
         [
-            field_data.point_data["Ex-Real"]
-            + 1j * field_data.point_data["Ex-Imag"],
-            field_data.point_data["Ey-Real"]
-            + 1j * field_data.point_data["Ey-Imag"],
-            field_data.point_data["Ez-Real"]
-            + 1j * field_data.point_data["Ez-Imag"],
+            field_data.point_data["Ex-Real"] + 1j * field_data.point_data["Ex-Imag"],
+            field_data.point_data["Ey-Real"] + 1j * field_data.point_data["Ey-Imag"],
+            field_data.point_data["Ez-Real"] + 1j * field_data.point_data["Ez-Imag"],
         ]
     ).transpose()
     directions = np.abs(fields)
@@ -267,20 +262,23 @@ def transform_em(field_data, r):
 
     """
     if all(
-        k in field_data.point_data.keys()
-        for k in ("Ex-Real", "Ey-Real", "Ez-Real")
+        k in field_data.point_data.keys() for k in ("Ex-Real", "Ey-Real", "Ez-Real")
     ):
         # print("Rotating Ex,Ey,Ez")
-        fields = np.array(
-            [
-                field_data.point_data["Ex-Real"]
-                + 1j * field_data.point_data["Ex-Imag"],
-                field_data.point_data["Ey-Real"]
-                + 1j * field_data.point_data["Ey-Imag"],
-                field_data.point_data["Ez-Real"]
-                + 1j * field_data.point_data["Ez-Imag"],
-            ]
-        ).reshape(3,-1).transpose()
+        fields = (
+            np.array(
+                [
+                    field_data.point_data["Ex-Real"]
+                    + 1j * field_data.point_data["Ex-Imag"],
+                    field_data.point_data["Ey-Real"]
+                    + 1j * field_data.point_data["Ey-Imag"],
+                    field_data.point_data["Ez-Real"]
+                    + 1j * field_data.point_data["Ez-Imag"],
+                ]
+            )
+            .reshape(3, -1)
+            .transpose()
+        )
         rot_fields = r.apply(fields)
         field_data.point_data["Ex-Real"] = np.real(
             rot_fields[:, 0]
@@ -299,16 +297,20 @@ def transform_em(field_data, r):
 
         field_data = theta_phi_r(field_data)
         field_data = EthetaEphi_to_Exyz(field_data)
-        fields = np.array(
-            [
-                field_data.point_data["Ex-Real"]
-                + 1j * field_data.point_data["Ex-Imag"],
-                field_data.point_data["Ey-Real"]
-                + 1j * field_data.point_data["Ey-Imag"],
-                field_data.point_data["Ez-Real"]
-                + 1j * field_data.point_data["Ez-Imag"],
-            ]
-        ).reshape(3,-1).transpose()
+        fields = (
+            np.array(
+                [
+                    field_data.point_data["Ex-Real"]
+                    + 1j * field_data.point_data["Ex-Imag"],
+                    field_data.point_data["Ey-Real"]
+                    + 1j * field_data.point_data["Ey-Imag"],
+                    field_data.point_data["Ez-Real"]
+                    + 1j * field_data.point_data["Ez-Imag"],
+                ]
+            )
+            .reshape(3, -1)
+            .transpose()
+        )
         rot_fields = r.apply(fields)
         field_data.point_data["Ex-Real"] = np.real(rot_fields[:, 0])
         field_data.point_data["Ey-Real"] = np.real(rot_fields[:, 1])
@@ -335,7 +337,7 @@ def update_electric_fields(field_data, ex, ey, ez):
     return field_data
 
 
-def PoyntingVector(field_data,measurement=False,aperture=None):
+def PoyntingVector(field_data, measurement=False, aperture=None):
     """
     Calculate the poynting vector for the given field data. If the magnetic field data is present, then the poynting vector is calculated using the cross product of the electric and magnetic field vectors.
     If the magnetic field data is not present, then the poynting vector is calculated using the electric field vectors and the impedance of the material. If material parameters are not included in the field data, then the impedance is assumed to be that of free space.
@@ -384,8 +386,7 @@ def PoyntingVector(field_data,measurement=False,aperture=None):
         ]
     ).transpose()
     if all(
-        k in field_data.point_data.keys()
-        for k in ("Hx-Real", "Hy-Real", "Hz-Real")
+        k in field_data.point_data.keys() for k in ("Hx-Real", "Hy-Real", "Hz-Real")
     ):
         # magnetic field data present, so use
         magnetic_field_vectors = np.array(
@@ -410,7 +411,7 @@ def PoyntingVector(field_data,measurement=False,aperture=None):
         ).reshape(-1, 1)
 
     if measurement:
-        poynting_vector_complex = poynting_vector_complex/aperture
+        poynting_vector_complex = poynting_vector_complex / aperture
 
     field_data.point_data["Poynting_Vector_(Magnitude)"] = np.zeros(
         (field_data.points.shape[0], 1)
@@ -444,10 +445,9 @@ def Directivity(field_data):
         # E(theta) and E(phi) are not present in the data
         field_data = Exyz_to_EthetaEphi(field_data)
 
-    if not all(
-            k in field_data.point_data.keys() for k in ("Area")
-        ):
+    if not all(k in field_data.point_data.keys() for k in ("Area")):
         from lyceanem.geometry.geometryfunctions import compute_areas
+
         # E(theta) and E(phi) are not present in the data
         field_data = compute_areas(field_data)
 
@@ -465,17 +465,20 @@ def Directivity(field_data):
         )
         ** 2
     )
-    #Calculate Solid Angle
-    solid_angle=field_data.point_data["Area"]/field_data.point_data["Radial_Distance_(m)"]**2
+    # Calculate Solid Angle
+    solid_angle = (
+        field_data.point_data["Area"]
+        / field_data.point_data["Radial_Distance_(m)"] ** 2
+    )
     Utotal = Utheta + Uphi
 
-    Uav=(np.nansum(Utotal.ravel()*solid_angle)/(4*np.pi))
-    #sin_factor = np.abs(
+    Uav = np.nansum(Utotal.ravel() * solid_angle) / (4 * np.pi)
+    # sin_factor = np.abs(
     #    np.sin(field_data.point_data["theta (Radians)"])
-    #).reshape(-1,1)  # only want positive factor
-    #power_sum = np.sum(np.abs(Utheta * sin_factor)) + np.sum(np.abs(Uphi * sin_factor))
+    # ).reshape(-1,1)  # only want positive factor
+    # power_sum = np.sum(np.abs(Utheta * sin_factor)) + np.sum(np.abs(Uphi * sin_factor))
     # need to dynamically account for the average contribution of each point, this is only true for a theta step of 1 degree, and phi step of 10 degrees
-    #Uav = (power_sum * (np.radians(1.0) * np.radians(10.0))) / (4 * np.pi)
+    # Uav = (power_sum * (np.radians(1.0) * np.radians(10.0))) / (4 * np.pi)
     Dtheta = Utheta / Uav
     Dphi = Uphi / Uav
     Dtot = Utotal / Uav

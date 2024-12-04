@@ -11,7 +11,6 @@ from ..raycasting import rayfunctions as RF
 from ..electromagnetics.emfunctions import transform_em
 
 
-
 def cell_centroids(field_data):
     """
     In order to calculate the centroid of the triangle, take vertices from meshio triangle mesh, then put each triangle
@@ -92,9 +91,7 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
     mesh_return.cell_data = cell_data
 
     # if field data is present, rotate fields
-    if all(
-        k in mesh.point_data.keys() for k in ("Ex-Real", "Ey-Real", "Ez-Real")
-    ):
+    if all(k in mesh.point_data.keys() for k in ("Ex-Real", "Ey-Real", "Ez-Real")):
         # rotate field data
         fields = transform_em(copy.deepcopy(mesh), r)
         for key in (
@@ -143,28 +140,31 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
             )[:3]
         if "Normals" in mesh.cell_data:
             if isinstance(mesh.cell_data["Normals"], list):
-                #multiple cell types
+                # multiple cell types
                 for i in range(len(mesh.cell_data["Normals"])):
                     for j in range(mesh.cell_data["Normals"][i].shape[0]):
                         return_mesh.cell_data["Normals"][i][j] = np.dot(
-                            transform_matrix, np.append(mesh.cell_data["Normals"][i][j], 0)
+                            transform_matrix,
+                            np.append(mesh.cell_data["Normals"][i][j], 0),
                         )[:3]
             else:
-                #single cell type
+                # single cell type
                 for i in range(len(mesh.cell_data["Normals"])):
-                        return_mesh.cell_data["Normals"][i] = np.dot(
-                            transform_matrix, np.append(mesh.cell_data["Normals"][i], 0)
-                        )[:3]
+                    return_mesh.cell_data["Normals"][i] = np.dot(
+                        transform_matrix, np.append(mesh.cell_data["Normals"][i], 0)
+                    )[:3]
 
     return return_mesh
 
-def locate_cell_index(field_data,cell_type='triangle'):
+
+def locate_cell_index(field_data, cell_type="triangle"):
     for inc, cell in enumerate(field_data.cells):
-        if cell.type==cell_type:
-            desired_index=inc
-            
+        if cell.type == cell_type:
+            desired_index = inc
+
     return desired_index
-    
+
+
 def compute_areas(field_data):
     cell_areas = []
     for inc, cell in enumerate(field_data.cells):

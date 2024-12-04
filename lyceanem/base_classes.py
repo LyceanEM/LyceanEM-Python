@@ -389,7 +389,7 @@ class structures(object3d):
         """
         triangles = np.empty((0), dtype=base_types.triangle_t)
         for item in range(len(self.solids)):
-            #temp_object = copy.deepcopy(self.solids[item])
+            # temp_object = copy.deepcopy(self.solids[item])
             temp_object = GF.mesh_transform(self.solids[item], self.pose, False)
 
             triangles = np.append(triangles, RF.convertTriangles(temp_object))
@@ -429,15 +429,16 @@ class antenna_structures(object3d):
 
         return point_cloud
 
-    def excitation_function(self,
-                desired_e_vector,
-                point_index=None,
-                phase_shift="none",
-                wavelength=1.0,
-                steering_vector=np.zeros((1, 3)),
-                transmit_power=1.0,
-                local_projection=True
-        ):
+    def excitation_function(
+        self,
+        desired_e_vector,
+        point_index=None,
+        phase_shift="none",
+        wavelength=1.0,
+        steering_vector=np.zeros((1, 3)),
+        transmit_power=1.0,
+        local_projection=True,
+    ):
         # generate the local excitation function and then convert into the global coordinate frame.
         if point_index == None:
             aperture_points = self.export_all_points()
@@ -446,23 +447,27 @@ class antenna_structures(object3d):
 
         from .electromagnetics.emfunctions import excitation_function
 
-        excitation_weights=excitation_function(
+        excitation_weights = excitation_function(
             aperture_points,
             desired_e_vector,
             phase_shift=phase_shift,
             wavelength=wavelength,
             steering_vector=steering_vector,
             transmit_power=transmit_power,
-            local_projection=local_projection)
+            local_projection=local_projection,
+        )
 
         return excitation_weights
+
     def export_all_structures(self):
-        #objects = copy.deepcopy(self.structures.solids)
+        # objects = copy.deepcopy(self.structures.solids)
         for item in range(len(self.structures.solids)):
             if self.structures.solids[item] is None:
                 print("Structure does not exist")
             else:
-                self.structures.solids[item] = GF.mesh_transform(self.structures.solids[item], self.pose, False)
+                self.structures.solids[item] = GF.mesh_transform(
+                    self.structures.solids[item], self.pose, False
+                )
 
         return self.structures.solids
 

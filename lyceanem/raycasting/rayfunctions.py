@@ -61,7 +61,7 @@ def hit(ray, triangle):
 
     # if A is less than zero, then the ray is coming from behind the triangle
     # don't cull backface triangles
-    #if A < 0:
+    # if A < 0:
     #    return False, math.inf
     # calculate distance from vertice 0 to ray origin
     tvecx = ray.ox - triangle.v0x  # s
@@ -386,7 +386,7 @@ def visiblespace(
     )
 
     # angles[np.isnan(angles)]=0
-    vertex_area[np.isnan(vertex_area)]=0
+    vertex_area[np.isnan(vertex_area)] = 0
     # visible_patterns=quickpatterncreator(az_range,elev_range,source_coords,angles,vertex_area,hit_index)
     if len(vertex_area) == 1:
         if vertex_area == 0:
@@ -1842,9 +1842,9 @@ def charge_rays_environment1Dv2(sources, sinks, environment_points, point_indexi
         ray payload to be sent to GPU
 
     """
-    #print("sources shape", sources.shape)
-    #print("sinks shape", sinks.shape)
-    #print("environment_points shape", environment_points.shape)
+    # print("sources shape", sources.shape)
+    # print("sinks shape", sinks.shape)
+    # print("environment_points shape", environment_points.shape)
 
     unified_model = np.append(
         np.append(sources, sinks, axis=0), environment_points, axis=0
@@ -2140,10 +2140,12 @@ def chunkingRaycaster1Dv3(
 ):
     start = timer()
     cuda.current_context().memory_manager.deallocations.clear()
-    
+
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.5).astype(np.int64)
-    ray_limit = np.floor(((max_mem - environment_local.nbytes) / base_types.ray_t.size)).astype(np.int64)
+    ray_limit = np.floor(
+        ((max_mem - environment_local.nbytes) / base_types.ray_t.size)
+    ).astype(np.int64)
     sink_index = np.arange(
         sources.shape[0] + 1, sources.shape[0] + 1 + sinks.shape[0]
     ).reshape(sinks.shape[0], 1)
@@ -2770,7 +2772,7 @@ def workchunkingv2(
         )
         if io_indexing.shape[0] >= ray_limit:
             # need to split the array and process seperatly
-            
+
             sub_io = np.array_split(
                 io_indexing, np.ceil(io_indexing.shape[0] / ray_limit).astype(int)
             )
@@ -2926,8 +2928,10 @@ def workchunkingv2(
                 sources, sinks, scattering_points, filtered_index, environment, False
             )
             if filtered_index2.shape[0] * sinks.shape[0] > 2e8:
-                temp_chunks = np.ceil((filtered_index2.shape[0] * sinks.shape[0]) / 2e8).astype(int)
-                
+                temp_chunks = np.ceil(
+                    (filtered_index2.shape[0] * sinks.shape[0]) / 2e8
+                ).astype(int)
+
                 temp_chunking = np.linspace(
                     0, filtered_index2.shape[0], temp_chunks, dtype=np.int32
                 )

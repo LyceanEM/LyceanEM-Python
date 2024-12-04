@@ -10,7 +10,16 @@ from importlib_resources import files
 import cupy as cp
 import numpy as np
 import scipy.stats
-from numba import cuda, float32, float64, complex64, complex128, njit, guvectorize, complex128
+from numba import (
+    cuda,
+    float32,
+    float64,
+    complex64,
+    complex128,
+    njit,
+    guvectorize,
+    complex128,
+)
 from numpy.linalg import norm
 
 import lyceanem.base_types as base_types
@@ -784,8 +793,8 @@ def lossy_propagation(point1, point2, alpha, beta):
     normal[2] = point2["nz"]
     projection_dot = dot_vec(outgoing_dir, normal)
     front = -(1 / (2 * cmath.pi))
-    s=2.5
-    distance_loss=1.0/((1+length[0]**s)**(1/s))
+    s = 2.5
+    distance_loss = 1.0 / ((1 + length[0] ** s) ** (1 / s))
     G = (cmath.exp(-(alpha[0] + 1j * beta[0]) * length[0])) * distance_loss
 
     dG = (-(alpha[0] + 1j * beta[0]) - complex64((distance_loss))) * G
@@ -2208,7 +2217,7 @@ def EMGPUFreqDomain(
     """
     # ctx = cuda.current_context()
     # ctx.reset()
-    #clear GPU memory
+    # clear GPU memory
     cuda.current_context().memory_manager.deallocations.clear()
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem).astype(np.int64)
@@ -2225,9 +2234,9 @@ def EMGPUFreqDomain(
         # print("Number of Chunks",np.ceil(memory_requirements/max_mem).astype(int)+1)
         # create chunks based upon number of chunks required
         num_chunks = np.ceil(memory_requirements / max_mem).astype(int) + 1
-        if num_chunks<0:
+        if num_chunks < 0:
             print(num_chunks)
-            
+
         source_chunking = np.linspace(0, source_num, num_chunks + 1).astype(np.int32)
         scattering_network = np.zeros(
             (source_num, sink_num, 3, 2),

@@ -1,4 +1,5 @@
 """LyceanEM : Electromagnetics Modelling for Antenna and Antenna Array Development on Complex Platforms"""
+
 try:
     from importlib import metadata
 except ImportError:  # for Python<3.8
