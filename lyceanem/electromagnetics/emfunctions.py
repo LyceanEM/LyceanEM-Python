@@ -413,16 +413,16 @@ def PoyntingVector(field_data, measurement=False, aperture=None):
     if measurement:
         poynting_vector_complex = poynting_vector_complex / aperture
 
-    field_data.point_data["Poynting_Vector_(Magnitude)"] = np.zeros(
+    field_data.point_data["Poynting_Vector_(Magnitude_(W/m2))"] = np.zeros(
         (field_data.points.shape[0], 1)
     )
-    field_data.point_data["Poynting_Vector_(Magnitude_(dB))"] = np.zeros(
+    field_data.point_data["Poynting_Vector_(Magnitude_(dBW/m2))"] = np.zeros(
         (field_data.points.shape[0], 1)
     )
-    field_data.point_data["Poynting_Vector_(Magnitude)"] = np.linalg.norm(
+    field_data.point_data["Poynting_Vector_(Magnitude_(W/m2))"] = np.linalg.norm(
         poynting_vector_complex, axis=1
     ).reshape(-1, 1)
-    field_data.point_data["Poynting_Vector_(Magnitude_(dB))"] = 10 * np.log10(
+    field_data.point_data["Poynting_Vector_(Magnitude_(dBW/m2))"] = 10 * np.log10(
         np.linalg.norm(poynting_vector_complex.reshape(-1, 1), axis=1)
     )
     return field_data
