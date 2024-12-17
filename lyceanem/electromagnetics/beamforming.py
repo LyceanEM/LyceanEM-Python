@@ -1353,7 +1353,7 @@ def GPUBeamformingMap(Etheta, Ephi, DirectivityMap, az_range, el_range, waveleng
 def create_display_mesh(
     field_data,
     field_radius=1.0,
-    label="Poynting Vector (Magnitude)",
+    label='Poynting_Vector_(Magnitude_(W/m2))',
     log_type="amplitude",
     plot_max=None,
 ):

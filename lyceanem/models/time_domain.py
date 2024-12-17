@@ -112,6 +112,8 @@ def calculate_scattering(
             else:
                 conformal_E_vectors = desired_E_axis.reshape(num_sources, 3)
 
+    # convert from field strengths to diffraction integral components
+    conformal_E_vectors = conformal_E_vectors * aperture_coords.point_data['Area'].reshape(-1, 1)
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
         scatter_points = meshio.Mesh(
