@@ -170,7 +170,7 @@ class points(object3d):
         None
         """
         for item in range(len(self.points)):
-            self.points[item] = GF.translate_mesh(self.points[item], vector)
+            self.points[item] = GF.mesh_translate(self.points[item], vector)
 
     def export_points(self, point_index=None):
         """
