@@ -100,22 +100,16 @@ struct __device__ complex_float3 {
 // point data struct
 struct __host__ __device__ PointData {
     complex_float3 electric_field;
-    bool is_electric;
-    cuFloatComplex permittivity;
-    cuFloatComplex permeability;
     float3 normal;
 
 };
 
 
-PointData __host__ __device__  create_point_data(float ex_real, float ex_imag, float ey_real, float ey_imag, float ez_real, float ez_imag, bool is_electric, float permittivity_real, float permittivity_imag, float permeability_real, float permeability_imag, float normal_x, float normal_y, float normal_z) {
+PointData __host__ __device__  create_point_data(float ex_real, float ex_imag, float ey_real, float ey_imag, float ez_real, float ez_imag, float normal_x, float normal_y, float normal_z) {
 PointData point_data;
 point_data.electric_field.x = make_cuFloatComplex(ex_real, ex_imag);
 point_data.electric_field.y = make_cuFloatComplex(ey_real, ey_imag);
 point_data.electric_field.z = make_cuFloatComplex(ez_real, ez_imag);
-point_data.is_electric = is_electric;
-point_data.permittivity = make_cuFloatComplex(permittivity_real, permittivity_imag);
-point_data.permeability = make_cuFloatComplex(permeability_real, permeability_imag);
 point_data.normal = make_float3(normal_x, normal_y, normal_z);
 
 return point_data;

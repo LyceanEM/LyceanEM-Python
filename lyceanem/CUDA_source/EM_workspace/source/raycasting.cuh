@@ -198,7 +198,8 @@ std::pair<float4*,int2*>  raycast_wrapper (float *source, float *end, float* sca
     gpuErrchk( cudaGetLastError() );
 
     
-
+    // set data to zero in 
+    float3 zero = make_float3(0,0,0);
 
     cudaMemset(d_ray, 0, ray_size);
     cudaMemset(d_ray_index, -1, ray_index_size);
