@@ -4,9 +4,9 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
+    branches: [ test_build ]
   pull_request:
-    branches: [ master ]
+    branches: [ test_build ]
 
 jobs:
   build:
@@ -18,11 +18,7 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         platform:
-          - {
-              name: "windows",
-              os: "windows-latest",
-              shell: "pwsh"
-            }
+
           - {
               name: "linux",
               os: "ubuntu-latest",
