@@ -21,13 +21,10 @@ requirements:
     - python
     - conda-forge::numpy
     - conda-forge::scipy
-    - conda-forge::meshio
     - conda-forge::numba
     - conda-forge::cudatoolkit
     - conda-forge::cupy
     - conda-forge::importlib_resources
-    - conda-forge::meshio
-    - conda-forge::pyvista
 
 
 about:
