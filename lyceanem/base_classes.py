@@ -122,7 +122,9 @@ class points(object3d):
             """
             mesh_vertices = points.reshape(-1, 3)
             mesh_normals = normals.reshape(-1, 3)
-            new_point_cloud = meshio.Mesh(points=mesh_vertices, cells=[], point_data={"Normals": mesh_normals})
+            new_point_cloud = meshio.Mesh(
+                points=mesh_vertices, cells=[], point_data={"Normals": mesh_normals}
+            )
 
             self.add_points(new_point_cloud)
 
@@ -145,7 +147,12 @@ class points(object3d):
         """
         # warning, current commond just rotates around the origin, and until Open3D can be brought up to the
         # latest version without breaking BlueCrystal reqruiements, this will require additional code.
-        assert (rotation_vector.shape == (3,) or rotation_vector.shape == (3,1) or rotation_vector.shape == (1,3) or rotation_vector.shape == (3,3)), "Rotation vector must be a 3x1 or 3x3 array"
+        assert (
+            rotation_vector.shape == (3,)
+            or rotation_vector.shape == (3, 1)
+            or rotation_vector.shape == (1, 3)
+            or rotation_vector.shape == (3, 3)
+        ), "Rotation vector must be a 3x1 or 3x3 array"
         for item in range(len(self.points)):
             self.points[item] = GF.mesh_rotate(
                 self.points[item], rotation_vector, rotation_centre
@@ -176,48 +183,93 @@ class points(object3d):
         combined points
         """
         if point_index == None:
-            
+            points = np.empty((0, 3))
             for item in range(len(self.points)):
                 if item == 0:
-                    points = np.array(self.points[item].points)
+                    points = np.append(
+                        points, np.array(self.points[item].points), axis=0
+                    )
                 else:
                     points = np.append(points, self.points[item].points, axis=0)
             point_data = {}
             for key in self.points[0].point_data.keys():
-                for item in range(len(self.points)):  
-                    if item == 0:
-                        point_data[key] = np.array(self.points[item].point_data[key])
+                if len(self.points[0].point_data[key].shape) < 2:
+                    point_data[key] = np.empty((0, 1))
+                else:
+                    point_data[key] = np.empty(
+                        (0, self.points[0].point_data[key].shape[1])
+                    )
+
+                for item in range(len(self.points)):
+                    point_data_element = np.array(self.points[item].point_data[key])
+                    if len(point_data_element.shape) < 2:
+                        point_data[key] = np.append(
+                            point_data[key], point_data_element.reshape(-1, 1), axis=0
+                        )
                     else:
-                        point_data_element = np.array(self.points[item].point_data[key])
-                        point_data[key] = np.append(point_data[key], point_data_element, axis=0)
+                        point_data[key] = np.append(
+                            point_data[key], point_data_element, axis=0
+                        )
 
-            combinded_points = meshio.Mesh(points, cells = [], point_data=point_data)
-            combinded_points = GF.mesh_transform(combinded_points, self.pose, False)
-            return combinded_points
-                    
-
-
+            combined_points = meshio.Mesh(
+                points,
+                cells=[
+                    (
+                        "vertex",
+                        np.array(
+                            [
+                                [
+                                    i,
+                                ]
+                                for i in range(points.shape[0])
+                            ]
+                        ),
+                    )
+                ],
+                point_data=point_data,
+            )
+            combined_points = GF.mesh_transform(combined_points, self.pose, False)
+            return combined_points
 
         else:
+            points = np.empty((0, 3))
             for item in point_index:
                 if item == 0:
-                    points = np.array(self.points[item].points)
+                    points = np.append(
+                        points, np.array(self.points[item].points), axis=0
+                    )
                 else:
                     points = np.append(points, self.points[item].points, axis=0)
             point_data = {}
-            for key in self.points[0].point_data.keys():
+            for key in self.points[point_index[0]].point_data.keys():
+                point_data[key] = np.empty(
+                    (0, self.points[point_index[0]].point_data[key].shape[1])
+                )
                 for item in point_index:
-                    if item == 0:
-                        point_data[key] = np.array(self.points[item].point_data[key])
-                    else:
-                        point_data_element = np.array(self.points[item].point_data[key])
-                        point_data[key] = np.append(point_data[key], point_data_element, axis=0)
-                
+                    point_data_element = np.array(self.points[item].point_data[key])
+                    point_data[key] = np.append(
+                        point_data[key], point_data_element, axis=0
+                    )
 
-            combinded_points = meshio.Mesh(points, point_data=point_data)
+            combinded_points = meshio.Mesh(
+                points,
+                cells=[
+                    (
+                        "vertex",
+                        np.array(
+                            [
+                                [
+                                    i,
+                                ]
+                                for i in range(points.shape[0])
+                            ]
+                        ),
+                    )
+                ],
+                point_data=point_data,
+            )
             combinded_points = GF.mesh_transform(combinded_points, self.pose, False)
 
-        
             return combinded_points
 
 
@@ -291,7 +343,7 @@ class structures(object3d):
         Parameters
         ----------
         rotation_matrix : numpy array of appropriate shape (4,4)
-        
+
         rotation_centre : 1*3 numpy float array
             centre of rotation for the structures
 
@@ -299,7 +351,6 @@ class structures(object3d):
         --------
         None
         """
-
 
         for item in range(len(self.solids)):
             if self.solids[item] is not None:
@@ -322,8 +373,7 @@ class structures(object3d):
         """
         for item in range(len(self.solids)):
             if self.solids[item] is not None:
-                self.solids[item] = GF.translate_mesh(self.solids[item],vector)
-
+                self.solids[item] = GF.translate_mesh(self.solids[item], vector)
 
     def triangles_base_raycaster(self):
         """
@@ -377,7 +427,6 @@ class structures(object3d):
             
 
 
-
 class antenna_structures(object3d):
     """
     Dedicated class to store information on a specific antenna, including aperture points
@@ -395,11 +444,10 @@ class antenna_structures(object3d):
         super().__init__()
         self.structures = structures
         self.points = points
-        #self.antenna_xyz = o3d.geometry.TriangleMesh.create_coordinate_frame(
-           # size=1, origin=self.pose[:3, 3]
-       # )
+        # self.antenna_xyz = o3d.geometry.TriangleMesh.create_coordinate_frame(
+        # size=1, origin=self.pose[:3, 3]
 
-
+    # )
 
     def export_all_points(self, point_index=None):
         if point_index == None:
@@ -408,7 +456,6 @@ class antenna_structures(object3d):
             point_cloud = self.points.export_points(point_index=point_index)
 
         point_cloud = GF.mesh_transform(point_cloud, self.pose, False)
-
 
         return point_cloud
 
@@ -419,7 +466,8 @@ class antenna_structures(object3d):
         phase_shift="none",
         wavelength=1.0,
         steering_vector=np.zeros((1, 3)),
-        transmit_power=1.0
+        transmit_power=1.0,
+        local_projection=True
     ):
         # generate the local excitation function and then convert into the global coordinate frame.
         if point_index == None:
@@ -427,47 +475,57 @@ class antenna_structures(object3d):
         else:
             aperture_points = self.export_all_points(point_index=point_index)
 
-        #as export all points imposes the transformation from local to global frame on the points and associated normal vectors, no rotation is required within calculate_conformalVectors
-        aperture_weights = EM.calculate_conformalVectors(
-            desired_e_vector, aperture_points.point_data['Normals'], np.eye(3)
-        )
+        if local_projection:
+        # as export all points imposes the transformation from local to global frame on the points and associated normal vectors, no rotation is required within calculate_conformalVectors
+            aperture_weights = EM.calculate_conformalVectors(
+                desired_e_vector, aperture_points.point_data["Normals"], np.eye(3)
+            )
+        else:
+            aperture_weights=np.repeat(desired_e_vector,aperture_points.points.shape[0],axis=0)
+            
         if phase_shift == "wavefront":
             source_points = np.asarray(aperture_points.points)
             phase_weights = BM.WavefrontWeights(
                 source_points, steering_vector, wavelength
             )
             aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
-        if phase_shift =="coherence":
+        if phase_shift == "coherence":
             source_points = np.asarray(aperture_points.points)
-            phase_weights=BM.ArbitaryCoherenceWeights(source_points, steering_vector, wavelength
+            phase_weights = BM.ArbitaryCoherenceWeights(
+                source_points, steering_vector, wavelength
             )
             aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
 
         from .utility.math_functions import discrete_transmit_power
-        if 'Area' in aperture_points.point_data.keys():
-            areas=aperture_points.point_data['Area']
+
+        if "Area" in aperture_points.point_data.keys():
+            areas = aperture_points.point_data["Area"]
         else:
-            areas=np.zeros((aperture_points.points.shape[0]))
-            areas[:]=(wavelength*0.5)**2
+            areas = np.zeros((aperture_points.points.shape[0]))
+            areas[:] = (wavelength * 0.5) ** 2
 
-        calibrated_amplitude_density=discrete_transmit_power(aperture_weights,areas,transmit_power)
-        return calibrated_amplitude_density
+        calibrated_amplitude_weights = discrete_transmit_power(
+            aperture_weights, areas, transmit_power
+        )
+        return calibrated_amplitude_weights
 
-    
     def export_all_structures(self):
-        objects = copy.deepcopy(self.structures.solids)
-        for item in range(len(objects)):
-            if objects[item] is None:
+        #objects = copy.deepcopy(self.structures.solids)
+        for item in range(len(self.structures.solids)):
+            if self.structures.solids[item] is None:
                 print("Structure does not exist")
             else:
-                objects[item] = GF.mesh_transform(objects[item], self.pose, False)
+                self.structures.solids[item] = GF.mesh_transform(self.structures.solids[item], self.pose, False)
 
-        return objects
-    def rotate_antenna(self, rotation_vector,rotation_centre=np.zeros((3, 1), dtype=np.float32)):
-        self.structures.rotate_structures(rotation_vector,rotation_centre)
-        self.points.rotate_points(rotation_vector,rotation_centre)
+        return self.structures.solids
 
-    def translate_antenna(self,translation_vector):
+    def rotate_antenna(
+        self, rotation_vector, rotation_centre=np.zeros((3, 1), dtype=np.float32)
+    ):
+        self.structures.rotate_structures(rotation_vector, rotation_centre)
+        self.points.rotate_points(rotation_vector, rotation_centre)
+
+    def translate_antenna(self, translation_vector):
         self.structures.translate_structures(translation_vector)
         self.points.translate_points(translation_vector)
 
@@ -484,6 +542,7 @@ class antenna_structures(object3d):
 
         """
         import pyvista as pv
+
         aperture_meshes = []
         structure_meshes = []
         # export and convert structures
@@ -491,25 +550,23 @@ class antenna_structures(object3d):
 
         def structure_cells(array):
             ## add collumn of 3s to beggining of each row
-            array = np.append(np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1)
+            array = np.append(
+                np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1
+            )
             return array
 
         for item in triangle_meshes:
             if item is not None:
-                new_mesh = pv.PolyData(item.points, structure_cells(item.cells[0].data))
-                # need to transfer across the point data and cell data
+                new_mesh = pv.utilities.from_meshio(item)
                 structure_meshes.append(new_mesh)
 
         point_sets = [self.export_all_points()]
         for item in point_sets:
             if item is not None:
-                new_points = pv.PolyData(item.points)
+                new_points = pv.utilities.from_meshio(item)
                 aperture_meshes.append(new_points)
 
         return aperture_meshes, structure_meshes
-
-  
-
 
 
 class antenna_pattern(object3d):
@@ -598,16 +655,12 @@ class antenna_pattern(object3d):
             elev_index = np.where(elev_angles > 0)
             self.pattern[elev_index, :, 0] = 1.0
 
-
-
-
-
-
     def export_pyvista_object(self):
         """
         Return Antenna Pattern as a PyVista Structured Mesh Data Object
         """
         import pyvista as pv
+
         def cell_bounds(points, bound_position=0.5):
             """
             Calculate coordinate cell boundaries.
@@ -642,47 +695,73 @@ class antenna_pattern(object3d):
             return bounds
 
         self.transmute_pattern(desired_format="ExEyEz")
-        #hack for cst patterns in spatial intelligence project
-        ex=self.pattern[:,:,0]
-        ey=self.pattern[:,:,1]
-        ez=self.pattern[:,:,2]
-        az=np.linspace(0,360,self.azimuth_resolution)
-        elevation=np.linspace(-90,90,self.elevation_resolution)
+        # hack for cst patterns in spatial intelligence project
+        ex = self.pattern[:, :, 0]
+        ey = self.pattern[:, :, 1]
+        ez = self.pattern[:, :, 2]
+        az = np.linspace(0, 360, self.azimuth_resolution)
+        elevation = np.linspace(-90, 90, self.elevation_resolution)
         xx_bounds = cell_bounds(az)
-        yy_bounds = cell_bounds(90-elevation)
+        yy_bounds = cell_bounds(90 - elevation)
         self.transmute_pattern(desired_format="Etheta/Ephi")
-        et=self.pattern[:,:,0]
-        ep=self.pattern[:,:,1]
-        vista_pattern=pv.grid_from_sph_coords(xx_bounds, yy_bounds,  self.field_radius)
-        vista_pattern['Real']=np.real(np.append(np.append(ex.transpose().ravel().reshape(ex.size,1),
-                                                          ey.transpose().ravel().reshape(ex.size,1),axis=1),
-                                                ez.transpose().ravel().reshape(ex.size,1),axis=1))
-        vista_pattern['Imag']=np.imag(np.append(np.append(ex.transpose().ravel().reshape(ex.size,1),
-                                                          ey.transpose().ravel().reshape(ex.size,1),axis=1),
-                                                ez.transpose().ravel().reshape(ex.size,1),axis=1))
-        vista_pattern['E(theta) Magnitude']=np.abs(et.transpose().ravel())
-        vista_pattern['E(theta) Phase']=np.angle(et.transpose().ravel())
-        vista_pattern['E(phi) Magnitude']=np.abs(ep.transpose().ravel())
-        vista_pattern['E(phi) Phase']=np.angle(ep.transpose().ravel())
-        vista_pattern['Magnitude']=np.abs(vista_pattern['Real']+1j*vista_pattern['Imag'])
-        vista_pattern['Phase']=np.angle(vista_pattern['Real']+1j*vista_pattern['Imag'])
+        et = self.pattern[:, :, 0]
+        ep = self.pattern[:, :, 1]
+        vista_pattern = pv.grid_from_sph_coords(xx_bounds, yy_bounds, self.field_radius)
+        vista_pattern["Real"] = np.real(
+            np.append(
+                np.append(
+                    ex.transpose().ravel().reshape(ex.size, 1),
+                    ey.transpose().ravel().reshape(ex.size, 1),
+                    axis=1,
+                ),
+                ez.transpose().ravel().reshape(ex.size, 1),
+                axis=1,
+            )
+        )
+        vista_pattern["Imag"] = np.imag(
+            np.append(
+                np.append(
+                    ex.transpose().ravel().reshape(ex.size, 1),
+                    ey.transpose().ravel().reshape(ex.size, 1),
+                    axis=1,
+                ),
+                ez.transpose().ravel().reshape(ex.size, 1),
+                axis=1,
+            )
+        )
+        vista_pattern["E(theta) Magnitude"] = np.abs(et.transpose().ravel())
+        vista_pattern["E(theta) Phase"] = np.angle(et.transpose().ravel())
+        vista_pattern["E(phi) Magnitude"] = np.abs(ep.transpose().ravel())
+        vista_pattern["E(phi) Phase"] = np.angle(ep.transpose().ravel())
+        vista_pattern["Magnitude"] = np.abs(
+            vista_pattern["Real"] + 1j * vista_pattern["Imag"]
+        )
+        vista_pattern["Phase"] = np.angle(
+            vista_pattern["Real"] + 1j * vista_pattern["Imag"]
+        )
         return vista_pattern
+
     def pattern_mesh(self):
         points = self.cartesian_points()
         mesh = pv.StructuredGrid(points[:, 0], points[:, 1], points[:, 2])
         mesh.dimensions = [self.azimuth_resolution, self.elevation_resolution, 1]
         if self.arbitary_pattern_format == "Etheta/Ephi":
-            mesh.point_data['Etheta'] = self.pattern[:,:,0]
-            mesh.point_data['Ephi'] = self.pattern[:, :, 1]
+            mesh.point_data["Etheta"] = self.pattern[:, :, 0]
+            mesh.point_data["Ephi"] = self.pattern[:, :, 1]
         elif self.arbitary_pattern_format == "ExEyEz":
-            mesh.point_data['Ex'] = self.pattern[:, :, 0]
-            mesh.point_data['Ey'] = self.pattern[:, :, 1]
-            mesh.point_data['Ez'] = self.pattern[:, :, 2]
+            mesh.point_data["Ex"] = self.pattern[:, :, 0]
+            mesh.point_data["Ey"] = self.pattern[:, :, 1]
+            mesh.point_data["Ez"] = self.pattern[:, :, 2]
 
         return mesh
 
     def display_pattern(
-        self, plottype="Polar", desired_pattern="both", pattern_min=-40, plot_max=0,plotengine="matplotlib"
+        self,
+        plottype="Polar",
+        desired_pattern="both",
+        pattern_min=-40,
+        plot_max=0,
+        plotengine="matplotlib",
     ):
         """
         Displays the Antenna Pattern using :func:`lyceanem.electromagnetics.beamforming.PatternPlot`
@@ -700,18 +779,19 @@ class antenna_pattern(object3d):
         -------
         None
         """
-        if plotengine=="pyvista":
+        if plotengine == "pyvista":
+
             def PatternPlot(
-                    data,
-                    az,
-                    elev,
-                    pattern_min=-40,
-                    plot_max=0.0,
-                    plottype="Polar",
-                    logtype="amplitude",
-                    ticknum=6,
-                    title_text=None,
-                    shell_radius=1.0
+                data,
+                az,
+                elev,
+                pattern_min=-40,
+                plot_max=0.0,
+                plottype="Polar",
+                logtype="amplitude",
+                ticknum=6,
+                title_text=None,
+                shell_radius=1.0,
             ):
                 # points = spherical_mesh(az, elev,
                 # (data / np.nanmax(data) * shell_radius))
@@ -734,6 +814,7 @@ class antenna_pattern(object3d):
                 pl.show()
 
                 return pl
+
         if self.arbitary_pattern_format == "Etheta/Ephi":
             if desired_pattern == "both":
                 BM.PatternPlot(
@@ -1075,7 +1156,7 @@ class antenna_pattern(object3d):
             the maximum directivity for each pattern
 
         """
-        Dtheta, Dphi, Dtotal, Dmax = BM.directivity_transformv2(
+        Dtheta, Dphi, Dtotal, Dmax = BM.directivity_transform(
             self.pattern[:, :, 0],
             self.pattern[:, :, 1],
             az_range=self.az_mesh[0, :],

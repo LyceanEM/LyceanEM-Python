@@ -21,7 +21,7 @@ import numpy as np
 # Frequency and Mesh Resolution
 # ------------------------------
 #
-freq = np.asarray(16.0e9)
+freq = np.asarray(22.0e9)
 wavelength = 3e8 / freq
 mesh_resolution = 0.5 * wavelength
 
@@ -165,7 +165,8 @@ Ex, Ey, Ez = FD.calculate_scattering(
     scatter_points=scatter_points,
     wavelength=wavelength,
     scattering=1,
-    project_vectors=False
+    project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 
 
