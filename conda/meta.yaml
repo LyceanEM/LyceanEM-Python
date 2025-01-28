@@ -46,7 +46,10 @@ test:
   imports:
     - lyceanem
     - lyceanem.em
-    - lyceanem.em.bin_counts_to_numpy
-    - lyceanem.em.bin_triangles_to_numpy
-    - lyceanem.em.calculate_scattering_brute_force
-    - lyceanem.em.calculate_scattering_tiles
+
+  commands:
+    - python -c "from lyceanem.em import bin_counts_to_numpy; print('bin_counts_to_numpy import successful')"
+    - python -c "from lyceanem.em import bin_triangles_to_numpy; print('bin_triangles_to_numpy import successful')"
+    - python -c "from lyceanem.em import calculate_scattering_brute_force; print('calculate_scattering_brute_force import successful')"
+    - python -c "from lyceanem.em import calculate_scattering_tiles; print('calculate_scattering_tiles import successful')"
+
