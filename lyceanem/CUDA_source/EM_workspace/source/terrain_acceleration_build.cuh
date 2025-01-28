@@ -9,10 +9,6 @@
 #include <device_launch_parameters.h>
 #include "math_utility.cuh"
 #include "gpu_error.cuh"
-#include <assert.h>
-#include <cassert>
-
-
 
 
 #include <iostream>
@@ -45,7 +41,7 @@ __device__ __inline__ static int bin_point( float2 y_range, float2 z_range, int2
     
     
     bool all_triangles_are_within_provided_yz_bounds = (point.y >= y_range.x && point.y <= y_range.y * num_bins.x + y_range.x && point.z >= z_range.x && point.z <= z_range.y * num_bins.y + z_range.x);
-    bool check_in_bin = (point.y >= lower_y && point.y <= upper_y && point.z >= lower_z && point.z <= upper_z);
+    bool check_in_bin = (point.y >= lower_y && point.y < upper_y && point.z >= lower_z && point.z < upper_z);
     if (!check_in_bin){
         printf("Point %f %f %f not in bin %f %f %f %f %f %f\n",point.x,point.y,point.z,lower_y,upper_y,lower_z,upper_z,y_range.y,z_range.y);
     }
@@ -75,6 +71,9 @@ __device__ __inline__ void count_triangles_in_bin(float3* points, float2 y_range
         int bin_z = bin_point( y_range, z_range, num_bins, points[triangles[t].z]);
         if(bin_z != bin_x && bin_z != bin_y){
             atomicAdd(&bin_counts[bin_z], 1);
+        }
+        if(triangles[t].x == 7 || triangles[t].y == 7 || triangles[t].z == 7){
+            int binnn = bin_point( y_range, z_range, num_bins, points[7]);
         }
         if(bin_z != bin_x && bin_z != bin_y && bin_y != bin_x){
             int2 binx = make_int2(bin_x/num_bins.y,bin_x%num_bins.y);
@@ -164,8 +163,6 @@ __device__ __inline__ void bin_triangles(int3* triangles, float3* points, float2
             insert_triangle_in_bin(bin_offsets[bin_y], t, binned_triangles);
         }
         int bin_z = bin_point( y_range, z_range, num_bins, points[triangles[t].z]);
-
-
         if(bin_z != bin_x && bin_z != bin_y){
             insert_triangle_in_bin(bin_offsets[bin_z], t, binned_triangles);
         }
@@ -299,11 +296,6 @@ __global__ void triangle_counter_kernel(float3* triangle_vertex, float2 y_range,
     count_triangles_in_bin(triangle_vertex, y_range, z_range, num_bins, triangle_number, triangles, bin_counts, tid, stride);
 }
 
-__global__ void test_assert(){
-    printf("hi from assert\n");
-    int assert_works = 0;
-    assert(assert_works);
-}
 
 py::array_t<int> bin_counts_to_numpy(py::array_t<float> tri_vertex, py::array_t<int> tri_index,int ncells_x,int ncells_y, float ymin, float cell_width, float z_min ){
     
@@ -311,7 +303,7 @@ py::array_t<int> bin_counts_to_numpy(py::array_t<float> tri_vertex, py::array_t<
     if (tri_vertex.ndim() != 2 || tri_vertex.shape(1) != 3){throw std::runtime_error("tri_vertex must be a 2D array with 3 columns");}
     if (tri_index.ndim() != 2 || tri_index.shape(1) != 3){throw std::runtime_error("tri_index must be a 2D array with 3 columns");}
     std::cout << "ncells_x: " << ncells_x << std::endl;
-    test_assert<<<1,1>>>();
+
     //get buffers
     auto tri_vertex_buf = tri_vertex.request();
     auto tri_index_buf = tri_index.request();
@@ -326,7 +318,6 @@ py::array_t<int> bin_counts_to_numpy(py::array_t<float> tri_vertex, py::array_t<
     float3 *d_tri_vertex;
     int3 *d_triangles;
     int *d_bin_counts;
-    std::cout << "width: " << cell_width << std::endl;
 
     // allocate memory on device
     cudaMalloc((void**)&d_tri_vertex, tri_vertex.shape(0) * sizeof(float3));
@@ -346,7 +337,7 @@ py::array_t<int> bin_counts_to_numpy(py::array_t<float> tri_vertex, py::array_t<
     std::cout << "ncells_x: " << ncells_x << std::endl;
 
     //launch kernel for each ray_wave
-    triangle_counter_kernel<<<1, 512>>>(d_tri_vertex, make_float2(ymin,cell_width), make_float2(z_min,cell_width), make_int2(ncells_x,ncells_y), tri_index.shape(0), d_triangles, d_bin_counts);
+    triangle_counter_kernel<<<32,256>>>(d_tri_vertex, make_float2(ymin,cell_width), make_float2(z_min,cell_width), make_int2(ncells_x,ncells_y), tri_index.shape(0), d_triangles, d_bin_counts);
     std::cout << "ncells_x: " << ncells_x << std::endl;
 
     //declare new numpy array
@@ -372,7 +363,6 @@ __global__ void bin_triangles_kernel_precounted(int3* triangles, float3* points,
     for(int i = tid; i < sum_bin_counts; i+=stride){
         binned_triangles[i] = -1;
     }
-    __syncthreads();
 
     compute_bin_offsets(bin_counts, num_bins, bin_offsets, tid, stride);
     __syncthreads();
@@ -419,7 +409,6 @@ py::array_t<int> bin_triangles_to_numpy(py::array_t<float> tri_vertex, py::array
     cudaMalloc((void**)&d_tri_vertex, tri_vertex.shape(0) * sizeof(float3));
     cudaMalloc((void**)&d_triangles, tri_index.shape(0) * sizeof(int3));
     cudaMalloc((void**)&d_bin_counts, ncells_x * ncells_y * sizeof(int));
-
     cudaMalloc((void**)&d_bin_offsets, ncells_x * ncells_y * sizeof(int2));
     cudaMalloc((void**)&d_binned_triangles, sum_bin_counts * sizeof(int3));
     cudaMalloc((void**)&d_binnedtriangle_number, sum_bin_counts* sizeof(int));
@@ -438,29 +427,17 @@ py::array_t<int> bin_triangles_to_numpy(py::array_t<float> tri_vertex, py::array
     //launch kernel for each ray_wave
     bin_triangles_kernel_precounted<<<1, 512>>>(d_triangles, d_tri_vertex, make_float2(ymin,cell_width), make_float2(z_min,cell_width), make_int2(ncells_x,ncells_y), d_bin_counts, d_bin_offsets, d_binnedtriangle_number, tri_index.shape(0), d_binned_triangles, sum_bin_counts);
     //new numpy array
-    gpuErrchk( cudaGetLastError() );
-
     py::array_t<int> binned_triangles = py::array_t<int>(sum_bin_counts*3);
     auto binned_triangles_buf = binned_triangles.request();
     int *binned_triangles_ptr = (int *) binned_triangles_buf.ptr;
 
-    cudaMemcpy(binned_triangles_ptr, d_binned_triangles, sum_bin_counts * sizeof(int3), cudaMemcpyDeviceToHost);   
+    cudaMemcpy(binned_triangles_ptr, d_binned_triangles, sum_bin_counts*3 * sizeof(int), cudaMemcpyDeviceToHost);   
     gpuErrchk( cudaGetLastError() );
     cudaFree(d_tri_vertex);
-    gpuErrchk( cudaGetLastError() );
-
     cudaFree(d_triangles);
-    gpuErrchk( cudaGetLastError() );
-
     cudaFree(d_bin_counts);
-    gpuErrchk( cudaGetLastError() );
-
     cudaFree(d_bin_offsets);
-    gpuErrchk( cudaGetLastError() );
-
     cudaFree(d_binned_triangles);
-    gpuErrchk( cudaGetLastError() );
-
     cudaFree(d_binnedtriangle_number);
     gpuErrchk( cudaGetLastError() );
     return binned_triangles;

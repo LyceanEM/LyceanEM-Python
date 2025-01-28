@@ -288,7 +288,12 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
     
 
     
-    ray_point_index[ray_index] = (intersected ) ?  make_int2(-1,-1): make_int2(c,d);
+    if(intersected){
+        ray_point_index[ray_index] = make_int2(-1,-1);
+    }
+    else{
+        ray_point_index[ray_index] = make_int2(c,d);
+    }
 
 
     ////printf("cell_index %i\n",cell_index);
@@ -498,19 +503,31 @@ __global__ void raycast_tiles(float3 *source, float3 *end, float4 *ray, int sour
 
 }
 
+__global__ void set_values(int2 *ray_index, int ray_num, int2 value,int end_num)
+{
+    int thread = threadIdx.x + blockIdx.x * blockDim.x;
+    int stride = blockDim.x * gridDim.x;  
+    for(int i = thread; i < ray_num; i+=stride)
+    {
+        int c = i / end_num;
+        int d = i % end_num;
+        ray_index[i] = make_int2(c,d);
 
+    }
+}
 
 
 
 
 
 void raycast_wrapper_tiles (float *source, float *end, int source_num, int end_num, float3 *d_tri_vertex,int3 *d_binned_triangles, int2* d_tri_num_per_bin, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,
-    PointData* points, float wave_length, complex_float3* h_scattering_network, float2 alpha_beta, bool not_self_to_self)
+    PointData* points, float wave_length, complex_float3* h_scattering_network, float2 alpha_beta)
 {
     // declare device memory
     float3 *d_source;
     float3 *d_end;
 
+    float3 *d_scatter;
     float4 *d_ray;
     int2 *d_ray_index;
 
@@ -562,6 +579,8 @@ void raycast_wrapper_tiles (float *source, float *end, int source_num, int end_n
  
     //launch kernel for each ray_wave
 
+    // source to sink
+    bool not_self_to_self = (d_source != d_end);
     PointData* d_points;
     complex_float3* d_scattering_network;
 

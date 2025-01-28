@@ -4,9 +4,9 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    branches: [ test_build ]
+    branches: [ test ]
   pull_request:
-    branches: [ test_build ]
+    branches: [ test ]
 
 jobs:
   build:
@@ -41,11 +41,11 @@ jobs:
           miniforge-version: latest
 #
       - name: Clone the devel branch (push to devel)
-        run: git clone --branch master https://github.com/${{ env.REPO }}
+        run: git clone --branch test https://github.com/${{ env.REPO }}
         if: github.event_name != 'pull_request'
 #
       - name: Clone the feature branch (pull request to devel)
-        run: git clone -b ${{ github.head_ref }} --single-branch https://github.com/${{ env.REPO }}
+        run: git clone --branch test https://github.com/${{ env.REPO }}
         if: github.event_name == 'pull_request'
 #
       - name: Setup Conda

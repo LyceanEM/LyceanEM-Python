@@ -1,10 +1,6 @@
-{% set name = "lyceanem" %}
-{% set version = "0.0.1" %}
-
 package:
-  name: {{ name }}
-  version: {{ version }}
-
+  name: lyceanem
+  version: 0.0.5
 source:
   path: ..
 
@@ -25,7 +21,6 @@ requirements:
     - python
     - conda-forge::numpy
     - conda-forge::scipy
-    - conda-forge::meshio
     - conda-forge::numba
     - conda-forge::cudatoolkit
     - conda-forge::cupy
@@ -51,4 +46,7 @@ test:
   imports:
     - lyceanem
     - lyceanem.em
-    - lyceanem.em
+    - lyceanem.em.bin_counts_to_numpy
+    - lyceanem.em.bin_triangles_to_numpy
+    - lyceanem.em.calculate_scattering_brute_force
+    - lyceanem.em.calculate_scattering_tiles
