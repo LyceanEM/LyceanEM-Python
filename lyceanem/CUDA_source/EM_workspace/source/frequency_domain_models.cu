@@ -234,7 +234,6 @@ py::array_t<std::complex<float>> calculate_scattering_brute_force(py::array_t<fl
     throw std::runtime_error("Mismatch: normal.shape(0) != points_size");
     }
 
-
     //get the pointers to the data
     float* source_ptr = (float*) source.request().ptr;
     float* end_ptr = (float*) end.request().ptr;
@@ -252,7 +251,6 @@ py::array_t<std::complex<float>> calculate_scattering_brute_force(py::array_t<fl
     int3* d_triangles;
     float3* d_tri_vertex;
 
-
     //print free toral memory
 
 
@@ -262,12 +260,10 @@ py::array_t<std::complex<float>> calculate_scattering_brute_force(py::array_t<fl
     //gpuerror check
     gpuErrchk( cudaGetLastError() );
 
-
     cudaMemcpy(d_triangles, triangles_ptr,triangle_size * sizeof(int3), cudaMemcpyHostToDevice);
     cudaMemcpy(d_tri_vertex, triangle_vertex_ptr, tri_vertex_size * sizeof(float3), cudaMemcpyHostToDevice);
     //gpuerror check
     gpuErrchk( cudaGetLastError() );
-
     std::vector<PointData> points_vec(points_size);
     PointData* points = points_vec.data();
 
@@ -279,7 +275,6 @@ py::array_t<std::complex<float>> calculate_scattering_brute_force(py::array_t<fl
     for (int i = 0; i < end_size; i++){
     points_vec[i+source_size] = create_point_data(0, 0, 0, 0, 0, 0,normal_ptr[(i+source_size)*3], normal_ptr[(i+source_size)*3+1], normal_ptr[(i+source_size)*3+2]);
     }
-
     //pointer to the points
     // declare numpy complex array
     py::array_t<std::complex<float>> scattering_network_py = py::array_t<std::complex<float>>(source_size * end_size *3);

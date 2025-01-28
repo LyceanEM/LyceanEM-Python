@@ -261,7 +261,6 @@ std::tuple<int3*,int*,float3*>   grid_structure_builder_wrapper(float *tri_verte
 
     cudaMalloc((void**)&d_bin_offsets, n_cells.x * n_cells.y * sizeof(int2));
     gpuErrchk( cudaGetLastError() );
-    printf("Last error: %s\n", cudaGetErrorString(cudaGetLastError()) );
 
 
 
@@ -302,7 +301,6 @@ py::array_t<int> bin_counts_to_numpy(py::array_t<float> tri_vertex, py::array_t<
     //validate input
     if (tri_vertex.ndim() != 2 || tri_vertex.shape(1) != 3){throw std::runtime_error("tri_vertex must be a 2D array with 3 columns");}
     if (tri_index.ndim() != 2 || tri_index.shape(1) != 3){throw std::runtime_error("tri_index must be a 2D array with 3 columns");}
-    std::cout << "ncells_x: " << ncells_x << std::endl;
 
     //get buffers
     auto tri_vertex_buf = tri_vertex.request();
@@ -311,8 +309,7 @@ py::array_t<int> bin_counts_to_numpy(py::array_t<float> tri_vertex, py::array_t<
     //get pointers
     float *tri_vertex_ptr = (float *) tri_vertex_buf.ptr;
     int *tri_index_ptr = (int *) tri_index_buf.ptr;
-    std::cout << "ncells_x44: " << ncells_x << std::endl;
-    std::cout << "ncells_x44: " << ncells_y << std::endl;
+
 
     // device memory
     float3 *d_tri_vertex;
@@ -324,21 +321,16 @@ py::array_t<int> bin_counts_to_numpy(py::array_t<float> tri_vertex, py::array_t<
     cudaMalloc((void**)&d_triangles, tri_index.shape(0) * sizeof(int3));
     cudaMalloc((void**)&d_bin_counts, ncells_x * ncells_y * sizeof(int));
     gpuErrchk( cudaGetLastError() );
-    std::cout << "ncells_x: " << ncells_x << std::endl;
 
     // copy data to device
     cudaMemcpy(d_tri_vertex,(float3*) tri_vertex_ptr, tri_vertex.shape(0) * sizeof(float3), cudaMemcpyHostToDevice);
-    std::cout << "copied tri_vertex" << std::endl;
 
     cudaMemcpy(d_triangles,(int3*) tri_index_ptr, tri_index.shape(0) * sizeof(int3), cudaMemcpyHostToDevice);
-    std::cout << "copied tri_index" << std::endl;
     gpuErrchk( cudaGetLastError() );
     cudaMemset(d_bin_counts, 0, ncells_x * ncells_y * sizeof(int));
-    std::cout << "ncells_x: " << ncells_x << std::endl;
 
     //launch kernel for each ray_wave
     triangle_counter_kernel<<<32,256>>>(d_tri_vertex, make_float2(ymin,cell_width), make_float2(z_min,cell_width), make_int2(ncells_x,ncells_y), tri_index.shape(0), d_triangles, d_bin_counts);
-    std::cout << "ncells_x: " << ncells_x << std::endl;
 
     //declare new numpy array
     py::array_t<int> bin_counts = py::array_t<int>(ncells_x * ncells_y);
@@ -381,8 +373,6 @@ __global__ void bin_triangles_kernel_precounted(int3* triangles, float3* points,
 py::array_t<int> bin_triangles_to_numpy(py::array_t<float> tri_vertex, py::array_t<int> tri_index,int ncells_x,int ncells_y, float ymin, float cell_width, float z_min,py::array_t<int> bin_counts, int sum_bin_counts){
     
     //validate input
-    std::cout << "trivetex.shape" << tri_vertex.shape(0) << tri_vertex.shape(1) << std::endl;
-    std::cout << "trivetex.shape" << tri_index.shape(0) << tri_index.shape(1) << std::endl;
     if (tri_vertex.ndim() != 2 || tri_vertex.shape(1) != 3){throw std::runtime_error("tri_vertex must be a 2D array with 3 columns");}
     if (tri_index.ndim() != 2 || tri_index.shape(1) != 3){throw std::runtime_error("tri_index must be a 2D array with 3 columns");}
     if (bin_counts.ndim() != 1|| bin_counts.shape(0)!= ncells_x*ncells_y){throw std::runtime_error("bincounts is a 1d flattened 2d array thus must have 1d with ncountsy *ncountz");}

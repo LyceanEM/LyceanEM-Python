@@ -16,7 +16,6 @@
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
-#include "terrain_acceleration_build.cuh"
 __device__ __inline__ void intersection_brute_force(int i, float4 *ray, float3 *tri_vertex,int3* triangle_index, int tri_num, int ray_num, float3 *origin,int2 * ray_index,int end_num,int flag)
 {
     
@@ -124,7 +123,7 @@ void raycast_wrapper_brute_force (float *source, float *end, int source_num, int
     float3 zero = make_float3(0,0,0);
 
     cudaMemset(d_ray, 0, ray_size);
-    set_values<<<32,256>>>(d_ray_index, (source_num * end_num),make_int2(-1,-1),end_num);
+    set_values<<<32,512>>>(d_ray_index, (source_num * end_num),make_int2(-1,-1),end_num);
     gpuErrchk( cudaGetLastError() );
     PointData* d_points;
     complex_float3* d_scattering_network;
@@ -157,7 +156,7 @@ void raycast_wrapper_brute_force (float *source, float *end, int source_num, int
     // source to sink
 
 
-    raycast_brute_force<<<32,32>>>(d_source,d_end,d_ray,source_num,end_num,not_self_to_self,d_tri_vertex,d_triangle_index,tri_num,source_num*end_num, d_ray_index,
+    raycast_brute_force<<<32,512>>>(d_source,d_end,d_ray,source_num,end_num,not_self_to_self,d_tri_vertex,d_triangle_index,tri_num,source_num*end_num, d_ray_index,
                                 d_points, wave_length, d_scattering_network, alpha_beta);
     cudaDeviceSynchronize(); // Wait for the kernel to finish
 
