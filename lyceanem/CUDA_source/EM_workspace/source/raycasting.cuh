@@ -12,7 +12,6 @@
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
-#include "terrain_acceleration_build.cuh"
 
 
 

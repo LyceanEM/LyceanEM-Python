@@ -5,14 +5,14 @@
 
 
 
-struct __device__ complex_float3 {
+struct __host__ __device__ complex_float3 {
     cuFloatComplex x;
     cuFloatComplex y;
     cuFloatComplex z;
 
 
     // Example function to add two complex_float3 instances
-    __device__ __inline__  void  operator/=( const float& b) {
+    __host__ __device__ __inline__  void  operator/=( const float& b) {
         x.x/=b;
         x.y/=b;
         y.x/=b;
@@ -20,7 +20,7 @@ struct __device__ complex_float3 {
         z.x/=b;
         z.y/=b;
     }
-    __device__  __inline__  void  operator+=( const complex_float3& b) {
+    __host__ __device__  __inline__  void  operator+=( const complex_float3& b) {
         x.x += b.x.x;
         x.y += b.x.y;
         y.x += b.y.x;
@@ -28,7 +28,7 @@ struct __device__ complex_float3 {
         z.x += b.z.x;
         z.y += b.z.y;
     }
-    __device__  __inline__  void  operator=( const complex_float3& b) {
+    __host__ __device__  __inline__  void  operator=( const complex_float3& b) {
         x.x = b.x.x;
         x.y = b.x.y;
         y.x = b.y.x;
@@ -37,7 +37,7 @@ struct __device__ complex_float3 {
         z.y = b.z.y;
     }
 
-    __device__  __inline__  void  operator*=(  const complex_float3& b) {
+    __host__ __device__  __inline__  void  operator*=(  const complex_float3& b) {
         complex_float3 result;
         result.x.x = x.x * b.x.x - x.y * b.x.y;
         result.x.y = x.x * b.x.y + x.y * b.x.x;
@@ -50,7 +50,7 @@ struct __device__ complex_float3 {
         z = result.z;
 
     }
-    __device__  __inline__  void  operator*=(  const cuFloatComplex& b) {
+    __host__ __device__  __inline__  void  operator*=(  const cuFloatComplex& b) {
         complex_float3 result;
 
         result.x.x = x.x * b.x - x.y * b.y;
@@ -64,7 +64,7 @@ struct __device__ complex_float3 {
         z = result.z;
         
     }
-    __device__  __inline__  complex_float3  operator*( const float& b) {
+    __host__ __device__  __inline__  complex_float3  operator*( const float& b) {
         complex_float3 result;
         result.x.x = x.x * b;
         result.x.y = x.y * b;
