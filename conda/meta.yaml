@@ -25,6 +25,8 @@ requirements:
     - conda-forge::cudatoolkit
     - conda-forge::cupy
     - conda-forge::importlib_resources
+    - conda-forge::meshio
+    - conda-forge::pyvista
 
 
 about:
