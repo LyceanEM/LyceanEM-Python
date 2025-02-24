@@ -1,37 +1,54 @@
-{ % set name = "lyceanem" % }
-  { % set version = "0.0.4" % }
-
 package:
-  name: { { name|lower } }
-  version: { { version } }
-
+  name: lyceanem
+  version: 0.0.5
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/LyceanEM-{{ version }}.tar.gz
-  sha256: a12631f848174a177e0856e5099e34bfe0969bfe50ecc6439a0318206cdc0b8b
+  path: ..
 
-build:
-  noarch: python
-  script: { { PYTHON } } -m pip install . -vv
-  number: 0
+
 
 requirements:
-  - python>=3.6
-  - pip
+  build:
+    - python
+    - pip
+    - conda-forge::pybind11
+    - nvidia::cuda
+    - conda-forge::cmake
+    - conda-forge::ninja
+    - conda-forge::scikit-build
+    - conda-forge::cxx-compiler
 
-  - conda-forge::cudatoolkit
-  - conda-forge::cupy
+  run:
+    - python
+    - conda-forge::numpy
+    - conda-forge::scipy
+    - conda-forge::numba
+    - conda-forge::cudatoolkit
+    - conda-forge::cupy
+    - conda-forge::importlib_resources
+    - conda-forge::meshio
+    - conda-forge::pyvista
 
-  - open3d-admin::open3d
-
-  - pip:
-      -lyceanem==0.0.4
 
 about:
   home: https://lyceanem-python.readthedocs.io/en/latest/index.html
-  summary: LyceanEM is a Python library for modelling electromagnetic propagation for sensors and communications. You can find the documentation at https://lyceanem-python.readthedocs.io/en/latest/
+  summary: >
+    LyceanEM is a Python library for modelling electromagnetic propagation
+    for sensors and communications. You can find the documentation at
+    https://lyceanem-python.readthedocs.io/en/latest/
   license: GPL-3.0
   license_file: LICENSE.txt
 
 extra:
   recipe-maintainers:
     - LyceanEM
+
+test:
+  imports:
+    - lyceanem
+    - lyceanem.em
+
+  commands:
+    - python -c "from lyceanem.em import bin_counts_to_numpy; print('bin_counts_to_numpy import successful')"
+    - python -c "from lyceanem.em import bin_triangles_to_numpy; print('bin_triangles_to_numpy import successful')"
+    - python -c "from lyceanem.em import calculate_scattering_brute_force; print('calculate_scattering_brute_force import successful')"
+    - python -c "from lyceanem.em import calculate_scattering_tiles; print('calculate_scattering_tiles import successful')"
