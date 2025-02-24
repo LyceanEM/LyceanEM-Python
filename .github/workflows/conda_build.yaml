@@ -4,9 +4,9 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    branches: [ Scattering-Farfield ]
+    branches: [ Scattering-Farfield-CUDA ]
   pull_request:
-    branches: [ Scattering-Farfield ]
+    branches: [ Scattering-Farfield-CUDA ]
 
 jobs:
   build:
