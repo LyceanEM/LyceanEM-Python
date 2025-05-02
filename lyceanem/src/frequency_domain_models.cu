@@ -148,9 +148,15 @@ py::array_t<std::complex<float>> calculate_scattering_tiles(py::array_t<float> s
 
     for (int i = 0; i < source_size; i++){
         points_vec[i] = create_point_data(ex_real_ptr[i], ex_imag_ptr[i], ey_real_ptr[i], ey_imag_ptr[i], ez_real_ptr[i], ez_imag_ptr[i],normal_ptr[i*3], normal_ptr[i*3+1], normal_ptr[i*3+2]);
+        if(i> source_size-10){
+            std::cout<< normal_ptr[i*3] <<" "<< normal_ptr[i*3+1]<<" "<<  normal_ptr[i*3+2]<<" \n";
+        }
 
     }
     for (int i = 0; i < end_size; i++){
+        if(i< 10){
+            std::cout<< normal_ptr[i*3] <<" "<< normal_ptr[i*3+1]<<" "<<  normal_ptr[i*3+2]<<" \n";
+        }
         points_vec[i+source_size] = create_point_data(0, 0, 0, 0, 0, 0,normal_ptr[(i+source_size)*3], normal_ptr[(i+source_size)*3+1], normal_ptr[(i+source_size)*3+2]);
     }
 
