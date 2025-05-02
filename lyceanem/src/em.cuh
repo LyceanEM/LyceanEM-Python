@@ -93,7 +93,15 @@ __device__ __inline__ complex_float3 em_wave(const float2 alpha_beta, const floa
 
     dG = cuCmulf(dG, G);
     printf("dG after mul = (%f + %fi)\n", dG.x, dG.y);
+    printf("front = %f\n", front);
+    printf("dG = (%f + %fi)\n", dG.x, dG.y);
+    printf("end.normal = (%f, %f, %f)\n", end.normal.x, end.normal.y, end.normal.z);
 
+    float3 ray_dir = make_float3(ray.x, ray.y, ray.z);
+    printf("ray direction = (%f, %f, %f)\n", ray_dir.x, ray_dir.y, ray_dir.z);
+
+    float dot_val = dot(end.normal, ray_dir);
+    printf("dot(end.normal, ray_dir) = %f\n", dot_val);
     cuFloatComplex loss = front * dG * dot(end.normal, make_float3(ray.x, ray.y, ray.z));
     printf("loss = (%f + %fi)\n", loss.x, loss.y);
 
