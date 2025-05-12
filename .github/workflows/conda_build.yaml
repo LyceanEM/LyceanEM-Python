@@ -55,7 +55,13 @@ jobs:
         if: github.event_name == 'pull_request'
 #
       - name: Setup Conda
-        run: conda install -y -c conda-forge boa anaconda-client 
+        run: conda install -y -c conda-forge boa anaconda-client ninja
+      
+      - name: Debug ninja location (windows)
+        if: runner.os == 'windows'
+        run: |
+          where ninja
+          dir "$Env:CONDA_PREFIX\Library\bin"
 #
 
 #
