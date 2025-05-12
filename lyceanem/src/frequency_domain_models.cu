@@ -156,7 +156,7 @@ py::array_t<std::complex<float>> calculate_scattering_tiles(py::array_t<float> s
     //pointer to the points
     // declare numpy complex array
     py::array_t<std::complex<float>> scattering_network_py = py::array_t<std::complex<float>>(source_size * end_size *3);
-    std::complex<float>* scattering_network_py_ptr = (std::complex<float>*) scattering_network_py.request().ptr;
+    std::complex<float>* scattering_network_py_ptr = scattering_network_py.mutable_data();
     int source_index = 0;
     std::vector<complex_float3> scattering_network(source_size* end_size);
     complex_float3* scattering_network_ptr = scattering_network.data();
