@@ -33,7 +33,6 @@ __device__ __inline__ static int bin_point( float2 y_range, float2 z_range, int2
 
     int biny = floorf((point.y-y_range.x)/y_range.y);
     int binz = floorf((point.z-z_range.x)/z_range.y);
-    ////printf("BINNING %f %f %f  %i\n",point.y,y_range.x,y_range.y,biny);
     float lower_y = y_range.x + biny * y_range.y;
     float upper_y = y_range.x + (biny+1) * y_range.y;
     float lower_z = z_range.x + binz * z_range.y;
@@ -47,8 +46,6 @@ __device__ __inline__ static int bin_point( float2 y_range, float2 z_range, int2
     }
     if (!all_triangles_are_within_provided_yz_bounds){
         printf("Point %f %f %f not in bounds %f %f %f %f\n",point.x,point.y,point.z,y_range.x,y_range.y*num_bins.x+y_range.x,z_range.x,z_range.y*num_bins.y+z_range.x);
-        printf("num_bins %i %i\n",num_bins.x,num_bins.y);
-        printf("tilewidth %f %f\n",y_range.y,z_range.y);
     }
 
     assert(check_in_bin && all_triangles_are_within_provided_yz_bounds);

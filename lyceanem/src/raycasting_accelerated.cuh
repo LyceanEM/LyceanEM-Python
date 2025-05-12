@@ -69,14 +69,10 @@ __device__ __inline__ bool intersection_tiles(int i, float4 *ray, float3 *tri_ve
 
        
         int result = 0;
-        ////printf("hi\n");
         if(flag || c!= d)
         {
             int b;
             float4 r = ray[i];
-            ////printf("hi post ray access %i\n", tri_num);
-
-
             for(int t = 0 ; t < tri_num ; t++)
             {
 
@@ -168,7 +164,6 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
         }
 
         else{
-            ray_point_index[ray_index] = make_int2(c,d);
             return;
         }
       
@@ -208,34 +203,16 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
             tile_destination = bin_point_2d(y_range,z_range,endss);
         }
         else{
-            ray_point_index[ray_index] = make_int2(c,d);
             return;
         }
 
     }
 
-
-
-
-
-
-    
-
     // gradient of ray component wise
     float2 gradient = gradient_component_y_z_2d(ray_vector);
-
-    ////printf("gradient %f %f %f %f \n",gradient.x,gradient.y,endss.y-ray_origin.y, endss.z-ray_origin.z);
-    //what direction to step in x or y-direction (either +1 or -1)
     int2 step = step_direction(ray_vector);
     double2 distance_to_next_side;
-    //check step lines ip with box order
-
-
-
-   
-
-
-    
+    //check step lines ip with box order    
     if(step.x == 1){
         distance_to_next_side.x = ((tile_origin.x + 1.0) - origin_in_fractional_bin_units.x) * gradient.x;
     }
@@ -288,10 +265,10 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
     
 
     
-    ray_point_index[ray_index] = (intersected ) ?  make_int2(-1,-1): make_int2(c,d);
+    ray_point_index[ray_index] = (intersected ) ?  make_int2(-1,-1): ray_point_index[ray_index];
 
 
-    ////printf("cell_index %i\n",cell_index);
+    //////printf(("cell_index %i\n",cell_index);
     
 
     
@@ -304,10 +281,10 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
     bool y_done = (tile_origin.y==tile_destination.y); 
     
     
-    ////printf("tile_origin %i %i, tile_destination %i %i, step %i %i gradient %f,%f\n",tile_origin.x,tile_origin.y,tile_destination.x,tile_destination.y,step.x,step.y,gradient.x,gradient.y);
-    ////printf("inputs tp side distance %i %f %f\n",tile_origin.x, top_intersection.x, y_range.x);
-    ////printf("inputs tp side distance %i %f %f\n",tile_origin.y, top_intersection.y, z_range.x);
-    ////printf("distance_to_next_side %f %f\n",distance_to_next_side.x,distance_to_next_side.y);
+    //////printf(("tile_origin %i %i, tile_destination %i %i, step %i %i gradient %f,%f\n",tile_origin.x,tile_origin.y,tile_destination.x,tile_destination.y,step.x,step.y,gradient.x,gradient.y);
+    //////printf(("inputs tp side distance %i %f %f\n",tile_origin.x, top_intersection.x, y_range.x);
+    //////printf(("inputs tp side distance %i %f %f\n",tile_origin.y, top_intersection.y, z_range.x);
+    //////printf(("distance_to_next_side %f %f\n",distance_to_next_side.x,distance_to_next_side.y);
     float epsilon;
     if(gradient.x > gradient.y){
         epsilon = gradient.x/5;
@@ -317,7 +294,7 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
     }
 
     int jjj = 0;
-    //printf("numbins %i %i\n",num_bins.x,num_bins.y);
+    ////printf(("numbins %i %i\n",num_bins.x,num_bins.y);
 
     
     while (!arrived_at_destination && !intersection_with_triangle){
@@ -336,11 +313,11 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
                 
                 int cell_index = tile_origin.x * num_bins.y + tile_origin.y+step.y;
 
-                ////printf("cell_index bin num %i %i,%i\n",cell_index,tile_origin.x,tile_origin.y);
-                ////printf("map_dimens %i %i\n",num_bins.x,num_bins.y);
+                //////printf(("cell_index bin num %i %i,%i\n",cell_index,tile_origin.x,tile_origin.y);
+                //////printf(("map_dimens %i %i\n",num_bins.x,num_bins.y);
                 outside_map = (tile_origin.x < 0 || tile_origin.x >= num_bins.x || tile_origin.y+step.y < 0 || tile_origin.y+step.y >= num_bins.y);
                 if(!outside_map && !arrived_at_destination && !intersection_with_triangle){
-                    ////printf("inside map\n");
+                    //////printf(("inside map\n");
                     intersection_with_triangle = intersection2(ray_index,
                                                             rays,
                                                             tri_vertex, 
@@ -365,11 +342,11 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
             if(!arrived_at_destination && std::abs(difference_distance) < epsilon){
                 int cell_index = (tile_origin.x+step.x) * num_bins.y + tile_origin.y;
 
-                ////printf("cell_index bin num %i %i,%i\n",cell_index,tile_origin.x,tile_origin.y);
-                ////printf("map_dimens %i %i\n",num_bins.x,num_bins.y);
+                //////printf(("cell_index bin num %i %i,%i\n",cell_index,tile_origin.x,tile_origin.y);
+                //////printf(("map_dimens %i %i\n",num_bins.x,num_bins.y);
                 outside_map = (tile_origin.x+step.x < 0 || tile_origin.x+step.x >= num_bins.x || tile_origin.y < 0 || tile_origin.y >= num_bins.y);
                 if(!outside_map && !arrived_at_destination && !intersection_with_triangle){
-                    ////printf("inside map\n");
+                    //////printf(("inside map\n");
                     intersection_with_triangle = intersection2(ray_index,
                                                             rays,
                                                             tri_vertex, 
@@ -389,14 +366,14 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
  
 
 
-        ////printf("tile_curret %i, %i destination %i %i\n",tile_origin.x,tile_origin.y,tile_destination.x,tile_destination.y);
+        //////printf(("tile_curret %i, %i destination %i %i\n",tile_origin.x,tile_origin.y,tile_destination.x,tile_destination.y);
         int cell_index = tile_origin.x * num_bins.y + tile_origin.y;
 
-        ////printf("cell_index bin num %i %i,%i\n",cell_index,tile_origin.x,tile_origin.y);
-        ////printf("map_dimens %i %i\n",num_bins.x,num_bins.y);
+        //////printf(("cell_index bin num %i %i,%i\n",cell_index,tile_origin.x,tile_origin.y);
+        //////printf(("map_dimens %i %i\n",num_bins.x,num_bins.y);
         outside_map = (tile_origin.x < 0 || tile_origin.x >= num_bins.x || tile_origin.y < 0 || tile_origin.y >= num_bins.y);
         if(!outside_map && !arrived_at_destination && !intersection_with_triangle){
-            ////printf("inside map\n");
+            //////printf(("inside map\n");
             intersection_with_triangle = intersection2(ray_index,
                                                     rays,
                                                     tri_vertex, 
@@ -407,7 +384,7 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
         } 
 
 
-        ////printf("tile_current %i,%i, destination %i,%i\n",tile_origin.x,tile_origin.y,tile_destination.x,tile_destination.y);
+        //////printf(("tile_current %i,%i, destination %i,%i\n",tile_origin.x,tile_origin.y,tile_destination.x,tile_destination.y);
         bool run_away_too_far_x = ((tile_origin.x> tile_destination.x && step.x ==1) || (tile_origin.x < tile_destination.x && step.x == -1 ));
         bool run_away_too_far_y = ((tile_origin.y> tile_destination.y && step.y ==1 ) || (tile_origin.y < tile_destination.y && step.y == -1 ));
         assert(!run_away_too_far_x);
@@ -453,7 +430,7 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
           
         }
         if(intersection_with_triangle){
-            //printf("intersection_with_triangle\n");
+            ////printf(("intersection_with_triangle\n");
             ray_point_index[ray_index] = make_int2(-1,-1);
 
         }
@@ -487,9 +464,12 @@ __global__ void raycast_tiles(float3 *source, float3 *end, float4 *ray, int sour
     for(int i = thread; i < ray_num; i+=stride)
     {
 
+
         points_to_rays(i,source,end,ray,source_num,end_num,flag);
 
+
         DDA(source, end, ray,ray_index,i,binned_triangles,tri_vertex,tri_num_in_bin,num_bins,end_num,flag,x_top_bottom,y_range,z_range);
+
         if(ray_index[i].x != -1){
             complex_float3 ray_field = em_wave(alpha_beta, ray[i],points[ray_index[i].x],points[ray_index[i].y],wave_length);
             scattering_network[i] = ray_field;
@@ -555,7 +535,7 @@ void raycast_wrapper_tiles (float *source, float *end, int source_num, int end_n
     float3 zero = make_float3(0,0,0);
 
     cudaMemset(d_ray, 0, ray_size);
-    set_values<<<32,256>>>(d_ray_index, (source_num * end_num),make_int2(-1,-1),end_num);
+    set_values<<<32,256>>>(d_ray_index, (source_num * end_num),make_int2(-1,-1),end_num,source_num);
     gpuErrchk( cudaGetLastError() );
 
 
@@ -586,7 +566,7 @@ void raycast_wrapper_tiles (float *source, float *end, int source_num, int end_n
     cudaMemset(d_scattering_network, 0, scattering_network_size);
     cudaDeviceSynchronize();
 
-    raycast_tiles<<<1,1,1>>>(d_source,d_end,d_ray,source_num,end_num,not_self_to_self,d_tri_vertex,d_binned_triangles,d_tri_num_per_bin,source_num*end_num, d_ray_index,num_bins,x_top_bottom,y_range,z_range,d_points,wave_length,d_scattering_network, alpha_beta);
+    raycast_tiles<<<32,256>>>(d_source,d_end,d_ray,source_num,end_num,not_self_to_self,d_tri_vertex,d_binned_triangles,d_tri_num_per_bin,source_num*end_num, d_ray_index,num_bins,x_top_bottom,y_range,z_range,d_points,wave_length,d_scattering_network, alpha_beta);
     //get last error
    
     gpuErrchk( cudaGetLastError() );

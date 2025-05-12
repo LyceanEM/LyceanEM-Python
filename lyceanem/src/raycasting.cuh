@@ -94,7 +94,7 @@ __device__ __inline__  void points_to_rays(int tid,float3 *source, float3 *end, 
 
 }
 
-__global__ void set_values(int2 *ray_index, int ray_num, int2 value,int end_num)
+__global__ void set_values(int2 *ray_index, int ray_num, int2 value,int end_num, int source_num)
 {
     int thread = threadIdx.x + blockIdx.x * blockDim.x;
     int stride = blockDim.x * gridDim.x;  
@@ -102,7 +102,7 @@ __global__ void set_values(int2 *ray_index, int ray_num, int2 value,int end_num)
     {
         int c = i / end_num;
         int d = i % end_num;
-        ray_index[i] = make_int2(c,d);
+        ray_index[i] = make_int2(c,d+source_num);
 
     }
 }

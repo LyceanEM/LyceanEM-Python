@@ -57,7 +57,7 @@ __device__ __inline__ void intersection_brute_force(int i, float4 *ray, float3 *
                 }   
             }
 
-            ray_index[i] = (intersected) ? make_int2(-1,-1): make_int2(c,d);
+            ray_index[i] = (intersected) ? make_int2(-1,-1): ray_index[i];
 
         }
 
@@ -123,7 +123,7 @@ void raycast_wrapper_brute_force (float *source, float *end, int source_num, int
     float3 zero = make_float3(0,0,0);
 
     cudaMemset(d_ray, 0, ray_size);
-    set_values<<<32,512>>>(d_ray_index, (source_num * end_num),make_int2(-1,-1),end_num);
+    set_values<<<32,512>>>(d_ray_index, (source_num * end_num),make_int2(-1,-1),end_num,source_num);
     gpuErrchk( cudaGetLastError() );
     PointData* d_points;
     complex_float3* d_scattering_network;

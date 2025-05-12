@@ -111,7 +111,6 @@ py::array_t<std::complex<float>> calculate_scattering_tiles(py::array_t<float> s
     float* normal_ptr = (float*) normal.request().ptr;
     int* bin_count_ptr = (int*) bin_count.request().ptr;
     int* bin_triangles_ptr = (int*) bin_triangles.request().ptr;
-    //printf("source_size %d\n",source_size);
 
     int3* d_binned_triangles;
     int2* d_bin_count;
@@ -148,15 +147,9 @@ py::array_t<std::complex<float>> calculate_scattering_tiles(py::array_t<float> s
 
     for (int i = 0; i < source_size; i++){
         points_vec[i] = create_point_data(ex_real_ptr[i], ex_imag_ptr[i], ey_real_ptr[i], ey_imag_ptr[i], ez_real_ptr[i], ez_imag_ptr[i],normal_ptr[i*3], normal_ptr[i*3+1], normal_ptr[i*3+2]);
-        if(i> source_size-10){
-            std::cout<< normal_ptr[i*3] <<" "<< normal_ptr[i*3+1]<<" "<<  normal_ptr[i*3+2]<<" \n";
-        }
-
     }
     for (int i = 0; i < end_size; i++){
-        if(i< 10){
-            std::cout<< normal_ptr[i*3] <<" "<< normal_ptr[i*3+1]<<" "<<  normal_ptr[i*3+2]<<" \n";
-        }
+
         points_vec[i+source_size] = create_point_data(0, 0, 0, 0, 0, 0,normal_ptr[(i+source_size)*3], normal_ptr[(i+source_size)*3+1], normal_ptr[(i+source_size)*3+2]);
     }
 
@@ -252,7 +245,6 @@ py::array_t<std::complex<float>> calculate_scattering_brute_force(py::array_t<fl
     float* ez_real_ptr = (float*) ez_real.request().ptr;
     float* ez_imag_ptr = (float*) ez_imag.request().ptr;
     float* normal_ptr = (float*) normal.request().ptr;
-    //printf("source_size %d\n",source_size);
 
     int3* d_triangles;
     float3* d_tri_vertex;
@@ -276,13 +268,10 @@ py::array_t<std::complex<float>> calculate_scattering_brute_force(py::array_t<fl
 
     for (int i = 0; i < source_size; i++){
     points_vec[i] = create_point_data(ex_real_ptr[i], ex_imag_ptr[i], ey_real_ptr[i], ey_imag_ptr[i], ez_real_ptr[i], ez_imag_ptr[i],normal_ptr[i*3], normal_ptr[i*3+1], normal_ptr[i*3+2]);
-
     }
     for (int i = 0; i < end_size; i++){
     points_vec[i+source_size] = create_point_data(0, 0, 0, 0, 0, 0,normal_ptr[(i+source_size)*3], normal_ptr[(i+source_size)*3+1], normal_ptr[(i+source_size)*3+2]);
     }
-    //pointer to the points
-    // declare numpy complex array
     py::array_t<std::complex<float>> scattering_network_py = py::array_t<std::complex<float>>(source_size * end_size *3);
     std::complex<float>* scattering_network_py_ptr = (std::complex<float>*) scattering_network_py.request().ptr;
     int source_index = 0;
