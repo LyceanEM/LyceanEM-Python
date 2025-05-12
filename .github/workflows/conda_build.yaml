@@ -66,8 +66,6 @@ jobs:
           cmake --version
           echo "Generator: $CMAKE_GENERATOR"
 
-          - name: Verify CMake + Ninja setup
-
 #
 
 #
