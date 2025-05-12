@@ -21,7 +21,6 @@ requirements:
   - nvidia::cuda-nvcc
   - nvidia::cuda-cudart-dev
   - nvidia::cuda-cudart-static
-  - nvidia::cuda-driver-dev
 
   run:
     - python
