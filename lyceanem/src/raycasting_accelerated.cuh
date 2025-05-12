@@ -566,7 +566,7 @@ void raycast_wrapper_tiles (float *source, float *end, int source_num, int end_n
     cudaMemset(d_scattering_network, 0, scattering_network_size);
     cudaDeviceSynchronize();
 
-    raycast_tiles<<<32,256>>>(d_source,d_end,d_ray,source_num,end_num,not_self_to_self,d_tri_vertex,d_binned_triangles,d_tri_num_per_bin,source_num*end_num, d_ray_index,num_bins,x_top_bottom,y_range,z_range,d_points,wave_length,d_scattering_network, alpha_beta);
+    raycast_tiles<<<1,1,1>>>(d_source,d_end,d_ray,source_num,end_num,not_self_to_self,d_tri_vertex,d_binned_triangles,d_tri_num_per_bin,source_num*end_num, d_ray_index,num_bins,x_top_bottom,y_range,z_range,d_points,wave_length,d_scattering_network, alpha_beta);
     //get last error
    
     gpuErrchk( cudaGetLastError() );
