@@ -62,6 +62,12 @@ jobs:
         run: |
           where ninja
           dir "$Env:CONDA_PREFIX\Library\bin"
+          ninja --version
+          cmake --version
+          echo "Generator: $CMAKE_GENERATOR"
+
+          - name: Verify CMake + Ninja setup
+
 #
 
 #
