@@ -65,6 +65,8 @@ jobs:
           ninja --version
           cmake --version
           echo "Generator: $CMAKE_GENERATOR"
+          cmake --version
+          cmake -G Ninja -S .
 
 #
 
