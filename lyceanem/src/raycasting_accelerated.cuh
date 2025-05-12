@@ -473,6 +473,7 @@ __global__ void raycast_tiles(float3 *source, float3 *end, float4 *ray, int sour
         if(ray_index[i].x != -1){
             complex_float3 ray_field = em_wave(alpha_beta, ray[i],points[ray_index[i].x],points[ray_index[i].y],wave_length);
             scattering_network[i] = ray_field;
+            printf("ray_filed (%f + %fi), (%f+ %fi), (%f + %fi)\n",scattering_network[i].x.x,scattering_network[i].x.y,scattering_network[i].y.x,scattering_network[i].y.y,scattering_network[i].z.x,scattering_network[i].z.y);
         }
     }
 
@@ -576,6 +577,7 @@ void raycast_wrapper_tiles (float *source, float *end, int source_num, int end_n
 
     // free unneeded arrays
     cudaMemcpy(h_scattering_network,d_scattering_network, scattering_network_size, cudaMemcpyDeviceToHost);
+    std::cout<<"scattering_network 0: "<<h_scattering_network[0].x.x<< " + "<<h_scattering_network[0].x.y<<"i, "<<h_scattering_network[0].y.x<< " + "<<h_scattering_network[0].y.y<<"i, "<<h_scattering_network[0].z.x<< " + "<<h_scattering_network[0].z.y<<"i\n";
     gpuErrchk( cudaGetLastError() );
 
     cudaFree(d_source);
