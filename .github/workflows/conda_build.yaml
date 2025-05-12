@@ -66,12 +66,12 @@ jobs:
           cmake --version
           echo "Generator: $CMAKE_GENERATOR"
           cmake --version
-          cmake -G Ninja -S ${{ github.workspace }}/LyceanEM-Python/
 
 #
 
 #
       - name: Build Conda package using mamba build
+        run: $env:CMAKE_GENERATOR = "Ninja"
         run: conda mambabuild ${{ github.workspace }}/LyceanEM-Python/conda/
 #
 
