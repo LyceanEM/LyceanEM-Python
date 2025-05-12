@@ -24,6 +24,12 @@ jobs:
               os: "ubuntu-latest",
               shell: "bash -l {0}"
             }
+          - {
+              name: "windows",
+              os: "windows-latest",
+              shell: "powershell {0}"
+              
+          }
 
     environment:
       name: build_env

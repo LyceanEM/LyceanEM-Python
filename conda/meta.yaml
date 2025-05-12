@@ -8,14 +8,20 @@ source:
 
 requirements:
   build:
-    - python
-    - pip
-    - conda-forge::pybind11
-    - nvidia::cuda
-    - conda-forge::cmake
-    - conda-forge::ninja
-    - conda-forge::scikit-build
-    - conda-forge::cxx-compiler
+  - python                    # from defaults or conda-forge
+  - pip                       # from defaults or conda-forge
+  - conda-forge::numpy=1.23
+  - conda-forge::pybind11
+  - conda-forge::cmake
+  - conda-forge::ninja
+  - conda-forge::scikit-build
+  - conda-forge::cxx-compiler
+
+  # NVIDIA components to build CUDA code (no full runtime)
+  - nvidia::cuda-nvcc
+  - nvidia::cuda-cudart-dev
+  - nvidia::cuda-cudart-static
+  - nvidia::cuda-driver-dev
 
   run:
     - python
