@@ -286,6 +286,7 @@ py::array_t<std::complex<float>> calculate_scattering_brute_force(py::array_t<fl
     scattering_network_py_ptr[i*3+0] = std::complex<float>(scattering_network_ptr[i].x.x, scattering_network_ptr[i].x.y);
     scattering_network_py_ptr[i*3+1] = std::complex<float>(scattering_network_ptr[i].y.x, scattering_network_ptr[i].y.y);
     scattering_network_py_ptr[i*3+2] = std::complex<float>(scattering_network_ptr[i].z.x, scattering_network_ptr[i].z.y);
+    std::cout << scattering_network_py_ptr[i*3+0] << " " << scattering_network_py_ptr[i*3+1] << " " << scattering_network_py_ptr[i*3+2] << std::endl;
     }
     cudaFree(d_triangles);
     cudaFree(d_tri_vertex);
