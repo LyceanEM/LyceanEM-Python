@@ -41,7 +41,7 @@ long calculate_memory_requirement_brute_force(int source_size, int end_size, int
     memory_requirement += source_size * end_size * (sizeof(complex_float3)+sizeof(float4)+sizeof(int2));
     return memory_requirement;
 }
-py::array_t<std::complex<float>> calculate_scattering_tiles(py::array_t<float> source, py::array_t<float> end, py::array_t<float> triangle_vertex, 
+py::array_t<float> calculate_scattering_tiles(py::array_t<float> source, py::array_t<float> end, py::array_t<float> triangle_vertex, 
                                                         float wave_length,
                                                         py::array_t<float> ex_real, py::array_t<float> ex_imag, py::array_t<float> ey_real, py::array_t<float> ey_imag, py::array_t<float> ez_real, py::array_t<float> ez_imag, 
                                                         py::array_t<float> normal, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, float tile_size, py::array_t<int> bin_count, py::array_t<int> bin_triangles, int n_cellsx, int n_cellsy, int binned_tri_num,float alpha, float beta, bool not_self_to_self){
@@ -155,23 +155,26 @@ py::array_t<std::complex<float>> calculate_scattering_tiles(py::array_t<float> s
 
     //pointer to the points
     // declare numpy complex array
-    py::array_t<std::complex<float>> scattering_network_py = py::array_t<std::complex<float>>(source_size * end_size *3);
-    std::complex<float>* scattering_network_py_ptr = scattering_network_py.mutable_data();
+    py::array_t<float> scattering_network_py = py::array_t<float>(source_size * end_size *3*2);
+    float* scattering_network_py_ptr = scattering_network_py.mutable_data();
     int source_index = 0;
     std::vector<complex_float3> scattering_network(source_size* end_size);
     complex_float3* scattering_network_ptr = scattering_network.data();
 
     raycast_wrapper_tiles(&source_ptr[source_index], end_ptr, source_size, end_size,d_tri_vertex, d_binned_triangles, d_bin_count
             ,make_int2(n_cellsx,n_cellsy) , make_float2(xmin,xmax), make_float2(ymin,tile_size), make_float2(zmin,tile_size),points, wave_length,scattering_network_ptr,make_float2(alpha,beta),not_self_to_self);
-    for (int i = 0; i < scattering_network.size() ; i++)
-    {
-        scattering_network_py_ptr[i*3+0] = std::complex<float>(scattering_network_ptr[i].x.x, scattering_network_ptr[i].x.y);
-        scattering_network_py_ptr[i*3+1] = std::complex<float>(scattering_network_ptr[i].y.x, scattering_network_ptr[i].y.y);
-        scattering_network_py_ptr[i*3+2] = std::complex<float>(scattering_network_ptr[i].z.x, scattering_network_ptr[i].z.y);
-        std::cout << scattering_network_py_ptr[i*3+0] << " " << scattering_network_py_ptr[i*3+1] << " " << scattering_network_py_ptr[i*3+2] << std::endl;
-
-        std::cout << scattering_network_ptr[i].x.x << " " << scattering_network_ptr[i].x.y << " " << scattering_network_ptr[i].y.x << " " << scattering_network_ptr[i].y.y << " " << scattering_network_ptr[i].z.x << " " << scattering_network_ptr[i].z.y << std::endl;
-    }
+            for (int i = 0; i < scattering_network.size(); i++) {
+                int base = i * 3 * 2;  // 3 complex numbers × 2 floats each
+            
+                scattering_network_py_ptr[base + 0] = scattering_network_ptr[i].x.x;  // real
+                scattering_network_py_ptr[base + 1] = scattering_network_ptr[i].x.y;  // imag
+            
+                scattering_network_py_ptr[base + 2] = scattering_network_ptr[i].y.x;
+                scattering_network_py_ptr[base + 3] = scattering_network_ptr[i].y.y;
+            
+                scattering_network_py_ptr[base + 4] = scattering_network_ptr[i].z.x;
+                scattering_network_py_ptr[base + 5] = scattering_network_ptr[i].z.y;
+            }
     cudaFree(d_binned_triangles);
     cudaFree(d_bin_count);
     cudaFree(d_tri_vertex);
