@@ -71,8 +71,9 @@ jobs:
 
 #
       - name: Build Conda package using mamba build
-        run: $env:CMAKE_GENERATOR = "Ninja"
-        run: conda mambabuild ${{ github.workspace }}/LyceanEM-Python/conda/
+        run: |
+          $env:CMAKE_GENERATOR = "Ninja"
+          conda mambabuild ${{ github.workspace }}/LyceanEM-Python/conda/
 #
 
 #
