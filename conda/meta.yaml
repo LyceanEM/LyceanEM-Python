@@ -10,7 +10,7 @@ requirements:
   build:
   - python                    # from defaults or conda-forge
   - pip                       # from defaults or conda-forge
-  - conda-forge::numpy=1.23
+  - conda-forge::numpy
   - conda-forge::pybind11
   - conda-forge::cmake
   - conda-forge::ninja
