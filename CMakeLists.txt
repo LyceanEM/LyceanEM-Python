@@ -1,10 +1,8 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.23)
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 message(STATUS "Python_version: ${Python_VERSION}")
 find_package(pybind11 CONFIG REQUIRED)
 project(test LANGUAGES CXX CUDA)
-## set the generator
-set(CMAKE_GENERATOR "Ninja")
 
 
 find_package( PkgConfig )
@@ -19,7 +17,7 @@ find_package(CUDAToolkit REQUIRED)
 pybind11_add_module(em lyceanem/src/frequency_domain_models.cu)
 ## all architecture abobe and including turing
 
-set_property(TARGET em PROPERTY CUDA_ARCHITECTURES 75)
+set_property(TARGET em PROPERTY CUDA_ARCHITECTURES all-major)
 
 
 # Link CUDA
