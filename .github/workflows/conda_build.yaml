@@ -65,7 +65,6 @@ jobs:
 
       - name: Set CMAKE_GENERATOR env var
         run: echo "CMAKE_GENERATOR=Ninja" >> $env:GITHUB_ENV
-            - uses: ilammy/msvc-dev-cmd@v1
 
       - name: CMake Generation - MSVC
         shell: cmd
