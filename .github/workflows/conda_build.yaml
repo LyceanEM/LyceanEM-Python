@@ -57,20 +57,14 @@ jobs:
       - name: Setup Conda
         run: conda install -y -c conda-forge boa anaconda-client ninja
       
-      - name: Debug ninja location (windows)
-        if: runner.os == 'windows'
-        run: |
-          where ninja
-          dir "$Env:CONDA_PREFIX\Library\bin"
-          ninja --version
-          cmake --version
-          echo "Generator: $CMAKE_GENERATOR"
-          cmake --version
-      - name: Add msbuild to PATH
-        if: runner.os == 'windows'
-        uses: microsoft/setup-msbuild@v2
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v3
+
       - name: Configure MSVC environment
         uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Set CMAKE_GENERATOR env var
+        run: echo "CMAKE_GENERATOR=Ninja" >> $env:GITHUB_ENV
       - name: Build Conda package using mamba build
         run:
           conda mambabuild ${{ github.workspace }}/LyceanEM-Python/conda/
