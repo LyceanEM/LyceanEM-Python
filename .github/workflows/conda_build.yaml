@@ -66,14 +66,16 @@ jobs:
           cmake --version
           echo "Generator: $CMAKE_GENERATOR"
           cmake --version
+      - name: Add msbuild to PATH
+        if: runner.os == 'windows'
+        uses: microsoft/setup-msbuild@v2
+
 
 #
 
 #
       - name: Build Conda package using mamba build
-        run: |
-          $env:CMAKE_GENERATOR = "Ninja"
-          $env:CMAKE_MAKE_PROGRAM = "$env:CONDA_PREFIX\\Library\\bin\\ninja.exe"
+        run:
           conda mambabuild ${{ github.workspace }}/LyceanEM-Python/conda/
 #
 
