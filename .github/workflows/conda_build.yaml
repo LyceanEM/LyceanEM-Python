@@ -69,12 +69,19 @@ jobs:
       - name: Add msbuild to PATH
         if: runner.os == 'windows'
         uses: microsoft/setup-msbuild@v2
-
-
-#
-
-#
+      - name: Configure MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
       - name: Build Conda package using mamba build
+        run:
+          conda mambabuild ${{ github.workspace }}/LyceanEM-Python/conda/
+      
+
+
+#
+
+#
+      - name: Build Conda package using mamba build linux
+        if: runner.os == 'linux'
         run:
           conda mambabuild ${{ github.workspace }}/LyceanEM-Python/conda/
 #
