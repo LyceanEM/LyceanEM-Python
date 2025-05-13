@@ -177,7 +177,7 @@ py::array_t<float> calculate_scattering_tiles(py::array_t<float> source, py::arr
 
             }
             for (int i = 0; i < source_size * end_size * 3 * 2; i++) {
-                std::cout << scattering_network_py_ptr[i] << " " << "location " << &scattering_network_py_ptr[i] << std::endl;
+                // std::cout << scattering_network_py_ptr[i] << " " << "location " << &scattering_network_py_ptr[i] << std::endl;
         
             }
     cudaFree(d_binned_triangles);

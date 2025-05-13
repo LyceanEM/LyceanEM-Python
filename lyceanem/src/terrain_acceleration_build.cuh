@@ -42,10 +42,10 @@ __device__ __inline__ static int bin_point( float2 y_range, float2 z_range, int2
     bool all_triangles_are_within_provided_yz_bounds = (point.y >= y_range.x && point.y <= y_range.y * num_bins.x + y_range.x && point.z >= z_range.x && point.z <= z_range.y * num_bins.y + z_range.x);
     bool check_in_bin = (point.y >= lower_y && point.y < upper_y && point.z >= lower_z && point.z < upper_z);
     if (!check_in_bin){
-        printf("Point %f %f %f not in bin %f %f %f %f %f %f\n",point.x,point.y,point.z,lower_y,upper_y,lower_z,upper_z,y_range.y,z_range.y);
+       // printf("Point %f %f %f not in bin %f %f %f %f %f %f\n",point.x,point.y,point.z,lower_y,upper_y,lower_z,upper_z,y_range.y,z_range.y);
     }
     if (!all_triangles_are_within_provided_yz_bounds){
-        printf("Point %f %f %f not in bounds %f %f %f %f\n",point.x,point.y,point.z,y_range.x,y_range.y*num_bins.x+y_range.x,z_range.x,z_range.y*num_bins.y+z_range.x);
+       // printf("Point %f %f %f not in bounds %f %f %f %f\n",point.x,point.y,point.z,y_range.x,y_range.y*num_bins.x+y_range.x,z_range.x,z_range.y*num_bins.y+z_range.x);
     }
 
     assert(check_in_bin && all_triangles_are_within_provided_yz_bounds);
@@ -127,7 +127,7 @@ __device__ __inline__ static int check_triangle_side_length(int3* triangle, floa
 
         bool bins_ajacent = ((side12 && side13 && side23));
         if (!bins_ajacent){
-            printf("Triangle %i %i %i not in ajacent bins %i %i %i %i %i %i\n",triangle[i].x,triangle[i].y,triangle[i].z,bin1_2.x,bin1_2.y,bin2_2.x,bin2_2.y,bin3_2.x,bin3_2.y);
+           // printf("Triangle %i %i %i not in ajacent bins %i %i %i %i %i %i\n",triangle[i].x,triangle[i].y,triangle[i].z,bin1_2.x,bin1_2.y,bin2_2.x,bin2_2.y,bin3_2.x,bin3_2.y);
         }
         assert(bins_ajacent);
     }

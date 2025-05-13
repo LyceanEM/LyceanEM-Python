@@ -63,27 +63,27 @@ __device__ __inline__ complex_float3 ray_launch(const complex_float3 & e_field,f
 
 __device__ __inline__ complex_float3 em_wave(const float2 alpha_beta, const float4& ray, const PointData& origin, const PointData& end, float wave_length) {
     //printf(("package- alpha_beta = (%f, %f)\n", alpha_beta.x, alpha_beta.y);
-    printf("package- ray field %f +i%f, %f +i%f, %f +i%f\n", origin.electric_field.x.x, origin.electric_field.x.y, origin.electric_field.y.x, origin.electric_field.y.y, origin.electric_field.z.x, origin.electric_field.z.y);
+   // printf("package- ray field %f +i%f, %f +i%f, %f +i%f\n", origin.electric_field.x.x, origin.electric_field.x.y, origin.electric_field.y.x, origin.electric_field.y.y, origin.electric_field.z.x, origin.electric_field.z.y);
 
 
 
     complex_float3 ray_field = ray_launch(origin.electric_field, make_float3(ray.x, ray.y, ray.z));
-    printf("package- ray_field after launch = (%f + %fi, %f + %fi, %f + %fi)\n", ray_field.x.x, ray_field.x.y, ray_field.y.x, ray_field.y.y, ray_field.z.x, ray_field.z.y);
+   // printf("package- ray_field after launch = (%f + %fi, %f + %fi, %f + %fi)\n", ray_field.x.x, ray_field.x.y, ray_field.y.x, ray_field.y.y, ray_field.z.x, ray_field.z.y);
 
 
     float front = -(1 / (2 * CUDART_PI_F));
     //printf(("package- front = %f\n", front);
 
     cuFloatComplex G;
-    printf("inputs to sincosf = (%f)\n", -alpha_beta.y * ray.w);
-    printf("alpha  = (%f)\n", alpha_beta.x);
-    printf("beta  = (%f)\n", alpha_beta.y);
+   // printf("inputs to sincosf = (%f)\n", -alpha_beta.y * ray.w);
+   // printf("alpha  = (%f)\n", alpha_beta.x);
+   // printf("beta  = (%f)\n", alpha_beta.y);
     sincosf(-alpha_beta.y * ray.w, &G.y, &G.x);
-    printf("dis2t %f \n", ray.w);
-    printf("package- G after sincosf = (%f + %fi)\n", G.x, G.y);
+   // printf("dis2t %f \n", ray.w);
+   // printf("package- G after sincosf = (%f + %fi)\n", G.x, G.y);
 
     G *= (expf(-alpha_beta.x * ray.w) * (1 / ray.w));
-    printf("package- G after exp/log = (%f + %fi)\n", G.x, G.y);
+   // printf("package- G after exp/log = (%f + %fi)\n", G.x, G.y);
 
     cuFloatComplex dG;
     dG.x = -alpha_beta.x - (1 / ray.w);
@@ -91,21 +91,21 @@ __device__ __inline__ complex_float3 em_wave(const float2 alpha_beta, const floa
     //printf(("package- dG before mul = (%f + %fi)\n", dG.x, dG.y);
 
     dG = cuCmulf(dG, G);
-    printf("package- dG after mul = (%f + %fi)\n", dG.x, dG.y);
+   // printf("package- dG after mul = (%f + %fi)\n", dG.x, dG.y);
     //printf(("package- front = %f\n", front);
     //printf(("package- dG = (%f + %fi)\n", dG.x, dG.y);
-    printf("package- end.normal = (%f, %f, %f)\n", end.normal.x, end.normal.y, end.normal.z);
+   // printf("package- end.normal = (%f, %f, %f)\n", end.normal.x, end.normal.y, end.normal.z);
 
     float3 ray_dir = make_float3(ray.x, ray.y, ray.z);
-    printf("package- ray direction = (%f, %f, %f)\n", ray_dir.x, ray_dir.y, ray_dir.z);
+   // printf("package- ray direction = (%f, %f, %f)\n", ray_dir.x, ray_dir.y, ray_dir.z);
 
     float dot_val = dot(end.normal, ray_dir);
-    printf("package- dot(end.normal, ray_dir) = %f\n", dot_val);
+   // printf("package- dot(end.normal, ray_dir) = %f\n", dot_val);
     cuFloatComplex loss = front * dG * dot(end.normal, make_float3(ray.x, ray.y, ray.z));
-    printf("package- loss = (%f + %fi)\n", loss.x, loss.y);
+   // printf("package- loss = (%f + %fi)\n", loss.x, loss.y);
 
     ray_field *= loss;
-    printf("package- ray_field after loss = (%f + %fi, %f + %fi, %f + %fi)\n", ray_field.x.x, ray_field.x.y, ray_field.y.x, ray_field.y.y, ray_field.z.x, ray_field.z.y);
+   // printf("package- ray_field after loss = (%f + %fi, %f + %fi, %f + %fi)\n", ray_field.x.x, ray_field.x.y, ray_field.y.x, ray_field.y.y, ray_field.z.x, ray_field.z.y);
 
 
     return ray_field;
