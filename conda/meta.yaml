@@ -8,6 +8,12 @@ source:
 build:
   script_env:
     - CMAKE_GENERATOR=Ninja
+    - SETUPTOOLS_USE_DISTUTILS=stdlib  # Avoid easy_install
+    - DISTUTILS_USE_SDK=1
+    - MSSdk=1
+    - CONDA_BUILD_SYSROOT=
+  ignore_run_exports_from:
+    - cmake
   script: {{ PYTHON }} setup.py install
 
 requirements:
