@@ -65,6 +65,19 @@ jobs:
 
       - name: Set CMAKE_GENERATOR env var
         run: echo "CMAKE_GENERATOR=Ninja" >> $env:GITHUB_ENV
+            - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: CMake Generation - MSVC
+        shell: cmd
+        run: cmake -B build --preset=${{ inputs.cmakePreset }} -DCMAKE_C_COMPILER_LAUNCHER=${{ github.workspace }}/buildcache/bin/buildcache.exe -DCMAKE_CXX_COMPILER_LAUNCHER=${{ github.workspace }}/buildcache/bin/buildcache.exe .
+
+      - name: Build Project
+        shell: cmd
+        run: |
+          set CL=/MP
+          cmake --build build -j 2
+
+
       - name: Build Conda package using mamba build
         run:
           conda mambabuild ${{ github.workspace }}/LyceanEM-Python/conda/
