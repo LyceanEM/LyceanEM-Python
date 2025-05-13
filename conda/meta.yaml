@@ -6,7 +6,9 @@ source:
 
 
 build:
-  script: {{ PYTHON }} setup.py install
+  script_env:
+    - CMAKE_GENERATOR=Ninja
+  script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vv --force-cmake
 
 requirements:
   build:

@@ -3,6 +3,8 @@ find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 message(STATUS "Python_version: ${Python_VERSION}")
 find_package(pybind11 CONFIG REQUIRED)
 project(test LANGUAGES CXX CUDA)
+## set the generator
+set(CMAKE_GENERATOR "Ninja")
 
 
 find_package( PkgConfig )
