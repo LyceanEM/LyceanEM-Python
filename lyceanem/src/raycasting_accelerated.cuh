@@ -456,7 +456,7 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
 
 
 __global__ void raycast_tiles(float3 *source, float3 *end, float4 *ray, int source_num, int end_num, int flag, float3 *tri_vertex,int3 *binned_triangles, int2* tri_num_in_bin, int ray_num,
-     int2 *ray_index, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,PointData* points, float wave_length, complex_float3* scattering_network, const float2 alpha_beta)
+     int2 *ray_index, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,PointData* points, float wave_length, complex_float3* scattering_network, const double2 alpha_beta)
 {
     int thread = threadIdx.x + blockIdx.x * blockDim.x;
     int stride = blockDim.x * gridDim.x;
