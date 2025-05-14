@@ -549,7 +549,7 @@ def scatteringkernaltest(
                 wavelength,
             )
             if temp == lengths:
-                print("error", network_index[cu_ray_num, i], lengths)
+                print("numba-cuda  error", network_index[cu_ray_num, i], lengths)
 
             # convert field amplitudes to tangential surface currents
             if (i < network_index.shape[1] - 1) and (
@@ -643,7 +643,7 @@ def scatteringkernalv3(
                 sink_index = network_index[cu_ray_num, sink_test] - 1 - problem_size[0]
 
     if flag == 0:
-        print("error", cu_ray_num, sink_index)
+        print("numba-cuda  error", cu_ray_num, sink_index)
         #  print(cu_ray_num,sink_index)
     # else:
     #    sink_index=network_index[cu_ray_num,-1]-1-problem_size[0]
@@ -793,12 +793,19 @@ def lossy_propagation(point1, point2, alpha, beta):
     normal[2] = point2["nz"]
     projection_dot = dot_vec(outgoing_dir, normal)
     front = -(1 / (2 * cmath.pi))
+    print("numba-cuda  front", front)
+    print("numba-cuda  projection_dot", projection_dot)
+
     s = 2.5
     distance_loss = 1.0 / ((1 + length[0] ** s) ** (1 / s))
     G = (cmath.exp(-(alpha[0] + 1j * beta[0]) * length[0])) * distance_loss
 
     #dG = (-(alpha[0] + 1j * beta[0]) - complex64((distance_loss))) * G
     dG = (-(alpha[0] + 1j * beta[0])) * G
+    print("numba-cuda  dG", dG.real, dG.imag)
+    print("numba-cuda  G", G.real, G.imag)
+    print("numba-cuda  ray_direction", outgoing_dir[0], outgoing_dir[1], outgoing_dir[2])
+    print("numba-cuda  raylength", length[0])
     loss = front * dG * projection_dot
 
     return loss
@@ -966,7 +973,7 @@ def scatteringkernaltest(
                 sink_index = network_index[cu_ray_num, sink_test] - 1 - problem_size[0]
 
     if flag == 0:
-        print("error", cu_ray_num, sink_index)
+        print("numba-cuda  error", cu_ray_num, sink_index)
 
     scattering_matrix[cu_ray_num] = complex(sink_index)
 
@@ -1096,7 +1103,8 @@ def freqdomainkernal(
     cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
-    if cu_ray_num < network_index.shape[0]:
+    stride = cuda.gridsize(1)
+    for i  in range  (cu_ray_num,network_index.shape[0],stride):
         # noinspection PyTypeChecker
         ray_component = cuda.local.array(shape=(3), dtype=np.complex128)
         # ray_components[cu_ray_num,:]=0.0
@@ -1172,7 +1180,10 @@ def freqdomainkernal(
                     point_information[network_index[cu_ray_num, i + 1] - 1],
                     outgoing_dir,
                 )
+                print("numba-cuda  ray_field pre launch",ray_component[0].real, "+", ray_component[0].imag, "i  ",ray_component[1].real, "+", ray_component[1].imag, "i  ",ray_component[2].real, "+", ray_component[2].imag, "i")
+
                 ray_component = sourcelaunchtransformGPU(ray_component, outgoing_dir)
+                print("numba-cuda  rayfield post launch",ray_component[0].real, "+", ray_component[0].imag, "i  ",ray_component[1].real, "+", ray_component[1].imag, "i  ",ray_component[2].real, "+", ray_component[2].imag, "i")
 
                 ray_component[0] = (
                     ray_component[0]
@@ -1193,12 +1204,15 @@ def freqdomainkernal(
         # scatter_coefficient=(1/(4*cmath.pi))**(complex(scatter_index))
         # alpha = 0.0
         # beta = (2.0 * cmath.pi) / wavelength[0]
+        print("numba-cuda   alpha", alpha[0], "beta", beta[0])
+
         loss = lossy_propagation(
             point_information[network_index[cu_ray_num, 0] - 1],
             point_information[network_index[cu_ray_num, 1] - 1],
             alpha,
             beta,
         )
+
         for i in range(1, network_index.shape[1] - 1):
             if network_index[cu_ray_num, i + 1] != 0:
 
@@ -1208,10 +1222,12 @@ def freqdomainkernal(
                     alpha,
                     beta,
                 )
+        print("numba-cuda  loss", loss.real, "+", loss.imag, "i")
 
         ray_component[0] *= loss
         ray_component[1] *= loss
         ray_component[2] *= loss
+        print("numba-cuda  ray_component after loss", ray_component[0].real, "+", ray_component[0].imag, "i  ",ray_component[1].real, "+", ray_component[1].imag, "i  ",ray_component[2].real, "+", ray_component[2].imag, "i")
         # print(ray_component[0].real,ray_component[1].real,ray_component[2].real)
         # add real components
         cuda.atomic.add(
@@ -1852,7 +1868,7 @@ def pathlength(network_index, point_information, distances):
                 lengths,
             )
             if temp == lengths:
-                print("error", network_index[cu_ray_num, i], lengths)
+                print("numba-cuda  error", network_index[cu_ray_num, i], lengths)
 
         i += 1
 
@@ -2232,7 +2248,7 @@ def EMGPUFreqDomain(
     )
     if memory_requirements >= (0.95 * free_mem):
         # chunking required
-        # print("Number of Chunks",np.ceil(memory_requirements/max_mem).astype(int)+1)
+        # print("numba-cuda  Number of Chunks",np.ceil(memory_requirements/max_mem).astype(int)+1)
         # create chunks based upon number of chunks required
         num_chunks = np.ceil(memory_requirements / max_mem).astype(int) + 1
         if num_chunks < 0:
@@ -2308,7 +2324,7 @@ def EMGPUFreqDomain(
             # print(grids,' blocks, ',threads,' threads')
             # Execute the kernel
             # cuda.profile_start()
-            freqdomainkernal[grids, threads](
+            freqdomainkernal[1, 1](
                 d_temp_index,
                 d_point_information,
                 d_temp_target_index,
@@ -2377,7 +2393,7 @@ def EMGPUFreqDomain(
         # print(grids,' blocks, ',threads,' threads')
         # Execute the kernel
         # cuda.profile_start()
-        freqdomainkernal[grids, threads](
+        freqdomainkernal[1, 1](
             d_full_index,
             d_point_information,
             d_target_index,
@@ -2956,7 +2972,7 @@ def TimeDomainv3(
     flag = True
     if np.ceil(time_map.nbytes / 1e9) > 1:
         # setup time_map chunking
-        print("source chunking ", time_map.nbytes / 1e9, "Gb")
+        print("numba-cuda  source chunking ", time_map.nbytes / 1e9, "Gb")
         num_chunks = np.ceil(time_map.nbytes / 1e9).astype(np.int32)
         source_chunking = np.linspace(0, source_num, num_chunks + 1).astype(np.int32)
         # setup wake time as a second
@@ -3212,7 +3228,7 @@ def TimeDomainThetaPhi(
     flag = True
     if np.ceil(time_map.nbytes / 1e9) > 1:
         # setup time_map chunking
-        print("source chunking ", time_map.nbytes / 1e9, "Gb")
+        print("numba-cuda  source chunking ", time_map.nbytes / 1e9, "Gb")
         num_chunks = np.ceil(time_map.nbytes / 1e9).astype(np.int32)
         source_chunking = np.linspace(0, source_num, num_chunks + 1).astype(np.int32)
         # setup wake time as a second
