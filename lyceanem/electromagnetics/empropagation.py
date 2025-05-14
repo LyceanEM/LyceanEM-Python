@@ -1104,6 +1104,7 @@ def freqdomainkernal(
     # margin=1e-5
     stride = cuda.gridsize(1)
     for cu_ray_num  in range  (network_index.shape[0]):
+        print("numba-cuda  cu_ray_num", cu_ray_num)
         # noinspection PyTypeChecker
         ray_component = cuda.local.array(shape=(3), dtype=np.complex128)
         # ray_components[cu_ray_num,:]=0.0
