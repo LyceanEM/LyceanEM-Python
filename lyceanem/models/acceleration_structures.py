@@ -55,6 +55,7 @@ class Tile_acceleration_structure:
                         alpha,
                         beta,
                         self_to_self)
+            array = np.ascontiguousarray(array)
             array = array.view(np.complex64)
             array = array.reshape((source_end-source_start, sink_mesh.points.shape[0],3))
             return_array[source_start:source_end,:] = array
