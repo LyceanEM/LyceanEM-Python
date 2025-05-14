@@ -25,21 +25,21 @@ class Tile_acceleration_structure:
     def calculate_scattering(self, source_mesh, sink_mesh, alpha, beta,wavelength,self_to_self, chunk_count = 1):
         assert chunk_count > 0, "chunk_count must be greater than 0"
         source_start = 0
-        source_end = source_mesh.points.shape[0]/chunk_count
-        return_array = np.zeros(source_mesh.points.shape[0], sink_mesh.points.shape[0],3)
+        source_end = int(np.floor(source_mesh.points.shape[0]/chunk_count))
+        return_array = np.zeros((source_mesh.points.shape[0], sink_mesh.points.shape[0],3), dtype=np.complex64)
         for i in range(chunk_count):
 
             array =  calculate_scattering_tiles(source_mesh.points[source_start:source_end,:],
                         sink_mesh.points,
                         self.triangle_verticies,
                         wavelength,
-                        source_mesh.point_data["ex"].real,
-                        source_mesh.point_data["ex"].imag,
-                        source_mesh.point_data["ey"].real,
-                        source_mesh.point_data["ey"].imag,
-                        source_mesh.point_data["ez"].real,
-                        source_mesh.point_data["ez"].imag,
-                        source_mesh.point_data["Normals"],
+                        source_mesh.point_data["ex"].real[source_start:source_end],
+                        source_mesh.point_data["ex"].imag[source_start:source_end],
+                        source_mesh.point_data["ey"].real[source_start:source_end],
+                        source_mesh.point_data["ey"].imag[source_start:source_end],
+                        source_mesh.point_data["ez"].real[source_start:source_end],
+                        source_mesh.point_data["ez"].imag[source_start:source_end],
+                        np.append(source_mesh.point_data["Normals"][source_start:source_end,:],sink_mesh.point_data["Normals"],axis=0),
                         self.min_x,
                         self.max_x,
                         self.min_y,
@@ -55,10 +55,11 @@ class Tile_acceleration_structure:
                         alpha,
                         beta,
                         self_to_self)
-            array.reshape((source_end-source_start, sink_mesh.points.shape[0],3))
+            array = array.view(np.complex64)
+            array = array.reshape((source_end-source_start, sink_mesh.points.shape[0],3))
             return_array[source_start:source_end,:] = array
             source_start = source_end
-            source_end = source_end + source_mesh.points.shape[0]/chunk_count
+            source_end = int(source_end + np.floor(source_mesh.points.shape[0]/chunk_count))
             ## the abpve might miss points on the last chunk
             if i == chunk_count - 2:
                 source_end = source_mesh.points.shape[0]
@@ -74,7 +75,7 @@ class Brute_Force_acceleration_structure:
         assert chunk_count > 0, "chunk_count must be greater than 0"
         source_start = 0
         source_end = source_mesh.points.shape[0]/chunk_count
-        return_array = np.zeros(source_mesh.points.shape[0], sink_mesh.points.shape[0],3)
+        return_array = np.zeros((source_mesh.points.shape[0], sink_mesh.points.shape[0],3))
         for i in range(chunk_count):
 
             array =  calculate_scattering_brute_force(source_mesh.points[source_start:source_end,:],

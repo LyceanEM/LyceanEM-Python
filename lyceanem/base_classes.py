@@ -371,7 +371,7 @@ class structures(object3d):
         """
         for item in range(len(self.solids)):
             if self.solids[item] is not None:
-                self.solids[item] = GF.translate_mesh(self.solids[item], vector)
+                self.solids[item] = GF.mesh_translate(self.solids[item], vector)
 
     def triangles_base_raycaster(self):
         """
@@ -395,6 +395,34 @@ class structures(object3d):
             triangles = np.append(triangles, RF.convertTriangles(temp_object))
 
         return triangles
+    def export_combined_meshio(self):
+        """
+        combines all the structures in the collection as a combined mesh for modelling
+
+        Returns
+        -------
+        combined mesh
+        """
+        
+        mesh_points = np.empty((0,3), dtype=np.float32)
+        mesh_triangles = np.empty((0,3), dtype=np.int32)
+        mesh_point_normals = np.empty((0,3), dtype=np.float32)
+        mesh_cell_normals = np.empty((0,3), dtype=np.float32)
+
+        for i in range(len(self.solids)):
+            copy_mesh = self.solids[i]
+            copy_mesh = GF.mesh_transform(copy_mesh, self.pose, False)
+            mesh_points = np.append(mesh_points, copy_mesh.points, axis=0)
+            mesh_triangles = np.append(mesh_triangles, copy_mesh.cells[0].data, axis=0)
+            if 'Normals' in copy_mesh.point_data:
+                mesh_point_normals = np.append(mesh_point_normals, copy_mesh.point_data['Normals'].data, axis=0)
+            if 'Normals' in copy_mesh.cell_data:
+                print("Mesh has cell normals")
+                mesh_cell_normals = np.append(mesh_cell_normals, copy_mesh.cell_data['Normals'][0], axis=0)
+
+        combined_mesh = meshio.Mesh(points=mesh_points, cells=[("triangle", mesh_triangles)], point_data={"Normals": mesh_point_normals})
+        combined_mesh.cell_data["Normals"] = [mesh_cell_normals]
+        return combined_mesh
 
 
 class antenna_structures(object3d):

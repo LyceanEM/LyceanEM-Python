@@ -179,32 +179,30 @@ def calculate_farfield(
     )
 
     return etheta, ephi
-def calculate_scattering_cuda(alpha, beta, wavelength, acceleration_structure, scatter_depth, source_mesh, sink_mesh, scatter_mesh= None):
+def calculate_scattering_cuda(alpha, beta, wavelength, acceleration_structure, scatter_depth, source_mesh, sink_mesh, scatter_mesh= None, chunks=1):
     
-    scatter_source_sink = acceleration_structure.calculate_scattering(source_mesh, sink_mesh, alpha, beta, wavelength)
+    scatter_source_sink = acceleration_structure.calculate_scattering(source_mesh, sink_mesh, alpha, beta, wavelength, chunk_count=chunks, self_to_self = False)
     print("scatter_source_sink")
     total_scatter = scatter_source_sink
     if scatter_depth == 0:
         return scatter_source_sink
-    source_scatter = acceleration_structure.calculate_scattering(source_mesh, scatter_mesh, alpha, beta, wavelength)
+    source_scatter = acceleration_structure.calculate_scattering(source_mesh, scatter_mesh, alpha, beta, wavelength, chunk_count=chunks, self_to_self = False)
     print("source_scatter done")
     scatter_mesh.point_data["ex"] = np.dot(np.ones((source_mesh.points.shape[0])), source_scatter[:, :, 0])
     scatter_mesh.point_data["ey"] = np.dot(np.ones((source_mesh.points.shape[0])), source_scatter[:, :, 1])
     scatter_mesh.point_data["ez"] = np.dot(np.ones((source_mesh.points.shape[0])), source_scatter[:, :, 2])
     print("scatter_points.shape", scatter_mesh.points.shape)
     print("scatter_points", scatter_mesh.point_data["ex"].shape)
-    scatter_sink = acceleration_structure.calculate_scattering(scatter_mesh, sink_mesh, alpha, beta, wavelength)
+    scatter_sink = acceleration_structure.calculate_scattering(scatter_mesh, sink_mesh, alpha, beta, wavelength, chunk_count=chunks, self_to_self = False)
     print("scatter_sink done")
     if scatter_depth == 1:
         print("scatter shapes", source_scatter.shape, scatter_sink.shape, scatter_source_sink.shape)
-        total_scatter += np.matmul(source_scatter, scatter_sink)
+        total_scatter[:,:,0] += np.dot( source_scatter[:, :, 0], scatter_sink[:, :, 0])
+        total_scatter[:,:,1] += np.dot( source_scatter[:, :, 1], scatter_sink[:, :, 1])
+        total_scatter[:,:,2] += np.dot( source_scatter[:, :, 2], scatter_sink[:, :, 2])
         return total_scatter
-    elif scatter_depth >2:
-        scatter_scatter = acceleration_structure.calculate_scattering(scatter_mesh, scatter_mesh, alpha, beta, wavelength)
-        middle_scatter = np.matmul(source_scatter, scatter_scatter)
-        for i in range(scatter_depth-2):
-            middle_scatter = np.matmul(middle_scatter, scatter_scatter)
-        total_scatter += np.matmul(middle_scatter, scatter_sink)
+    elif scatter_depth > 1:
+        print("not yet implemented")
         return total_scatter
         
 
@@ -614,9 +612,9 @@ def calculate_scattering(
                         point_informationv2[0:num_sources]["ex"] = 0.0
                         point_informationv2[0:num_sources]["ey"] = 0.0
                         point_informationv2[0:num_sources]["ez"] = 0.0
-                        point_informationv2[element]["ex"] = conformal_E_vectors[
+                        point_informationv2[element]["ex"] = np.ascontiguousarray(conformal_E_vectors[
                             element, 0
-                        ]  # / num_sources
+                        ] )# / num_sources
                         point_informationv2[element]["ey"] = conformal_E_vectors[
                             element, 1
                         ]  # / num_sources
@@ -668,7 +666,7 @@ def calculate_scattering(
         num_sinks = len(np.asarray(sink_coords.points))
         num_scatters = 0
         if acceleration_structure is None:
-            environment_mesh=GF.mesh_conversion_to_meshio(antenna_solid[0])
+            environment_mesh=GF.mesh_conversion_to_meshio(antenna_solid)
             tile_acceleration_structure = acceleration_structures.Tile_acceleration_structure(environment_mesh, 1)
         else:
             tile_acceleration_structure = acceleration_structure
@@ -706,9 +704,9 @@ def calculate_scattering(
         aperture_coords.point_data["permittivity"] = np.ones((num_sources), dtype=np.complex64) * permiativity
         aperture_coords.point_data["permeability"] = np.ones((num_sources), dtype=np.complex64) * permeability
         #set e fields
-        aperture_coords.point_data["ex"] = conformal_E_vectors[:, 0]
-        aperture_coords.point_data["ey"] = conformal_E_vectors[:, 1]
-        aperture_coords.point_data["ez"] = conformal_E_vectors[:, 2]
+        aperture_coords.point_data["ex"] = np.ascontiguousarray(conformal_E_vectors[:, 0])
+        aperture_coords.point_data["ey"] = np.ascontiguousarray(conformal_E_vectors[:, 1])
+        aperture_coords.point_data["ez"] = np.ascontiguousarray(conformal_E_vectors[:, 2])
         if scattering > 0:
             num_scatters = len(np.asarray(scatter_points.points))
             scatter_points.point_data["is_electric"] = np.ones((num_scatters), dtype=np.bool)

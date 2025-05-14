@@ -45,7 +45,7 @@ receive_horn_structure, receiving_antenna_surface_coords = TL.meshedHorn(
 # Position Transmitter
 # ----------------------
 # rotate the transmitting antenna to the desired orientation, and then translate to final position.
-# :func:`lyceanem.geometryfunctions.mesh_rotate` and :func:`lyceanem.geometryfunctions.translate_mesh` are used to achive this
+# :func:`lyceanem.geometryfunctions.mesh_rotate` and :func:`lyceanem.geometryfunctions.mesh_translate` are used to achive this
 #
 rotation_vector1 = np.radians(np.asarray([90.0, 0.0, 0.0]))
 rotation_vector2 = np.radians(np.asarray([0.0, 0.0, -90.0]))
@@ -56,14 +56,14 @@ transmit_horn_structure = GF.mesh_rotate(
 )
 transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure,rotation_vector2)
 
-transmit_horn_structure = GF.translate_mesh(transmit_horn_structure,np.asarray([2.529, 0, 0]))
+transmit_horn_structure = GF.mesh_translate(transmit_horn_structure,np.asarray([2.529, 0, 0]))
 
 transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords,rotation_vector1)
 
 transmitting_antenna_surface_coords = GF.mesh_rotate(
     transmitting_antenna_surface_coords,rotation_vector2)
 
-transmitting_antenna_surface_coords = GF.translate_mesh(transmitting_antenna_surface_coords,np.asarray([2.529, 0, 0]))
+transmitting_antenna_surface_coords = GF.mesh_translate(transmitting_antenna_surface_coords,np.asarray([2.529, 0, 0]))
 # %%
 # Position Receiver
 # ------------------
@@ -71,10 +71,10 @@ transmitting_antenna_surface_coords = GF.translate_mesh(transmitting_antenna_sur
 
 receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector1)
 #receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector3)
-receive_horn_structure = GF.translate_mesh(receive_horn_structure,np.asarray([0, 1.609, 0]))
+receive_horn_structure = GF.mesh_translate(receive_horn_structure,np.asarray([0, 1.609, 0]))
 receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector1)
 #receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector3)
-receiving_antenna_surface_coords = GF.translate_mesh(receiving_antenna_surface_coords,np.asarray([0, 1.609, 0]))
+receiving_antenna_surface_coords = GF.mesh_translate(receiving_antenna_surface_coords,np.asarray([0, 1.609, 0]))
 
 
 
@@ -97,8 +97,8 @@ reflectorplate = GF.mesh_rotate(
     reflectorplate,
     rotation_vector1
 )
-reflectorplate = GF.translate_mesh(reflectorplate,position_vector)
-scatter_points = GF.translate_mesh(scatter_points,position_vector)
+reflectorplate = GF.mesh_translate(reflectorplate,position_vector)
+scatter_points = GF.mesh_translate(scatter_points,position_vector)
 
 # %%
 # Specify Reflection Angle
@@ -127,15 +127,7 @@ blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_str
 import pyvista as pv
 from lyceanem.utility.mesh_functions import pyvista_to_meshio
 ## plot the mesh
-plotter = pv.Plotter()
-plotter.add_mesh(pv.from_meshio(reflectorplate), color="grey")
-plotter.add_mesh(pv.from_meshio(scatter_points), color="grey")
-plotter.add_mesh(pv.from_meshio(receive_horn_structure), color="blue")
-plotter.add_mesh(pv.from_meshio(receiving_antenna_surface_coords), color="blue")
-plotter.add_mesh(pv.from_meshio(transmit_horn_structure), color="red")
-plotter.add_mesh(pv.from_meshio(transmitting_antenna_surface_coords), color="red")
-plotter.add_axes_at_origin()
-plotter.show()
+
 # Specify desired Transmit Polarisation
 # --------------------------------------
 # The transmit polarisation has a significant effect on the channel characteristics. In this example the transmit
@@ -161,10 +153,29 @@ Ex, Ey, Ez = FD.calculate_scattering(
     desired_E_axis=desired_E_axis,
     scatter_points=scatter_points,
     wavelength=wavelength,
-    scattering=1,
+    scattering=0,
     project_vectors=False,
     beta=(2*np.pi)/wavelength
 )
+Excuda, Eycuda, Ezcuda = FD.calculate_scattering(
+    aperture_coords=transmitting_antenna_surface_coords,
+    sink_coords=receiving_antenna_surface_coords,
+    antenna_solid=blockers,
+    desired_E_axis=desired_E_axis,
+    scatter_points=scatter_points,
+    wavelength=wavelength,
+    scattering=0,
+    project_vectors=False,
+    beta=(2*np.pi)/wavelength,
+    cuda=True
+
+)
+print("sumdiff",(np.sum((Ex-Excuda))))
+print("sumdiff",(np.sum((Ey-Eycuda))))
+print("sumdiff",(np.sum((Ez-Ezcuda))))
+np.testing.assert_allclose(Ex, Excuda, rtol=1e-5)
+np.testing.assert_allclose(Ey, Eycuda, rtol=1e-5)
+np.testing.assert_allclose(Ez, Ezcuda, rtol=1e-5)
 
 
 # %%

@@ -9,7 +9,23 @@ from .. import base_classes as base_classes
 from .. import base_types as base_types
 from ..raycasting import rayfunctions as RF
 from ..electromagnetics.emfunctions import transform_em
-
+def mesh_conversion_to_meshio(conversion_object):
+    if isinstance(conversion_object, base_classes.structures):
+        meshio_mesh = conversion_object.export_combined_meshio()
+    elif isinstance(conversion_object, base_classes.antenna_structures):
+        exported_structure = base_classes.structures(
+            solids=conversion_object.export_all_structures()
+        )
+        meshio_mesh = exported_structure.export_combined_meshio()
+    elif isinstance(conversion_object, meshio.Mesh):
+        meshio_mesh = conversion_object
+    elif isinstance(conversion_object, list):
+        assert False
+    else:
+        print("no structures")
+        print(type(conversion_object))
+        meshio_mesh = None
+    return meshio_mesh
 
 def cell_centroids(field_data):
     """

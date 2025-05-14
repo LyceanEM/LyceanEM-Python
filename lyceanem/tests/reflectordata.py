@@ -47,10 +47,10 @@ def exampleUAV(frequency):
     array = GF.mesh_rotate(array, rotation_vector1)
     array = GF.mesh_rotate(array, rotation_vector2)
 
-    body = GF.translate_mesh(
+    body = GF.mesh_translate(
         body, np.array([0.25, 0, 0]) + np.array([-0.18, 0, 0.0125])
     )
-    array = GF.translate_mesh(
+    array = GF.mesh_translate(
         array, np.array([0.25, 0, 0]) + np.array([-0.18, 0, 0.0125])
     )
 
@@ -198,6 +198,6 @@ def exampleUAV(frequency):
     ) + np.array([0.1025, 0, -0.025])
     source_pcd = RF.points2pointcloud(total_array)
     source_pcd.point_data["Normals"] = total_array_normals
-    source_pcd = GF.translate_mesh(source_pcd, np.array([-0.18, 0, 0.0125]))
+    source_pcd = GF.mesh_translate(source_pcd, np.array([-0.18, 0, 0.0125]))
 
     return body, array, source_pcd

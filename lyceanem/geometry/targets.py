@@ -299,7 +299,7 @@ def meshedHorn(
         majorsize, minorsize, 1e-6, grid_resolution, sides
     )
 
-    mesh_points = GF.translate_mesh(mesh_points, [0, 0, EPSILON * 2])
+    mesh_points = GF.mesh_translate(mesh_points, [0, 0, EPSILON * 2])
 
     return structure, mesh_points
 
