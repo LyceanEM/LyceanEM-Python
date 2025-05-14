@@ -471,7 +471,7 @@ __global__ void raycast_tiles(float3 *source, float3 *end, float4 *ray, int sour
         DDA(source, end, ray,ray_index,i,binned_triangles,tri_vertex,tri_num_in_bin,num_bins,end_num,flag,x_top_bottom,y_range,z_range);
 
         if(ray_index[i].x != -1){
-            printf("ray %f i start ===========");
+            printf("ray %i i start ===========");
             complex_float3 ray_field = em_wave(alpha_beta, ray[i],points[ray_index[i].x],points[ray_index[i].y],wave_length);
             scattering_network[i] = ray_field;
 
