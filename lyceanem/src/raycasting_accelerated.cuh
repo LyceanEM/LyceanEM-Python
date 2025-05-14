@@ -471,11 +471,11 @@ __global__ void raycast_tiles(float3 *source, float3 *end, float4 *ray, int sour
         DDA(source, end, ray,ray_index,i,binned_triangles,tri_vertex,tri_num_in_bin,num_bins,end_num,flag,x_top_bottom,y_range,z_range);
 
         if(ray_index[i].x != -1){
-            printf("ray %i i start ===========\n", i);
+            //printfray %i i start ===========\n", i);
             complex_float3 ray_field = em_wave(alpha_beta, ray[i],points[ray_index[i].x],points[ray_index[i].y],wave_length);
             scattering_network[i] = ray_field;
 
-           // printf("ray_filed (%f + %fi), (%f+ %fi), (%f + %fi)\n",scattering_network[i].x.x,scattering_network[i].x.y,scattering_network[i].y.x,scattering_network[i].y.y,scattering_network[i].z.x,scattering_network[i].z.y);
+           // //printfray_filed (%f + %fi), (%f+ %fi), (%f + %fi)\n",scattering_network[i].x.x,scattering_network[i].x.y,scattering_network[i].y.x,scattering_network[i].y.y,scattering_network[i].z.x,scattering_network[i].z.y);
         }
     }
 
@@ -569,7 +569,7 @@ void raycast_wrapper_tiles (float *source, float *end, int source_num, int end_n
     cudaMemset(d_scattering_network, 0, scattering_network_size);
     cudaDeviceSynchronize();
 
-    raycast_tiles<<<1,1,1>>>(d_source,d_end,d_ray,source_num,end_num,not_self_to_self,d_tri_vertex,d_binned_triangles,d_tri_num_per_bin,source_num*end_num, d_ray_index,num_bins,x_top_bottom,y_range,z_range,d_points,wave_length,d_scattering_network, alpha_beta);
+    raycast_tiles<<<32,256>>>(d_source,d_end,d_ray,source_num,end_num,not_self_to_self,d_tri_vertex,d_binned_triangles,d_tri_num_per_bin,source_num*end_num, d_ray_index,num_bins,x_top_bottom,y_range,z_range,d_points,wave_length,d_scattering_network, alpha_beta);
     //get last error
    
     gpuErrchk( cudaGetLastError() );

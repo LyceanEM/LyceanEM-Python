@@ -63,57 +63,57 @@ __device__ __inline__ complex_float3 ray_launch(const complex_float3 & e_field,f
 
 __device__ __inline__ complex_float3 em_wave(const float2 alpha_beta, const float4& ray, const PointData& origin, const PointData& end, float wave_length) {
     //printf(("package- alpha_beta = (%f, %f)\n", alpha_beta.x, alpha_beta.y);
-    printf("package- ray field %f +i%f, %f +i%f, %f +i%f\n", origin.electric_field.x.x, origin.electric_field.x.y, origin.electric_field.y.x, origin.electric_field.y.y, origin.electric_field.z.x, origin.electric_field.z.y);
+    //printfpackage- ray field %f +i%f, %f +i%f, %f +i%f\n", origin.electric_field.x.x, origin.electric_field.x.y, origin.electric_field.y.x, origin.electric_field.y.y, origin.electric_field.z.x, origin.electric_field.z.y);
 
 
 
     complex_float3 ray_field = ray_launch(origin.electric_field, make_float3(ray.x, ray.y, ray.z));
-    printf("package- ray_field after launch = (%f + %fi, %f + %fi, %f + %fi)\n", ray_field.x.x, ray_field.x.y, ray_field.y.x, ray_field.y.y, ray_field.z.x, ray_field.z.y);
+    //printfpackage- ray_field after launch = (%f + %fi, %f + %fi, %f + %fi)\n", ray_field.x.x, ray_field.x.y, ray_field.y.x, ray_field.y.y, ray_field.z.x, ray_field.z.y);
 
 
     float front = -(1 / (2 * CUDART_PI_F));
 
     cuFloatComplex G;
-   // printf("inputs to sincosf = (%f)\n", -alpha_beta.y * ray.w);
-   // printf("alpha  = (%f)\n", alpha_beta.x);
-    printf("alpha, beta  = (%f,  %f)\n", alpha_beta.x, alpha_beta.y);
+   // //printfinputs to sincosf = (%f)\n", -alpha_beta.y * ray.w);
+   // //printfalpha  = (%f)\n", alpha_beta.x);
+    //printfalpha, beta  = (%f,  %f)\n", alpha_beta.x, alpha_beta.y);
     sincosf(-alpha_beta.y * ray.w, &G.y, &G.x);
-   // printf("dis2t %f \n", ray.w);
-   // printf("package- G after sincosf = (%f + %fi)\n", G.x, G.y);
+   // //printfdis2t %f \n", ray.w);
+   // //printfpackage- G after sincosf = (%f + %fi)\n", G.x, G.y);
 
     G *= (expf(-alpha_beta.x * ray.w)  / ray.w);
-   // printf("package- G after exp/log = (%f + %fi)\n", G.x, G.y);
+   // //printfpackage- G after exp/log = (%f + %fi)\n", G.x, G.y);
 
     cuFloatComplex dG;
     dG.x = -alpha_beta.x - (1 / ray.w);
     dG.y = -alpha_beta.y;
     //printf(("package- dG before mul = (%f + %fi)\n", dG.x, dG.y);
-    printf("dg pre mul with g = (%f + %fi)\n", dG.x, dG.y);
+    //printfdg pre mul with g = (%f + %fi)\n", dG.x, dG.y);
 
     dG = cuCmulf(dG, G);
-   // printf("package- dG after mul = (%f + %fi)\n", dG.x, dG.y);
+   // //printfpackage- dG after mul = (%f + %fi)\n", dG.x, dG.y);
     //printf(("package- front = %f\n", front);
     //printf(("package- dG = (%f + %fi)\n", dG.x, dG.y);
-   // printf("package- end.normal = (%f, %f, %f)\n", end.normal.x, end.normal.y, end.normal.z);
+   // //printfpackage- end.normal = (%f, %f, %f)\n", end.normal.x, end.normal.y, end.normal.z);
 
     float3 ray_dir = make_float3(ray.x, ray.y, ray.z);
-   // printf("package- ray direction = (%f, %f, %f)\n", ray_dir.x, ray_dir.y, ray_dir.z);
+   // //printfpackage- ray direction = (%f, %f, %f)\n", ray_dir.x, ray_dir.y, ray_dir.z);
 
     float dot_val = dot(end.normal, ray_dir);
-    printf("front = %f\n", front);
+    //printffront = %f\n", front);
 
-   printf(" dot(end.normal, ray_dir) = %f\n", dot_val);
-   printf("dg = (%f + %fi)\n", dG.x, dG.y);
-    printf("G = (%f + %fi)\n", G.x, G.y);
-    printf("ray_dir = (%f, %f, %f)\n", ray_dir.x, ray_dir.y, ray_dir.z);
-    printf("raylength = %f\n", ray.w);
+   //printf dot(end.normal, ray_dir) = %f\n", dot_val);
+   //printfdg = (%f + %fi)\n", dG.x, dG.y);
+    //printfG = (%f + %fi)\n", G.x, G.y);
+    //printfray_dir = (%f, %f, %f)\n", ray_dir.x, ray_dir.y, ray_dir.z);
+    //printfraylength = %f\n", ray.w);
     cuFloatComplex loss = front * dG * dot(end.normal, make_float3(ray.x, ray.y, ray.z));
-   printf("package- loss = (%f + %fi)\n", loss.x, loss.y);
+   //printfpackage- loss = (%f + %fi)\n", loss.x, loss.y);
 
     ray_field *= loss;
 
 
-    printf("ray_field after loss = (%f + %fi, %f + %fi, %f + %fi)\n", ray_field.x.x, ray_field.x.y, ray_field.y.x, ray_field.y.y, ray_field.z.x, ray_field.z.y);
+    //printfray_field after loss = (%f + %fi, %f + %fi, %f + %fi)\n", ray_field.x.x, ray_field.x.y, ray_field.y.x, ray_field.y.y, ray_field.z.x, ray_field.z.y);
 
 
     return ray_field;
