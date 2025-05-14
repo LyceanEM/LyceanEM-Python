@@ -76,7 +76,7 @@ __device__ __inline__ complex_float3 em_wave(const float2 alpha_beta, const floa
     cuFloatComplex G;
    // printf("inputs to sincosf = (%f)\n", -alpha_beta.y * ray.w);
    // printf("alpha  = (%f)\n", alpha_beta.x);
-   // printf("beta  = (%f)\n", alpha_beta.y);
+    printf("alpha, beta  = (%f,  %f)\n", alpha_beta.x, alpha_beta.y);
     sincosf(-alpha_beta.y * ray.w, &G.y, &G.x);
    // printf("dis2t %f \n", ray.w);
    // printf("package- G after sincosf = (%f + %fi)\n", G.x, G.y);
@@ -107,9 +107,10 @@ __device__ __inline__ complex_float3 em_wave(const float2 alpha_beta, const floa
     printf("ray_dir = (%f, %f, %f)\n", ray_dir.x, ray_dir.y, ray_dir.z);
     printf("raylength = %f\n", ray.w);
     cuFloatComplex loss = front * dG * dot(end.normal, make_float3(ray.x, ray.y, ray.z));
-   // printf("package- loss = (%f + %fi)\n", loss.x, loss.y);
+   printf("package- loss = (%f + %fi)\n", loss.x, loss.y);
 
     ray_field *= loss;
+
 
     printf("ray_field after loss = (%f + %fi, %f + %fi, %f + %fi)\n", ray_field.x.x, ray_field.x.y, ray_field.y.x, ray_field.y.y, ray_field.z.x, ray_field.z.y);
 
