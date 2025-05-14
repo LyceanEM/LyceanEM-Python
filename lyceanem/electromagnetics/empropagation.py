@@ -549,7 +549,7 @@ def scatteringkernaltest(
                 wavelength,
             )
             if temp == lengths:
-                ##print("numba-cuda  error", network_index[cu_ray_num, i], lengths)
+                print("error", network_index[cu_ray_num, i], lengths)
 
             # convert field amplitudes to tangential surface currents
             if (i < network_index.shape[1] - 1) and (
