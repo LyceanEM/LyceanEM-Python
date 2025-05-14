@@ -2393,7 +2393,7 @@ def EMGPUFreqDomain(
         # print(grids,' blocks, ',threads,' threads')
         # Execute the kernel
         # cuda.profile_start()
-        freqdomainkernal[1, 1](
+        freqdomainkernal[grids, threads](
             d_full_index,
             d_point_information,
             d_target_index,
