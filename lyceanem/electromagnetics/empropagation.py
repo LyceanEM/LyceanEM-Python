@@ -643,7 +643,7 @@ def scatteringkernalv3(
                 sink_index = network_index[cu_ray_num, sink_test] - 1 - problem_size[0]
 
     if flag == 0:
-        ##print("numba-cuda  error", cu_ray_num, sink_index)
+        print("numba-cuda  error", cu_ray_num, sink_index)
         #  print(cu_ray_num,sink_index)
     # else:
     #    sink_index=network_index[cu_ray_num,-1]-1-problem_size[0]
@@ -973,7 +973,7 @@ def scatteringkernaltest(
                 sink_index = network_index[cu_ray_num, sink_test] - 1 - problem_size[0]
 
     if flag == 0:
-        ##print("numba-cuda  error", cu_ray_num, sink_index)
+        print("numba-cuda  error", cu_ray_num, sink_index)
 
     scattering_matrix[cu_ray_num] = complex(sink_index)
 
@@ -1868,7 +1868,7 @@ def pathlength(network_index, point_information, distances):
                 lengths,
             )
             if temp == lengths:
-                ##print("numba-cuda  error", network_index[cu_ray_num, i], lengths)
+                print("numba-cuda  error", network_index[cu_ray_num, i], lengths)
 
         i += 1
 
