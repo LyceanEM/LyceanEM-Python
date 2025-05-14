@@ -1100,11 +1100,10 @@ def freqdomainkernal(
     alpha,
     beta,
 ):
-    cu_ray_num = cuda.grid(1)  # alias for threadIdx.x + ( blockIdx.x * blockDim.x ),
     #           threadIdx.y + ( blockIdx.y * blockDim.y )
     # margin=1e-5
     stride = cuda.gridsize(1)
-    for i  in range  (network_index.shape[0]):
+    for cu_ray_num  in range  (network_index.shape[0]):
         # noinspection PyTypeChecker
         ray_component = cuda.local.array(shape=(3), dtype=np.complex128)
         # ray_components[cu_ray_num,:]=0.0
