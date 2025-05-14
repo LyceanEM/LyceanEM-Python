@@ -81,13 +81,14 @@ __device__ __inline__ complex_float3 em_wave(const double2 alpha_beta, const flo
    // printf("dis2t %f \n", ray.w);
    // printf("package- G after sincosf = (%f + %fi)\n", G.x, G.y);
 
-    G *= (expf(-alpha_beta.x * ray.w) * (1 / ray.w));
+    G *= (expf(-alpha_beta.x * ray.w)  / ray.w);
    // printf("package- G after exp/log = (%f + %fi)\n", G.x, G.y);
 
     cuFloatComplex dG;
     dG.x = -alpha_beta.x - (1 / ray.w);
     dG.y = -alpha_beta.y;
     //printf(("package- dG before mul = (%f + %fi)\n", dG.x, dG.y);
+    printf("dg pre mul with g = (%f + %fi)\n", dG.x, dG.y);
 
     dG = cuCmulf(dG, G);
    // printf("package- dG after mul = (%f + %fi)\n", dG.x, dG.y);
