@@ -61,7 +61,7 @@ __device__ __inline__ complex_float3 ray_launch(const complex_float3 & e_field,f
 }
 
 
-__device__ __inline__ complex_float3 em_wave(const float2 alpha_beta, const float4& ray, const PointData& origin, const PointData& end, float wave_length) {
+__device__ __inline__ complex_float3 em_wave(const double2 alpha_beta, const float4& ray, const PointData& origin, const PointData& end, float wave_length) {
     //printf(("package- alpha_beta = (%f, %f)\n", alpha_beta.x, alpha_beta.y);
     printf("package- ray field %f +i%f, %f +i%f, %f +i%f\n", origin.electric_field.x.x, origin.electric_field.x.y, origin.electric_field.y.x, origin.electric_field.y.y, origin.electric_field.z.x, origin.electric_field.z.y);
 

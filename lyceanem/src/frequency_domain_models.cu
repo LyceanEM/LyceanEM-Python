@@ -44,7 +44,7 @@ long calculate_memory_requirement_brute_force(int source_size, int end_size, int
 py::array_t<float> calculate_scattering_tiles(py::array_t<float> source, py::array_t<float> end, py::array_t<float> triangle_vertex, 
                                                         float wave_length,
                                                         py::array_t<float> ex_real, py::array_t<float> ex_imag, py::array_t<float> ey_real, py::array_t<float> ey_imag, py::array_t<float> ez_real, py::array_t<float> ez_imag, 
-                                                        py::array_t<float> normal, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, float tile_size, py::array_t<int> bin_count, py::array_t<int> bin_triangles, int n_cellsx, int n_cellsy, int binned_tri_num,float alpha, float beta, bool not_self_to_self){
+                                                        py::array_t<float> normal, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, float tile_size, py::array_t<int> bin_count, py::array_t<int> bin_triangles, int n_cellsx, int n_cellsy, int binned_tri_num,double alpha, double beta, bool not_self_to_self){
 
     // validate data about input arrays
     if (source.ndim() != 2 || source.shape(1) != 3){throw std::runtime_error("source must be a 2D array with 3 columns");}
@@ -162,7 +162,7 @@ py::array_t<float> calculate_scattering_tiles(py::array_t<float> source, py::arr
     complex_float3* scattering_network_ptr = scattering_network.data();
 
     raycast_wrapper_tiles(&source_ptr[source_index], end_ptr, source_size, end_size,d_tri_vertex, d_binned_triangles, d_bin_count
-            ,make_int2(n_cellsx,n_cellsy) , make_float2(xmin,xmax), make_float2(ymin,tile_size), make_float2(zmin,tile_size),points, wave_length,scattering_network_ptr,make_float2(alpha,beta),not_self_to_self);
+            ,make_int2(n_cellsx,n_cellsy) , make_float2(xmin,xmax), make_float2(ymin,tile_size), make_float2(zmin,tile_size),points, wave_length,scattering_network_ptr,make_double2(alpha,beta),not_self_to_self);
             for (int i = 0; i < scattering_network.size(); i++) {
                 int base = i * 3 * 2;  // 3 complex numbers × 2 floats each
             
@@ -290,7 +290,7 @@ py::array_t<std::complex<float>> calculate_scattering_brute_force(py::array_t<fl
     complex_float3* scattering_network_ptr = scattering_network.data();
 
     raycast_wrapper_brute_force(&source_ptr[source_index], end_ptr, source_size, end_size,d_tri_vertex, d_triangles, triangle_size
-    ,points, wave_length,scattering_network_ptr,make_float2(alpha,beta),not_self_to_self);
+    ,points, wave_length,scattering_network_ptr,make_double2(alpha,beta),not_self_to_self);
 
     for (int i = 0; i < scattering_network.size() ; i++)
     {

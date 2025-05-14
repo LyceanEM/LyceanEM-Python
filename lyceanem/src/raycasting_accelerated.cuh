@@ -488,7 +488,7 @@ __global__ void raycast_tiles(float3 *source, float3 *end, float4 *ray, int sour
 
 
 void raycast_wrapper_tiles (float *source, float *end, int source_num, int end_num, float3 *d_tri_vertex,int3 *d_binned_triangles, int2* d_tri_num_per_bin, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,
-    PointData* points, float wave_length, complex_float3* h_scattering_network, float2 alpha_beta, bool not_self_to_self)
+    PointData* points, float wave_length, complex_float3* h_scattering_network, double2 alpha_beta, bool not_self_to_self)
 {
     // declare device memory
     float3 *d_source;
