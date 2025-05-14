@@ -66,7 +66,7 @@ __device__ __inline__ void intersection_brute_force(int i, float4 *ray, float3 *
 
 }
 __global__ void raycast_brute_force(float3 *source, float3 *end, float4 *ray, int source_num, int end_num, int flag, float3 *tri_vertex,int3 *triangle_index, int tri_num, int ray_num, int2 *ray_index,
-                                PointData* points, float wave_length, complex_float3* scattering_network, const double2 alpha_beta)
+                                PointData* points, float wave_length, complex_float3* scattering_network, const float2 alpha_beta)
 
 {
     int thread = threadIdx.x + blockIdx.x * blockDim.x;
@@ -88,7 +88,7 @@ __global__ void raycast_brute_force(float3 *source, float3 *end, float4 *ray, in
 }
 
 void raycast_wrapper_brute_force (float *source, float *end, int source_num, int end_num, float3 *d_tri_vertex,int3 *d_triangle_index, int tri_num, 
-    PointData* points, float wave_length, complex_float3* h_scattering_network, double2 alpha_beta, bool not_self_to_self)
+    PointData* points, float wave_length, complex_float3* h_scattering_network, float2 alpha_beta, bool not_self_to_self)
 {
     // declare device memory
     float3 *d_source;

@@ -797,7 +797,7 @@ def lossy_propagation(point1, point2, alpha, beta):
     print("numba-cuda  projection_dot", projection_dot)
 
     s = 2.5
-    distance_loss = 1.0 / ((1 + length[0] ** s) ** (1 / s))
+    distance_loss = 1.0 / length[0]
     G = (cmath.exp(-(alpha[0] + 1j * beta[0]) * length[0])) * distance_loss
 
     #dG = (-(alpha[0] + 1j * beta[0]) - complex64((distance_loss))) * G

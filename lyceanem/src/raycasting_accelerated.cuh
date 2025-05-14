@@ -211,7 +211,7 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
     // gradient of ray component wise
     float2 gradient = gradient_component_y_z_2d(ray_vector);
     int2 step = step_direction(ray_vector);
-    double2 distance_to_next_side;
+    float2 distance_to_next_side;
     //check step lines ip with box order    
     if(step.x == 1){
         distance_to_next_side.x = ((tile_origin.x + 1.0) - origin_in_fractional_bin_units.x) * gradient.x;
@@ -456,7 +456,7 @@ __device__ __inline__ void DDA(float3* source, float3 * end, float4 *rays, int2*
 
 
 __global__ void raycast_tiles(float3 *source, float3 *end, float4 *ray, int source_num, int end_num, int flag, float3 *tri_vertex,int3 *binned_triangles, int2* tri_num_in_bin, int ray_num,
-     int2 *ray_index, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,PointData* points, float wave_length, complex_float3* scattering_network, const double2 alpha_beta)
+     int2 *ray_index, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,PointData* points, float wave_length, complex_float3* scattering_network, const float2 alpha_beta)
 {
     int thread = threadIdx.x + blockIdx.x * blockDim.x;
     int stride = blockDim.x * gridDim.x;
@@ -488,7 +488,7 @@ __global__ void raycast_tiles(float3 *source, float3 *end, float4 *ray, int sour
 
 
 void raycast_wrapper_tiles (float *source, float *end, int source_num, int end_num, float3 *d_tri_vertex,int3 *d_binned_triangles, int2* d_tri_num_per_bin, int2 num_bins, float2 x_top_bottom, float2 y_range, float2 z_range,
-    PointData* points, float wave_length, complex_float3* h_scattering_network, double2 alpha_beta, bool not_self_to_self)
+    PointData* points, float wave_length, complex_float3* h_scattering_network, float2 alpha_beta, bool not_self_to_self)
 {
     // declare device memory
     float3 *d_source;
