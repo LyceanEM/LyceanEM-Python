@@ -800,8 +800,8 @@ def lossy_propagation(point1, point2, alpha, beta):
     distance_loss = 1.0 / length[0]
     G = (cmath.exp(-(alpha[0] + 1j * beta[0]) * length[0])) * distance_loss
 
-    #dG = (-(alpha[0] + 1j * beta[0]) - complex64((distance_loss))) * G
-    dG = (-(alpha[0] + 1j * beta[0])) * G
+    dG = (-(alpha[0] + 1j * beta[0]) - complex64((distance_loss))) * G
+    #dG = (-(alpha[0] + 1j * beta[0])) * G
     ##print("numba-cuda  dG", dG.real, dG.imag)
     ##print("numba-cuda  G", G.real, G.imag)
     ##print("numba-cuda  ray_direction", outgoing_dir[0], outgoing_dir[1], outgoing_dir[2])
