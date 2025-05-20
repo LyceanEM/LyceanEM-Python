@@ -299,7 +299,7 @@ def meshedHorn(
         majorsize, minorsize, 1e-6, grid_resolution, sides
     )
 
-    mesh_points = GF.translate_mesh(mesh_points, [0, 0, EPSILON * 2])
+    mesh_points = GF.mesh_translate(mesh_points, [0, 0, EPSILON * 2])
 
     return structure, mesh_points
 
@@ -318,94 +318,79 @@ def parabolic_aperture(
     import lyceanem.geometry.geometryfunctions as GF
     import lyceanem.utility.math_functions as math_functions
 
+    import lyceanem.geometry.geometryfunctions as GF
+    import lyceanem.utility.math_functions as math_functions
     def parabola(x):
-        return (1 / (4 * focal_length)) * x**2
-
+         return (1 / (4 * focal_length)) * x ** 2
+    
     with pygmsh.occ.Geometry() as geom:
-        geom.characteristic_length_max = mesh_size * 0.8
-        # Define points
-        point_num = 15
-        x_pos = np.linspace(-0.5 * diameter, 0.5 * diameter, point_num)
-        z_pos = parabola(x_pos)
-        coords = np.array(
-            [x_pos.ravel(), np.zeros((point_num)), z_pos.ravel()]
-        ).transpose()
-        points_list = []
-        for inc in range(point_num):
-            points_list.append(geom.add_point(coords[inc, :].tolist()))
-
-        # Define top line based on points
-        line = geom.add_bspline(points_list)
-
-        _, surface, _ = geom.extrude(line, translation_axis=[0.0, 0.0, -thickness])
-
-        # Revolve line to create revolution surface
-        volume_list = []
-        _, b, _ = geom.revolve(
-            surface,
-            rotation_axis=[0.0, 0.0, 1.0],
-            point_on_axis=[0.0, 0.0, 0.0],
-            angle=0.25 * np.pi,
-        )
-        volume_list.append(b)
-        for inc in range(7):
-            geom.rotate(
-                surface,
-                point=[0.0, 0.0, 0.0],
-                angle=(1 / 4) * np.pi,
-                axis=[0.0, 0.0, 1.0],
-            )
-            _, b2, _ = geom.revolve(
-                surface,
-                rotation_axis=[0.0, 0.0, 1.0],
-                point_on_axis=[0.0, 0.0, 0.0],
-                angle=0.25 * np.pi,
-            )
-            volume_list.append(b2)
-
-        if lip:
-            axis1 = np.array([0.0, 0.0, -lip_height])
-
-            start_point = np.array([0.0, 0.0, parabola(diameter * 0.5)])
-            cylinder1 = geom.add_cylinder(start_point.ravel(), axis1, diameter / 2)
-            cylinder2 = geom.add_cylinder(
-                start_point.ravel(), axis1, diameter / 2 + lip_width
-            )
-            final = geom.boolean_difference([cylinder2], [cylinder1])
-            volume_list.append(final)
-
-        full_reflector = geom.boolean_union(volume_list)
-
-        mesh_temp = geom.generate_mesh(dim=2)
+         geom.characteristic_length_max = mesh_size*0.8
+         # Define points
+         cp1 = geom.add_point([0, 0, 0])  # Center point
+         cp2 = geom.add_point([diameter * 0.5 * (1 / 6), 0, parabola(diameter * 0.5 * (1 / 6))])
+         cp3 = geom.add_point([diameter * 0.5 * (2 / 6), 0, parabola(diameter * 0.5 * (2 / 6))])
+         cp4 = geom.add_point([diameter * 0.5 * (3 / 6), 0, parabola(diameter * 0.5 * (3 / 6))])
+         cp5 = geom.add_point([diameter * 0.5 * (4 / 6), 0, parabola(diameter * 0.5 * (4 / 6))])
+         cp6 = geom.add_point([diameter * 0.5 * (5 / 6), 0, parabola(diameter * 0.5 * (5 / 6))])
+         cp7 = geom.add_point([diameter * 0.5 * (6 / 6), 0, parabola(diameter * 0.5 * (6 / 6))])
+    
+         # Define top line based on points
+         line = geom.add_bspline([cp1, cp2, cp3, cp4, cp5, cp6, cp7])
+    
+         _, surface, _ = geom.extrude(line, translation_axis=[0.0, 0.0, -thickness])
+    
+         # Revolve line to create revolution surface
+         volume_list = []
+         _, b, _ = geom.revolve(surface, rotation_axis=[0.0, 0.0, 1.0], point_on_axis=[0.0, 0.0, 0.0],
+                                angle=0.25 * np.pi)
+         volume_list.append(b)
+         for inc in range(7):
+    
+             geom.rotate(surface, point=[0.0, 0.0, 0.0], angle=(1 / 4) * np.pi, axis=[0.0, 0.0, 1.0])
+             _, b2, _ = geom.revolve(surface, rotation_axis=[0.0, 0.0, 1.0], point_on_axis=[0.0, 0.0, 0.0],
+                                     angle=0.25 * np.pi)
+             volume_list.append(b2)
+    
+         if lip:
+             axis1=np.array([0.0,0.0,-lip_height])
+             
+             start_point=np.array([0.0,0.0,parabola(diameter*0.5)])
+             cylinder1=geom.add_cylinder(start_point.ravel(), axis1, diameter/2)
+             cylinder2=geom.add_cylinder(start_point.ravel(), axis1, diameter/2+lip_width)
+             final=geom.boolean_difference([cylinder2],[cylinder1])
+             volume_list.append(final)
+             
+         full_reflector = geom.boolean_union(volume_list)
+    
+         mesh_temp = geom.generate_mesh(dim=2)
     for inc, cell in enumerate(mesh_temp.cells):
-        if cell.type == "triangle":
-            triangle_index = inc
-
+         if cell.type == 'triangle':
+             triangle_index = inc
+    
     import meshio
-
     triangle_cells = [("triangle", mesh_temp.cells[triangle_index].data)]
     mesh = meshio.Mesh(mesh_temp.points, triangle_cells)
     mesh = GF.compute_normals(mesh)
     x_space = np.linspace(
         mesh_size,
-        (diameter / 2),
-        int(np.max(np.asarray([2, np.ceil((diameter * 0.5) / (mesh_size))]))),
+         (diameter / 2),
+         int(np.max(np.asarray([2, np.ceil((diameter * 0.5) / (mesh_size))]))),
     )
-    z_space = (1 / (4 * focal_length)) * x_space**2
+    z_space = (1 / (4 * focal_length)) * x_space ** 2
     c_space = np.ceil((2 * np.pi * x_space) / mesh_size).astype(int)
     normal_gradiant_vector = np.array(
-        [
-            np.ones((len(x_space))),
-            np.zeros((len(x_space))),
-            -1 / (1 / (2 * focal_length) * x_space),
-        ]
-    )
+         [
+             np.ones((len(x_space))),
+             np.zeros((len(x_space))),
+             -1 / (1 / (2 * focal_length) * x_space),
+         ]
+     )
     source = np.array([x_space, np.zeros((len(x_space))), z_space]).transpose()
     target = (normal_gradiant_vector * -x_space).transpose()
     base_directions = np.zeros((x_space.shape[0], 3), dtype=np.float32)
     norm_length = np.zeros((x_space.shape[0], 1), dtype=np.float32)
     base_directions, norm_length = math_functions.calc_dv_norm(
-        source, target, base_directions, norm_length
+         source, target, base_directions, norm_length
     )
     source_coords = np.empty(((1, 3)), dtype=np.float32)
     source_coords[0, :] = 0
@@ -414,32 +399,32 @@ def parabolic_aperture(
     source_normals[0, 2] = 1
     for r_index in range(x_space.shape[0]):
         source_coords = np.append(
-            source_coords,
-            np.array(
-                [
-                    x_space[r_index]
-                    * np.cos(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
-                    x_space[r_index]
-                    * np.sin(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
-                    z_space[r_index] * np.ones(c_space[r_index] - 1),
-                ]
-            ).transpose(),
-            axis=0,
-        )
+             source_coords,
+             np.array(
+                 [
+                     x_space[r_index]
+                     * np.cos(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
+                     x_space[r_index]
+                     * np.sin(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
+                     z_space[r_index] * np.ones(c_space[r_index] - 1),
+                 ]
+             ).transpose(),
+             axis=0,
+         )
         source_normals = np.append(
-            source_normals,
-            np.array(
-                [
-                    base_directions[r_index, 0]
-                    * np.cos(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
-                    base_directions[r_index, 0]
-                    * np.sin(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
-                    base_directions[r_index, 2] * np.ones(c_space[r_index] - 1),
-                ]
-            ).transpose(),
-            axis=0,
-        )
-
+             source_normals,
+             np.array(
+                 [
+                     base_directions[r_index, 0]
+                     * np.cos(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
+                     base_directions[r_index, 0]
+                     * np.sin(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
+                     base_directions[r_index, 2] * np.ones(c_space[r_index] - 1),
+                 ]
+             ).transpose(),
+             axis=0,
+         )
+    
     mesh_vertices = source_coords + np.array([0, 0, 1e-6])
     mesh_normals = source_normals
     aperture_points = meshio.Mesh(
@@ -483,16 +468,16 @@ def spherical_field(az_range, elev_range, outward_normals=False, field_radius=1.
     mesh : meshio object
         spherical field of points at specified azimuth and elevation angles, with meshed triangles
     """
-    vista_pattern=pv.Sphere(radius=field_radius,
-              theta_resolution=az_range.shape[0],
-              phi_resolution=elev_range.shape[0],
-              start_theta=az_range[0],
-              end_theta=az_range[-1],
-              start_phi=elev_range[0],
-              end_phi=elev_range[-1]).extract_surface()
-    #vista_pattern = pv.grid_from_sph_coords(
-    #    az_range, (90 - elev_range), field_radius
-    #).extract_surface()
+    # vista_pattern=pv.Sphere(radius=field_radius,
+    #           theta_resolution=az_range.shape[0],
+    #           phi_resolution=elev_range.shape[0],
+    #           start_theta=az_range[0],
+    #           end_theta=az_range[-1],
+    #           start_phi=elev_range[0],
+    #           end_phi=elev_range[-1]).extract_surface()
+    vista_pattern = pv.grid_from_sph_coords(
+        az_range, elev_range, field_radius
+    ).extract_surface()
     if outward_normals:
         vista_pattern.point_data["Normals"] = vista_pattern.points / (
             np.linalg.norm(vista_pattern.points, axis=1).reshape(-1, 1)

@@ -234,6 +234,13 @@ def compute_areas(field_data):
                         np.where(field_data.cells[inc].data == point_inc)[0]
                     ] / 3
                 )
+        if field_data.cells[inc].type == "quad":
+            for point_inc in range(field_data.points.shape[0]):
+                field_data.point_data["Area"][point_inc] = np.sum(
+                    field_data.cell_data["Area"][inc][
+                        np.where(field_data.cells[inc].data == point_inc)[0]
+                    ] / 4
+                )
 
     return field_data
 
