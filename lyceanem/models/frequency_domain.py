@@ -1,5 +1,6 @@
 import copy
 
+import meshio
 import numpy as np
 
 from ..base_types import scattering_t
@@ -7,8 +8,6 @@ from ..electromagnetics import empropagation as EM
 from ..geometry import geometryfunctions as GF
 from ..geometry import targets as TL
 from ..raycasting import rayfunctions as RF
-from ..utility.math_functions import calc_dv_norm
-import meshio
 
 
 def aperture_projection(

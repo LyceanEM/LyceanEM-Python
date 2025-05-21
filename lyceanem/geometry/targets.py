@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import copy
 
-import numpy as np
-import meshio
-import pyvista as pv
-import pygmsh
 from importlib.resources import files
-from scipy.spatial.transform import Rotation as R
 
-#from ..base_classes import antenna_structures, structures, points
+import meshio
+import numpy as np
+import pygmsh
+import pyvista as pv
+
+# from ..base_classes import antenna_structures, structures, points
 from ..geometry import geometryfunctions as GF
-from ..raycasting import rayfunctions as RF
-from ..utility import math_functions as math_functions
 
 EPSILON = 1e-6  # how close to zero do we consider zero?
 

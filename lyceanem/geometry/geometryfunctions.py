@@ -1,14 +1,16 @@
-import numpy as np
-import meshio
 import copy
+
+import meshio
+import numpy as np
 from numba import vectorize
-from packaging import version
 from scipy.spatial.transform import Rotation as R
 
 from .. import base_classes as base_classes
 from .. import base_types as base_types
-from ..raycasting import rayfunctions as RF
 from ..electromagnetics.emfunctions import transform_em
+from ..raycasting import rayfunctions as RF
+
+
 def mesh_conversion_to_meshio(conversion_object):
     if isinstance(conversion_object, base_classes.structures):
         meshio_mesh = conversion_object.export_combined_meshio()

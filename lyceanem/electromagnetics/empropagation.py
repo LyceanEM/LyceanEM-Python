@@ -5,8 +5,6 @@ import copy
 import math
 import pathlib
 
-import numba
-from importlib_resources import files
 import cupy as cp
 import numpy as np
 import scipy.stats
@@ -15,15 +13,11 @@ from numba import (
     float32,
     float64,
     complex64,
-    complex128,
     njit,
     guvectorize,
-    complex128,
 )
-from numpy.linalg import norm
 
 import lyceanem.base_types as base_types
-import lyceanem.geometry.geometryfunctions as GF
 import lyceanem.raycasting.rayfunctions as RF
 from lyceanem.electromagnetics.data.propagation_constants import (
     water_vapour_lines,

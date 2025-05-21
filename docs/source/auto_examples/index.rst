@@ -98,23 +98,6 @@ A selection of examples of LyceanEM features
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example uses the frequency domain lyceanem.models.frequency_domain.calculate_scattering fu...">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_03_frequency_domain_channel_modelling_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_03_frequency_domain_channel_modelling.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Modelling a Physical Channel in the Frequency Domain</div>
-    </div>
-
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="This example uses the frequency domain lyceanem.models.time_domain.calculate_scattering functio...">
 
 .. only:: html
@@ -127,6 +110,23 @@ A selection of examples of LyceanEM features
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Modelling a Physical Channel in the Time Domain</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example uses the frequency domain lyceanem.models.frequency_domain.calculate_scattering fu...">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_03_frequency_domain_channel_modelling_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_03_frequency_domain_channel_modelling.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Modelling a Physical Channel in the Frequency Domain</div>
     </div>
 
 
@@ -145,8 +145,8 @@ A selection of examples of LyceanEM features
    /auto_examples/01_aperture_projection
    /auto_examples/07_aperture_farfield_polarisation
    /auto_examples/06_farfield_polarisation
-   /auto_examples/03_frequency_domain_channel_modelling
    /auto_examples/04_time_domain_channel_modelling
+   /auto_examples/03_frequency_domain_channel_modelling
 
 
 .. only:: html

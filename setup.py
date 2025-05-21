@@ -1,7 +1,5 @@
-from skbuild import setup
 from setuptools import find_packages  # This line replaces 'from setuptools import setup'
-import os
-import sys
+from skbuild import setup
 
 
 # move to the directory of the setup.py file

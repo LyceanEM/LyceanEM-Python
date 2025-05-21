@@ -1,7 +1,7 @@
 
+import glob
 import os
 import sys
-import glob
 
 script = os.path.abspath(sys.argv[0])
 

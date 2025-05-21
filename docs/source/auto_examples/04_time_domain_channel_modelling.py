@@ -13,7 +13,7 @@ rather than an aperture antenna such as a horn.
 """
 
 import numpy as np
-import meshio
+
 # %%
 # Frequency and Mesh Resolution
 # ------------------------------
@@ -210,6 +210,7 @@ for angle_inc in tqdm(range(len(angle_values))):
         elements=False,
         sampling_freq=sampling_freq,
         num_samples=num_samples,
+        beta=(2 * np.pi) / wavelength
     )
 
     noise_volts = np.random.normal(mean_noise, noise_volts_peak, num_samples)

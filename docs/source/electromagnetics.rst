@@ -8,6 +8,7 @@ Electromagnetics
 .. toctree::
     beamforming
     empropagation
+    emfunctions
     sources
 
 .. toctree::

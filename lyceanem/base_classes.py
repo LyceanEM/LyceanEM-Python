@@ -1,14 +1,11 @@
-import copy
-
-import numpy as np
 import meshio
+import numpy as np
+import pyvista as pv
 from scipy import interpolate as sp
 from scipy.spatial.transform import Rotation as R
-import pyvista as pv
 
 from . import base_types as base_types
 from .electromagnetics import beamforming as BM
-from .electromagnetics import empropagation as EM
 from .geometry import geometryfunctions as GF
 from .raycasting import rayfunctions as RF
 from .utility import math_functions as MF

@@ -13,6 +13,29 @@ def excitation_function(
 ):
     """
     Calculate the excitation function for the given aperture points, desired electric field vector, phase shift, wavelength, steering vector, transmit power, and local projection. This will generate the normalised field intensities for the desired total transmit power, and beamforming algorithm. The aperture mesh should have Normals and Area associated with each point for full functionality.
+
+    The phase shift can be set to 'none', 'wavefront', or 'coherence'. The steering vector is the command vector for the desired beamforming algorithm, and the transmit power is the total power to be transmitted. The local projection flag indicates whether the electric field vectors should be projected based upon the local surface normals.
+
+    Parameters
+    ----------
+    aperture_points : meshio.Mesh
+
+    desired_e_vector : numpy.ndarray
+
+    phase_shift : str
+
+    wavelength : float
+
+    steering_vector : numpy.ndarray
+
+    transmit_power : float
+
+    local_projection : bool
+
+    Returns
+    -------
+    calibrated_amplitude_weights : numpy.ndarray
+        The calibrated amplitude weights for the given aperture points, desired electric field vector, phase shift, wavelength, steering vector, and total transmit power.
     """
 
     if local_projection:
@@ -254,7 +277,7 @@ def transform_em(field_data, r):
 
     Parameters
     ----------
-    field_data: meshio.Mesh
+    field_data: :class: meshio.Mesh
     r: scipy.rotation
 
     Returns

@@ -98,7 +98,7 @@ elevation points, and azimuth points. These can then be beamformed using the des
 currently includes two open loop algorithms for phase weights :func:`lyceanem.electromagnetics.beamforming.EGCWeights`,
 and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-92
+.. GENERATED FROM PYTHON SOURCE LINES 58-94
 
 .. code-block:: Python
 
@@ -117,6 +117,7 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
         farfield_distance=20,
         elements=True,
         project_vectors=True,
+        beta=(2*np.pi)/wavelength
     )
 
 
@@ -124,8 +125,9 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
     az_range = np.linspace(-180, 180, az_res)
     el_range = np.linspace(-90, 90, elev_res)
+    num_elements=Etheta.shape[0]
     directivity_map = MaximumDirectivityMap(
-        Etheta, Ephi, source_coords, wavelength, az_range, el_range
+        Etheta.reshape(num_elements,elev_res,az_res), Ephi.reshape(num_elements,elev_res,az_res), source_coords, wavelength, az_range, el_range
     )
 
     from lyceanem.electromagnetics.beamforming import PatternPlot
@@ -137,11 +139,11 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
     )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-94
+.. GENERATED FROM PYTHON SOURCE LINES 95-96
 
 .. image:: ../_static/sphx_glr_05_array_beamforming_001.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 94-114
+.. GENERATED FROM PYTHON SOURCE LINES 96-116
 
 .. code-block:: Python
 

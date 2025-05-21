@@ -11,7 +11,6 @@ weights.
 
 """
 import numpy as np
-import pygmsh
 
 # %%
 # Setting Farfield Resolution and Wavelength

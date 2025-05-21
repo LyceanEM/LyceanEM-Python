@@ -12,14 +12,10 @@
 
 import os
 import re
-import shutil
 import sys
-from glob import glob
-
-from sphinx_gallery.scrapers import figure_rst
 
 import pyvista
-from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
+
 pyvista.BUILDING_GALLERY = True
 os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
 try:
@@ -125,7 +121,7 @@ sphinx_gallery_conf = {
          # The module you locally document uses None
         'sphinx_gallery': None,
     },
-    'plot_gallery': True, #documentation examples require cuda on build machine, so much be fully built before being passed to readthedocs
+    'plot_gallery': False, #documentation examples require cuda on build machine, so much be fully built before being passed to readthedocs
 }
 
 # -- Options for HTML output -------------------------------------------------

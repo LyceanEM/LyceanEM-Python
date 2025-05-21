@@ -11,7 +11,6 @@ weights.
 
 """
 import numpy as np
-import pygmsh
 
 # %%
 # Setting Farfield Resolution and Wavelength
@@ -58,6 +57,7 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 
 # %%
@@ -70,8 +70,8 @@ from lyceanem.base_classes import antenna_pattern
 u_pattern = antenna_pattern(
     azimuth_resolution=az_res, elevation_resolution=elev_res
 )
-u_pattern.pattern[:, :, 0] = Etheta
-u_pattern.pattern[:, :, 1] = Ephi
+u_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+u_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
 u_pattern.display_pattern(desired_pattern='Power')
 
 # %%
@@ -89,14 +89,15 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 
 
 v_pattern = antenna_pattern(
     azimuth_resolution=az_res, elevation_resolution=elev_res
 )
-v_pattern.pattern[:, :, 0] = Etheta
-v_pattern.pattern[:, :, 1] = Ephi
+v_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+v_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
 v_pattern.display_pattern(desired_pattern='Power')
 
 # %%
@@ -114,13 +115,14 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 
 n_pattern = antenna_pattern(
     azimuth_resolution=az_res, elevation_resolution=elev_res
 )
-n_pattern.pattern[:, :, 0] = Etheta
-n_pattern.pattern[:, :, 1] = Ephi
+n_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+n_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
 n_pattern.display_pattern(desired_pattern='Power')
 
 # %%
@@ -143,9 +145,10 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
-u_pattern.pattern[:, :, 0] = Etheta
-u_pattern.pattern[:, :, 1] = Ephi
+u_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+u_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
 u_pattern.display_pattern(desired_pattern='Power')
 
 
@@ -161,9 +164,10 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
-v_pattern.pattern[:, :, 0] = Etheta
-v_pattern.pattern[:, :, 1] = Ephi
+v_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+v_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
 v_pattern.display_pattern(desired_pattern='Power')
 
 
@@ -179,7 +183,8 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
-n_pattern.pattern[:, :, 0] = Etheta
-n_pattern.pattern[:, :, 1] = Ephi
+n_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+n_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
 n_pattern.display_pattern(desired_pattern='Power')

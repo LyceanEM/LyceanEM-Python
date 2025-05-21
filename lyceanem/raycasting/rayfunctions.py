@@ -3,9 +3,9 @@ import copy
 import math
 from timeit import default_timer as timer
 
+import meshio
 import numba as nb
 import numpy as np
-import meshio
 import scipy.stats
 from matplotlib import cm
 from numba import cuda, float32, jit, njit, guvectorize, prange
@@ -14,7 +14,6 @@ from scipy.spatial import distance
 import lyceanem.base_types as base_types
 import lyceanem.electromagnetics.empropagation as EM
 from ..utility import math_functions as math_functions
-import meshio
 
 EPSILON = 1e-7  # how close to zero do we consider zero? example used 1e-7
 

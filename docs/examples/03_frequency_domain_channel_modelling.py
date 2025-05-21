@@ -124,8 +124,6 @@ blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_str
 # Visualise the Scene Geometry
 # ------------------------------
 
-import pyvista as pv
-from lyceanem.utility.mesh_functions import pyvista_to_meshio
 ## plot the mesh
 
 # Specify desired Transmit Polarisation
@@ -201,10 +199,9 @@ rotation_vector = np.radians(
 )
 scatter_points = GF.mesh_rotate(scatter_points,rotation_vector)
 reflectorplate = GF.mesh_rotate(reflectorplate,rotation_vector)
-import copy
 
 from tqdm import tqdm
-from lyceanem.electromagnetics.emfunctions import update_electric_fields, PoyntingVector
+
 for angle_inc in tqdm(range(len(angle_values))):
     rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_values[angle_inc]]))
     scatter_points_temp = GF.mesh_rotate(scatter_points,rotation_vector)

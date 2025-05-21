@@ -53,7 +53,11 @@ import lyceanem.tests.reflectordata as data
 
 body, array, _ = data.exampleUAV(10e9)
 
-
+import pyvista as pv
+pl=pv.Plotter()
+pl.add_mesh(pv.from_meshio(body),color="green")
+pl.add_mesh(pv.from_meshio(array),color="aqua")
+pl.show()
 
 # %%
 ## .. image:: ../_static/open3d_structure.png
@@ -64,6 +68,10 @@ surface_array = copy.deepcopy(array)
 surface_array.cells[0].data = np.asarray(array.cells[0].data)[: (array.cells[0].data).shape[0] // 2, :]
 
 surface_array.cell_data["Normals"] = np.array(array.cell_data["Normals"])[: (array.cells[0].data).shape[0] // 2]
+#Recalculate Normals
+from lyceanem.geometry.geometryfunctions import compute_normals
+surface_array=compute_normals(surface_array)
+
 
 # %%
 # Structures

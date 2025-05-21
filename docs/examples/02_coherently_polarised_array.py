@@ -13,7 +13,7 @@ weights.
 import copy
 
 import numpy as np
-import meshio
+
 # %%
 # Setting Farfield Resolution and Wavelength
 # -------------------------------------------

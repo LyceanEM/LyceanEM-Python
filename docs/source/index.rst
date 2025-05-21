@@ -58,6 +58,7 @@ Contents
    electromagnetics
    raycasting
    geometry
+   utility
    auto_examples/index
    contributing
    copyright

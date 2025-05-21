@@ -1,10 +1,9 @@
-from ..raycasting import rayfunctions as RF
-import numpy as np
-import pytest
-import lyceanem.base_types as base_types
-from importlib_resources import files
-import lyceanem.tests.data
 import meshio
+import numpy as np
+from importlib_resources import files
+
+import lyceanem.tests.data
+from ..raycasting import rayfunctions as RF
 
 
 def test_convertTriangles():

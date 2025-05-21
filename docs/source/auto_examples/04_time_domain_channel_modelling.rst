@@ -33,7 +33,7 @@ rather than an aperture antenna such as a horn.
 
 
     import numpy as np
-    import meshio
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 18-21
 
@@ -219,7 +219,7 @@ Time Domain Scattering
 ----------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-221
+.. GENERATED FROM PYTHON SOURCE LINES 143-222
 
 .. code-block:: Python
 
@@ -293,6 +293,7 @@ Time Domain Scattering
             elements=False,
             sampling_freq=sampling_freq,
             num_samples=num_samples,
+            beta=(2 * np.pi) / wavelength
         )
 
         noise_volts = np.random.normal(mean_noise, noise_volts_peak, num_samples)
@@ -302,13 +303,13 @@ Time Domain Scattering
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-225
+.. GENERATED FROM PYTHON SOURCE LINES 223-226
 
 Plot Normalised Response
 ----------------------------
 Using matplotlib, plot the results
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-284
+.. GENERATED FROM PYTHON SOURCE LINES 226-285
 
 .. code-block:: Python
 
@@ -372,11 +373,11 @@ Using matplotlib, plot the results
     Ezf = fft(Ez)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 285-286
+.. GENERATED FROM PYTHON SOURCE LINES 286-287
 
 .. image:: ../_static/sphx_glr_04_time_domain_channel_modelling_001.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 288-293
+.. GENERATED FROM PYTHON SOURCE LINES 289-294
 
 Frequency Specific Results
 -------------------------------
@@ -384,7 +385,7 @@ The time of flight plot is useful to displaying the output of the model, giving 
 physically happening in the channel, but to get an idea of the behaviour in the frequency domain we need to use a
 fourier transform to move from time and voltages to frequency.
 
-.. GENERATED FROM PYTHON SOURCE LINES 293-313
+.. GENERATED FROM PYTHON SOURCE LINES 294-314
 
 .. code-block:: Python
 
@@ -409,7 +410,7 @@ fourier transform to move from time and voltages to frequency.
     plt.show()
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 314-315
+.. GENERATED FROM PYTHON SOURCE LINES 315-316
 
 .. image:: ../_static/sphx_glr_04_time_domain_channel_modelling_002.png
 

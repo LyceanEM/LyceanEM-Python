@@ -78,7 +78,7 @@ Geometries
 In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
 meshio trianglemesh structures can be accessed by importing the data subpackage
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-58
+.. GENERATED FROM PYTHON SOURCE LINES 52-62
 
 .. code-block:: Python
 
@@ -86,14 +86,18 @@ meshio trianglemesh structures can be accessed by importing the data subpackage
 
     body, array, _ = data.exampleUAV(10e9)
 
+    import pyvista as pv
+    pl=pv.Plotter()
+    pl.add_mesh(pv.from_meshio(body),color="green")
+    pl.add_mesh(pv.from_meshio(array),color="aqua")
+    pl.show()
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 59-60
+.. GENERATED FROM PYTHON SOURCE LINES 63-64
 
 # .. image:: ../_static/open3d_structure.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 60-68
+.. GENERATED FROM PYTHON SOURCE LINES 64-76
 
 .. code-block:: Python
 
@@ -104,9 +108,13 @@ meshio trianglemesh structures can be accessed by importing the data subpackage
     surface_array.cells[0].data = np.asarray(array.cells[0].data)[: (array.cells[0].data).shape[0] // 2, :]
 
     surface_array.cell_data["Normals"] = np.array(array.cell_data["Normals"])[: (array.cells[0].data).shape[0] // 2]
+    #Recalculate Normals
+    from lyceanem.geometry.geometryfunctions import compute_normals
+    surface_array=compute_normals(surface_array)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-75
+
+.. GENERATED FROM PYTHON SOURCE LINES 77-83
 
 Structures
 --------------
@@ -115,7 +123,7 @@ is the class itself, and methods to allow translation and rotation of the triang
 passed to the models to provide the environment to be considered as blockers.
 structures are created by calling the class, and passing it a list of the meshio trianglemesh structures to be added.
 
-.. GENERATED FROM PYTHON SOURCE LINES 75-79
+.. GENERATED FROM PYTHON SOURCE LINES 83-87
 
 .. code-block:: Python
 
@@ -124,7 +132,7 @@ structures are created by calling the class, and passing it a list of the meshio
     blockers = structures([body])
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 80-86
+.. GENERATED FROM PYTHON SOURCE LINES 88-94
 
 Aperture Projection
 -----------------------
@@ -133,7 +141,7 @@ be considered, and the azimuth and elevation ranges. The function then returns t
 array of floats, and a meshio point cloud with points and colors corresponding to the directivity envelope of the
 provided aperture, scaling from yellow at maximum to dark purple at minimum.
 
-.. GENERATED FROM PYTHON SOURCE LINES 86-95
+.. GENERATED FROM PYTHON SOURCE LINES 94-103
 
 .. code-block:: Python
 
@@ -147,7 +155,7 @@ provided aperture, scaling from yellow at maximum to dark purple at minimum.
         elev_range=np.linspace(-90.0, 90.0, elev_res),
     )
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-101
+.. GENERATED FROM PYTHON SOURCE LINES 104-109
 
 Visualisation
 ------------------------
@@ -155,11 +163,11 @@ The resultant maximum directivity envelope is provided as both a numpy array of 
 also as an meshio point cloud. This allows easy visualisation using pyvista.
 %%
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-105
+.. GENERATED FROM PYTHON SOURCE LINES 112-113
 
 .. image:: ../_static/open3d_results_rendering.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-114
+.. GENERATED FROM PYTHON SOURCE LINES 113-122
 
 .. code-block:: Python
 
@@ -173,7 +181,7 @@ also as an meshio point cloud. This allows easy visualisation using pyvista.
     )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-121
+.. GENERATED FROM PYTHON SOURCE LINES 123-129
 
 Plotting the Output
 ------------------------
@@ -182,7 +190,7 @@ difficult to consider the full 3D space, and cannot be included in documentation
 can be used to generate contour plots with 3dB contours to give a more systematic understanding of the resultant
 maximum directivity envelope.
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-167
+.. GENERATED FROM PYTHON SOURCE LINES 129-175
 
 .. code-block:: Python
 

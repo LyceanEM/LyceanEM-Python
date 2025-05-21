@@ -1,5 +1,5 @@
-import pyvista as pv
 import meshio
+import pyvista as pv
 
 
 def pyvista_to_meshio(polydata_object):
@@ -20,10 +20,7 @@ def pyvista_to_meshio(polydata_object):
 
 
 def id_cells(faces):
-    import copy
-
     # temp_faces=copy.deepcopy(faces)
-    import numpy as np
 
     cell_types = {1: "vertex", 2: "line", 3: "triangle", 4: "quad"}
     cells = {"vertex": [], "line": [], "triangle": [], "quad": []}

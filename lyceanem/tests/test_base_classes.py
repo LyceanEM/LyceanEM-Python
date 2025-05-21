@@ -1,5 +1,5 @@
-import numpy as np
 import meshio
+import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from scipy.spatial.transform import Rotation as R

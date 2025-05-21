@@ -13,7 +13,7 @@ rather than an aperture antenna such as a horn.
 """
 
 import numpy as np
-import meshio
+
 # %%
 # Frequency and Mesh Resolution
 # ------------------------------

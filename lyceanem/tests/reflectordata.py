@@ -3,15 +3,12 @@
 
 import copy
 import math
-
-import numpy as np
-import meshio
-import scipy.io as io
 from importlib.resources import files
-import pyvista as pv
+
+import meshio
+import numpy as np
 
 import lyceanem.geometry.geometryfunctions as GF
-import lyceanem.geometry.targets as tl
 import lyceanem.raycasting.rayfunctions as RF
 import lyceanem.tests.data
 

@@ -1,8 +1,8 @@
 import copy
 
+import meshio
 import numpy as np
 import scipy.constants
-import meshio
 
 from ..base_types import scattering_t
 from ..electromagnetics import empropagation as EM

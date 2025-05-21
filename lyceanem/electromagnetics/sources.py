@@ -1,5 +1,4 @@
 import numpy as np
-
 # provide idealised patterns to allow testing of the different models
 import open3d as o3d
 

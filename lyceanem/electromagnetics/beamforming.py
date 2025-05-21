@@ -1,11 +1,12 @@
 import cmath
 import copy
-import pyvista as pv
+
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d
 import numpy as np
 import pylab as pl
+import pyvista as pv
 import scipy.stats
 from matplotlib import cm
 from matplotlib.patches import Wedge
@@ -382,11 +383,11 @@ def MaximumDirectivityMap(
         The Etheta polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
     Ephi : 3D numpy array
         The Ephi polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
-    source_coords : :class:`open3d.geometry.PointCloud`
+    source_coords : :class:`meshio.Mesh`
         The source coordinates of each element, corresponding to the order of element patterns in Etheta and Ephi. Units should be m
-    wavelength : float
+    wavelength : :class: float
         The wavelength of interest
-    az_range : 1D numpy array of float
+    az_range : numpy.ndarray of float
         The azimuth values for the farfield mesh, arranged from smallest to largest
     elev_range : 1D numpy array of float
         The elevation values for the farfield mesh, arranged from smallest to largest
@@ -572,7 +573,7 @@ def MaximumDirectivityMapDiscrete(
         The $E\theta$ polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
     Ephi : 3D numpy array
         The $E\phi$ polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
-    source_coords : :class:`open3d.geometry.PointCloud`
+    source_coords : :class:`meshio.Mesh`
         The source coordinates of each element, corresponding to the order of element patterns in $E\theta$ and $E\phi$. Units should be m
     wavelength : float
         The wavelength of interest

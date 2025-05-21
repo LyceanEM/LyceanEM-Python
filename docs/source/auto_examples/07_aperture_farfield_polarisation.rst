@@ -25,21 +25,14 @@ This example uses the frequency domain :func:`lyceanem.models.frequency_domain.c
 the farfield pattern for a linearly polarised aperture. This could represent an antenna array without any beamforming
 weights.
 
-.. GENERATED FROM PYTHON SOURCE LINES 13-16
+.. GENERATED FROM PYTHON SOURCE LINES 13-15
 
 .. code-block:: Python
 
     import numpy as np
-    import pygmsh
 
 
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 17-26
+.. GENERATED FROM PYTHON SOURCE LINES 16-25
 
 Setting Farfield Resolution and Wavelength
 -------------------------------------------
@@ -51,7 +44,7 @@ In order to ensure a fast example, 37 points have been used here for both, givin
 The wavelength of interest is also an important variable for antenna array analysis, so we set it now for 10GHz,
 an X band aperture.
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-31
+.. GENERATED FROM PYTHON SOURCE LINES 25-30
 
 .. code-block:: Python
 
@@ -61,18 +54,12 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 32-34
+.. GENERATED FROM PYTHON SOURCE LINES 31-33
 
 Generating consistent aperture to explore farfield polarisations, and rotating the source
 ----------------------------------------------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-46
+.. GENERATED FROM PYTHON SOURCE LINES 33-45
 
 .. code-block:: Python
 
@@ -89,27 +76,11 @@ Generating consistent aperture to explore farfield polarisations, and rotating t
     from lyceanem.models.frequency_domain import calculate_farfield
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    HIHIH
-    <meshio mesh object>
-      Number of points: 8
-      Number of cells:
-        triangle: 12
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 47-48
+.. GENERATED FROM PYTHON SOURCE LINES 46-47
 
 The first source polarisation is based upon the u-vector of the source point. When the excitation_function method of the antenna structure class is used, it will calculate the appropriate polarisation vectors based upon the local normal vectors.
 
-.. GENERATED FROM PYTHON SOURCE LINES 48-63
+.. GENERATED FROM PYTHON SOURCE LINES 47-63
 
 .. code-block:: Python
 
@@ -126,21 +97,8 @@ The first source polarisation is based upon the u-vector of the source point. Wh
         farfield_distance=20,
         elements=False,
         project_vectors=False,
+        beta=(2*np.pi)/wavelength
     )
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    sources shape (12, 3)
-    sinks shape (13213, 3)
-    environment_points shape (0, 3)
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 64-66
@@ -159,34 +117,16 @@ Antenna Pattern class is used to manipulate and record antenna patterns
     u_pattern = antenna_pattern(
         azimuth_resolution=az_res, elevation_resolution=elev_res
     )
-    u_pattern.pattern[:, :, 0] = Etheta
-    u_pattern.pattern[:, :, 1] = Ephi
+    u_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    u_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
     u_pattern.display_pattern(desired_pattern='Power')
-
-
-
-
-.. image-sg:: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_001.png
-   :alt: Power Pattern
-   :srcset: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_001.png
-   :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1097: RuntimeWarning: divide by zero encountered in log10
-      logdata = 10 * np.log10(data)
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 78-79
 
 The second source polarisation is based upon the v-vector of the source point.
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-102
+.. GENERATED FROM PYTHON SOURCE LINES 79-103
 
 .. code-block:: Python
 
@@ -203,41 +143,23 @@ The second source polarisation is based upon the v-vector of the source point.
         farfield_distance=20,
         elements=False,
         project_vectors=False,
+        beta=(2*np.pi)/wavelength
     )
 
 
     v_pattern = antenna_pattern(
         azimuth_resolution=az_res, elevation_resolution=elev_res
     )
-    v_pattern.pattern[:, :, 0] = Etheta
-    v_pattern.pattern[:, :, 1] = Ephi
+    v_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    v_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
     v_pattern.display_pattern(desired_pattern='Power')
 
 
-
-
-.. image-sg:: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_002.png
-   :alt: Power Pattern
-   :srcset: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_002.png
-   :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    sources shape (12, 3)
-    sinks shape (13213, 3)
-    environment_points shape (0, 3)
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 103-104
+.. GENERATED FROM PYTHON SOURCE LINES 104-105
 
 The third source polarisation is based upon the n-vector of the source point. Aligned with the source point normal.
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-126
+.. GENERATED FROM PYTHON SOURCE LINES 105-128
 
 .. code-block:: Python
 
@@ -254,40 +176,22 @@ The third source polarisation is based upon the n-vector of the source point. Al
         farfield_distance=20,
         elements=False,
         project_vectors=False,
+        beta=(2*np.pi)/wavelength
     )
 
     n_pattern = antenna_pattern(
         azimuth_resolution=az_res, elevation_resolution=elev_res
     )
-    n_pattern.pattern[:, :, 0] = Etheta
-    n_pattern.pattern[:, :, 1] = Ephi
+    n_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    n_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
     n_pattern.display_pattern(desired_pattern='Power')
 
 
-
-
-.. image-sg:: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_003.png
-   :alt: Power Pattern
-   :srcset: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_003.png
-   :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    sources shape (12, 3)
-    sinks shape (13213, 3)
-    environment_points shape (0, 3)
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 127-128
+.. GENERATED FROM PYTHON SOURCE LINES 129-130
 
 The point source can then be rotated, by providing a rotation matrix, and the u,v,n directions are moved with it in a consistent way.
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-185
+.. GENERATED FROM PYTHON SOURCE LINES 130-190
 
 .. code-block:: Python
 
@@ -309,9 +213,10 @@ The point source can then be rotated, by providing a rotation matrix, and the u,
         farfield_distance=20,
         elements=False,
         project_vectors=False,
+        beta=(2*np.pi)/wavelength
     )
-    u_pattern.pattern[:, :, 0] = Etheta
-    u_pattern.pattern[:, :, 1] = Ephi
+    u_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    u_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
     u_pattern.display_pattern(desired_pattern='Power')
 
 
@@ -327,9 +232,10 @@ The point source can then be rotated, by providing a rotation matrix, and the u,
         farfield_distance=20,
         elements=False,
         project_vectors=False,
+        beta=(2*np.pi)/wavelength
     )
-    v_pattern.pattern[:, :, 0] = Etheta
-    v_pattern.pattern[:, :, 1] = Ephi
+    v_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    v_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
     v_pattern.display_pattern(desired_pattern='Power')
 
 
@@ -345,59 +251,11 @@ The point source can then be rotated, by providing a rotation matrix, and the u,
         farfield_distance=20,
         elements=False,
         project_vectors=False,
+        beta=(2*np.pi)/wavelength
     )
-    n_pattern.pattern[:, :, 0] = Etheta
-    n_pattern.pattern[:, :, 1] = Ephi
+    n_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    n_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
     n_pattern.display_pattern(desired_pattern='Power')
-
-
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_004.png
-         :alt: Power Pattern
-         :srcset: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_004.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_005.png
-         :alt: Power Pattern
-         :srcset: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_005.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_006.png
-         :alt: Power Pattern
-         :srcset: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_006.png
-         :class: sphx-glr-multi-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    sources shape (12, 3)
-    sinks shape (13213, 3)
-    environment_points shape (0, 3)
-    sources shape (12, 3)
-    sinks shape (13213, 3)
-    environment_points shape (0, 3)
-    sources shape (12, 3)
-    sinks shape (13213, 3)
-    environment_points shape (0, 3)
-
-
-
-
-
-.. rst-class:: sphx-glr-timing
-
-   **Total running time of the script:** (0 minutes 1.606 seconds)
-
 
 .. _sphx_glr_download_auto_examples_07_aperture_farfield_polarisation.py:
 

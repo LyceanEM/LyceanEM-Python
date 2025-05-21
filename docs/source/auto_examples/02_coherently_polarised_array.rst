@@ -32,7 +32,7 @@ weights.
     import copy
 
     import numpy as np
-    import meshio
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 18-27
 
@@ -78,7 +78,7 @@ triangle structures can be accessed by importing the data subpackage
 
 # .. image:: ../_static/open3d_structure.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 45-68
+.. GENERATED FROM PYTHON SOURCE LINES 45-73
 
 .. code-block:: Python
 
@@ -101,16 +101,21 @@ triangle structures can be accessed by importing the data subpackage
 
     import pyvista as pv
 
+    pl=pv.Plotter()
+    pl.add_mesh(pv.from_meshio(body),color="green")
+    pl.add_mesh(pv.from_meshio(array),color="aqua")
+    pl.add_axes()
+    pl.show()
 
     source_points = surface_array.points
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-70
+.. GENERATED FROM PYTHON SOURCE LINES 74-75
 
 .. image:: ../_static/sourcecloudfromshapeuav.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-77
+.. GENERATED FROM PYTHON SOURCE LINES 77-82
 
 Drawbacks of :func:`lyceanem.geometry.geometryfunctions.sourcecloudfromshape`
 ------------------------------------------------------------------------------
@@ -118,7 +123,7 @@ As can be seen by comparing the two source point sets, :func:`lyceanem.geometry.
 has a significant drawback when used for complex sharply curved antenna arrays, as the poisson disk sampling method
 does not produce consistently spaced results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 77-92
+.. GENERATED FROM PYTHON SOURCE LINES 82-98
 
 .. code-block:: Python
 
@@ -135,10 +140,11 @@ does not produce consistently spaced results.
         wavelength=wavelength,
         farfield_distance=20,
         project_vectors=True,
+        beta=(2*np.pi)/wavelength
     )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-101
+.. GENERATED FROM PYTHON SOURCE LINES 99-107
 
 Storing and Manipulating Antenna Patterns
 ---------------------------------------------
@@ -149,7 +155,7 @@ to :func:`lyceanem.base.antenna_pattern.display_pattern`. This produces 3D polar
 give a better view of the whole pattern, but if contour plots are required, then this can also be produced by passing
 plottype='Contour' to the function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-112
+.. GENERATED FROM PYTHON SOURCE LINES 107-118
 
 .. code-block:: Python
 
@@ -159,18 +165,18 @@ plottype='Contour' to the function.
     UAV_Static_Pattern = antenna_pattern(
         azimuth_resolution=az_res, elevation_resolution=elev_res
     )
-    UAV_Static_Pattern.pattern[:, :, 0] = Etheta
-    UAV_Static_Pattern.pattern[:, :, 0] = Ephi
+    UAV_Static_Pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    UAV_Static_Pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
 
-    UAV_Static_Pattern.display_pattern()
+    UAV_Static_Pattern.display_pattern(desired_pattern='Power')
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 113-115
+.. GENERATED FROM PYTHON SOURCE LINES 119-121
 
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_001.png
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_002.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-118
+.. GENERATED FROM PYTHON SOURCE LINES 121-124
 
 .. code-block:: Python
 
@@ -178,7 +184,7 @@ plottype='Contour' to the function.
     UAV_Static_Pattern.display_pattern(plottype="Contour")
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-121
+.. GENERATED FROM PYTHON SOURCE LINES 125-127
 
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_003.png
 .. image:: ../_static/sphx_glr_02_coherently_polarised_array_004.png
