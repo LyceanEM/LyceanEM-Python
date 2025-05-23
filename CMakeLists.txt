@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.23)
-find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
 message(STATUS "Python_version: ${Python_VERSION}")
 message(STATUS "Python_EXECUTABLE: ${Python_EXECUTABLE}")
 message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
