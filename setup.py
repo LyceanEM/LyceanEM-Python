@@ -19,6 +19,7 @@ setup(
     version=metadata.get("version"),
     author=metadata.get("author"),
     author_email=metadata.get("author_email"),
+    include_package_data= True,
     description=metadata.get("description"),
     long_description=metadata.get("long_description"),
     long_description_content_type=metadata.get("long_description_content_type"),

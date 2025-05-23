@@ -1,0 +1,2 @@
+recursive-include em/data *.txt
+recursive-include test/data *.txt
