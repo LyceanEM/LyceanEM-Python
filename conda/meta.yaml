@@ -8,7 +8,7 @@ source:
 build:
   script_env:
     - CMAKE_GENERATOR=Ninja
-  script: @echo on && call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&  {{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vv 
+  script: "@echo on && call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&  {{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vv "
 
 requirements:
   build:
