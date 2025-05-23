@@ -12,7 +12,19 @@ for /f %%v in ('%PYTHON% -c "import sys; print(f'python{sys.version_info.major}{
 REM Get Python version (e.g., python39)
 for /f %%v in ('%PYTHON% -c "import sys; print(f'python{sys.version_info.major}{sys.version_info.minor}')"') do set PYTHON_LIB_NAME=%%v
 
+REM Set full path to the expected .lib file
+set "PYTHON_LIB=%PREFIX%\libs\%PYTHON_LIB_NAME%.lib"
 
+REM Check if it exists
+if not exist "%PYTHON_LIB%" (
+    echo ERROR: Required file "%PYTHON_LIB%" not found!
+    echo This file is needed to link your C++/CUDA extension with Python.
+    exit /b 1
+)
+else (
+    echo Found Python library: %PYTHON_LIB%
+)
+set "CMAKE_ARGS=-DPYTHON_LIBRARY=%PYTHON_LIB%"
 
 
 REM Build the package using pip + scikit-build

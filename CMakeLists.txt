@@ -4,6 +4,9 @@ message(STATUS "Python_version: ${Python_VERSION}")
 find_package(pybind11 CONFIG REQUIRED)
 project(test LANGUAGES CXX CUDA)
 
+# Attempt to locate the specified Python library file
+if(EXISTS "${PYTHON_LIBRARY}")
+  message(STATUS "Found Python library: ${PYTHON_LIBRARY}")
 
 find_package( PkgConfig )
 # build release with debug info
