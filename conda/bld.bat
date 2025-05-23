@@ -13,7 +13,7 @@ REM Get Python version (e.g., python39)
 for /f %%v in ('%PYTHON% -c "import sys; print(f'python{sys.version_info.major}{sys.version_info.minor}')"') do set PYTHON_LIB_NAME=%%v
 
 REM Set full path to the expected .lib file
-set "PYTHON_LIB=%PREFIX%\libs\%PYTHON_LIB_NAME%.lib"
+set "PYTHON_LIB=%PREFIX%\Library\libs\python%PY_VER:~0,1%%PY_VER:~2,1%.lib"
 
 REM Check if it exists
 if not exist "%PYTHON_LIB%" (
