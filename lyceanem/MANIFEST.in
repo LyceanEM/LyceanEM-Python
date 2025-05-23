@@ -1,2 +1,2 @@
-recursive-include electromagnetics/data *.txt
-recursive-include tests/data *.txt
+recursive-include lyceanem/electromagnetics/data *.txt 
+recursive-include lyceanem/tests/data *.txt *.npy *.stl *.ply
