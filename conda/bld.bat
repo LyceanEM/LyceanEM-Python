@@ -10,6 +10,15 @@ REM Determine Python version
 for /f %%v in ('%PYTHON% -c "import sys; print(f'python{sys.version_info.major}{sys.version_info.minor}')"') do set PYTHON_LIB=%%v.lib
 
 REM Check if pythonXXX.lib exists
+set "PYTHON_LIB=%PREFIX%\libs\python39.lib"
+if not exist "%PYTHON_LIB%" (
+    echo ERROR: Required file "%PYTHON_LIB%" not found!
+    echo This file is needed to link your C++/CUDA extension with Python.
+    exit /b 1
+)
+else (
+    echo Found Python library: %PYTHON_LIB%
+)
 if not exist "%LIBRARY_LIB%\%PYTHON_LIB%" (
   echo ERROR: Required file "%LIBRARY_LIB%\%PYTHON_LIB%" not found!
   echo This file is needed to link your C++/CUDA extension with Python.
