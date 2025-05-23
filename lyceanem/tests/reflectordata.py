@@ -11,7 +11,7 @@ import numpy as np
 import lyceanem.geometry.geometryfunctions as GF
 import lyceanem.raycasting.rayfunctions as RF
 import lyceanem.tests.data
-
+import lyceanem.utility.mesh_functions as MF
 
 # freq=24e9
 # wavelength=3e8/freq
@@ -193,7 +193,7 @@ def exampleUAV(frequency):
         nose_side2_normals,
         axis=0,
     ) + np.array([0.1025, 0, -0.025])
-    source_pcd = RF.points2pointcloud(total_array)
+    source_pcd = MF.points2pointcloud(total_array)
     source_pcd.point_data["Normals"] = total_array_normals
     source_pcd = GF.mesh_translate(source_pcd, np.array([-0.18, 0, 0.0125]))
 

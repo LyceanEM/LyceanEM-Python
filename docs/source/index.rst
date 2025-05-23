@@ -18,32 +18,22 @@ large, low density spaces.
 
 Installation
 -------------
-To install LyceanEM from pip
+To install LyceanEM using conda
 
 .. code-block:: console
 
-   $  pip install LyceanEM
+    $ conda install -c lyceanem lyceanem
 
 
 Development
 -----------
-To install LyceanEM for development, clone the repository using git
+To download LyceanEM for development, clone the repository using git
 
 .. code-block:: console
 
     $ git clone 'https://github.com/LyceanEM/LyceanEM-Python.git'
 
-The module can then be installed using pip by navigating to the git folder.
 
-.. code-block:: console
-
-    $ pip3 install -e .
-
-If you are interesting in developing LyceanEM, you should clone from Github and install with the editable flag set.
-
-.. code-block:: console
-
-    $ pip3 install -e .
 
 Contents
 ========

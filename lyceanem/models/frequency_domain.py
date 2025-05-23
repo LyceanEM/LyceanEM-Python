@@ -227,17 +227,10 @@ def calculate_scattering(
     cuda=False,
     acceleration_structure=None,
     chunks=1,
-    permiativity = 8.8541878176e-12,
+    permittivity = 8.8541878176e-12,
     permeability = 1.25663706212e-6,
 ):
     """
-
-    addedcuda flag to make it one way or the other
-    if no acceleration structure is provided, then the function will default to the tiled raycasting method
-    to pass acceleration structure cpnstruct one prior to calling this function
-    chunks is the number of chunks to split the raycasting into, defaults to 1- currently the process is it throws
-    an error if gpu is going to run out of memory, and you have to rerun with more chunks
-
 
     calculating the scattering from the provided source coordinates, to the provided sink coordinates in the environment.
     This can be used to generate point to point scattering parameters or full scattering networks.
@@ -265,7 +258,12 @@ def calculate_scattering(
     mesh_resolution : float
         the desired mesh resolution in terms of wavelengths if scattering points are not provided. A scattering mesh is generated on the surfaces of all provided trianglemesh structures.
     project_vectors : boolean
-
+    cuda : boolean
+        Choice of Cuda or Numba engine, will use Cuda if True
+    acceleration_structure : None
+        if no acceleration structure is provided, then the function will default to the tiled raycasting method. To pass acceleration structure construct one prior to calling this function
+    chunks : int
+        chunks is the number of chunks to split the raycasting into, defaults to 1, if gpu is going to run out of memory an error will be reported, and this number should be increased before retrying.
 
     Returns
     -------
@@ -462,7 +460,7 @@ def calculate_scattering(
             point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
             # set all sources as magnetic current sources, and permittivity and permeability as free space
             point_informationv2[:]["Electric"] = True
-            point_informationv2[:]["permittivity"] = permiativity
+            point_informationv2[:]["permittivity"] = permittivity
             point_informationv2[:]["permeability"] = permeability
             # set position, velocity, normal, and weight of sources
             point_informationv2[0:num_sources]["px"] = np.asarray(

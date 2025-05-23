@@ -295,8 +295,9 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
 
 # @njit
 def patterntocloud(pattern_data, shell_coords, maxarea):
-    # takes the pattern_data and shell_coordinates, and creates an open3d point cloud based upon the data.
-    point_cloud = points2pointcloud(shell_coords)
+    # takes the pattern_data and shell_coordinates, and creates a point cloud based upon the data.
+    import lyceanem.utility.mesh_functions as MF
+    point_cloud = MF.points2pointcloud(shell_coords)
     points, elements = np.shape(pattern_data)
     # normdata
     viridis = cm.get_cmap("viridis", 40)
@@ -549,27 +550,7 @@ def convertTriangles(triangle_object):
     return triangles
 
 
-def points2pointcloud(xyz):
-    """
-    turns numpy array of xyz data into a meshio format point cloud
-    Parameters
-    ----------
-    xyz : TYPE
-        DESCRIPTION.
 
-    Returns
-    -------
-    pcd : point cloud format
-
-    """
-    if xyz.shape[1] == 3:
-        new_point_cloud = meshio.Mesh(points=xyz, cells=[])
-
-    else:
-        reshaped = xyz.reshape((int(len(xyz.ravel()) / 3), 3))
-        new_point_cloud = meshio.Mesh(points=reshaped, cells=[])
-
-    return new_point_cloud
 
 
 @guvectorize([(float32[:, :], float32[:])], "(m,n)->(m)", target="parallel")

@@ -84,13 +84,14 @@ def discrete_transmit_power(
 
     Parameters
     ----------
-    weights
-    element_area
+    weights : numpy.nd
+    element_area :
     transmit_power
     impedance
 
     Returns
     -------
+
 
     """
     # Calculate the Power at each mesh point from the Intensity at each point

@@ -8,15 +8,15 @@ from lyceanem.base_classes import antenna_pattern
 
 def electriccurrentsource(prime_vector, theta, phi):
     """
-    create an idealised electric current source that can be used to test the outputs of the model
+    Create an idealised electric current source based upon the provided electric field vector
 
     Parameters
     ----------
-    prime_vector : 1D numpy array of floats
+    prime_vector : numpy.ndarray of floats
         orientation of the electric current source in xyz
-    theta : 2D numpy array of floats
+    theta : numpy.ndarray of floats
         theta angles of desired pattern in degrees
-    phi : 2D numpy array of floats
+    phi : numpy.ndarray of floats
         phi angles of desired pattern in degrees
 
     Returns
@@ -56,11 +56,9 @@ def antenna_pattern_source(radius, import_antenna=False, antenna_file=None):
 
     Returns
     --------
-    solid : :class:`open3d.geometry.TriangleMesh`
+    solid : meshio.Mesh
         the enclosing sphere for the antenna
-    points : :class:`open3d.geometry.PointCloud`
-        the sample points for the antenna pattern, to be used as source points for the frequency domain model
-    pattern : 3 by N numpy array of complex
+    pattern : numpy.ndarray
         array of the sample points of the antenna pattern, specified as Ex,Ey,Ez components
 
     """
@@ -70,6 +68,9 @@ def antenna_pattern_source(radius, import_antenna=False, antenna_file=None):
         ## import the pattern not implemented
         pattern.import_pattern(antenna_file)
         pattern.field_radius = radius
+        az_res=pattern.azimuth_resolution
+        elev_res=pattern.elevation_resolution
+
     else:
         print("arbitary pattern")
         # generate an arbitary locally Z directed electric current source
@@ -91,10 +92,10 @@ def antenna_pattern_source(radius, import_antenna=False, antenna_file=None):
         pattern.field_radius = radius
 
     field_points = pattern.cartesian_points()
-    points = o3d.geometry.PointCloud()
-    points.points = o3d.utility.Vector3dVector(field_points)
-    points.normals = o3d.utility.Vector3dVector(field_points)
-    points.normalize_normals()
-    solid = o3d.geometry.TriangleMesh.create_sphere(radius=radius, resolution=30)
 
-    return solid, points, pattern
+    from lyceanem.geometry.targets import spherical_field
+    # create a sphere to represent the antenna
+    solid = spherical_field(radius=radius, az_res=az_res, elev_res=elev_res)
+    from lyceanem.electromagnetics.emfunctions import update_electric_fields
+    solid = update_electric_fields(solid, *field_points)
+    return solid, pattern

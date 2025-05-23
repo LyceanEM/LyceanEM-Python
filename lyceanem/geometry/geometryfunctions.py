@@ -12,6 +12,18 @@ from ..raycasting import rayfunctions as RF
 
 
 def mesh_conversion_to_meshio(conversion_object):
+    """
+    Convert the provided file object into meshio format
+
+    Parameters
+    ----------
+    conversion_object : solid object to be converted into meshio format, could be meshio.Mesh trianglemesh, solid, or antenna structure
+
+    Returns
+    -------
+    meshio_mesh : meshio.Mesh
+        The converted meshio mesh object
+    """
     if isinstance(conversion_object, base_classes.structures):
         meshio_mesh = conversion_object.export_combined_meshio()
     elif isinstance(conversion_object, base_classes.antenna_structures):
@@ -34,6 +46,17 @@ def cell_centroids(field_data):
     In order to calculate the centroid of the triangle, take vertices from meshio triangle mesh, then put each triangle
     into origin space, creating oa,ob,oc vectors, then the centroid is a third of the sum of oa+ob+oc, converted back
     into global coordinates
+
+    Parameters
+    ----------
+
+    field_data : meshio.Mesh
+
+    Returns
+    --------
+    centroid_cloud : meshio.Mesh
+        The centroid cloud, with the centroid of each triangle as a vertex, and the cell data from the original mesh
+        as point data
     """
     for inc, cell in enumerate(field_data.cells):
 
@@ -68,18 +91,24 @@ def cell_centroids(field_data):
 
 def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float32)):
     """
-    Rotate the provided meshio mesh about an arbitary center using either rotation vector or rotation matrix.
+    Rotate the provided meshio mesh about the defined center using either rotation vector or rotation matrix.
     This function will also rotate the cartesian electric field vectors if present, or convert spherical vectors to cartesian then rotate.
 
     Parameters
     ----------
-    mesh
-    rotation
-    rotation_centre
+    mesh : meshio.Mesh
+
+    rotation : numpy.ndarray
+        the rotation vector or rotation matrix for the desired rotation
+
+    rotation_centre : numpy.ndarray
+        Centre of rotation
 
     Returns
     -------
-    mesh
+    mesh : meshio.Mesh
+        The rotated mesh, with cartesian electric field vectors 
+
     """
     if rotation.shape == (3,):
         r = R.from_rotvec(rotation)
@@ -138,6 +167,25 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
 
 
 def mesh_transform(mesh, transform_matrix, rotate_only):
+    """
+    Transform the provided meshio mesh using the provided transformation matrix. The transformation matrix should be a 4x4 matrix. This function should be used with care, as currently the electric field vectors are not transformed.
+
+    Parameters
+    ----------
+    mesh : meshio.Mesh
+        The mesh to be transformed.
+
+    transform_matrix : numpy.ndarray
+        The transformation matrix to be applied to the mesh. Should be a 4x4 matrix.
+
+    rotate_only : bool
+        If True, only the rotation part of the transformation matrix will be applied. If False, the full transformation (including translation) will be applied.
+
+    Returns
+    -------
+    mesh : meshio.Mesh
+        The transformed mesh.
+    """
     return_mesh = mesh
     if rotate_only:
         for i in range(mesh.points.shape[0]):
@@ -176,6 +224,23 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
 
 
 def locate_cell_index(field_data, cell_type="triangle"):
+    """
+    Locate the index of the first cell of the specified type in the field data.
+
+    Parameters
+    ----------
+    field_data : meshio.Mesh
+        The meshio mesh object containing the cells.
+    cell_type : str, optional
+        The type of cell to locate. The default is "triangle".
+
+    Returns
+    -------
+    int
+        The index of the first cell of the specified type.
+
+    :private
+    """
     for inc, cell in enumerate(field_data.cells):
         if cell.type == cell_type:
             desired_index = inc
@@ -184,6 +249,20 @@ def locate_cell_index(field_data, cell_type="triangle"):
 
 
 def compute_areas(field_data):
+    """
+    Computes the area of each cell in the mesh and assigns it to the cell data. The area is calculated using Heron's formula for triangles and quads.
+    The area is also calculated for each point in the mesh, based on the area of the cells it is associated with.
+
+    Parameters
+    ----------
+    field_data : meshio.Mesh
+        The meshio mesh object containing the cells and points.
+
+    Returns
+    -------
+    field_data : meshio.Mesh
+        The meshio mesh object with the computed areas added to the cell data and point data.
+    """
     cell_areas = []
     for inc, cell in enumerate(field_data.cells):
 
@@ -259,7 +338,7 @@ def compute_areas(field_data):
 def compute_normals(mesh):
     """
     Computes the Cell Normals for meshio mesh objects, the point normals will also be calculated for all points which are connected to a triangle, quad, or vertex, isolated points will be propulated with a normal vector of nan.
-    If the only cells are vertex cells, then the normals will be from the mesh origin to each vertex.
+    If the only cells are vertex cells, then the normals are defined from the mesh origin to each vertex.
 
     Parameters
     ----------
@@ -267,6 +346,8 @@ def compute_normals(mesh):
 
     Returns
     -------
+    mesh : meshio.Mesh
+        The meshio mesh object with the computed normals added to the cell data and point data.
 
     """
     cell_normal_list = []
@@ -345,6 +426,8 @@ def theta_phi_r(field_data):
 
     Returns
     -------
+    field_data : meshio.Mesh
+        The meshio mesh object with the computed spherical coordinates added to the point data.
 
     """
     field_data.point_data["Radial_Distance_(m)"] = np.linalg.norm(
@@ -361,7 +444,7 @@ def theta_phi_r(field_data):
 
 def mesh_conversion(conversion_object):
     """
-    Convert the provide file object into triangle_t format
+    Convert the provide file object into triangle_t format for raycasting
 
     Parameters
     ----------
@@ -479,6 +562,18 @@ def elevationtotheta(el):
 def mesh_translate(mesh, translation_vector):
     """
     Translate a mesh by a given translation vector.
+
+    Parameters
+    ----------
+    mesh : meshio.Mesh
+        The mesh to be translated.
+    translation_vector : numpy.ndarray
+        The translation vector to be applied to the mesh. Should be a 1x3 array.
+
+    Returns
+    -------
+    mesh : meshio.Mesh
+        The translated mesh.
     """
     translated_points = mesh.points + translation_vector
     cell_data = mesh.cell_data

@@ -80,7 +80,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
               'sphinx.ext.viewcode',
               'sphinx_gallery.gen_gallery',
-              'sphinx.ext.imgmath']
+              'sphinx.ext.imgmath',
+              'myst_parser']
 bibtex_bibfiles = ['_static/lyceanemrefs.bib']
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

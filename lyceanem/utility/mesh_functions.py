@@ -46,3 +46,25 @@ def id_cells(faces):
             meshio_cells.append((key, cells[key]))
 
     return meshio_cells
+
+def points2pointcloud(xyz):
+    """
+    turns numpy array of xyz data into a meshio format point cloud
+    Parameters
+    ----------
+    xyz : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    pcd : point cloud format
+
+    """
+    if xyz.shape[1] == 3:
+        new_point_cloud = meshio.Mesh(points=xyz, cells=[])
+
+    else:
+        reshaped = xyz.reshape((int(len(xyz.ravel()) / 3), 3))
+        new_point_cloud = meshio.Mesh(points=reshaped, cells=[])
+
+    return new_point_cloud

@@ -311,6 +311,30 @@ def parabolic_aperture(
     lip_height=1e-3,
     lip_width=1e-3,
 ):
+    """
+    Create a parabolic reflector with a specified diameter and focal length, and generate a mesh of points on the surface.
+
+    Parameters
+    ----------
+
+    diameter : float
+        Diameter of the parabolic reflector.
+    focal_length : float
+        Focal length of the parabolic reflector.
+    thickness : float
+        Thickness of the reflector.
+    mesh_size : float
+        Size of the mesh elements.
+    sides : str, optional
+        Specifies which sides to mesh. Default is 'front'.
+    lip : bool
+        defines whether a flat lip is required
+    lip_height : float
+        height of lip from the front surface of the reflector
+    lip_width : float
+        width of the reflector lip
+
+    """
     # Define function for parabola equation (y^2 = 4*focal_length*x)
     import lyceanem.geometry.geometryfunctions as GF
     import lyceanem.utility.math_functions as math_functions
@@ -477,7 +501,7 @@ def spherical_field(az_range, elev_range, outward_normals=False, field_radius=1.
 
     Returns
     -------
-    mesh : meshio object
+    mesh : meshio.Mesh
         spherical field of points at specified azimuth and elevation angles, with meshed triangles
     """
     vista_pattern=pv.Sphere(radius=field_radius,
@@ -585,6 +609,10 @@ def gridedReflectorPoints(
     create a primative of the right size, assuming always orientated
     with normal aligned with zenith, and major axis with x,
     adjust position so the face is centred on (0,0,1)
+
+    Parameters
+    ----------
+
     """
     if sides == "all":
         x = np.linspace(
