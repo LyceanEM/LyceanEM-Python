@@ -1,2 +1,2 @@
-recursive-include em/data *.txt
-recursive-include test/data *.txt
+recursive-include electromagnetics/data *.txt
+recursive-include tests/data *.txt
