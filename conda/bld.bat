@@ -6,6 +6,14 @@ where ninja || exit /b 1
 
 REM Use Ninja generator explicitly
 set "CMAKE_GENERATOR=Ninja"
+REM Determine Python version
+for /f %%v in ('%PYTHON% -c "import sys; print(f'python{sys.version_info.major}{sys.version_info.minor}')"') do set PYTHON_LIB=%%v.lib
 
+REM Check if pythonXXX.lib exists
+if not exist "%LIBRARY_LIB%\%PYTHON_LIB%" (
+  echo ERROR: Required file "%LIBRARY_LIB%\%PYTHON_LIB%" not found!
+  echo This file is needed to link your C++/CUDA extension with Python.
+  exit /b 1
+)
 REM Build the package using pip + scikit-build
 %PYTHON% -m pip install . --no-deps --no-build-isolation -vv || exit /b 1
