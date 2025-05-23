@@ -228,14 +228,40 @@ def EGCWeights(
     Ephi,
     command_angles,
     polarization_switch="Etheta",
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-90.0, 90.0, 19),
+    az_range=None,
+    elev_range=None,
 ):
     """
 
     calculate the equal gain combining weights for a given set of element coordinates, wavelength, and command angles (az,elev)
 
+    Parameters
+    ----------
+    Etheta : 3D numpy array
+        The Etheta polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    Ephi : 3D numpy array
+        The Ephi polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    command_angles : 1D numpy array
+        The command angles for the beamfroming, arranged as [azimuth,elevation]
+    polarization_switch : str
+        The polarisation to be used for the beamforming, either [Etheta] or [Ephi]. Default is [Etheta]
+    az_range : numpy.ndarray of float
+        The azimuth values for the farfield mesh, arranged from smallest to largest
+    elev_range : 1D array of float
+        The elevation values for the farfield mesh, arranged from smallest to largest
+
+    Returns
+    -------
+    weights : 1D numpy array of complex
+        The equal gain combining weights for the specified command angles, arranged as a 1D array of complex numbers
+
+
     """
+    if az_range==None:
+        az_range=np.linspace(-180.0, 180.0, 19)
+
+    if elev_range==None:
+        elev_range=np.linspace(-90.0, 90.0, 19)
     weights = np.zeros((Etheta.shape[0]), dtype=np.complex64)
     az_index = np.argmin(np.abs(az_range - command_angles[0]))
     elev_index = np.argmin(np.abs(elev_range - command_angles[1]))
@@ -253,6 +279,19 @@ def OAMWeights(x, y, mode):
 
     generate OAM mode weights, based upon the radial angle of each element.
 
+    Parameters
+    ----------
+    x : 1D numpy array
+        The x coordinates of the elements
+    y : 1D numpy array
+        The y coordinates of the elements
+    mode : int
+        The OAM mode to be used for the weights, should be an integer value
+
+    Returns
+    -------
+    weights : 1D numpy array of complex
+        The OAM weights for the specified mode, arranged as a 1D array of complex numbers
     """
     # assumed array is x directed
     angles = np.arctan2(x, y)
@@ -276,11 +315,40 @@ def OAMFourier(
 
     producing mode index, mode coefficiencts, and mode probabilities with the co and crosspolar (Etheta,Ephi), but can probably be done the same for Ex,Ey,Ez
 
+    Parameters
+    ----------
+    Ex : 2D numpy array
+        The Ex component of the electric field, arranged in terms of azimuth resolution and elevation resolution
+    Ey : 2D numpy array
+        The Ey component of the electric field, arranged in terms of azimuth resolution and elevation resolution
+    Ez : 2D numpy array
+        The Ez component of the electric field, arranged in terms of azimuth resolution and elevation resolution
+    coordinates : 2D numpy array
+        The coordinates of the elements, arranged in terms of x, y, and z coordinates
+    prime_vector : 1D numpy array
+        The prime vector for the OAM calculation, arranged in terms of x, y, and z coordinates
+    mode_limit : int
+        The maximum OAM mode to be considered for the calculation, should be an integer value
+    first_dimension : 1D numpy array
+        if the coordinate system is spherical, this should be the azimuth range
+    second_dimension : 1D numpy array
+        if the coordinate system is spherical, this should be the elevation range
+    coord_format : str
+        The coordinate system to be used for the calculation, either [xyz] or [AzEl]. Default is [AzEl]
+
+    Returns
+    -------
+    mode_index : 1D numpy array
+        The OAM mode index, arranged as a 1D array of integers
+    mode_coefficients : 2D numpy array
+        The OAM mode coefficients, arranged in terms of the number of modes and the number of polarisation components
+    mode_probabilites : 2D numpy array
+        The OAM mode probabilities, arranged in terms of the number of modes and the number of polarisation components
     """
     # establish coordinate set, in this case theta and phi, but would work just as well with elevation and azimuth, assume that array is propagating in the z+ direction.
     if coord_format == "xyz":
         mode_index, mode_coefficients, mode_probabilites = OAMFourierCartesian(
-            Ex, Ey, Ez, coordinates, mode_limit, first_dimension, second_dimension
+            Ex, Ey, Ez, coordinates, mode_limit
         )
     elif coord_format == "AzEl":
         mode_index, mode_coefficients, mode_probabilites = OAMFourierSpherical(
@@ -294,7 +362,7 @@ def OAMFourierCartesian(Ex, Ey, Ez, coordinates, mode_limit):
     """
 
     assume propagation is in the Ez dimension
-
+    :private
     """
     mode_index = np.linspace(-mode_limit, mode_limit, mode_limit * 2 + 1)
     mode_coefficients = np.zeros((mode_index.shape[0], 3), dtype=np.complex64)
@@ -334,7 +402,7 @@ def OAMFourierSpherical(Ex, Ey, Ez, coordinates, mode_limit, az_range, elev_rang
     """
 
     assume probagation is in the Ez dimension
-
+    :private
     """
     mode_index = np.linspace(-mode_limit, mode_limit, mode_limit * 2 + 1)
     mode_coefficients = np.zeros((mode_index.shape[0], len(elev_range), 3))
@@ -363,8 +431,8 @@ def MaximumDirectivityMap(
     Ephi,
     source_coords,
     wavelength,
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-90.0, 90.0, 19),
+    az_range=None,
+    elev_range=None,
     az_index=None,
     elev_index=None,
     forming="Total",
@@ -415,7 +483,10 @@ def MaximumDirectivityMap(
         that command angle. Arranged as elev axis, azimuth axis, Dtheta,Dphi,Dtot
 
     """
-
+    if az_range==None:
+        az_range=np.linspace(-180.0, 180.0, 19)
+    if elev_range==None:
+        elev_range=np.linspace(-90.0, 90.0, 19)
     if elev_index == None:
         # if no elev index is provided then generate for all possible values (assumes every elevation point is of interest)
         elev_index = np.linspace(0, len(elev_range) - 1, len(elev_range)).astype(int)
@@ -552,8 +623,8 @@ def MaximumDirectivityMapDiscrete(
     Ephi,
     source_coords,
     wavelength,
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-180.0, 180.0, 19),
+    az_range=None,
+    elev_range=None,
     az_index=None,
     elev_index=None,
     forming="Total",
@@ -604,6 +675,11 @@ def MaximumDirectivityMapDiscrete(
         that command angle.
 
     """
+    if az_range==None:
+        az_range=np.linspace(-180.0, 180.0, 19)
+    if elev_range==None:
+        elev_range=np.linspace(-90.0, 90.0, 19)
+
     if elev_index == None:
         # if no elev index is provided then generate for all possible values (assumes every elevation point is of interest)
         elev_index = np.linspace(0, len(elev_range) - 1, len(elev_range)).astype(int)
@@ -768,12 +844,16 @@ def MaximumfieldMapDiscrete(
     wavelength,
     az_res,
     elev_res,
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-180.0, 180.0, 19),
+    az_range=None,
+    elev_range=None,
     forming="Total",
     total_solid_angle=(4 * np.pi),
     phase_resolution=[24],
 ):
+    if az_range==None:
+        az_range=np.linspace(-180.0, 180.0, 19)
+    if elev_range==None:
+        elev_range=np.linspace(-90.0, 90.0, 19)
     efield_map = np.zeros(
         (elev_res, az_res, 3, len(phase_resolution)), dtype=np.complex64
     )
@@ -902,10 +982,48 @@ def MaximumfieldMapDiscrete(
 def directivity_transform(
     Etheta,
     Ephi,
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-90.0, 90.0, 19),
+    az_range=None,
+    elev_range=None,
     total_solid_angle=(4 * np.pi),
 ):
+    """
+    Transform the Etheta and Ephi field vectors into antenna directivity.
+    The directivity is defined in terms of the power radiated in a specific direction, over the average radiated power
+
+    Parameters
+    ----------
+    Etheta : 3D numpy array
+        The Etheta polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    Ephi : 3D numpy array
+        The Ephi polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    az_range : 1D numpy array of float
+        The azimuth values for the farfield mesh, arranged from smallest to largest
+    elev_range : 1D numpy array of float
+        The elevation values for the farfield mesh, arranged from smallest to largest
+    total_solid_angle : float
+        the total solid angle covered by the farfield patterns, this defaults to $4\pi$ for a full spherical pattern
+
+    Returns
+    -------
+    Dtheta : 2D numpy array of float
+        The achieved directivity map for the Etheta polarisation. At each point the directivity corresponds to the achieved directivity at
+        that command angle.
+    Dphi : 2D numpy array of float
+        The achieved directivity map for the Ephi polarisation. At each point the directivity corresponds to the achieved directivity at
+        that angle.
+    Dtot : 2D numpy array of float
+        The achieved directivity map for the total polarisation. At each point the directivity corresponds to the achieved directivity at
+        that angle.
+    Dmax : 1D numpy array of float
+        The maximum directivity for each polarisation. At each point the directivity corresponds to the achieved directivity at
+        that angle.
+
+
+    """
+    if az_range==None:
+        az_range=np.linspace(-180.0, 180.0, 19)
+    if elev_range==None:
+        elev_range=np.linspace(-90.0, 90.0, 19)
     # transform Etheta and Ephi data into antenna directivity
     # directivity is defined in terms of the power radiated in a specific direction, over the average radiated power
     # power per unit solid angle
@@ -1323,7 +1441,7 @@ def point_directivity(Ea, Eb, az_range, el_range, interest_index):
     """
 
     compute the directivity at the point of interest in the farfield pattern
-
+    :private
     """
 
     average_power = 0.0

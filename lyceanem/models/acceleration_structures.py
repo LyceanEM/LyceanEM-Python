@@ -5,6 +5,52 @@ from lyceanem.em import calculate_scattering_tiles
 
 
 class Tile_acceleration_structure:
+    """
+    This class is used to create a tile acceleration structure for the scattering calculation.
+
+    Parameters
+    ----------
+    blocking_mesh : meshio.Mesh
+        The mesh to be used for the blocking structure.
+    n_cells : int
+        The number of cells to be used for the tile acceleration structure.
+
+    Attributes
+    ----------
+    triangle_verticies : numpy.ndarray
+        The vertices of the triangles in the blocking mesh.
+    max_x : float
+        The maximum x coordinate of the blocking mesh.
+    min_x : float
+        The minimum x coordinate of the blocking mesh.
+    max_y : float
+        The maximum y coordinate of the blocking mesh.
+    min_y : float
+        The minimum y coordinate of the blocking mesh.
+    max_z : float
+        The maximum z coordinate of the blocking mesh.
+    min_z : float
+        The minimum z coordinate of the blocking mesh.
+    tile_size : float
+        The size of the tiles used for the acceleration structure.
+    y_cells_count : int
+        The number of cells in the y direction.
+    z_cells_count : int
+        The number of cells in the z direction.
+    bin_counts : numpy.ndarray
+        The counts of triangles in each bin.
+    binned_triangles_count : int
+        The total number of triangles in the bins
+    binned_triangles : numpy.ndarray
+        The triangles in the bins.
+
+    Methods
+    -------
+    calculate_scattering(source_mesh, sink_mesh, alpha, beta, wavelength, self_to_self, chunk_count=1)
+        Calculate the scattering from the source mesh to the sink mesh.
+
+
+    """
     def __init__(self, blocking_mesh, n_cells):
         self.triangle_verticies = np.ascontiguousarray(blocking_mesh.points)
         self.max_x = np.max(blocking_mesh.points[:, 0]) + abs(np.max(blocking_mesh.points[:, 0]) * 0.001)
@@ -69,6 +115,26 @@ class Tile_acceleration_structure:
 
 
 class Brute_Force_acceleration_structure:
+    """
+    This class is used to create a brute force acceleration structure for the scattering calculation.
+    Parameters
+    ----------
+    blocking_mesh : meshio.Mesh
+        The mesh to be used for the blocking structure.
+
+    Attributes
+    ----------
+    triangle_verticies : numpy.ndarray
+        The vertices of the triangles in the blocking mesh.
+    triangles : numpy.ndarray
+        The triangles in the blocking mesh.
+
+    Methods
+    -------
+    calculate_scattering(source_mesh, sink_mesh, alpha, beta, wavelength, self_to_self, chunk_count=1)
+        Calculate the scattering from the source mesh to the sink mesh.
+
+    """
     def __init__(self, blocking_mesh):
         self.triangle_verticies = np.ascontiguousarray(blocking_mesh.points)
         self.triangles =blocking_mesh.cells[0].data
