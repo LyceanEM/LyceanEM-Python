@@ -8,7 +8,7 @@ source:
 build:
   script_env:
     - CMAKE_GENERATOR=Ninja
-  script: bld.bat
+  script: build/bld.bat
 requirements:
   build:
   - python                    # from defaults or conda-forge
