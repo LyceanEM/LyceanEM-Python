@@ -4,7 +4,17 @@ import pyvista as pv
 
 def pyvista_to_meshio(polydata_object):
     """
-    Convert a pyvista object to a meshio object
+    Convert a pyvista object to a meshio object, if pyvista >=0.45, use to_meshio method.
+
+    Parameters
+    ----------
+    polydata_object : pyvista.PolyData or pyvista.UnstructuredGrid
+        The pyvista object to convert.
+
+    Returns
+    -------
+    meshio_object : meshio.Mesh
+        The converted meshio object.
     """
     # extract only the triangles
     if type(polydata_object) == pv.core.pointset.UnstructuredGrid:
@@ -20,6 +30,19 @@ def pyvista_to_meshio(polydata_object):
 
 
 def id_cells(faces):
+    """
+    Identify cell ids
+
+    Parameters
+    ----------
+    faces : numpy.ndarray
+        The faces of the mesh.
+
+    Returns
+    -------
+    meshio_cells : list
+        A list of tuples containing the cell type and the cell data.
+    """
     # temp_faces=copy.deepcopy(faces)
 
     cell_types = {1: "vertex", 2: "line", 3: "triangle", 4: "quad"}
@@ -50,14 +73,16 @@ def id_cells(faces):
 def points2pointcloud(xyz):
     """
     turns numpy array of xyz data into a meshio format point cloud
+
     Parameters
     ----------
-    xyz : TYPE
-        DESCRIPTION.
+    xyz : numpy.ndarray
+        The xyz data to convert. The shape of the array should be (n, 3) or (n, 1, 3). If the shape is (n, 1, 3), it will be reshaped to (n, 3).
 
     Returns
     -------
-    pcd : point cloud format
+    new_point_cloud : meshio.Mesh
+        The converted meshio point cloud.
 
     """
     if xyz.shape[1] == 3:

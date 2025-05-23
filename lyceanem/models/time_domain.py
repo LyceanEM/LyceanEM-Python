@@ -36,15 +36,15 @@ def calculate_scattering(
 
     Parameters
     ----------
-    aperture_coords : :class:`open3d.geometry.TriangleMesh`
+    aperture_coords : :class: meshio.Mesh
         source coordinates
-    sink_coords : :class:`open3d.geometry.TriangleMesh`
+    sink_coords : :class: meshio.Mesh
         sink coordinates
     antenna_solid : :class:`lyceanem.base_classes.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
     desired_E_axis : 1D numpy array of floats
         the desired excitation vector, can be a 1*3 array or a n*3 array if multiple different exciations are desired in one lauch
-    scatter_points : :class:`open3d.geometry.TriangleMesh`
+    scatter_points : :class: meshio.Mesh
         the scattering points in the environment. Defaults to [None], in which case scattering points will be generated from the antenna_solid. If no scattering should be considered then set scattering to [0].
     wavelength : float
         the wavelength of interest in metres

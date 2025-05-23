@@ -118,7 +118,7 @@ def fresnel_zone(pointA, pointB, wavelength, zone=1):
     pose[:3, :3] = spt.Rotation.align_vectors(major_axis / separation, [1, 0, 0])[
         0
     ].as_matrix()
-    pose[:3, 3] = centere
+    pose[:3, 3] = center
 
     ellipsoid = pyvista_to_meshio(pv.ParametricEllipsoid(
         separation * 0.5, fresnel_radius, fresnel_radius
@@ -322,6 +322,7 @@ def field_vectors(field_data):
 
 def transform_em(field_data, r):
     """
+    :meta private:
     Transform the electric current vectors into the new coordinate system defined by the rotation matrix.
 
     Parameters
@@ -331,6 +332,8 @@ def transform_em(field_data, r):
 
     Returns
     -------
+    field_data: :class: meshio.Mesh
+
 
     """
     if all(
@@ -414,13 +417,20 @@ def PoyntingVector(field_data, measurement=False, aperture=None):
     Calculate the poynting vector for the given field data. If the magnetic field data is present, then the poynting vector is calculated using the cross product of the electric and magnetic field vectors.
     If the magnetic field data is not present, then the poynting vector is calculated using the electric field vectors and the impedance of the material. If material parameters are not included in the field data, then the impedance is assumed to be that of free space.
     Measurement is a boolean value which indicates whether the field data represents measurements with a finite aperture, rather than point data. If measurement is True, then the aperture parameter must be provided, which is the area of the measurement aperture. This allows the power density at each measurement location to be calculated consistently with the point approach.
-    field_data: meshio.Mesh
 
+    Parameters
+    ----------
+    field_data: meshio.Mesh
+        The field data containing the electric field components in either cartesian format
     measurement: bool
 
     aperture: float
         The area of the measurement aperture, if measurement is True, so the field data represents measurements with a finite aperture, rather than point data.
 
+    Returns
+    -------
+    field_data: meshio.Mesh
+        The field data containing the poynting vector in the point data. The poynting vector is stored as `Poynting_Vector_(Magnitude_(W/m2))` and `Poynting_Vector_(Magnitude_(dBW/m2))`.
     """
     if all(
         k in field_data.point_data.keys()
@@ -587,26 +597,31 @@ def water_vapour_lines():
 
     return data_lines
 
-def calculate_oxygen_attenuation(frequency, pressure, temperature, oxygen_lines):
+def calculate_oxygen_attenuation(frequency, pressure, temperature):
     """
     Calculate the specific attenuation due to oxygen using the ITU-R P.676-11 model.
 
-    Parameters:
-    frequency (GHz): The frequency of the signal in GHz.
-    pressure (hPa): The atmospheric pressure in hectopascals.
-    temperature (C): The temperature in degrees Celsius.
-    oxygen_lines (list): A list of spectroscopic data lines for oxygen.
+    Parameters
+    ----------
+    frequency (GHz): float
+        The frequency of the signal in GHz.
+    pressure (hPa): float
+        The atmospheric pressure in hectopascals.
+    temperature (C): float
+        The temperature in degrees Celsius.
 
     Returns:
-    float: The calculated oxygen attenuation in dB/km.
+    specific_attenuation : float
+        The calculated oxygen attenuation in dB/km.
     """
+    oxygen_lines=oxygen_lines()
     temperature_k = temperature + 273.15
     theta = 300 / temperature_k
     specific_attenuation = 0
 
     for line in oxygen_lines:
         f_line, a1, a2, a3, a4, a5, a6 = line
-        S = a1 * 10**-7 * pressure * theta**3 * math.exp(a2 * (1 - theta))
+        S = a1 * 10**-7 * pressure * theta**3 * np.exp(a2 * (1 - theta))
         ffo = a3 * 10**-4 * (pressure * theta ** (0.8 - a4) + 1.1 * pressure * theta)
         delta = (a5 + a6 * theta) * 10**-4 * (pressure) * theta**0.8
         F = (frequency / f_line) * (
@@ -620,20 +635,25 @@ def calculate_oxygen_attenuation(frequency, pressure, temperature, oxygen_lines)
 
 
 def calculate_water_vapor_attenuation(
-    frequency, pressure, temperature, water_vapor_lines
+    frequency, pressure, temperature
 ):
     """
     Calculate the specific attenuation due to water vapor using the ITU-R P.676-11 model.
 
-    Parameters:
-    frequency (GHz): The frequency of the signal in GHz.
-    pressure (hPa): The atmospheric pressure in hectopascals.
-    temperature (C): The temperature in degrees Celsius.
-    water_vapor_lines (list): A list of spectroscopic data lines for water vapor.
+    Parameters
+    ----------
+    frequency : float
+        The frequency of the signal in GHz.
+    pressure : float
+        The atmospheric pressure in hectopascals (hPa).
+    temperature : float
+        The temperature in degrees Celsius.
 
     Returns:
-    float: The calculated water vapor attenuation in dB/km.
+    specific_attenuration: float
+        The calculated water vapor attenuation in dB/km.
     """
+    water_vapor_lines=water_vapour_lines()
     temperature_k = temperature + 273.15
     theta = 300 / temperature_k
     e = pressure * 0.622 / (0.622 + 0.378)  # Partial pressure of water vapor (hPa)
@@ -641,7 +661,7 @@ def calculate_water_vapor_attenuation(
 
     for line in water_vapor_lines:
         f_line, a1, a2, a3, a4, a5, a6 = line
-        S = a1 * 10**-1 * e * theta**3.5 * math.exp(a2 * (1 - theta))
+        S = a1 * 10**-1 * e * theta**3.5 * np.exp(a2 * (1 - theta))
         ffo = a3 * 10**-4 * (pressure * theta**a4 + a5 * e * theta**a6)
         F = (frequency / f_line) * (
             (ffo - 0 * (f_line - frequency)) / ((f_line - frequency) ** 2 + ffo**2)
@@ -655,14 +675,12 @@ def calculate_water_vapor_attenuation(
 def calculate_total_gaseous_attenuation(
     frequency,
     pressure,
-    temperature,
-    oxygen_lines=oxygen_lines(),
-    water_vapor_lines=water_vapour_lines(),
+    temperature
 ):
     """
     Calculate the total gaseous attenuation due to both oxygen and water vapor.
 
-    Parameters:
+    Parameters
     --------------
     frequency (GHz): float
         The frequency of the signal in GHz.
@@ -672,10 +690,12 @@ def calculate_total_gaseous_attenuation(
      The temperature in degrees Celsius.
 
 
-    Returns:
+    Returns
     -----------
     float: The calculated total gaseous attenuation in Np/m.
     """
+    oxygen_lines=oxygen_lines()
+    water_vapor_lines=water_vapour_lines()
     # Calculate specific attenuation
     oxygen_attenuation = calculate_oxygen_attenuation(
         frequency, pressure, temperature, oxygen_lines
@@ -725,7 +745,7 @@ def calculate_phase_constant(frequency, temperature, pressure, water_vapor_densi
     temperature_K = temperature + T0
 
     # Saturation vapor pressure at given temperature
-    e_s = e_s0 * math.exp((Lv / Rv) * ((1 / T0) - (1 / temperature_K)))
+    e_s = e_s0 * np.exp((Lv / Rv) * ((1 / T0) - (1 / temperature_K)))
 
     # Actual vapor pressure
     e = water_vapor_density * e_s
@@ -740,7 +760,7 @@ def calculate_phase_constant(frequency, temperature, pressure, water_vapor_densi
     n = 1 + N * 1e-6
 
     # Phase constant beta
-    beta = (2 * math.pi * frequency * 1e9 * n) / speed_of_light
+    beta = (2 * np.pi * frequency * 1e9 * n) / speed_of_light
 
     return beta
 

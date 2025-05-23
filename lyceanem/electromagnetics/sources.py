@@ -1,7 +1,4 @@
 import numpy as np
-# provide idealised patterns to allow testing of the different models
-import open3d as o3d
-
 import lyceanem.geometry.geometryfunctions as GF
 from lyceanem.base_classes import antenna_pattern
 
@@ -21,9 +18,9 @@ def electriccurrentsource(prime_vector, theta, phi):
 
     Returns
     -------
-    etheta : 2D numpy array of complex
+    etheta : numpy.ndarray of complex
         Etheta polarisation
-    ephi : 2D numpy array of complex
+    ephi : numpy.ndarray of complex
         Ephi polarisation
     """
 
@@ -45,11 +42,12 @@ def antenna_pattern_source(radius, import_antenna=False, antenna_file=None):
     This function generates an antenna pattern and `opaque' sphere as the base, representing an inserted antenna with measured pattern.
 
     This function is not yet complete
+
     Parameters
     ----------
     radius : float
         radius of the sphere, setting the minimum enclosing volume of the antenna
-    import_antenna : boolean,
+    import_antenna : bool
         if [True] the provided antenna_file location will be used to import an antenna file to populate the variable
     antenna_file : PosixPath
         a file location for the antenna file to be used. The initial set will be based upon the .dat files used by the University of Bristol Anechoic Chamber
@@ -58,7 +56,7 @@ def antenna_pattern_source(radius, import_antenna=False, antenna_file=None):
     --------
     solid : meshio.Mesh
         the enclosing sphere for the antenna
-    pattern : numpy.ndarray
+    pattern : numpy.ndarray of floats
         array of the sample points of the antenna pattern, specified as Ex,Ey,Ez components
 
     """

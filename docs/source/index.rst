@@ -14,7 +14,7 @@ performance to channel modelling. The model is built upon a ray tracing approach
 large, low density spaces.
 
 .. note::
-   This project is under active development, but can be installed via pip or by cloning the git repository, as described in the :ref:`install <installation>` documentation.
+   This project is under active development, the recommended installation method is to use conda for either Windows or Linux as per the :ref:`install <installation>` documentation.
 
 Installation
 -------------

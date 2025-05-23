@@ -89,8 +89,6 @@ def calculate_farfield(
     wavelength=1.0,
     farfield_distance=2.0,
     scattering=0,
-    source_weights=None,
-    scattering_weight=1.0,
     mesh_resolution=0.5,
     elements=False,
     los=True,
@@ -104,7 +102,7 @@ def calculate_farfield(
 
     Parameters
     ---------
-    aperture_coords : :class:`open3d.geometry.PointCloud`
+    aperture_coords : meshio.Mesh
         open3d of the aperture coordinates, from a single point to a mesh sampling across and aperture or surface
     antenna_solid : :class:`lyceanem.base_classes.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
@@ -114,7 +112,7 @@ def calculate_farfield(
         the desired azimuth planes in degrees
     el_range : 1D numpy array of float
         the desired elevation planes in degrees
-    scatter_points : open3d point cloud
+    scatter_points : meshio.Mesh
         the environment scattering points, defaults to [None]
     wavelength : float
         wavelength of interest in meters, defaults to [1]
@@ -122,9 +120,6 @@ def calculate_farfield(
         the distance to evaluate the antenna pattern, defaults to [2]
     scattering: int
      the number of scatters required, if this is set to 0, then only line of sight propagation is considered, defaults to [0]
-     source_weights : numpy array complex
-        the desired source weights if the source field is to be specified explicitly, should be normalised. This replaces the desired_E_axis specification.
-    scattering_weight :
     mesh_resolution :
     elements : boolean
         whether the sources and sinks should be considered as elements of a phased array, or a fixed phase aperture like a horn or reflector
@@ -178,6 +173,7 @@ def calculate_farfield(
     )
 
     return etheta, ephi
+
 def calculate_scattering_cuda(alpha, beta, wavelength, acceleration_structure, scatter_depth, source_mesh, sink_mesh, scatter_mesh= None, chunks=1):
     
     scatter_source_sink = acceleration_structure.calculate_scattering(source_mesh, sink_mesh, alpha, beta, wavelength, chunk_count=chunks, self_to_self = False)
@@ -237,15 +233,15 @@ def calculate_scattering(
 
     Parameters
     ----------
-    aperture_coords : :class:`open3d.geometry.PointCloud`
+    aperture_coords : meshio.Mesh
         source coordinates
-    sink_coords : :class:`open3d.geometry.PointCloud`
+    sink_coords : meshio.Mesh
         sink coordinates
     antenna_solid : :class:`lyceanem.base_classes.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
     desired_E_axis : 1D numpy array of floats
         the desired excitation vector, can be a 1*3 array or a n*3 array if multiple different exciations are desired in one lauch
-    scatter_points : :class:`open3d.geometry.PointCloud`
+    scatter_points : meshio.Mesh
         the scattering points in the environment. Defaults to [None], in which case scattering points will be generated from the antenna_solid. If no scattering should be considered then set scattering to [0].
     wavelength : float
         the wavelength of interest in metres
@@ -342,7 +338,7 @@ def calculate_scattering(
             point_informationv2 = np.empty((len(unified_model)), dtype=scattering_t)
             # set all sources as magnetic current sources, and permittivity and permeability as free space
             point_informationv2[:]["Electric"] = True
-            point_informationv2[:]["permittivity"] = permiativity
+            point_informationv2[:]["permittivity"] = permittivity
             point_informationv2[:]["permeability"] = permeability
             # set position, velocity, normal, and weight of sources
             point_informationv2[0:num_sources]["px"] = np.asarray(
@@ -698,7 +694,7 @@ def calculate_scattering(
         conformal_E_vectors=conformal_E_vectors*aperture_coords.point_data['Area'].reshape(-1,1)
         # set all sources as magnetic current sources, and permittivity and permeability as free space
         aperture_coords.point_data["is_electric"] = np.ones((num_sources), dtype=np.bool)
-        aperture_coords.point_data["permittivity"] = np.ones((num_sources), dtype=np.complex64) * permiativity
+        aperture_coords.point_data["permittivity"] = np.ones((num_sources), dtype=np.complex64) * permittivity
         aperture_coords.point_data["permeability"] = np.ones((num_sources), dtype=np.complex64) * permeability
         #set e fields
         aperture_coords.point_data["ex"] = np.ascontiguousarray(conformal_E_vectors[:, 0])
@@ -707,7 +703,7 @@ def calculate_scattering(
         if scattering > 0:
             num_scatters = len(np.asarray(scatter_points.points))
             scatter_points.point_data["is_electric"] = np.ones((num_scatters), dtype=np.bool)
-            scatter_points.point_data["permittivity"] = np.ones((num_scatters), dtype=np.complex64) * permiativity
+            scatter_points.point_data["permittivity"] = np.ones((num_scatters), dtype=np.complex64) * permittivity
             scatter_points.point_data["permeability"] = np.ones((num_scatters), dtype=np.complex64) * permeability
 
 
