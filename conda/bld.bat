@@ -24,7 +24,7 @@ if not exist "%PYTHON_LIB%" (
 else (
     echo Found Python library: %PYTHON_LIB%
 )
-set "CMAKE_ARGS=-DPYTHON_LIBRARY=%PYTHON_LIB%"
+set "CMAKE_ARGS=-DPYTHON_LIBRARY=""%PYTHON_LIB%"""
 
 
 REM Build the package using pip + scikit-build
