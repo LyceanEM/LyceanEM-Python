@@ -25,6 +25,7 @@ requirements:
   - nvidia::cuda-cudart-static
   host:
   - python
+  - libboost-python-devel
   - nvidia::cuda-cudart-dev
   - nvidia::cuda-cudart-static
   - pip                       # from defaults or conda-forge
