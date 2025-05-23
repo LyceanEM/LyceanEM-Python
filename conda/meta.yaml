@@ -23,6 +23,10 @@ requirements:
   - nvidia::cuda-nvcc
   - nvidia::cuda-cudart-dev
   - nvidia::cuda-cudart-static
+  host:
+  - python
+  - nvidia::cuda-cudart-dev
+  - nvidia::cuda-cudart-static
 
   run:
     - python
