@@ -7,6 +7,9 @@ project(test LANGUAGES CXX CUDA)
 # Attempt to locate the specified Python library file
 if(EXISTS "${PYTHON_LIBRARY}")
   message(STATUS "Found Python library: ${PYTHON_LIBRARY}")
+else()
+  message(FATAL_ERROR "Python library not found at: ${PYTHON_LIBRARY}")
+endif()
 
 find_package( PkgConfig )
 # build release with debug info
