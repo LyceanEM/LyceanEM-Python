@@ -287,6 +287,7 @@ py::array_t<float> calculate_scattering_brute_force(py::array_t<float> source, p
     float* scattering_network_py_ptr = scattering_network_py.mutable_data();
     std::vector<complex_float3> scattering_network(source_size* end_size);
     complex_float3* scattering_network_ptr = scattering_network.data();
+    int source_index = 0;
 
     raycast_wrapper_brute_force(&source_ptr[source_index], end_ptr, source_size, end_size,d_tri_vertex, d_triangles, triangle_size
     ,points, wave_length,scattering_network_ptr,make_float2(alpha,beta),not_self_to_self);
