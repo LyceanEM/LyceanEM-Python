@@ -105,8 +105,9 @@ class Brute_Force_acceleration_structure:
                 alpha,
                 beta,
                 self_to_self)
-            array.reshape((source_end-source_start, sink_mesh.points.shape[0],3))
-            return_array[source_start:source_end,:] = array
+            array = np.ascontiguousarray(array)
+            array = array.view(np.complex64)
+            array = array.reshape((source_end-source_start, sink_mesh.points.shape[0],3))
             source_start = source_end
             source_end = source_end + source_mesh.points.shape[0]/chunk_count
             ## the abpve might miss points on the last chunk

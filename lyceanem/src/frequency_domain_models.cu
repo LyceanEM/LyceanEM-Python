@@ -187,7 +187,7 @@ py::array_t<float> calculate_scattering_tiles(py::array_t<float> source, py::arr
 }
 
 
-py::array_t<std::complex<float>> calculate_scattering_brute_force(py::array_t<float> source, py::array_t<float> end, 
+py::array_t<float> calculate_scattering_brute_force(py::array_t<float> source, py::array_t<float> end, 
     py::array_t<int> triangles, py::array_t<float> triangle_vertex, 
     float wave_length,
     py::array_t<float> ex_real, py::array_t<float> ex_imag, py::array_t<float> ey_real, py::array_t<float> ey_imag, py::array_t<float> ez_real,
@@ -283,20 +283,26 @@ py::array_t<std::complex<float>> calculate_scattering_brute_force(py::array_t<fl
     for (int i = 0; i < end_size; i++){
     points_vec[i+source_size] = create_point_data(0, 0, 0, 0, 0, 0,normal_ptr[(i+source_size)*3], normal_ptr[(i+source_size)*3+1], normal_ptr[(i+source_size)*3+2]);
     }
-    py::array_t<std::complex<float>> scattering_network_py = py::array_t<std::complex<float>>(source_size * end_size *3);
-    std::complex<float>* scattering_network_py_ptr = (std::complex<float>*) scattering_network_py.request().ptr;
-    int source_index = 0;
+    py::array_t<float> scattering_network_py = py::array_t<float>(source_size * end_size *3*2);
+    float* scattering_network_py_ptr = scattering_network_py.mutable_data();
     std::vector<complex_float3> scattering_network(source_size* end_size);
     complex_float3* scattering_network_ptr = scattering_network.data();
 
     raycast_wrapper_brute_force(&source_ptr[source_index], end_ptr, source_size, end_size,d_tri_vertex, d_triangles, triangle_size
     ,points, wave_length,scattering_network_ptr,make_float2(alpha,beta),not_self_to_self);
 
-    for (int i = 0; i < scattering_network.size() ; i++)
-    {
-    scattering_network_py_ptr[i*3+0] = std::complex<float>(scattering_network_ptr[i].x.x, scattering_network_ptr[i].x.y);
-    scattering_network_py_ptr[i*3+1] = std::complex<float>(scattering_network_ptr[i].y.x, scattering_network_ptr[i].y.y);
-    scattering_network_py_ptr[i*3+2] = std::complex<float>(scattering_network_ptr[i].z.x, scattering_network_ptr[i].z.y);
+    for (int i = 0; i < scattering_network.size(); i++) {
+        int base = i * 3 * 2;  // 3 complex numbers × 2 floats each
+    
+        scattering_network_py_ptr[base + 0] = scattering_network_ptr[i].x.x;  // real
+        scattering_network_py_ptr[base + 1] = scattering_network_ptr[i].x.y;  // imag
+    
+        scattering_network_py_ptr[base + 2] = scattering_network_ptr[i].y.x;
+        scattering_network_py_ptr[base + 3] = scattering_network_ptr[i].y.y;
+    
+        scattering_network_py_ptr[base + 4] = scattering_network_ptr[i].z.x;
+        scattering_network_py_ptr[base + 5] = scattering_network_ptr[i].z.y;
+
     }
     cudaFree(d_triangles);
     cudaFree(d_tri_vertex);
