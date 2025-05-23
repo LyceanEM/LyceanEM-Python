@@ -27,7 +27,7 @@ pybind11_add_module(em lyceanem/src/frequency_domain_models.cu)
 ## all architecture abobe and including turing
 
 set_property(TARGET em PROPERTY CUDA_ARCHITECTURES all-major)
-
+target_link_libraries(em PRIVATE ${Python_LIBRARIES} ${Python_INCLUDE_DIRS})
 
 # Link CUDA
 target_link_libraries(em PRIVATE ${CUDA_LIBRARIES})
