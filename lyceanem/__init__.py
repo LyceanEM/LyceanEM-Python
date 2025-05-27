@@ -13,7 +13,9 @@ except metadata.PackageNotFoundError:
     # package is not installed
     pass
 
+from . import em
+
 __copyright__ = """\
-© Timothy Pelham 2016-2024
+© Timothy Pelham 2016-2025
 """
 __license__ = "GNU Affero General Public License v3"
