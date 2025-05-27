@@ -1,4 +1,5 @@
 import numpy as np
+
 from lyceanem.em import bin_counts_to_numpy, bin_triangles_to_numpy
 from lyceanem.em import calculate_scattering_brute_force
 from lyceanem.em import calculate_scattering_tiles
