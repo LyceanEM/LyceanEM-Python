@@ -14,8 +14,8 @@ def aperture_projection(
     aperture,
     environment=None,
     wavelength=1.0,
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-90.0, 90.0, 19),
+    az_range=None,
+    elev_range=None,
     farfield_distance=2.0,
 ):
     """
@@ -43,6 +43,11 @@ def aperture_projection(
     pcd : :class:`meshio.Mesh`
         a point cloud colored according to the projected area, normalised to the total projected area of the aperture.
     """
+    if az_range==None:
+        az_range=np.linspace(-180.0, 180.0, 19)
+
+    if elev_range==None:
+        elev_range=np.linspace(-90.0, 90.0, 19)
     if environment is None:
         blocking_triangles = GF.mesh_conversion(aperture)
     else:
@@ -83,13 +88,12 @@ def calculate_farfield(
     aperture_coords,
     antenna_solid,
     desired_E_axis,
-    az_range,
-    el_range,
+    az_range=None,
+    el_range=None,
     scatter_points=None,
     wavelength=1.0,
     farfield_distance=2.0,
     scattering=0,
-    mesh_resolution=0.5,
     elements=False,
     los=True,
     project_vectors=False,
@@ -102,40 +106,43 @@ def calculate_farfield(
 
     Parameters
     ---------
-    aperture_coords : meshio.Mesh
-        open3d of the aperture coordinates, from a single point to a mesh sampling across and aperture or surface
+    aperture_coords : :type:`meshio.Mesh`
+        aperture coordinates, from a single point to a mesh sampling across and aperture or surface
     antenna_solid : :class:`lyceanem.base_classes.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
-    desired_E_axis :
+    desired_E_axis : :type:`np.ndarray` of floats
         1*3 numpy array of the desired excitation vector
-    az_range : 1D numpy array of float
+    az_range : :type:`np.ndarray` of floats
         the desired azimuth planes in degrees
-    el_range : 1D numpy array of float
+    el_range : :type:`np.ndarray` of floats
         the desired elevation planes in degrees
-    scatter_points : meshio.Mesh
+    scatter_points : :type:`meshio.Mesh`
         the environment scattering points, defaults to [None]
-    wavelength : float
+    wavelength : :type:`float`
         wavelength of interest in meters, defaults to [1]
-    farfield_distance : float
+    farfield_distance : :type:`float`
         the distance to evaluate the antenna pattern, defaults to [2]
-    scattering: int
+    scattering: :type:`int`
      the number of scatters required, if this is set to 0, then only line of sight propagation is considered, defaults to [0]
-    mesh_resolution :
-    elements : boolean
+    elements : :type:`bool`
         whether the sources and sinks should be considered as elements of a phased array, or a fixed phase aperture like a horn or reflector
-    los : boolean
+    los : :type:`bool`
         The line of sight component can be ignored by setting los to [False], defaults to [True]
-    project_vectors : boolean
+    project_vectors : :type:`bool`
         should the excitation vector/vectors be projected to be conformal with the surface of the source coordinates
 
     Returns
     ---------
-    etheta : numpy 2D array
+    etheta : :type:`np.ndarray` 2D array of complex
         The Etheta farfield component
-    ephi : numpy 2D array
+    ephi : :type:`np.ndarray` 2D array of complex
         The EPhi farfield component
     """
+    if az_range==None:
+        az_range=np.linspace(-180.0, 180.0, 19)
 
+    if el_range==None:
+        el_range=np.linspace(-90.0, 90.0, 19)
     # create sink points for the model
     from ..geometry.targets import spherical_field
 
@@ -151,7 +158,6 @@ def calculate_farfield(
         scattering=scattering,
         elements=elements,
         los=los,
-        mesh_resolution=mesh_resolution,
         project_vectors=project_vectors,
         antenna_axes=antenna_axes,
         multiE=False,
@@ -214,7 +220,6 @@ def calculate_scattering(
     scattering=0,
     elements=False,
     los=True,
-    mesh_resolution=0.5,
     project_vectors=False,
     antenna_axes=np.eye(3),
     multiE=False,
@@ -233,39 +238,40 @@ def calculate_scattering(
 
     Parameters
     ----------
-    aperture_coords : meshio.Mesh
+    aperture_coords : :type:`meshio.Mesh`
         source coordinates
-    sink_coords : meshio.Mesh
+    sink_coords : :type:`meshio.Mesh`
         sink coordinates
     antenna_solid : :class:`lyceanem.base_classes.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
-    desired_E_axis : 1D numpy array of floats
+    desired_E_axis : :type:`np.ndarray` 1D array of :type:`float`
         the desired excitation vector, can be a 1*3 array or a n*3 array if multiple different exciations are desired in one lauch
-    scatter_points : meshio.Mesh
+    scatter_points : :type:`meshio.Mesh`
         the scattering points in the environment. Defaults to [None], in which case scattering points will be generated from the antenna_solid. If no scattering should be considered then set scattering to [0].
-    wavelength : float
+    wavelength : :type:`float`
         the wavelength of interest in metres
-    scattering : int
+    scattering : :type:`int`
         the number of reflections to be considered, defaults to [0], but up to 2 can be considered. The higher this number to greater to computational effort, and for most situations 1 should be ample.
-    elements : boolean
+    elements : :type:`bool`
         whether the sources and sinks should be considered as elements of a phased array, or a fixed phase aperture like a horn or reflector
-    los : boolean
+    los : :type:`bool`
         The line of sight component can be ignored by setting los to [False], defaults to [True]
-    mesh_resolution : float
-        the desired mesh resolution in terms of wavelengths if scattering points are not provided. A scattering mesh is generated on the surfaces of all provided trianglemesh structures.
-    project_vectors : boolean
-    cuda : boolean
+    project_vectors : :type:`bool`
+    cuda : :type:`bool`
         Choice of Cuda or Numba engine, will use Cuda if True
     acceleration_structure : None
         if no acceleration structure is provided, then the function will default to the tiled raycasting method. To pass acceleration structure construct one prior to calling this function
-    chunks : int
+    chunks : :type:`int`
         chunks is the number of chunks to split the raycasting into, defaults to 1, if gpu is going to run out of memory an error will be reported, and this number should be increased before retrying.
 
     Returns
     -------
-    Ex : numpy array of complex
-    Ey : numpy array of complex
-    Ez : numpy array of complex
+    Ex : :type:`np.ndarray` 2D array of complex
+       The x-directed electric field components
+    Ey : :type:`np.ndarray` 2D array of complex
+        The y-directed electric field components
+    Ez : :type:`np.ndarray` 2D array of complex
+        The z-directed electric field components
 
     """
     from . import acceleration_structures
@@ -387,11 +393,6 @@ def calculate_scattering(
             scatter_mask[(num_sources + num_sinks) :] = 0
 
         else:
-            # create scatter points on antenna solids based upon a half wavelength square
-            if scatter_points is None:
-                scatter_points, areas = TL.source_cloud_from_shape(
-                    antenna_solid, 1e-6, (wavelength * mesh_resolution) ** 2
-                )
 
             if not multiE:
                 if project_vectors:

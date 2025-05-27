@@ -315,8 +315,8 @@ def visiblespace(
     source_normals,
     environment,
     vertex_area=0,
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-90.0, 90.0, 19),
+    az_range=None,
+    elev_range=None,
     shell_range=0.5,
 ):
     """
@@ -324,29 +324,33 @@ def visiblespace(
 
     Parameters
     --------------
-    source_coords : n by 3 numpy array of floats
-        xyz coordinates of the sources
-    source_normals : n by 3 numpy array of floats
-        normal vectors for each source point
+    source_coords : :type:`np.ndarray` 2D array of :type:`float`
+        xyz coordinates of the sources with shape (n,3)
+    source_normals : :type:`np.ndarray` 2D array of :type:`float`
+        normal vectors for each source point with shape (n,3)
     environment : :class:`lyceanem.base_classes.triangles`
         blocking environment
-    vertex_area : float or array of floats
+    vertex_area : :type:`np.ndarray` 1D array of :type:`float`
         the area associated with each source point, defaults to 0, but can also be specified for each source
-    az_range : array of float
+    az_range : :type:`np.ndarray` 1D array of :type:`float`
         array of azimuth planes in degrees
-    elev_range : array of float
+    elev_range : :type:`np.ndarray` 1D array of :type:`float`
         array of elevation points in degrees
-    shell_range: float
+    shell_range: :type:`float`
         radius of point cloud shell
 
     Returns
     -------------------
-    visible_patterns : m by l by n array of floats
+    visible_patterns : :type:`np.ndarray` 3D array of :type:`float`
         3D antenna patterns
-    resultant_pcd : meshio pointcloud
+    resultant_pcd : :type:`meshio.Mesh`
         colour data to scale the points fractional visibility from the source aperture
     """
+    if az_range==None:
+        az_range=np.linspace(-180.0, 180.0, 19)
 
+    if elev_range==None:
+        elev_range=np.linspace(-90.0, 90.0, 19)
     azaz, elel = np.meshgrid(az_range, elev_range)
     sourcenum = source_coords.points.shape[0]
 
@@ -2698,6 +2702,7 @@ def workchunkingv2(
     sources, sinks, scattering_points, environment, max_scatter, line_of_sight=True
 ):
     """
+    :meta private:
     Raycasting index creation and assignment to raycaster, upper bound is around 4.7e8 rays at a time, there is already chunking to prevent overflow of the GPU memory and timeouts
 
     Parameters

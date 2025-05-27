@@ -24,7 +24,6 @@ def calculate_scattering(
     sampling_freq=1e9,
     los=False,
     num_samples=10000,
-    mesh_resolution=0.5,
     antenna_axes=np.eye(3),
     project_vectors=True,
     alpha=0.0,
@@ -36,39 +35,38 @@ def calculate_scattering(
 
     Parameters
     ----------
-    aperture_coords : :class: meshio.Mesh
+    aperture_coords : :type:`meshio.Mesh`
         source coordinates
-    sink_coords : :class: meshio.Mesh
+    sink_coords : :type:`meshio.Mesh`
         sink coordinates
     antenna_solid : :class:`lyceanem.base_classes.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
-    desired_E_axis : 1D numpy array of floats
-        the desired excitation vector, can be a 1*3 array or a n*3 array if multiple different exciations are desired in one lauch
-    scatter_points : :class: meshio.Mesh
+    desired_E_axis : :type:`np.ndarray` 1D array of complex
+        the desired excitation vector, can be a 1*3 array
+    scatter_points : :type:`meshio.Mesh`
         the scattering points in the environment. Defaults to [None], in which case scattering points will be generated from the antenna_solid. If no scattering should be considered then set scattering to [0].
-    wavelength : float
+    wavelength : :type:`float`
         the wavelength of interest in metres
-    scattering : int
+    scattering : :type:`int`
         the number of reflections to be considered, defaults to [0], but up to 2 can be considered. The higher this number to greater to computational effort, and for most situations 1 should be ample.
-    elements : boolean
+    elements : :type:`bool`
         whether the sources and sinks should be considered as elements of a phased array, or a fixed phase aperture like a horn or reflector
-    sampling_freq : float
+    sampling_freq : :type:`float`
         the desired sampling frequency, should be twice the highest frequency of interest to avoid undersampling artifacts
-    num_samples : int
+    num_samples : :type:`int`
         the length of the desired sampling, can be calculated from the desired model time
-    mesh_resolution : float
-        the desired mesh resolution in terms of wavelengths if scattering points are not provided. A scattering mesh is generated on the surfaces of all provided trianglemesh structures.
 
     Return
     -------
-    Ex : numpy array of float
+    Ex : :type:`np.ndarray` 2D array of complex
         the x directed voltage at the sink coordinates in the time domain, if elements=True, then it will be an array of num_sinks * num_samples, otherwise it will be a 1D array
-    Ey : numpy array of float
+    Ey : :type:`np.ndarray` 2D array of complex
         the y directed voltage at the sink coordinates in the time domain, if elements=True, then it will be an array of num_sinks * num_samples, otherwise it will be a 1D array
-    Ez : numpy array of float
+    Ez : :type:`np.ndarray` 2D array of complex
         the z directed voltage at the sink coordinates in the time domain, if elements=True, then it will be an array of num_sinks * num_samples, otherwise it will be a 1D array
-    Waketimes : numpy array of float
+    Waketimes : :type:`np.ndarray` 1D array of float
         the shortest time required for a ray to reach any sink from any source, as long as elements=False. If elements=True, then this is not implemented in the same way, and will return the shortest time required for the final source.
+
     """
 
     time_index = np.linspace(0, num_samples / sampling_freq, num_samples)
@@ -189,11 +187,7 @@ def calculate_scattering(
         scatter_mask[(num_sources + num_sinks) :] = 0
 
     else:
-        # create scatter points on antenna solids based upon a half wavelength square
-        if scatter_points is None:
-            scatter_points, areas = TL.source_cloud_from_shape(
-                antenna_solid, 1e-6, (wavelength * mesh_resolution) ** 2
-            )
+
 
         unified_model = np.append(
             np.append(

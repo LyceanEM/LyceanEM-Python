@@ -3,4 +3,4 @@ Raycasting
 =======
 
 .. automodule:: lyceanem.raycasting.rayfunctions
-    :members: visiblespace, workchunkingv2
+    :members: visiblespace
