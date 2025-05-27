@@ -25,22 +25,22 @@ def aperture_projection(
 
     Parameters
     ---------
-    aperture : :class:`open3d.geometry.TriangleMesh`
-        trianglemesh of the desired aperture
+    aperture : :class:`meshio.Mesh`
+        triangle mesh of the desired aperture
     environment : :class:`lyceanem.base_classes.structures`
         the :class:`lyceanem.base_classes.structures` class should contain all the environment for scattering, providing the blocking for the rays
-    wavelength : float
+    wavelength : :type:`float`
         the wavelength of interest in metres
-    az_range : numpy 1d array of float32
+    az_range : :class:`np.ndarray` of float32
         the azimuth range desired for the farfield pattern in degrees
-    elev_range : numpy 1d array of float32
+    elev_range : :class:`np.ndarray` of float32
         the elevation range desired for the farfield pattern in degrees
 
     Returns
     ----------
-    directivity_envelope : numpy 2D array of float32
+    directivity_envelope : :class:`np.ndarray` 2D array of float32
         The predicted maximum directivity envelope for the provided aperture at the wavelength of interest
-    pcd : :class:`open3d.geometry.PointCloud`
+    pcd : :class:`meshio.Mesh`
         a point cloud colored according to the projected area, normalised to the total projected area of the aperture.
     """
     if environment is None:
@@ -202,7 +202,7 @@ def calculate_scattering_cuda(alpha, beta, wavelength, acceleration_structure, s
         
 
 
-from . import acceleration_structures
+
 
 def calculate_scattering(
     aperture_coords,
@@ -268,7 +268,7 @@ def calculate_scattering(
     Ez : numpy array of complex
 
     """
-
+    from . import acceleration_structures
     if not cuda:
         num_sources = len(np.asarray(aperture_coords.points))
         num_sinks = len(np.asarray(sink_coords.points))

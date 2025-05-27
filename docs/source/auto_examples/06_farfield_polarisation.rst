@@ -270,6 +270,10 @@ The point source can then be rotated, by providing a rotation matrix, and the u,
 
       :download:`Download Python source code: 06_farfield_polarisation.py <06_farfield_polarisation.py>`
 
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: 06_farfield_polarisation.zip <06_farfield_polarisation.zip>`
+
 
 .. only:: html
 

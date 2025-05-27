@@ -17,11 +17,11 @@ def mesh_conversion_to_meshio(conversion_object):
 
     Parameters
     ----------
-    conversion_object : solid object to be converted into meshio format, could be meshio.Mesh trianglemesh, solid, or antenna structure
+    conversion_object : solid object to be converted into meshio format, could be :type:`meshio.Mesh` trianglemesh, solid, or antenna structure
 
     Returns
     -------
-    meshio_mesh : meshio.Mesh
+    meshio_mesh : :type:`meshio.Mesh`
         The converted meshio mesh object
     """
     if isinstance(conversion_object, base_classes.structures):
@@ -50,11 +50,11 @@ def cell_centroids(field_data):
     Parameters
     ----------
 
-    field_data : meshio.Mesh
+    field_data : :type:`meshio.Mesh`
 
     Returns
     --------
-    centroid_cloud : meshio.Mesh
+    centroid_cloud : :type:`meshio.Mesh`
         The centroid cloud, with the centroid of each triangle as a vertex, and the cell data from the original mesh
         as point data
     """
@@ -96,7 +96,7 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
 
     Parameters
     ----------
-    mesh : meshio.Mesh
+    mesh : :type:`meshio.Mesh`
 
     rotation : numpy.ndarray
         the rotation vector or rotation matrix for the desired rotation
@@ -106,7 +106,7 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
 
     Returns
     -------
-    mesh : meshio.Mesh
+    mesh : :type:`meshio.Mesh`
         The rotated mesh, with cartesian electric field vectors 
 
     """
@@ -172,7 +172,7 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
 
     Parameters
     ----------
-    mesh : meshio.Mesh
+    mesh : :type:`meshio.Mesh`
         The mesh to be transformed.
 
     transform_matrix : numpy.ndarray
@@ -183,7 +183,7 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
 
     Returns
     -------
-    mesh : meshio.Mesh
+    mesh : :type:`meshio.Mesh`
         The transformed mesh.
     """
     return_mesh = mesh
@@ -229,7 +229,7 @@ def locate_cell_index(field_data, cell_type="triangle"):
 
     Parameters
     ----------
-    field_data : meshio.Mesh
+    field_data : :type:`meshio.Mesh`
         The meshio mesh object containing the cells.
     cell_type : str, optional
         The type of cell to locate. The default is "triangle".
@@ -255,12 +255,12 @@ def compute_areas(field_data):
 
     Parameters
     ----------
-    field_data : meshio.Mesh
+    field_data : :type:`meshio.Mesh`
         The meshio mesh object containing the cells and points.
 
     Returns
     -------
-    field_data : meshio.Mesh
+    field_data : :type:`meshio.Mesh`
         The meshio mesh object with the computed areas added to the cell data and point data.
     """
     cell_areas = []
@@ -346,7 +346,7 @@ def compute_normals(mesh):
 
     Returns
     -------
-    mesh : meshio.Mesh
+    mesh : :type:`meshio.Mesh`
         The meshio mesh object with the computed normals added to the cell data and point data.
 
     """
@@ -426,7 +426,7 @@ def theta_phi_r(field_data):
 
     Returns
     -------
-    field_data : meshio.Mesh
+    field_data : :type:`meshio.Mesh`
         The meshio mesh object with the computed spherical coordinates added to the point data.
 
     """
@@ -448,7 +448,7 @@ def mesh_conversion(conversion_object):
 
     Parameters
     ----------
-    conversion_object : solid object to be converted into triangle_t format, could be meshio.Mesh trianglemesh, solid, or antenna structure
+    conversion_object : solid object to be converted into triangle_t format, could be :type:`meshio.Mesh` trianglemesh, solid, or antenna structure
 
     Returns
     -------
@@ -565,14 +565,14 @@ def mesh_translate(mesh, translation_vector):
 
     Parameters
     ----------
-    mesh : meshio.Mesh
+    mesh : :type:`meshio.Mesh`
         The mesh to be translated.
     translation_vector : numpy.ndarray
         The translation vector to be applied to the mesh. Should be a 1x3 array.
 
     Returns
     -------
-    mesh : meshio.Mesh
+    mesh : :type:`meshio.Mesh`
         The translated mesh.
     """
     translated_points = mesh.points + translation_vector

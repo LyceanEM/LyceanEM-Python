@@ -501,7 +501,7 @@ def spherical_field(az_range, elev_range, outward_normals=False, field_radius=1.
 
     Returns
     -------
-    mesh : meshio.Mesh
+    mesh : :type:`meshio.Mesh`
         spherical field of points at specified azimuth and elevation angles, with meshed triangles
     """
     vista_pattern=pv.Sphere(radius=field_radius,
@@ -612,6 +612,13 @@ def gridedReflectorPoints(
 
     Parameters
     ----------
+    majorsize : :type:`float`
+
+    minorsize : :type:`float`
+
+    thickness : :type:`float`
+
+    grid_resolution : :type:`float`
 
     """
     if sides == "all":

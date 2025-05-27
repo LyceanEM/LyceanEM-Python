@@ -204,6 +204,10 @@ plottype='Contour' to the function.
 
       :download:`Download Python source code: 02_coherently_polarised_array.py <02_coherently_polarised_array.py>`
 
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: 02_coherently_polarised_array.zip <02_coherently_polarised_array.zip>`
+
 
 .. only:: html
 

@@ -183,6 +183,10 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
       :download:`Download Python source code: 05_array_beamforming.py <05_array_beamforming.py>`
 
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: 05_array_beamforming.zip <05_array_beamforming.zip>`
+
 
 .. only:: html
 

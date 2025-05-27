@@ -41,6 +41,8 @@ triangle_data = np.dtype(
     align=True,
 )
 triangle_t = from_dtype(triangle_data)  # Create a type that numba can recognize!
+triangle_t.__doc__="""
+A Numba type representing a triangle in 3D space."""
 
 # ray class, to hold the ray origin, direction, and eventuall other data.
 ray_data = np.dtype(

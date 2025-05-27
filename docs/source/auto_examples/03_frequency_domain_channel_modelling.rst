@@ -407,6 +407,10 @@ Using matplotlib, plot the results
 
       :download:`Download Python source code: 03_frequency_domain_channel_modelling.py <03_frequency_domain_channel_modelling.py>`
 
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: 03_frequency_domain_channel_modelling.zip <03_frequency_domain_channel_modelling.zip>`
+
 
 .. only:: html
 

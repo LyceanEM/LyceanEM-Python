@@ -256,6 +256,10 @@ maximum directivity envelope.
 
       :download:`Download Python source code: 01_aperture_projection.py <01_aperture_projection.py>`
 
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: 01_aperture_projection.zip <01_aperture_projection.zip>`
+
 
 .. only:: html
 

@@ -9,8 +9,3 @@ Electromagnetics
     beamforming
     emfunctions
     sources
-
-.. toctree::
-    :hidden:
-
-    antenna_utilities

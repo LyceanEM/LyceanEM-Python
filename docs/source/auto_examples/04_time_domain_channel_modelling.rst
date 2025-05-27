@@ -429,6 +429,10 @@ fourier transform to move from time and voltages to frequency.
 
       :download:`Download Python source code: 04_time_domain_channel_modelling.py <04_time_domain_channel_modelling.py>`
 
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: 04_time_domain_channel_modelling.zip <04_time_domain_channel_modelling.zip>`
+
 
 .. only:: html
 

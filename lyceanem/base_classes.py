@@ -44,7 +44,7 @@ class object3d:
 class points(object3d):
     """
     Structure class to store information about the geometry and materials in the environment, holding the seperate
-    shapes as :class:`open3d.geometry.TriangleMesh` data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
+    shapes as :class:`meshio.Mesh` data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
     This class will be developed to include material parameters to enable more complex modelling.
 
     Units should be SI, metres
@@ -54,7 +54,7 @@ class points(object3d):
 
     def __init__(self, points=None):
         super().__init__()
-        # solids is a list of open3D :class:`open3d.geometry.TriangleMesh` structures
+        # solids is a list of meshio :class:`meshio.Mesh` structures
         if points == None:
             # no points provided at creation,
             print("Empty Object Created, please add points")
@@ -74,7 +74,7 @@ class points(object3d):
 
         Parameters
         -----------
-        deletion_index : list
+        deletion_index : :class:`list`
             list of integers or numpy array of integers to the solids to be removed
 
         Returns
@@ -91,7 +91,7 @@ class points(object3d):
 
         Parameters
         -----------
-        new_points : :class:`open3d.geometry.PointCloud`
+        new_points : :class:`meshio.Mesh`
             the point cloud to be added to the point cloud collection
 
         Returns
@@ -102,26 +102,28 @@ class points(object3d):
         self.points.append(new_points)
         # self.materials.append(new_materials)
 
-        def create_points(self, points, normals):
-            """
-            create points within the class based upon the provided numpy arrays of floats in local coordinates
+    def create_points(self, points, normals):
+        """
+        create points within the class based upon the provided numpy arrays of floats in local coordinates
 
-            Parameters
-            points : numpy 2d array
-                the coordinates of all the poitns
-            normals : numpy 2d array
-                the normal vectors of each point
+        Parameters
+        ----------
+        points : :class:`np.ndarray`
+            the coordinates of all the points
+        normals : :class:`np.ndarray`
+            the normal vectors of each point
 
-            Returns
-            None
-            """
-            mesh_vertices = points.reshape(-1, 3)
-            mesh_normals = normals.reshape(-1, 3)
-            new_point_cloud = meshio.Mesh(
-                points=mesh_vertices, cells=[], point_data={"Normals": mesh_normals}
-            )
+        Returns
+        --------
+        None
+        """
+        mesh_vertices = points.reshape(-1, 3)
+        mesh_normals = normals.reshape(-1, 3)
+        new_point_cloud = meshio.Mesh(
+            points=mesh_vertices, cells=[], point_data={"Normals": mesh_normals}
+        )
 
-            self.add_points(new_point_cloud)
+        self.add_points(new_point_cloud)
 
     def rotate_points(
         self, rotation_vector, rotation_centre=np.zeros((3, 1), dtype=np.float32)
@@ -131,17 +133,16 @@ class points(object3d):
 
         Parameters
         ----------
-        rotation_matrix : open3d rotation vector
-            3,1numpy array
-        rotation_centre : 1*3 numpy float array
-            centre of rotation for the structures
+        rotation_matrix : :class:`np.ndarray` of floats
+            [3,1] numpy array
+        rotation_centre : :class:`np.ndarray` of floats
+            [3,1] centre of rotation for the structures
 
         Returns
         --------
         None
         """
-        # warning, current commond just rotates around the origin, and until Open3D can be brought up to the
-        # latest version without breaking BlueCrystal reqruiements, this will require additional code.
+
         assert (
             rotation_vector.shape == (3,)
             or rotation_vector.shape == (3, 1)
@@ -159,7 +160,7 @@ class points(object3d):
 
         Parameters
         -----------
-        vector : 1*3 numpy array of floats
+        vector : :class:`np.ndarray` array of floats
             The desired translation vector for the structures
 
         Returns
@@ -271,7 +272,7 @@ class points(object3d):
 class structures(object3d):
     """
     Structure class to store information about the geometry and materials in the environment, holding the seperate
-    shapes as :class:`open3d.geometry.TriangleMesh` data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
+    shapes as :class:`meshio.Mesh` data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
     This class will be developed to include material parameters to enable more complex modelling.
 
     Units should be SI, metres
@@ -281,7 +282,7 @@ class structures(object3d):
 
     def __init__(self, solids=None):
         super().__init__()
-        # solids is a list of open3D :class:`open3d.geometry.TriangleMesh` structures
+        # solids is a list of meshio :class:`meshio.Mesh` structures
         if solids == None:
             # no points provided at creation,
             print("Empty Object Created, please add solids")
@@ -301,7 +302,7 @@ class structures(object3d):
 
         Parameters
         -----------
-        deletion_index : list
+        deletion_index : :class:`list`
             list of integers or numpy array of integers to the solids to be removed
 
         Returns
@@ -318,7 +319,7 @@ class structures(object3d):
 
         Parameters
         -----------
-        new_solids : :class:`open3d.geometry.TriangleMesh`
+        new_solids : :class:`meshio.Mesh`
             the solid to be added to the structure
 
         Returns
@@ -337,10 +338,10 @@ class structures(object3d):
 
         Parameters
         ----------
-        rotation_matrix : numpy array of appropriate shape (4,4)
-
-        rotation_centre : 1*3 numpy float array
-            centre of rotation for the structures
+        rotation_matrix : :class:`np.ndarray` of floats
+            [4,4] numpy array
+        rotation_centre : :class:`np.ndarray` of floats
+            [3,1] centre of rotation for the structures
 
         Returns
         --------
@@ -359,7 +360,7 @@ class structures(object3d):
 
         Parameters
         -----------
-        vector : 1*3 numpy array of floats
+        vector : :class:`np.ndarray` of floats
             The desired translation vector for the structures
 
         Returns
@@ -372,8 +373,8 @@ class structures(object3d):
 
     def triangles_base_raycaster(self):
         """
-        generates the triangles for all the :class:`open3d.geometry.TriangleMesh` objects in the structure, and outputs them as a continuous array of
-        triangle_t format triangles
+        generates the triangles for all the :class:`meshio.Mesh` objects in the structure, and outputs them as a continuous array of
+        :type:`base_types.triangle_t` triangles
 
         Parameters
         -----------
@@ -381,7 +382,7 @@ class structures(object3d):
 
         Returns
         --------
-        triangles : N by 1 numpy array of triangle_t triangles
+        triangles : :type:`np.ndarray` of :type:`base_types.triangle_t` triangles
             a continuous array of all the triangles in the structure
         """
         triangles = np.empty((0), dtype=base_types.triangle_t)
@@ -394,7 +395,7 @@ class structures(object3d):
         return triangles
     def export_combined_meshio(self):
         """
-        combines all the structures in the collection as a combined mesh for modelling
+        Combines all the structures in the collection as a combined mesh for modelling
 
         Returns
         -------
@@ -424,8 +425,8 @@ class structures(object3d):
 class antenna_structures(object3d):
     """
     Dedicated class to store information on a specific antenna, including aperture points
-    as :class:`open3d.geometry.PointCloud` data structures, and structure shapes
-    as :class:`open3d.geometry.TriangleMesh` data structures. Everything in the class will be considered an integrated
+    as :class:`meshio.Mesh` data structures, and structure shapes
+    as :class:`meshio.Mesh` data structures. Everything in the class will be considered an integrated
     unit, rotating and moving together. This inherits functions from the structures and points classes.
 
     This class will be developed to include material parameters to enable more complex modelling.
@@ -438,8 +439,7 @@ class antenna_structures(object3d):
         super().__init__()
         self.structures = structures
         self.points = points
-        # self.antenna_xyz = o3d.geometry.TriangleMesh.create_coordinate_frame(
-        # size=1, origin=self.pose[:3, 3]
+
 
     # )
 
@@ -511,9 +511,9 @@ class antenna_structures(object3d):
 
         Returns
         -------
-        aperture_meshes : list
+        aperture_meshes : :class:`list`
             aperture meshes included in the antenna structure class
-        structure_meshes : list
+        structure_meshes : :class:`list`
             list of the triangle mesh objects in the antenna structure class
 
         """
@@ -643,7 +643,7 @@ class antenna_pattern(object3d):
 
             Parameters
             ----------
-            points: numpy.ndarray
+            points: :type:`np.ndarray`
                 One-dimensional array of uniformly spaced values of shape (M,).
 
             bound_position: bool, optional
@@ -744,11 +744,11 @@ class antenna_pattern(object3d):
 
         Parameters
         ----------
-        plottype : str
+        plottype : :type:`str`
             the plot type, either [Polar], [Cartesian-Surf], or [Contour]. The default is [Polar]
-        desired_pattern : str
+        desired_pattern : :type:`str`
             the desired pattern, default is [both], but is Pattern format is 'Etheta/Ephi' then options are [Etheta] or [Ephi], and if Pattern format is 'ExEyEz', then options are [Ex], [Ey], or [Ez].
-        pattern_min : float
+        pattern_min : :type:`float`
             the desired scale minimum in dB, the default is [-40]
 
         Returns
@@ -1003,7 +1003,7 @@ class antenna_pattern(object3d):
 
         Parameters
         ----------
-        new_axes : 3x3 numpy float array
+        new_axes : :type:`np.ndarray` of shape (3,3)
             the new vectors for the antenna x,y,z axes
 
         Returns
@@ -1077,12 +1077,13 @@ class antenna_pattern(object3d):
 
         Parameters
         ----------
-        old_points : float xyz
+        old_points : :type:`np.ndarray`
             xyz coordinates that the pattern has been sampled at
-        old_pattern : 2 or 3 by n complex array of the antenna pattern at the old_poitns
-            DESCRIPTION.
-        new_points : desired_grid points in xyz float array
-            DESCRIPTION.
+        old_pattern : :type:`np.ndarray`
+            2 or 3 by n complex array of the antenna pattern at the old_points
+        new_points : :type:`np.ndarray`
+            desired_grid points in xyz float array
+
 
         Returns
         -------
@@ -1122,13 +1123,13 @@ class antenna_pattern(object3d):
 
         Returns
         -------
-        Dtheta : numpy array
+        Dtheta : :type:`np.ndarray`
             directivity for Etheta farfield
-        Dphi : numpy array
+        Dphi : :type:`np.ndarray`
             directivity for Ephi farfield
-        Dtotal : numpy array
+        Dtotal : :type:`np.ndarray`
             overall directivity pattern
-        Dmax : numpy array
+        Dmax : :type:`np.ndarray`
             the maximum directivity for each pattern
 
         """
@@ -1196,13 +1197,13 @@ class array_pattern:
             self.initilise_pattern()
 
     def _rotation_matrix(self):
-        """_rotation_matrix getter method
+        """
 
         Calculates and returns the (3D) axis rotation matrix.
 
         Returns
         -------
-        : :class:`numpy.ndarray` of shape (3, 3)
+        : :type:`np.ndarray` of shape (3, 3)
             The model (3D) rotation matrix.
         """
         x_rot = R.from_euler("X", self.rotation_offset[0], degrees=True).as_matrix()
@@ -1378,13 +1379,13 @@ class array_pattern:
 
         Returns
         -------
-        Dtheta : numpy array
+        Dtheta : :type:`np.ndarray`
             directivity for Etheta farfield
-        Dphi : numpy array
+        Dphi : :type:`np.ndarray`
             directivity for Ephi farfield
-        Dtotal : numpy array
+        Dtotal : :type:`np.ndarray`
             overall directivity pattern
-        Dmax : numpy array
+        Dmax : :type:`np.ndarray`
             the maximum directivity for each pattern
 
         """

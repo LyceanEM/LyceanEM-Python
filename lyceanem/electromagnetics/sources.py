@@ -9,19 +9,20 @@ def electriccurrentsource(prime_vector, theta, phi):
 
     Parameters
     ----------
-    prime_vector : numpy.ndarray of floats
+    prime_vector : :type:`numpy.ndarray` of floats
         orientation of the electric current source in xyz
-    theta : numpy.ndarray of floats
+    theta : :type:`numpy.ndarray` of floats
         theta angles of desired pattern in degrees
-    phi : numpy.ndarray of floats
+    phi : :type:`numpy.ndarray` of floats
         phi angles of desired pattern in degrees
 
     Returns
     -------
-    etheta : numpy.ndarray of complex
+    etheta : :type:`numpy.ndarray` of complex
         Etheta polarisation
-    ephi : numpy.ndarray of complex
+    ephi : :type:`numpy.ndarray` of complex
         Ephi polarisation
+
     """
 
     etheta = np.zeros(theta.shape, dtype=np.complex64)
@@ -45,11 +46,11 @@ def antenna_pattern_source(radius, import_antenna=False, antenna_file=None):
 
     Parameters
     ----------
-    radius : float
+    radius : :type:`float`
         radius of the sphere, setting the minimum enclosing volume of the antenna
-    import_antenna : bool
+    import_antenna : :type:`bool`
         if [True] the provided antenna_file location will be used to import an antenna file to populate the variable
-    antenna_file : PosixPath
+    antenna_file : :type:`pathlib.Path`
         a file location for the antenna file to be used. The initial set will be based upon the .dat files used by the University of Bristol Anechoic Chamber
 
     Returns
