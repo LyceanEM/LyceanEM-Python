@@ -13,7 +13,7 @@ except metadata.PackageNotFoundError:
     # package is not installed
     pass
 
-
+import lyceanem.em as em
 
 __copyright__ = """\
 © Timothy Pelham 2016-2025
