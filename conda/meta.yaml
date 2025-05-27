@@ -54,9 +54,6 @@ requirements:
     - conda-forge::importlib_resources
     - conda-forge::meshio
     - conda-forge::pyvista
-    - pip
-    - pip:
-        - pygmsh
 
 
 about:
