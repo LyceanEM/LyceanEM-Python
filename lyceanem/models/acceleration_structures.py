@@ -11,38 +11,38 @@ class Tile_acceleration_structure:
 
     Parameters
     ----------
-    blocking_mesh : meshio.Mesh
+    blocking_mesh : :type:`meshio.Mesh`
         The mesh to be used for the blocking structure.
-    n_cells : int
+    n_cells : :type:`int`
         The number of cells to be used for the tile acceleration structure.
 
     Attributes
     ----------
-    triangle_verticies : numpy.ndarray
+    triangle_verticies : :type:`np.ndarray` 2D array of :type:`float`
         The vertices of the triangles in the blocking mesh.
-    max_x : float
+    max_x : :type:`float`
         The maximum x coordinate of the blocking mesh.
-    min_x : float
+    min_x : :type:`float`
         The minimum x coordinate of the blocking mesh.
-    max_y : float
+    max_y : :type:`float`
         The maximum y coordinate of the blocking mesh.
-    min_y : float
+    min_y : :type:`float`
         The minimum y coordinate of the blocking mesh.
-    max_z : float
+    max_z : :type:`float`
         The maximum z coordinate of the blocking mesh.
-    min_z : float
+    min_z : :type:`float`
         The minimum z coordinate of the blocking mesh.
-    tile_size : float
+    tile_size : :type:`float`
         The size of the tiles used for the acceleration structure.
-    y_cells_count : int
+    y_cells_count : :type:`int`
         The number of cells in the y direction.
-    z_cells_count : int
+    z_cells_count : :type:`int`
         The number of cells in the z direction.
-    bin_counts : numpy.ndarray
+    bin_counts : :type:`np.ndarray` 1D array of :type:`float`
         The counts of triangles in each bin.
-    binned_triangles_count : int
+    binned_triangles_count : :type:`int`
         The total number of triangles in the bins
-    binned_triangles : numpy.ndarray
+    binned_triangles : :type:`np.ndarray` 1D array of :type:`float`
         The triangles in the bins.
 
     Methods
@@ -118,16 +118,17 @@ class Tile_acceleration_structure:
 class Brute_Force_acceleration_structure:
     """
     This class is used to create a brute force acceleration structure for the scattering calculation.
+
     Parameters
     ----------
-    blocking_mesh : meshio.Mesh
+    blocking_mesh : :type:`meshio.Mesh`
         The mesh to be used for the blocking structure.
 
     Attributes
     ----------
-    triangle_verticies : numpy.ndarray
+    triangle_verticies : :type:`np.ndarray` 2D array of :type:`float`
         The vertices of the triangles in the blocking mesh.
-    triangles : numpy.ndarray
+    triangles : :type:`np.ndarray` 2D array of :type:`int`
         The triangles in the blocking mesh.
 
     Methods

@@ -25,22 +25,22 @@ def Steering_Efficiency(
 
     Parameters
     ----------
-    Dtheta : numpy 2D array of floats or complex
+    Dtheta : :type:`np.ndarray` 1D array of :type:`complex` or :type:`float`
         DESCRIPTION.
-    Dphi : numpy 2D array of floats or complex
+    Dphi : :type:`np.ndarray` 1D array of :type:`complex` or :type:`float`
         DESCRIPTION.
-    Dtot : numpy 2D array of floats or complex
+    Dtot : :type:`np.ndarray` 1D array of :type:`complex` or :type:`float`
         DESCRIPTION.
-    angular coverage : float
+    angular coverage : :type:`float`
         the total angular coverage to be considered, should be $4\pi$ steradians
 
     Returns
     -------
-    setheta : float
+    setheta : :type:`float`
         steering efficiency in Dtheta
-    sephi : float
+    sephi : :type:`float`
         steering efficiency in Dphi
-    setot : float
+    setot : :type:`float`
         steering efficiency in Dtotal
 
     """
@@ -79,6 +79,20 @@ def WavefrontWeights(source_coords, steering_vector, wavelength):
 
     calculate the weights for a given set of element coordinates, wavelength, and steering vector (cartesian)
 
+    Parameters
+    ----------
+    source_coords : :type:`np.ndarray` 2D array of :type:`float`
+        The coordinates of the elements, arranged in terms of x, y, and z coordinates
+    steering_vector : :type:`np.ndarray` 1D array of :type:`float`
+        The steering vector for the beamforming, arranged in terms of x, y, and z coordinates
+    wavelength : :type:`float`
+        The wavelength of interest, used to calculate the phase delays
+
+    Returns
+    -------
+    weights : :type:`np.ndarray` 1D array of :type:`complex`
+        The wavefront weights for the specified steering vector, arranged as a 1D array of complex numbers
+
     """
     weights = np.zeros((source_coords.shape[0]), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
@@ -107,6 +121,20 @@ def ArbitaryCoherenceWeights(source_coords, target_coord, wavelength):
 
     Generate Wavefront coherence weights based upon the desired wavelength and the coordinates of the target point
 
+    Parameters
+    ----------
+    source_coords : :type:`np.ndarray` 2D array of :type:`float`
+        The coordinates of the elements, arranged in terms of x, y, and z coordinates
+    target_coord : :type:`np.ndarray` 1D array of :type:`float`
+        The target coordinate for the beamforming, arranged in terms of x, y, and z coordinates
+    wavelength : :type:`float`
+        The wavelength of interest, used to calculate the phase delays
+
+    Returns
+    -------
+    weights : :type:`np.ndarray` 1D array of :type:`complex`
+        The wavefront coherence weights for the specified target coordinate, arranged as a 1D array of complex numbers
+
     """
     weights = np.zeros((len(source_coords), 1), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
@@ -123,6 +151,23 @@ def ArbitaryCoherenceWeights(source_coords, target_coord, wavelength):
 def TimeDelayWeights(source_coords, steering_vector, magnitude=1.0, maximum_delay=10):
     """
     Generate time delay weights to focus on a target coordinate, with delays in nanoseconds
+
+    Parameters
+    ----------
+    source_coords : :type:`np.ndarray` 2D array of :type:`float`
+        The coordinates of the elements, arranged in terms of x, y, and z coordinates
+    steering_vector : :type:`np.ndarray` 1D array of :type:`float`
+        The steering vector for the beamforming, arranged in terms of x, y, and z coordinates
+    magnitude : :type:`np.ndarray` 1D array of :type:`float`
+        The magnitude of the weights, default is 1.0 but can be set to any value to allow for both calibrated transmit power, and amplitude weighting.
+    maximum_delay : :type:`float`
+        The maximum delay to be applied to the weights, in nanoseconds. This is used to ensure that no delay is less than 0ns.
+
+    Returns
+    -------
+    weights : :type:`np.ndarray` 1D array of :type:`complex`
+        The time delay weights for the specified steering vector, arranged as a 1D array of complex numbers. For these weights for convineince the magnitude is the real part, while the time delay is the imaginary part.
+
     """
     weights = np.zeros((len(source_coords)), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
@@ -151,16 +196,17 @@ def TimeDelayBeamform(excitation_function, weights, sampling_rate):
 
     Parameters
     ----------
-    excitation_function : float
+    excitation_function : :type:`np.ndarray` 2D or 3D array of :type:`float`
         excitation function for time domain antenna array
-    weights : complex
-        magnitude is the real part, while the complex part is the time_delay in ns
-    sampling_rate : float
+    weights : :type:`np.ndarray` 1D array of :type:`complex`
+        magnitude is the real part, while the imaginary part is the time_delay in ns
+    sampling_rate : :type:`float`
         sampling rate in Hz, used to calculate the shifts to align the excitation function.
 
     Returns
     -------
-    beamformed_function
+    beamformed_function :type:`np.ndarray` 1D or 2D array of :type:`float`
+        The beamformed excitation function, with the time delays applied.
 
     """
     # extract delays and convert to seconds, then integrer shifts
@@ -182,6 +228,8 @@ def TimeDelayBeamform(excitation_function, weights, sampling_rate):
 
 def shift_slice(array, row, shift):
     """
+    :meta private:
+    Shift a slice of a 2D, 3D, or 4D array by a specified number of elements, filling the shifted elements with zeros.
 
     Parameters
     ----------
