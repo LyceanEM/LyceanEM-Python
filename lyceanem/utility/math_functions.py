@@ -84,14 +84,19 @@ def discrete_transmit_power(
 
     Parameters
     ----------
-    weights : numpy.nd
-    element_area :
-    transmit_power
-    impedance
+    weights : numpy.ndarray of complex
+        The complex weights for each mesh point, representing the magnitude and phase of the electric field at each point.
+    element_area : numpy.ndarray of float
+        the area of each mesh point, representing the effective area of the antenna element at that point.
+    transmit_power : float
+        The total power to be transmitted by the antenna aperture in watts.
+    impedance : float, optional
+        The impedance of the medium in ohms. Default is the impedance of free space (approximately 377 ohms).
 
     Returns
     -------
-
+    polarized_amplitudes : numpy.ndarray of complex
+        The complex amplitudes at each mesh point, representing the electric field amplitude intensity and phase at each point, scaled to the desired transmit power.
 
     """
     # Calculate the Power at each mesh point from the Intensity at each point
@@ -107,8 +112,8 @@ def discrete_transmit_power(
     ) / element_area.reshape(-1, 1)
     # calculate amplitude (V/m)
     transmit_amplitude = (
-        (transmit_power_density * impedance) ** 0.5
-    )# * element_area.reshape(-1, 1)
+        transmit_power_density * impedance
+    ) ** 0.5  # * element_area.reshape(-1, 1)
 
     polarized_amplitudes = (
         weights / np.linalg.norm(weights, axis=1).reshape(-1, 1)

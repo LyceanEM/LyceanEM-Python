@@ -17,7 +17,7 @@ def mesh_conversion_to_meshio(conversion_object):
 
     Parameters
     ----------
-    conversion_object : solid object to be converted into meshio format, could be :type:`meshio.Mesh` trianglemesh, solid, or antenna structure
+    conversion_object : solid object to be converted into meshio format, could be :type:`meshio.Mesh`, :class:`lyceanem.base_classes.structures`, or :class:`lyceanem.base_classes.antenna_structures`
 
     Returns
     -------
@@ -41,6 +41,7 @@ def mesh_conversion_to_meshio(conversion_object):
         meshio_mesh = None
     return meshio_mesh
 
+
 def cell_centroids(field_data):
     """
     In order to calculate the centroid of the triangle, take vertices from meshio triangle mesh, then put each triangle
@@ -51,6 +52,7 @@ def cell_centroids(field_data):
     ----------
 
     field_data : :type:`meshio.Mesh`
+        mesh with points and triangles
 
     Returns
     --------
@@ -98,16 +100,16 @@ def mesh_rotate(mesh, rotation, rotation_centre=np.zeros((1, 3), dtype=np.float3
     ----------
     mesh : :type:`meshio.Mesh`
 
-    rotation : numpy.ndarray
+    rotation : numpy.ndarray of float
         the rotation vector or rotation matrix for the desired rotation
 
-    rotation_centre : numpy.ndarray
+    rotation_centre : numpy.ndarray of float, optional
         Centre of rotation
 
     Returns
     -------
     mesh : :type:`meshio.Mesh`
-        The rotated mesh, with cartesian electric field vectors 
+        The rotated mesh, with cartesian electric field vectors
 
     """
     if rotation.shape == (3,):
@@ -175,7 +177,7 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
     mesh : :type:`meshio.Mesh`
         The mesh to be transformed.
 
-    transform_matrix : numpy.ndarray
+    transform_matrix : numpy.ndarray of float
         The transformation matrix to be applied to the mesh. Should be a 4x4 matrix.
 
     rotate_only : bool
@@ -225,6 +227,8 @@ def mesh_transform(mesh, transform_matrix, rotate_only):
 
 def locate_cell_index(field_data, cell_type="triangle"):
     """
+    :meta private:
+
     Locate the index of the first cell of the specified type in the field data.
 
     Parameters
@@ -236,10 +240,10 @@ def locate_cell_index(field_data, cell_type="triangle"):
 
     Returns
     -------
-    int
+    desired_index : int
         The index of the first cell of the specified type.
 
-    :private
+
     """
     for inc, cell in enumerate(field_data.cells):
         if cell.type == cell_type:
@@ -329,7 +333,8 @@ def compute_areas(field_data):
                 field_data.point_data["Area"][point_inc] = np.sum(
                     field_data.cell_data["Area"][inc][
                         np.where(field_data.cells[inc].data == point_inc)[0]
-                    ] / 3
+                    ]
+                    / 3
                 )
 
     return field_data
@@ -342,7 +347,8 @@ def compute_normals(mesh):
 
     Parameters
     ----------
-    mesh
+    mesh : :type:`meshio.Mesh`
+        The meshio mesh object containing the cells and points.
 
     Returns
     -------
@@ -422,8 +428,8 @@ def theta_phi_r(field_data):
 
     Parameters
     ----------
-    field_data
-
+    field_data : :type:`meshio.Mesh`
+        The meshio mesh object containing the points for which spherical coordinates are to be calculated.
     Returns
     -------
     field_data : :type:`meshio.Mesh`
@@ -444,15 +450,16 @@ def theta_phi_r(field_data):
 
 def mesh_conversion(conversion_object):
     """
-    Convert the provide file object into triangle_t format for raycasting
+    Convert the provide file object into :type:`lyceanem.base_types.triangle_t` format for raycasting
 
     Parameters
     ----------
-    conversion_object : solid object to be converted into triangle_t format, could be :type:`meshio.Mesh` trianglemesh, solid, or antenna structure
+    conversion_object : solid object to be converted into :type:`lyceanem.base_types.triangle_t` format, could be :type:`meshio.Mesh`, :class:`lyceanem.base_classes.structures`, or :class:`lyceanem.base_classes.antenna_structures`
 
     Returns
     -------
-    triangles : numpy array of type triangle_t
+    triangles : numpy array of :type:`lyceanem.base_types.triangle_t`
+
     """
     if isinstance(conversion_object, base_classes.structures):
         triangles = conversion_object.triangles_base_raycaster()
@@ -489,11 +496,13 @@ def axes_from_normal(boresight_vector, boresight_along="x"):
 
     Parameters
     ----------
-    boresight_vector
+    boresight_vector : numpy.ndarray of float
+        desired boresight vector, should be a 1x3 array.
 
     Returns
     -------
-    rotation_matrix
+    rotation_matrix : numpy.ndarray of float
+        the rotation matrix that aligns the boresight vector with the specified axis (x, y, or z).
 
     """
     # initially define the rotation matrix based inline with the global coordinate frame.
@@ -567,7 +576,7 @@ def mesh_translate(mesh, translation_vector):
     ----------
     mesh : :type:`meshio.Mesh`
         The mesh to be translated.
-    translation_vector : numpy.ndarray
+    translation_vector : numpy.ndarray of float
         The translation vector to be applied to the mesh. Should be a 1x3 array.
 
     Returns

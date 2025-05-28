@@ -74,7 +74,7 @@ class points(object3d):
 
         Parameters
         -----------
-        deletion_index : :class:`list`
+        deletion_index : list
             list of integers or numpy array of integers to the solids to be removed
 
         Returns
@@ -108,9 +108,9 @@ class points(object3d):
 
         Parameters
         ----------
-        points : :class:`np.ndarray`
+        points : numpy.ndarray
             the coordinates of all the points
-        normals : :class:`np.ndarray`
+        normals : numpy.ndarray
             the normal vectors of each point
 
         Returns
@@ -133,9 +133,9 @@ class points(object3d):
 
         Parameters
         ----------
-        rotation_matrix : :class:`np.ndarray` of floats
+        rotation_matrix : numpy.ndarray of floats
             [3,1] numpy array
-        rotation_centre : :class:`np.ndarray` of floats
+        rotation_centre : numpy.ndarray of floats
             [3,1] centre of rotation for the structures
 
         Returns
@@ -160,7 +160,7 @@ class points(object3d):
 
         Parameters
         -----------
-        vector : :class:`np.ndarray` array of floats
+        vector : numpy.ndarray array of floats
             The desired translation vector for the structures
 
         Returns
@@ -302,7 +302,7 @@ class structures(object3d):
 
         Parameters
         -----------
-        deletion_index : :class:`list`
+        deletion_index : list
             list of integers or numpy array of integers to the solids to be removed
 
         Returns
@@ -338,9 +338,9 @@ class structures(object3d):
 
         Parameters
         ----------
-        rotation_matrix : :class:`np.ndarray` of floats
+        rotation_matrix : numpy.ndarray of floats
             [4,4] numpy array
-        rotation_centre : :class:`np.ndarray` of floats
+        rotation_centre : numpy.ndarray of floats
             [3,1] centre of rotation for the structures
 
         Returns
@@ -360,7 +360,7 @@ class structures(object3d):
 
         Parameters
         -----------
-        vector : :class:`np.ndarray` of floats
+        vector : numpy.ndarray of floats
             The desired translation vector for the structures
 
         Returns
@@ -382,7 +382,7 @@ class structures(object3d):
 
         Returns
         --------
-        triangles : :type:`np.ndarray` of :type:`base_types.triangle_t` triangles
+        triangles : numpy.ndarray of :type:`base_types.triangle_t` triangles
             a continuous array of all the triangles in the structure
         """
         triangles = np.empty((0), dtype=base_types.triangle_t)
@@ -393,31 +393,41 @@ class structures(object3d):
             triangles = np.append(triangles, RF.convertTriangles(temp_object))
 
         return triangles
+
     def export_combined_meshio(self):
         """
         Combines all the structures in the collection as a combined mesh for modelling
 
         Returns
         -------
-        combined mesh
+        combined mesh : :type:`meshio.Mesh`
+            A combined mesh of all the structures in the collection, with normals if available.
         """
-        
-        mesh_points = np.empty((0,3), dtype=np.float32)
-        mesh_triangles = np.empty((0,3), dtype=np.int32)
-        mesh_point_normals = np.empty((0,3), dtype=np.float32)
-        mesh_cell_normals = np.empty((0,3), dtype=np.float32)
+
+        mesh_points = np.empty((0, 3), dtype=np.float32)
+        mesh_triangles = np.empty((0, 3), dtype=np.int32)
+        mesh_point_normals = np.empty((0, 3), dtype=np.float32)
+        mesh_cell_normals = np.empty((0, 3), dtype=np.float32)
 
         for i in range(len(self.solids)):
             copy_mesh = self.solids[i]
             copy_mesh = GF.mesh_transform(copy_mesh, self.pose, False)
             mesh_points = np.append(mesh_points, copy_mesh.points, axis=0)
             mesh_triangles = np.append(mesh_triangles, copy_mesh.cells[0].data, axis=0)
-            if 'Normals' in copy_mesh.point_data:
-                mesh_point_normals = np.append(mesh_point_normals, copy_mesh.point_data['Normals'].data, axis=0)
-            if 'Normals' in copy_mesh.cell_data:
-                mesh_cell_normals = np.append(mesh_cell_normals, copy_mesh.cell_data['Normals'][0], axis=0)
+            if "Normals" in copy_mesh.point_data:
+                mesh_point_normals = np.append(
+                    mesh_point_normals, copy_mesh.point_data["Normals"].data, axis=0
+                )
+            if "Normals" in copy_mesh.cell_data:
+                mesh_cell_normals = np.append(
+                    mesh_cell_normals, copy_mesh.cell_data["Normals"][0], axis=0
+                )
 
-        combined_mesh = meshio.Mesh(points=mesh_points, cells=[("triangle", mesh_triangles)], point_data={"Normals": mesh_point_normals})
+        combined_mesh = meshio.Mesh(
+            points=mesh_points,
+            cells=[("triangle", mesh_triangles)],
+            point_data={"Normals": mesh_point_normals},
+        )
         combined_mesh.cell_data["Normals"] = [mesh_cell_normals]
         return combined_mesh
 
@@ -433,6 +443,12 @@ class antenna_structures(object3d):
 
     Units should be SI, metres
 
+    Attributes
+    ----------
+    structures : :class:`structures`
+        The structures associated with the antenna, which can be used to calculate the antenna's properties and behaviour.
+    points : :class:`points`
+        The points associated with the antenna, which can be used to calculate the antenna's properties and behaviour.
     """
 
     def __init__(self, structures, points):
@@ -440,10 +456,12 @@ class antenna_structures(object3d):
         self.structures = structures
         self.points = points
 
-
     # )
 
     def export_all_points(self, point_index=None):
+        """
+        Exports all the points in the antenna structure as a :type:`meshio.Mesh` point cloud, transforming them to the global coordinate system
+        """
         if point_index == None:
             point_cloud = self.points.export_points()
         else:
@@ -463,7 +481,31 @@ class antenna_structures(object3d):
         transmit_power=1.0,
         local_projection=True,
     ):
-        # generate the local excitation function and then convert into the global coordinate frame.
+        """
+        Calculate the excitation weights for the antenna aperture points based upon the desired electric field vector.
+
+        Parameters
+        ----------
+        desired_e_vector : numpy.ndarray of float
+            The desired electric field vector to be achieved at the aperture points, in the form of a 3D vector.
+        point_index : list, optional
+            A list of indices for the aperture points meshes to be used. If None, all points will be used.
+        phase_shift : str, optional
+            The phase shift to be applied to the excitation weights. Default is "none", which applies no beamforming.
+        wavelength : float, optional
+            The wavelength of interest in metres. Default is 1.0.
+        steering_vector : numpy.ndarray of float, optional
+            A 3D vector representing the command direction, if phase_shift is not "none". Default is a zero vector.
+        transmit_power : float, optional
+            The total power to be transmitted by the antenna aperture in watts. Default is 1.0.
+        local_projection : bool, optional
+            If True, the excitation weights will be projected onto the local coordinate system of the antenna. Default is True.
+
+        Returns
+        -------
+        excitation_weights : numpy.ndarray of complex
+
+        """
         if point_index == None:
             aperture_points = self.export_all_points()
         else:
@@ -484,7 +526,9 @@ class antenna_structures(object3d):
         return excitation_weights
 
     def export_all_structures(self):
-        # objects = copy.deepcopy(self.structures.solids)
+        """
+        Exports all structures
+        """
         for item in range(len(self.structures.solids)):
             if self.structures.solids[item] is None:
                 print("Structure does not exist")
@@ -498,10 +542,37 @@ class antenna_structures(object3d):
     def rotate_antenna(
         self, rotation_vector, rotation_centre=np.zeros((3, 1), dtype=np.float32)
     ):
+        """
+        Rotates the antenna structures and points around a common point, default is the origin.
+
+        Parameters
+        ----------
+        rotation_vector : numpy.ndarray of float
+            The rotation vector to be applied to the structures and points.
+            This can be a 3x1 or 3x3 array, or a single 3D vector.
+        rotation_centre : numpy.ndarray of float, optional
+            The centre of rotation for the structures and points. Default is the origin (0, 0, 0).
+        Returns
+        -------
+        None
+
+        """
         self.structures.rotate_structures(rotation_vector, rotation_centre)
         self.points.rotate_points(rotation_vector, rotation_centre)
 
     def translate_antenna(self, translation_vector):
+        """
+        Translates the antenna structures and points by the given cartesian vector (x,y,z).
+        Parameters
+        ----------
+        translation_vector : numpy.ndarray of float
+            The desired translation vector for the structures and points.
+
+        Returns
+        -------
+        None
+
+        """
         self.structures.translate_structures(translation_vector)
         self.points.translate_points(translation_vector)
 
@@ -511,9 +582,9 @@ class antenna_structures(object3d):
 
         Returns
         -------
-        aperture_meshes : :class:`list`
+        aperture_meshes : list
             aperture meshes included in the antenna structure class
-        structure_meshes : :class:`list`
+        structure_meshes : list
             list of the triangle mesh objects in the antenna structure class
 
         """
@@ -556,6 +627,23 @@ class antenna_pattern(object3d):
     Antenna Pattern Frequency is in Hz
     Rotation Offset is Specified in terms of rotations around the x, y, and z axes as roll,pitch/elevation, and azimuth
     in radians.
+
+    Attributes
+    ----------
+    azimuth_resolution : int
+        The number of azimuth angles in the antenna pattern.
+    elevation_resolution : int
+        The number of elevation angles in the antenna pattern.
+    pattern_frequency : float
+        The frequency of the antenna pattern in Hz.
+    arbitary_pattern : bool
+        If True, the antenna pattern is an arbitrary pattern defined by the arbitary_pattern_type options
+    arbitary_pattern_type : str
+        The type of arbitrary antenna pattern, options include "isotropic", "xhalfspace", "yhalfspace", and "zhalfspace".
+    arbitary_pattern_format : str
+        The format of the arbitrary antenna pattern, options include "Etheta/Ephi" and "ExEyEz".
+    file_location : str, optional
+        The file location of the antenna pattern file to be imported. If None, an arbitrary pattern will be created.
     """
 
     def __init__(
@@ -643,7 +731,7 @@ class antenna_pattern(object3d):
 
             Parameters
             ----------
-            points: :type:`np.ndarray`
+            points: numpy.ndarray of float
                 One-dimensional array of uniformly spaced values of shape (M,).
 
             bound_position: bool, optional
@@ -718,6 +806,15 @@ class antenna_pattern(object3d):
         return vista_pattern
 
     def pattern_mesh(self):
+        """
+        Create pyvista structured grid mesh from the antenna pattern data.
+
+        Returns
+        -------
+        mesh : pyvista.StructuredGrid
+            A structured grid mesh representing the antenna pattern.
+
+        """
         points = self.cartesian_points()
         mesh = pv.StructuredGrid(points[:, 0], points[:, 1], points[:, 2])
         mesh.dimensions = [self.azimuth_resolution, self.elevation_resolution, 1]
@@ -744,11 +841,11 @@ class antenna_pattern(object3d):
 
         Parameters
         ----------
-        plottype : :type:`str`
+        plottype : str
             the plot type, either [Polar], [Cartesian-Surf], or [Contour]. The default is [Polar]
-        desired_pattern : :type:`str`
+        desired_pattern : str
             the desired pattern, default is [both], but is Pattern format is 'Etheta/Ephi' then options are [Etheta] or [Ephi], and if Pattern format is 'ExEyEz', then options are [Ex], [Ey], or [Ez].
-        pattern_min : :type:`float`
+        pattern_min : float
             the desired scale minimum in dB, the default is [-40]
 
         Returns
@@ -1003,7 +1100,7 @@ class antenna_pattern(object3d):
 
         Parameters
         ----------
-        new_axes : :type:`np.ndarray` of shape (3,3)
+        new_axes : numpy.ndarray of float
             the new vectors for the antenna x,y,z axes
 
         Returns
@@ -1077,11 +1174,11 @@ class antenna_pattern(object3d):
 
         Parameters
         ----------
-        old_points : :type:`np.ndarray`
+        old_points : numpy.ndarray of float
             xyz coordinates that the pattern has been sampled at
-        old_pattern : :type:`np.ndarray`
+        old_pattern : numpy.ndarray of complex
             2 or 3 by n complex array of the antenna pattern at the old_points
-        new_points : :type:`np.ndarray`
+        new_points : numpy.ndarray of complex
             desired_grid points in xyz float array
 
 
@@ -1123,13 +1220,13 @@ class antenna_pattern(object3d):
 
         Returns
         -------
-        Dtheta : :type:`np.ndarray`
+        Dtheta : numpy.ndarray of float
             directivity for Etheta farfield
-        Dphi : :type:`np.ndarray`
+        Dphi : numpy.ndarray of float
             directivity for Ephi farfield
-        Dtotal : :type:`np.ndarray`
+        Dtotal : numpy.ndarray of float
             overall directivity pattern
-        Dmax : :type:`np.ndarray`
+        Dmax : numpy.ndarray of float
             the maximum directivity for each pattern
 
         """
@@ -1203,7 +1300,7 @@ class array_pattern:
 
         Returns
         -------
-        : :type:`np.ndarray` of shape (3, 3)
+        : numpy.ndarray of float of shape (3, 3)
             The model (3D) rotation matrix.
         """
         x_rot = R.from_euler("X", self.rotation_offset[0], degrees=True).as_matrix()
@@ -1379,13 +1476,13 @@ class array_pattern:
 
         Returns
         -------
-        Dtheta : :type:`np.ndarray`
+        Dtheta : numpy.ndarray of float
             directivity for Etheta farfield
-        Dphi : :type:`np.ndarray`
+        Dphi : numpy.ndarray of float
             directivity for Ephi farfield
-        Dtotal : :type:`np.ndarray`
+        Dtotal : numpy.ndarray of float
             overall directivity pattern
-        Dmax : :type:`np.ndarray`
+        Dmax : numpy.ndarray of float
             the maximum directivity for each pattern
 
         """
