@@ -3,6 +3,7 @@ import pyvista as pv
 from importlib_resources import files
 import lyceanem.electromagnetics.data as data
 from lyceanem.utility.mesh_functions import pyvista_to_meshio
+import meshio
 
 
 def excitation_function(
@@ -17,23 +18,23 @@ def excitation_function(
     """
     Calculate the excitation function for the given aperture points, desired electric field vector, phase shift, wavelength, steering vector, transmit power, and local projection. This will generate the normalised field intensities for the desired total transmit power, and beamforming algorithm. The aperture mesh should have Normals and Area associated with each point for full functionality.
 
-    The phase shift can be set to 'none', 'wavefront', or 'coherence'. The steering vector is the command vector for the desired beamforming algorithm, and the transmit power is the total power to be transmitted. The local projection flag indicates whether the electric field vectors should be projected based upon the local surface normals.
 
     Parameters
     ----------
-    aperture_points : meshio.Mesh
-
-    desired_e_vector : numpy.ndarray
-
+    aperture_points : :type:`meshio.Mesh`
+        Aperture mesh containing the points to be used for the excitation function. The mesh should have point data containing 'Normals' and optionally 'Area'.
+    desired_e_vector : numpy.ndarray of float
+        The desired electric field vector. If the local_projection flag is set to True, this vector will be projected based on the local surface normals of the aperture points. If not the provided vectors will be used regardless of local geometry.
     phase_shift : str
-
+        The phase shift can be set to 'none', 'wavefront', or 'coherence'.
     wavelength : float
-
-    steering_vector : numpy.ndarray
-
+        wavelength of interest in meters. This is used to calculate the phase shift for the wavefront or coherence beamforming algorithms. If the mesh does not contain Area point data then it will be used to generate arbitary, equal areas for each point.
+    steering_vector : numpy.ndarray of float
+        Desired steering vector for the beamforming algorithm. This is used to calculate the phase shift for the wavefront or coherence beamforming algorithms.
     transmit_power : float
-
+        Total power to be transmitted by the aperture in Watts.
     local_projection : bool
+        The local projection flag indicates whether the electric field vectors should be projected based upon the local surface normals.
 
     Returns
     -------
@@ -84,13 +85,13 @@ def excitation_function(
 
 def fresnel_zone(pointA, pointB, wavelength, zone=1):
     """
-    based on the provided points, wavelength, and zone number, calculate the fresnel zone. This is defined as an ellipsoid for which the difference in distance between the line AB (line of sight), and AP+PB (reflected wave) is a constant multiple of ($n\dfrac{\lambda}{2}$).
+    Based on the provided points, wavelength, and zone number, calculate the fresnel zone. This is defined as an ellipsoid for which the difference in distance between the line AB (line of sight), and AP+PB (reflected wave) is a constant multiple of ($n\dfrac{\lambda}{2}$).
 
     Parameters
     -----------
-    pointA : numpy.ndarray
+    pointA : numpy.ndarray of float
         Point A as a number array of floats
-    pointB : numpy.ndarray
+    pointB : numpy.ndarray of float
         Point B as a number array of floats
     wavelength : float
         wavelength of interest
@@ -100,7 +101,7 @@ def fresnel_zone(pointA, pointB, wavelength, zone=1):
 
     Returns
     --------
-    ellipsoid : meshio.Mesh
+    ellipsoid : :type:`meshio.Mesh`
         A meshio object representing the fresnel zone, allowing for visualisation and boolean operations for decimating a larger triangle mesh.
     """
 
@@ -132,12 +133,12 @@ def field_magnitude_phase(field_data):
 
     Parameters
     ----------
-    field_data : meshio.Mesh
+    field_data : :type:`meshio.Mesh`
         The field data containing the electric field components in either Cartesian or spherical coordinates.
 
     Returns
     -------
-    field_data : meshio.Mesh
+    field_data : :type:`meshio.Mesh`
         The field data containing the resultant magnitude and phase components for each electric field vector. The magnitude and phase are stored as `Ex-Magnitude``, ``Ex-Phase``, ``Ey-Magnitude``, ``Ey-Phase``, ``Ez-Magnitude``, and ``Ez-Phase`` for Cartesian coordinates, and `E(theta)-Magnitude`, `E(theta)-Phase`, `E(phi)-Magnitude`, and `E(phi)-Phase` for spherical coordinates.
     """
 
@@ -195,12 +196,12 @@ def extract_electric_fields(field_data):
 
     Parameters
     ----------
-    field_data : meshio.Mesh
+    field_data : :type:`meshio.Mesh`
         The field data containing the electric field components in either cartesian format
 
     Returns
     -------
-    fields : numpy.ndarray
+    fields : numpy.ndarray of complex
         The electric field vectors in the provided mesh. The shape of the array is (n_points, 3), where n_points is the number of points in the mesh.
     """
     fields = np.array(
@@ -412,7 +413,7 @@ def update_electric_fields(field_data, ex, ey, ez):
     return field_data
 
 
-def PoyntingVector(field_data, measurement=False, aperture=None):
+def PoyntingVector(field_data):
     """
     Calculate the poynting vector for the given field data. If the magnetic field data is present, then the poynting vector is calculated using the cross product of the electric and magnetic field vectors.
     If the magnetic field data is not present, then the poynting vector is calculated using the electric field vectors and the impedance of the material. If material parameters are not included in the field data, then the impedance is assumed to be that of free space.
@@ -420,12 +421,8 @@ def PoyntingVector(field_data, measurement=False, aperture=None):
 
     Parameters
     ----------
-    field_data: meshio.Mesh
+    field_data: :type:`meshio.Mesh`
         The field data containing the electric field components in either cartesian format
-    measurement: bool
-
-    aperture: float
-        The area of the measurement aperture, if measurement is True, so the field data represents measurements with a finite aperture, rather than point data.
 
     Returns
     -------
@@ -511,7 +508,20 @@ def PoyntingVector(field_data, measurement=False, aperture=None):
 
 
 def Directivity(field_data):
-    # calculate directivity for the given pattern
+    """
+    Calculate the directivity of the electric field vectors in the given field data. The function checks for the presence of the electric field components in both Cartesian (Ex, Ey, Ez) and spherical (E(theta), E(phi)) coordinates. If the components are present, it calculates the directivity for each component and adds them to the point data with appropriate labels.
+
+    Parameters
+    ----------
+    field_data : :type:`meshio.Mesh`
+        The field data containing the electric field components in either Cartesian or spherical coordinates as point data.
+
+    Returns
+    -------
+    field_data : :type:`meshio.Mesh`
+        The field data containing the directivity components for each electric field vector. The directivity is stored as `D(theta)`, `D(phi)`, and `D(Total)`
+
+    """
 
     if not all(
         k in field_data.point_data.keys() for k in ("theta_(Radians)", "phi_(Radians)")
@@ -603,16 +613,18 @@ def calculate_oxygen_attenuation(frequency, pressure, temperature):
 
     Parameters
     ----------
-    frequency (GHz): float
+    frequency : float
         The frequency of the signal in GHz.
-    pressure (hPa): float
+    pressure : float
         The atmospheric pressure in hectopascals.
-    temperature (C): float
+    temperature : float
         The temperature in degrees Celsius.
 
-    Returns:
+    Returns
+    --------
     specific_attenuation : float
         The calculated oxygen attenuation in dB/km.
+
     """
     oxygen_lines=oxygen_lines()
     temperature_k = temperature + 273.15
@@ -649,9 +661,11 @@ def calculate_water_vapor_attenuation(
     temperature : float
         The temperature in degrees Celsius.
 
-    Returns:
-    specific_attenuration: float
+    Returns
+    -------
+    specific_attenuation : float
         The calculated water vapor attenuation in dB/km.
+
     """
     water_vapor_lines=water_vapour_lines()
     temperature_k = temperature + 273.15
@@ -682,17 +696,19 @@ def calculate_total_gaseous_attenuation(
 
     Parameters
     --------------
-    frequency (GHz): float
+    frequency : float
         The frequency of the signal in GHz.
-    pressure (hPa): float
+    pressure : float
         The atmospheric pressure in hectopascals.
-    temperature (C): float
+    temperature : float
      The temperature in degrees Celsius.
 
 
     Returns
     -----------
-    float: The calculated total gaseous attenuation in Np/m.
+    specific_attenuation : float
+        The calculated total gaseous attenuation in Np/m.
+
     """
     oxygen_lines=oxygen_lines()
     water_vapor_lines=water_vapour_lines()
@@ -770,6 +786,7 @@ def calculate_atmospheric_propagation_constant(
 ):
     """
     Calculate the propagation constant as a function of frequency (GHz), temperature (Celsius), atmospheric pressure (hectoPascals) and water vapour density (g/m^3).
+    Returns the complex propagation constant :math:`\\gamma=\\alpha+i\\beta`, which includes both attenuation  (:math:`\\alpha`) and phase shift (:math:`\\beta`).
 
     Parameters
     ----------
@@ -785,6 +802,7 @@ def calculate_atmospheric_propagation_constant(
     Returns
     -------
     propagation constant : complex
+        The propagation constant in Np/m, which includes both attenuation (:math:`\\alpha`) and phase shift (:math:`\\beta`).
 
     """
     alpha = calculate_total_gaseous_attenuation(
