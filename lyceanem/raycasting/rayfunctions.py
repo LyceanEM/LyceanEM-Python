@@ -297,6 +297,7 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
 def patterntocloud(pattern_data, shell_coords, maxarea):
     # takes the pattern_data and shell_coordinates, and creates a point cloud based upon the data.
     import lyceanem.utility.mesh_functions as MF
+
     point_cloud = MF.points2pointcloud(shell_coords)
     points, elements = np.shape(pattern_data)
     # normdata
@@ -324,33 +325,33 @@ def visiblespace(
 
     Parameters
     --------------
-    source_coords : :type:`np.ndarray` 2D array of :type:`float`
+    source_coords : numpy.ndarray of float
         xyz coordinates of the sources with shape (n,3)
-    source_normals : :type:`np.ndarray` 2D array of :type:`float`
+    source_normals : numpy.ndarray of float
         normal vectors for each source point with shape (n,3)
     environment : :class:`lyceanem.base_classes.triangles`
         blocking environment
-    vertex_area : :type:`np.ndarray` 1D array of :type:`float`
+    vertex_area : numpy.ndarray of float
         the area associated with each source point, defaults to 0, but can also be specified for each source
-    az_range : :type:`np.ndarray` 1D array of :type:`float`
+    az_range : numpy.ndarray of float
         array of azimuth planes in degrees
-    elev_range : :type:`np.ndarray` 1D array of :type:`float`
+    elev_range : numpy.ndarray of float
         array of elevation points in degrees
-    shell_range: :type:`float`
+    shell_range: float
         radius of point cloud shell
 
     Returns
     -------------------
-    visible_patterns : :type:`np.ndarray` 3D array of :type:`float`
+    visible_patterns : numpy.ndarray of float
         3D antenna patterns
     resultant_pcd : :type:`meshio.Mesh`
         colour data to scale the points fractional visibility from the source aperture
     """
-    if az_range==None:
-        az_range=np.linspace(-180.0, 180.0, 19)
+    if az_range == None:
+        az_range = np.linspace(-180.0, 180.0, 19)
 
-    if elev_range==None:
-        elev_range=np.linspace(-90.0, 90.0, 19)
+    if elev_range == None:
+        elev_range = np.linspace(-90.0, 90.0, 19)
     azaz, elel = np.meshgrid(az_range, elev_range)
     sourcenum = source_coords.points.shape[0]
 
@@ -552,9 +553,6 @@ def convertTriangles(triangle_object):
             triangles[idx]["v2z"] = np.single(vertices[tri_index[idx, 2], 2])
 
     return triangles
-
-
-
 
 
 @guvectorize([(float32[:, :], float32[:])], "(m,n)->(m)", target="parallel")

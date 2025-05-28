@@ -18,7 +18,6 @@ def excitation_function(
     """
     Calculate the excitation function for the given aperture points, desired electric field vector, phase shift, wavelength, steering vector, transmit power, and local projection. This will generate the normalised field intensities for the desired total transmit power, and beamforming algorithm. The aperture mesh should have Normals and Area associated with each point for full functionality.
 
-
     Parameters
     ----------
     aperture_points : :type:`meshio.Mesh`
@@ -38,7 +37,7 @@ def excitation_function(
 
     Returns
     -------
-    calibrated_amplitude_weights : numpy.ndarray
+    calibrated_amplitude_weights : numpy.ndarray of complex
         The calibrated amplitude weights for the given aperture points, desired electric field vector, phase shift, wavelength, steering vector, and total transmit power.
     """
 
@@ -85,7 +84,7 @@ def excitation_function(
 
 def fresnel_zone(pointA, pointB, wavelength, zone=1):
     """
-    Based on the provided points, wavelength, and zone number, calculate the fresnel zone. This is defined as an ellipsoid for which the difference in distance between the line AB (line of sight), and AP+PB (reflected wave) is a constant multiple of ($n\dfrac{\lambda}{2}$).
+    Based on the provided points, wavelength, and zone number, calculate the fresnel zone. This is defined as an ellipsoid for which the difference in distance between the line AB (line of sight), and AP+PB (reflected wave) is a constant multiple of (:math:`n\\dfrac{\\lambda}{2}`).
 
     Parameters
     -----------
@@ -98,11 +97,11 @@ def fresnel_zone(pointA, pointB, wavelength, zone=1):
     zone : int
         highest order Fresnel zone to be calculated. The default is 1, which is the first order fresnel zone.
 
-
     Returns
     --------
     ellipsoid : :type:`meshio.Mesh`
         A meshio object representing the fresnel zone, allowing for visualisation and boolean operations for decimating a larger triangle mesh.
+
     """
 
     foci = np.stack([pointA, pointB])
@@ -121,9 +120,11 @@ def fresnel_zone(pointA, pointB, wavelength, zone=1):
     ].as_matrix()
     pose[:3, 3] = center
 
-    ellipsoid = pyvista_to_meshio(pv.ParametricEllipsoid(
-        separation * 0.5, fresnel_radius, fresnel_radius
-    ).transform(pose))
+    ellipsoid = pyvista_to_meshio(
+        pv.ParametricEllipsoid(
+            separation * 0.5, fresnel_radius, fresnel_radius
+        ).transform(pose)
+    )
     return ellipsoid
 
 
@@ -139,7 +140,8 @@ def field_magnitude_phase(field_data):
     Returns
     -------
     field_data : :type:`meshio.Mesh`
-        The field data containing the resultant magnitude and phase components for each electric field vector. The magnitude and phase are stored as `Ex-Magnitude``, ``Ex-Phase``, ``Ey-Magnitude``, ``Ey-Phase``, ``Ez-Magnitude``, and ``Ez-Phase`` for Cartesian coordinates, and `E(theta)-Magnitude`, `E(theta)-Phase`, `E(phi)-Magnitude`, and `E(phi)-Phase` for spherical coordinates.
+        The field data containing the resultant magnitude and phase components for each electric field vector. The magnitude and phase are stored as ``Ex-Magnitude``, ``Ex-Phase``, ``Ey-Magnitude``, ``Ey-Phase``, ``Ez-Magnitude``, and ``Ez-Phase`` for Cartesian coordinates, and ``E(theta)-Magnitude``, ``E(theta)-Phase``, ``E(phi)-Magnitude``, and ``E(phi)-Phase`` for spherical coordinates.
+
     """
 
     if all(
@@ -219,6 +221,9 @@ def extract_electric_fields(field_data):
 
 
 def EthetaEphi_to_Exyz(field_data):
+    """
+    :meta private:
+    """
     if not all(
         k in field_data.point_data.keys() for k in ("theta_(Radians)", "phi_(Radians)")
     ):
@@ -280,7 +285,11 @@ def EthetaEphi_to_Exyz(field_data):
 
 
 def Exyz_to_EthetaEphi(field_data):
-    # this function assumes a spherical field definition, will need to write a function which works based on the poynting vector/normal vector of the point
+    """
+    I need to define a general transform.
+
+    :meta private:
+    """
     if not all(
         k in field_data.point_data.keys() for k in ("theta_(Radians)", "phi_(Radians)")
     ):
@@ -310,6 +319,19 @@ def Exyz_to_EthetaEphi(field_data):
 
 
 def field_vectors(field_data):
+    """
+    Extract the electric field vectors from the field data in the meshio format. The function checks for the presence of the electric field components in Cartesian (Ex, Ey, Ez) format.  If the components are present, it extracts them and returns them as a numpy array of float.
+
+    Parameters
+    ----------
+    field_data : :type:`meshio.Mesh`
+        The field data containing the electric field components in Cartesian format.
+
+    Returns
+    -------
+    directions : numpy.ndarray of float
+        The alignment vector for each electric field vector in the mesh.
+    """
     fields = np.array(
         [
             field_data.point_data["Ex-Real"] + 1j * field_data.point_data["Ex-Imag"],
@@ -328,13 +350,12 @@ def transform_em(field_data, r):
 
     Parameters
     ----------
-    field_data: :class: meshio.Mesh
+    field_data: `type:`meshio.Mesh`
     r: scipy.rotation
 
     Returns
     -------
-    field_data: :class: meshio.Mesh
-
+    field_data: :type:`meshio.Mesh`
 
     """
     if all(
@@ -398,6 +419,23 @@ def transform_em(field_data, r):
 
 
 def update_electric_fields(field_data, ex, ey, ez):
+    """
+    Updates the electric field components in the provided field data mesh.
+
+    Parameters
+    ----------
+    field_data : :type:`meshio.Mesh`
+        The field data which requires updating with new electric field components.
+    ex : numpy.ndarray of complex
+    ey : numpy.ndarray of complex
+    ez : numpy.ndarray of complex
+
+    Returns
+    -------
+    field_data : :type:`meshio.Mesh`
+        The updated field data containing the new electric field components in the point data.
+
+    """
     field_data.point_data["Ex-Real"] = np.zeros((field_data.points.shape[0], 1))
     field_data.point_data["Ey-Real"] = np.zeros((field_data.points.shape[0], 1))
     field_data.point_data["Ez-Real"] = np.zeros((field_data.points.shape[0], 1))
@@ -426,7 +464,7 @@ def PoyntingVector(field_data):
 
     Returns
     -------
-    field_data: meshio.Mesh
+    field_data: :type:`meshio.Mesh`
         The field data containing the poynting vector in the point data. The poynting vector is stored as `Poynting_Vector_(Magnitude_(W/m2))` and `Poynting_Vector_(Magnitude_(dBW/m2))`.
     """
     if all(
@@ -489,9 +527,6 @@ def PoyntingVector(field_data):
             (np.linalg.norm(electric_field_vectors, axis=1) ** 2) / eta
         ).reshape(-1, 1)
 
-    if measurement:
-        poynting_vector_complex = poynting_vector_complex / aperture
-
     field_data.point_data["Poynting_Vector_(Magnitude_(W/m2))"] = np.zeros(
         (field_data.points.shape[0], 1)
     )
@@ -519,7 +554,7 @@ def Directivity(field_data):
     Returns
     -------
     field_data : :type:`meshio.Mesh`
-        The field data containing the directivity components for each electric field vector. The directivity is stored as `D(theta)`, `D(phi)`, and `D(Total)`
+        The field data containing the directivity components for each electric field vector. The directivity is stored as ``D(theta)``, ``D(phi)``, and ``D(Total)``
 
     """
 
@@ -581,8 +616,6 @@ def Directivity(field_data):
     return field_data
 
 
-
-
 def oxygen_lines():
     data_lines = []
     oxy_data = str(files(data).joinpath("Oxy.txt"))
@@ -607,6 +640,7 @@ def water_vapour_lines():
 
     return data_lines
 
+
 def calculate_oxygen_attenuation(frequency, pressure, temperature):
     """
     Calculate the specific attenuation due to oxygen using the ITU-R P.676-11 model.
@@ -626,12 +660,12 @@ def calculate_oxygen_attenuation(frequency, pressure, temperature):
         The calculated oxygen attenuation in dB/km.
 
     """
-    oxygen_lines=oxygen_lines()
+    oxygen_lines_temp = oxygen_lines()
     temperature_k = temperature + 273.15
     theta = 300 / temperature_k
     specific_attenuation = 0
 
-    for line in oxygen_lines:
+    for line in oxygen_lines_temp:
         f_line, a1, a2, a3, a4, a5, a6 = line
         S = a1 * 10**-7 * pressure * theta**3 * np.exp(a2 * (1 - theta))
         ffo = a3 * 10**-4 * (pressure * theta ** (0.8 - a4) + 1.1 * pressure * theta)
@@ -646,9 +680,7 @@ def calculate_oxygen_attenuation(frequency, pressure, temperature):
     return specific_attenuation
 
 
-def calculate_water_vapor_attenuation(
-    frequency, pressure, temperature
-):
+def calculate_water_vapor_attenuation(frequency, pressure, temperature):
     """
     Calculate the specific attenuation due to water vapor using the ITU-R P.676-11 model.
 
@@ -667,13 +699,13 @@ def calculate_water_vapor_attenuation(
         The calculated water vapor attenuation in dB/km.
 
     """
-    water_vapor_lines=water_vapour_lines()
+    water_vapor_lines_temp = water_vapour_lines()
     temperature_k = temperature + 273.15
     theta = 300 / temperature_k
     e = pressure * 0.622 / (0.622 + 0.378)  # Partial pressure of water vapor (hPa)
     specific_attenuation = 0
 
-    for line in water_vapor_lines:
+    for line in water_vapor_lines_temp:
         f_line, a1, a2, a3, a4, a5, a6 = line
         S = a1 * 10**-1 * e * theta**3.5 * np.exp(a2 * (1 - theta))
         ffo = a3 * 10**-4 * (pressure * theta**a4 + a5 * e * theta**a6)
@@ -686,11 +718,7 @@ def calculate_water_vapor_attenuation(
     return specific_attenuation
 
 
-def calculate_total_gaseous_attenuation(
-    frequency,
-    pressure,
-    temperature
-):
+def calculate_total_gaseous_attenuation(frequency, pressure, temperature):
     """
     Calculate the total gaseous attenuation due to both oxygen and water vapor.
 
@@ -703,21 +731,20 @@ def calculate_total_gaseous_attenuation(
     temperature : float
      The temperature in degrees Celsius.
 
-
     Returns
     -----------
     specific_attenuation : float
         The calculated total gaseous attenuation in Np/m.
 
     """
-    oxygen_lines=oxygen_lines()
-    water_vapor_lines=water_vapour_lines()
+    oxygen_lines_temp = oxygen_lines()
+    water_vapor_lines_temp = water_vapour_lines()
     # Calculate specific attenuation
     oxygen_attenuation = calculate_oxygen_attenuation(
-        frequency, pressure, temperature, oxygen_lines
+        frequency, pressure, temperature, oxygen_lines_temp
     )
     water_vapor_attenuation = calculate_water_vapor_attenuation(
-        frequency, pressure, temperature, water_vapor_lines
+        frequency, pressure, temperature, water_vapor_lines_temp
     )
     specific_attenuation = (
         0.1820 * frequency * (oxygen_attenuation + water_vapor_attenuation)
@@ -785,8 +812,7 @@ def calculate_atmospheric_propagation_constant(
     frequency, temperature, pressure, water_vapor_density
 ):
     """
-    Calculate the propagation constant as a function of frequency (GHz), temperature (Celsius), atmospheric pressure (hectoPascals) and water vapour density (g/m^3).
-    Returns the complex propagation constant :math:`\\gamma=\\alpha+i\\beta`, which includes both attenuation  (:math:`\\alpha`) and phase shift (:math:`\\beta`).
+    Calculate the propagation constant as a function of frequency (GHz), temperature (Celsius), atmospheric pressure (hectoPascals) and water vapour density (g/m^3). The complex propagation constant :math:`\\gamma=\\alpha+i\\beta`, which includes both attenuation  (:math:`\\alpha`) and phase shift (:math:`\\beta`).
 
     Parameters
     ----------

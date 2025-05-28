@@ -13,7 +13,7 @@ def pyvista_to_meshio(polydata_object):
 
     Returns
     -------
-    meshio_object : meshio.Mesh
+    meshio_object : :type:`meshio.Mesh`
         The converted meshio object.
     """
     # extract only the triangles
@@ -35,7 +35,7 @@ def id_cells(faces):
 
     Parameters
     ----------
-    faces : numpy.ndarray
+    faces : numpy.ndarray of int
         The faces of the mesh.
 
     Returns
@@ -70,18 +70,19 @@ def id_cells(faces):
 
     return meshio_cells
 
+
 def points2pointcloud(xyz):
     """
     turns numpy array of xyz data into a meshio format point cloud
 
     Parameters
     ----------
-    xyz : numpy.ndarray
+    xyz : numpy.ndarray of float
         The xyz data to convert. The shape of the array should be (n, 3) or (n, 1, 3). If the shape is (n, 1, 3), it will be reshaped to (n, 3).
 
     Returns
     -------
-    new_point_cloud : meshio.Mesh
+    new_point_cloud : :type:`meshio.Mesh`
         The converted meshio point cloud.
 
     """

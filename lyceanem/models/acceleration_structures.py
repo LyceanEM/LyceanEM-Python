@@ -18,31 +18,31 @@ class Tile_acceleration_structure:
 
     Attributes
     ----------
-    triangle_verticies : :type:`np.ndarray` 2D array of :type:`float`
+    triangle_verticies : numpy.ndarray of float
         The vertices of the triangles in the blocking mesh.
-    max_x : :type:`float`
+    max_x : float
         The maximum x coordinate of the blocking mesh.
-    min_x : :type:`float`
+    min_x : float
         The minimum x coordinate of the blocking mesh.
-    max_y : :type:`float`
+    max_y : float
         The maximum y coordinate of the blocking mesh.
-    min_y : :type:`float`
+    min_y : float
         The minimum y coordinate of the blocking mesh.
-    max_z : :type:`float`
+    max_z : float
         The maximum z coordinate of the blocking mesh.
-    min_z : :type:`float`
+    min_z : float
         The minimum z coordinate of the blocking mesh.
-    tile_size : :type:`float`
+    tile_size : float
         The size of the tiles used for the acceleration structure.
-    y_cells_count : :type:`int`
+    y_cells_count : int
         The number of cells in the y direction.
-    z_cells_count : :type:`int`
+    z_cells_count : int
         The number of cells in the z direction.
-    bin_counts : :type:`np.ndarray` 1D array of :type:`float`
+    bin_counts : numpy.ndarray of float
         The counts of triangles in each bin.
-    binned_triangles_count : :type:`int`
+    binned_triangles_count : int
         The total number of triangles in the bins
-    binned_triangles : :type:`np.ndarray` 1D array of :type:`float`
+    binned_triangles : numpy.ndarray of float
         The triangles in the bins.
 
     Methods
@@ -126,9 +126,9 @@ class Brute_Force_acceleration_structure:
 
     Attributes
     ----------
-    triangle_verticies : :type:`np.ndarray` 2D array of :type:`float`
+    triangle_verticies : numpy.ndarray of float
         The vertices of the triangles in the blocking mesh.
-    triangles : :type:`np.ndarray` 2D array of :type:`int`
+    triangles : numpy.ndarray of int
         The triangles in the blocking mesh.
 
     Methods

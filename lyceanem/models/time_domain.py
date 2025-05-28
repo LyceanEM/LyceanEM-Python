@@ -41,28 +41,28 @@ def calculate_scattering(
         sink coordinates
     antenna_solid : :class:`lyceanem.base_classes.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
-    desired_E_axis : :type:`np.ndarray` 1D array of complex
+    desired_E_axis : numpy.ndarray of float
         the desired excitation vector, can be a 1*3 array
     scatter_points : :type:`meshio.Mesh`
         the scattering points in the environment. Defaults to [None], in which case scattering points will be generated from the antenna_solid. If no scattering should be considered then set scattering to [0].
-    wavelength : :type:`float`
+    wavelength : float
         the wavelength of interest in metres
-    scattering : :type:`int`
+    scattering : int
         the number of reflections to be considered, defaults to [0], but up to 2 can be considered. The higher this number to greater to computational effort, and for most situations 1 should be ample.
-    elements : :type:`bool`
+    elements : bool
         whether the sources and sinks should be considered as elements of a phased array, or a fixed phase aperture like a horn or reflector
-    sampling_freq : :type:`float`
+    sampling_freq : float
         the desired sampling frequency, should be twice the highest frequency of interest to avoid undersampling artifacts
-    num_samples : :type:`int`
+    num_samples : int
         the length of the desired sampling, can be calculated from the desired model time
 
     Return
     -------
-    Ex : :type:`np.ndarray` 2D array of complex
+    Ex : numpy.ndarray of complex
         the x directed voltage at the sink coordinates in the time domain, if elements=True, then it will be an array of num_sinks * num_samples, otherwise it will be a 1D array
-    Ey : :type:`np.ndarray` 2D array of complex
+    Ey : numpy.ndarray of complex
         the y directed voltage at the sink coordinates in the time domain, if elements=True, then it will be an array of num_sinks * num_samples, otherwise it will be a 1D array
-    Ez : :type:`np.ndarray` 2D array of complex
+    Ez : numpy.ndarray of complex
         the z directed voltage at the sink coordinates in the time domain, if elements=True, then it will be an array of num_sinks * num_samples, otherwise it will be a 1D array
     Waketimes : :type:`np.ndarray` 1D array of float
         the shortest time required for a ray to reach any sink from any source, as long as elements=False. If elements=True, then this is not implemented in the same way, and will return the shortest time required for the final source.
@@ -111,7 +111,9 @@ def calculate_scattering(
                 conformal_E_vectors = desired_E_axis.reshape(num_sources, 3)
 
     # convert from field strengths to diffraction integral components
-    conformal_E_vectors = conformal_E_vectors * aperture_coords.point_data['Area'].reshape(-1, 1)
+    conformal_E_vectors = conformal_E_vectors * aperture_coords.point_data[
+        "Area"
+    ].reshape(-1, 1)
     if scattering == 0:
         # only use the aperture point cloud, no scattering required.
         scatter_points = meshio.Mesh(
@@ -187,7 +189,6 @@ def calculate_scattering(
         scatter_mask[(num_sources + num_sinks) :] = 0
 
     else:
-
 
         unified_model = np.append(
             np.append(

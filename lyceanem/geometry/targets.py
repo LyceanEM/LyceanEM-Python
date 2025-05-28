@@ -16,6 +16,8 @@ EPSILON = 1e-6  # how close to zero do we consider zero?
 
 def NasaAlmond(resolution="quarter"):
     """
+    :meta private:
+
     NASA Almond is imported and then converted into the appropriate types for modelling
     This depends on the appropriate stl files in the working folder
     Parameters
@@ -63,7 +65,8 @@ def NasaAlmond(resolution="quarter"):
 
 def converttostl():
     """
-    This function is a convinence to allow the repeatable used of openscad to generate watertight stl files for use within LyceanEM. This function assumes that all openscad files are saved as temp.scad in the current working directory, and the output will be saved as temp.stl, ready for the home function to import it.
+    :meta private:
+    This function is a convenience to allow the repeatable used of openscad to generate watertight stl files for use within LyceanEM. This function assumes that all openscad files are saved as temp.scad in the current working directory, and the output will be saved as temp.stl, ready for the home function to import it.
 
     Returns
     -------
@@ -98,6 +101,7 @@ def converttostl():
 
 def rectReflector(majorsize, minorsize, thickness):
     """
+    :meta private:
     create a primative of the right size, assuming always orientated
     with normal aligned with zenith, and major axis with x,
     adjust position so the face is centred on (0,0,0)
@@ -136,6 +140,7 @@ def rectReflector(majorsize, minorsize, thickness):
 
 def shapeTrapezoid(x_size, y_size, length, flare_angle):
     """
+    :meta private:
     create a trapazoid to represent a simple horn of the right size, assuming always orientated
     with normal aligned with zenith, and major axis with x,
     adjust position so the face is centred on (0,0,0)
@@ -235,9 +240,9 @@ def meshedReflector(majorsize, minorsize, thickness, grid_resolution, sides="all
 
     Returns
     -------
-    reflector : meshio object
+    reflector : :type:`meshio.Mesh`
         the defined cuboid
-    mesh_points : meshio object
+    mesh_points : :type:`meshio.Mesh`
         the scattering points, spaced at grid_resolution seperation between each point, and with normal vectors from
         the populating surfaces
 
@@ -274,7 +279,7 @@ def meshedHorn(
         the length of the horn structure
     edge_width : float
         the width of the physical structure around the horn
-    flare_angle :
+    flare_angle : float
         the taper angle of the horn
     grid_resolution : float
         the spacing between the aperture points, should be half a wavelength at the frequency of interest
@@ -283,9 +288,9 @@ def meshedHorn(
 
     Returns
     -------
-    structure : meshio object
+    structure : :type:`meshio.Mesh`
         the physical structure of the horn
-    mesh_points : meshio object
+    mesh_points : :type:`meshio.Mesh`
         the source points for the horn aperture
     """
     # print("HIHIH")
@@ -316,7 +321,6 @@ def parabolic_aperture(
 
     Parameters
     ----------
-
     diameter : float
         Diameter of the parabolic reflector.
     focal_length : float
@@ -333,6 +337,13 @@ def parabolic_aperture(
         height of lip from the front surface of the reflector
     lip_width : float
         width of the reflector lip
+
+    Returns
+    -------
+    mesh : :type:`meshio.Mesh`
+        A mesh object containing the parabolic reflector surface.
+    aperture_points : :type:`meshio.Mesh`
+        A mesh object containing the points on the surface of the parabolic reflector, with normals.
 
     """
     # Define function for parabola equation (y^2 = 4*focal_length*x)
@@ -490,9 +501,9 @@ def spherical_field(az_range, elev_range, outward_normals=False, field_radius=1.
 
     Parameters
     ----------
-    az_range : array_like[float]
+    az_range : numpy.ndarray of float
         Azimuthal angle in degrees ``[0, 360]``.
-    elev_range : array_like[float]
+    elev_range : numpy.ndarray of float
         Elevation angle in degrees ``[-90, 90]``.
     outward_normals : bool, optional
         If outward pointing normals are required, set as True
@@ -504,16 +515,18 @@ def spherical_field(az_range, elev_range, outward_normals=False, field_radius=1.
     mesh : :type:`meshio.Mesh`
         spherical field of points at specified azimuth and elevation angles, with meshed triangles
     """
-    vista_pattern=pv.Sphere(radius=field_radius,
-              theta_resolution=az_range.shape[0],
-              phi_resolution=elev_range.shape[0],
-              start_theta=az_range[0],
-              end_theta=az_range[-1],
-              start_phi=elev_range[0],
-              end_phi=elev_range[-1]).extract_surface()
-    #vista_pattern = pv.grid_from_sph_coords(
+    vista_pattern = pv.Sphere(
+        radius=field_radius,
+        theta_resolution=az_range.shape[0],
+        phi_resolution=elev_range.shape[0],
+        start_theta=az_range[0],
+        end_theta=az_range[-1],
+        start_phi=elev_range[0],
+        end_phi=elev_range[-1],
+    ).extract_surface()
+    # vista_pattern = pv.grid_from_sph_coords(
     #    az_range, (90 - elev_range), field_radius
-    #).extract_surface()
+    # ).extract_surface()
     if outward_normals:
         vista_pattern.point_data["Normals"] = vista_pattern.points / (
             np.linalg.norm(vista_pattern.points, axis=1).reshape(-1, 1)
@@ -537,7 +550,33 @@ def spherical_field(az_range, elev_range, outward_normals=False, field_radius=1.
 def linear_parabolic_aperture(
     diameter, focal_length, height, thickness, mesh_size, lip=False, lip_width=1e-3
 ):
-    # Define function for parabola equation (y^2 = 4*focal_length*x)
+    """
+    Create a linear (rectangular section) parabolic reflector with a specified diameter and focal length, and generate a mesh of points on the surface.
+
+    Parameters
+    ----------
+    diameter : float
+        Diameter of the parabolic reflector.
+    focal_length : float
+        Focal length of the parabolic reflector.
+    height : float
+        Height of the rectangular section of the reflector.
+    thickness : float
+        Thickness of the reflector.
+    mesh_size : float
+        Desired seperation of the mesh points.
+    lip : bool, optional
+        If True, adds a flat lip to the reflector. Default is False.
+    lip_width : float, optional
+        Width of the reflector lip if `lip` is True. Default is 1e-3.
+    Returns
+    -------
+    mesh : :type:`meshio.Mesh`
+        A mesh object containing the parabolic reflector surface.
+    aperture_points : :type:`meshio.Mesh`
+        A mesh object containing the points on the surface of the parabolic reflector, with normals.
+
+    """
 
     def parabola(x):
         return (1 / (4 * focal_length)) * x**2
@@ -606,19 +645,29 @@ def gridedReflectorPoints(
     majorsize, minorsize, thickness, grid_resolution, sides="all"
 ):
     """
+    :meta private:
     create a primative of the right size, assuming always orientated
     with normal aligned with zenith, and major axis with x,
     adjust position so the face is centred on (0,0,1)
 
     Parameters
     ----------
-    majorsize : :type:`float`
-
-    minorsize : :type:`float`
-
-    thickness : :type:`float`
-
-    grid_resolution : :type:`float`
+    majorsize : float
+        size in the x direction of the reflector
+    minorsize : float
+        size in the y direction of the reflector
+    thickness : float
+        thickness of the reflector
+    grid_resolution : float
+        Desired spacing between the points on the reflector surface, should be half a wavelength at the frequency of interest
+    sides : str, optional
+        Specifies which sides to mesh. Default is 'all', which creates a mesh of surface points on all sides of the cuboid.
+        Other options are 'front', which only creates points for the side aligned with the positive z direction, or 'centres',
+        which creates a point for the centre of each side.
+    Returns
+    -------
+    mesh_points : :type:`meshio.Mesh`
+        the source points for the reflector surface, with normals
 
     """
     if sides == "all":
@@ -779,6 +828,9 @@ def gridedReflectorPoints(
     )
     from ..utility.mesh_functions import pyvista_to_meshio
     from .geometryfunctions import compute_areas
-    mesh_points = compute_areas(pyvista_to_meshio(pv.from_meshio(mesh_points).delaunay_2d()))
+
+    mesh_points = compute_areas(
+        pyvista_to_meshio(pv.from_meshio(mesh_points).delaunay_2d())
+    )
 
     return mesh_points

@@ -29,16 +29,16 @@ def aperture_projection(
         triangle mesh of the desired aperture
     environment : :class:`lyceanem.base_classes.structures`
         the :class:`lyceanem.base_classes.structures` class should contain all the environment for scattering, providing the blocking for the rays
-    wavelength : :type:`float`
+    wavelength : float
         the wavelength of interest in metres
-    az_range : :class:`np.ndarray` of float32
+    az_range : numpy.ndarray of float
         the azimuth range desired for the farfield pattern in degrees
-    elev_range : :class:`np.ndarray` of float32
+    elev_range : numpy.ndarray of float
         the elevation range desired for the farfield pattern in degrees
 
     Returns
     ----------
-    directivity_envelope : :class:`np.ndarray` 2D array of float32
+    directivity_envelope : numpy.ndarray of float
         The predicted maximum directivity envelope for the provided aperture at the wavelength of interest
     pcd : :class:`meshio.Mesh`
         a point cloud colored according to the projected area, normalised to the total projected area of the aperture.
@@ -110,32 +110,32 @@ def calculate_farfield(
         aperture coordinates, from a single point to a mesh sampling across and aperture or surface
     antenna_solid : :class:`lyceanem.base_classes.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
-    desired_E_axis : :type:`np.ndarray` of floats
+    desired_E_axis : numpy.ndarray of floats
         1*3 numpy array of the desired excitation vector
-    az_range : :type:`np.ndarray` of floats
+    az_range : numpy.ndarray of floats
         the desired azimuth planes in degrees
-    el_range : :type:`np.ndarray` of floats
+    el_range : numpy.ndarray of floats
         the desired elevation planes in degrees
     scatter_points : :type:`meshio.Mesh`
         the environment scattering points, defaults to [None]
-    wavelength : :type:`float`
+    wavelength : float
         wavelength of interest in meters, defaults to [1]
-    farfield_distance : :type:`float`
+    farfield_distance : float
         the distance to evaluate the antenna pattern, defaults to [2]
-    scattering: :type:`int`
+    scattering: int
      the number of scatters required, if this is set to 0, then only line of sight propagation is considered, defaults to [0]
-    elements : :type:`bool`
+    elements : bool
         whether the sources and sinks should be considered as elements of a phased array, or a fixed phase aperture like a horn or reflector
-    los : :type:`bool`
+    los : bool
         The line of sight component can be ignored by setting los to [False], defaults to [True]
-    project_vectors : :type:`bool`
+    project_vectors : bool
         should the excitation vector/vectors be projected to be conformal with the surface of the source coordinates
 
     Returns
     ---------
-    etheta : :type:`np.ndarray` 2D array of complex
+    etheta : numpy.ndarray of complex
         The Etheta farfield component
-    ephi : :type:`np.ndarray` 2D array of complex
+    ephi : numpy.ndarray of complex
         The EPhi farfield component
     """
     if az_range==None:
@@ -244,33 +244,33 @@ def calculate_scattering(
         sink coordinates
     antenna_solid : :class:`lyceanem.base_classes.structures`
         the class should contain all the environment for scattering, providing the blocking for the rays
-    desired_E_axis : :type:`np.ndarray` 1D array of :type:`float`
+    desired_E_axis : numpy.ndarray of float
         the desired excitation vector, can be a 1*3 array or a n*3 array if multiple different exciations are desired in one lauch
     scatter_points : :type:`meshio.Mesh`
         the scattering points in the environment. Defaults to [None], in which case scattering points will be generated from the antenna_solid. If no scattering should be considered then set scattering to [0].
-    wavelength : :type:`float`
+    wavelength : float
         the wavelength of interest in metres
-    scattering : :type:`int`
+    scattering : int
         the number of reflections to be considered, defaults to [0], but up to 2 can be considered. The higher this number to greater to computational effort, and for most situations 1 should be ample.
-    elements : :type:`bool`
+    elements : bool
         whether the sources and sinks should be considered as elements of a phased array, or a fixed phase aperture like a horn or reflector
-    los : :type:`bool`
+    los : bool
         The line of sight component can be ignored by setting los to [False], defaults to [True]
-    project_vectors : :type:`bool`
-    cuda : :type:`bool`
+    project_vectors : bool
+    cuda : bool
         Choice of Cuda or Numba engine, will use Cuda if True
     acceleration_structure : None
         if no acceleration structure is provided, then the function will default to the tiled raycasting method. To pass acceleration structure construct one prior to calling this function
-    chunks : :type:`int`
+    chunks : int
         chunks is the number of chunks to split the raycasting into, defaults to 1, if gpu is going to run out of memory an error will be reported, and this number should be increased before retrying.
 
     Returns
     -------
-    Ex : :type:`np.ndarray` 2D array of complex
+    Ex : numpy.ndarray of complex
        The x-directed electric field components
-    Ey : :type:`np.ndarray` 2D array of complex
+    Ey : numpy.ndarray of complex
         The y-directed electric field components
-    Ez : :type:`np.ndarray` 2D array of complex
+    Ez : numpy.ndarray of complex
         The z-directed electric field components
 
     """
