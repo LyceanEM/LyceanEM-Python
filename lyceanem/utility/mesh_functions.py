@@ -112,6 +112,8 @@ def points2pointcloud(xyz):
                 ),
             )
         ],
-        point_data={"Normals": normals / np.linalg.norm(normals, axis=1)},
+        point_data={
+            "Normals": normals / np.linalg.norm(normals, axis=1).reshape(-1, 1)
+        },
     )
     return mesh_points
