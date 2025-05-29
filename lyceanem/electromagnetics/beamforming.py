@@ -1591,7 +1591,7 @@ def create_display_mesh(
         A PyVista PolyData object containing the display mesh with normals and scaled points.
 
     """
-    pattern_mesh = copy.deepcopy(field_data).clean(tolerance=1e-6)
+    pattern_mesh = pv.from_meshio(field_data).copy().clean(tolerance=1e-6)
     # pattern_mesh=pv.PolyData(normals).delaunay_2d(inplace=True)
     # pattern_mesh.compute_normals(inplace=True,flip_normals=False) # for some reason the computed normals are all inwards unless I set flip_normals to True
 

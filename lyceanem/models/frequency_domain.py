@@ -9,6 +9,8 @@ from ..geometry import geometryfunctions as GF
 from ..geometry import targets as TL
 from ..raycasting import rayfunctions as RF
 
+EPSILON = 1e-7
+
 
 def aperture_projection(
     aperture,
@@ -62,7 +64,7 @@ def aperture_projection(
     triangle_cell_index = GF.locate_cell_index(aperture)
     triangle_normals = aperture.cell_data["Normals"][triangle_cell_index]
     # Ensure no clash with triangles in raycaster
-    triangle_centroids.points += 1e-6 * triangle_normals
+    triangle_centroids.points += EPSILON * triangle_normals
     import pyvista as pv
 
     # pl = pv.Plotter()
@@ -102,6 +104,7 @@ def calculate_farfield(
     elements=False,
     los=True,
     project_vectors=False,
+    cuda=False,
     antenna_axes=np.eye(3),
     alpha=0.0,
     beta=(np.pi * 2) / 1.0,
@@ -135,6 +138,8 @@ def calculate_farfield(
         The line of sight component can be ignored by setting los to [False], defaults to [True]
     project_vectors : bool
         should the excitation vector/vectors be projected to be conformal with the surface of the source coordinates
+    cuda : bool
+        Choice of Cuda or Numba engine, will use Cuda if True
 
     Returns
     ---------
@@ -166,6 +171,7 @@ def calculate_farfield(
         project_vectors=project_vectors,
         antenna_axes=antenna_axes,
         multiE=False,
+        cuda=cuda,
         alpha=alpha,
         beta=beta,
     )

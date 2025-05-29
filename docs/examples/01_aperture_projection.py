@@ -50,8 +50,8 @@ wavelength = 3e8 / 10e9
 # In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
 # meshio trianglemesh structures can be accessed by importing the data subpackage
 import lyceanem.tests.reflectordata as data
-
-body, array, _ = data.exampleUAV(10e9)
+body=data.UAV_Demo(wavelength*0.5)
+array=data.UAV_Demo_Aperture(wavelength*0.5)
 
 import pyvista as pv
 pl=pv.Plotter()
@@ -62,15 +62,8 @@ pl.show()
 # %%
 ## .. image:: ../_static/open3d_structure.png
 
-# crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to
-# the hidden surfaces, but correctly an aperture will only have an outer face.
-surface_array = copy.deepcopy(array)
-surface_array.cells[0].data = np.asarray(array.cells[0].data)[: (array.cells[0].data).shape[0] // 2, :]
 
-surface_array.cell_data["Normals"] = np.array(array.cell_data["Normals"])[: (array.cells[0].data).shape[0] // 2]
-#Recalculate Normals
-from lyceanem.geometry.geometryfunctions import compute_normals
-surface_array=compute_normals(surface_array)
+
 
 
 # %%
@@ -94,7 +87,7 @@ blockers = structures([body])
 from lyceanem.models.frequency_domain import aperture_projection
 
 directivity_envelope, pcd = aperture_projection(
-    surface_array,
+    array,
     environment=blockers,
     wavelength=wavelength,
     az_range=np.linspace(-180.0, 180.0, az_res),
@@ -172,3 +165,10 @@ ax.set_xlabel("Azimuth (degrees)")
 ax.set_ylabel("Elevation (degrees)")
 ax.set_title("Maximum Directivity Envelope")
 fig.show()
+
+pl=pv.Plotter()
+pl.add_mesh(pv.from_meshio(body),color="green")
+pl.add_mesh(pv.from_meshio(array),color="aqua")
+pl.add_mesh(pv.from_meshio(pcd),scalars="Directivity Envelope (dBi)",style='points',clim=[0,np.nanmax(pcd.point_data['Directivity Envelope (dBi)'])])
+pl.add_axes()
+pl.show()

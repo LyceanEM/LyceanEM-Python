@@ -816,15 +816,27 @@ class antenna_pattern(object3d):
 
         """
         points = self.cartesian_points()
-        mesh = pv.StructuredGrid(points[:, 0], points[:, 1], points[:, 2])
-        mesh.dimensions = [self.azimuth_resolution, self.elevation_resolution, 1]
+        # mesh = pv.StructuredGrid(points[:, 0], points[:, 1], points[:, 2])
+        # mesh.dimensions = [self.azimuth_resolution, self.elevation_resolution, 1]
+        from lyceanem.geometry.targets import spherical_field
+
+        mesh = spherical_field(
+            self.az_mesh[0, :], self.elev_mesh[:, 0], self.field_radius
+        )
         if self.arbitary_pattern_format == "Etheta/Ephi":
-            mesh.point_data["Etheta"] = self.pattern[:, :, 0]
-            mesh.point_data["Ephi"] = self.pattern[:, :, 1]
-        elif self.arbitary_pattern_format == "ExEyEz":
-            mesh.point_data["Ex"] = self.pattern[:, :, 0]
-            mesh.point_data["Ey"] = self.pattern[:, :, 1]
-            mesh.point_data["Ez"] = self.pattern[:, :, 2]
+            self.transmute_pattern("ExEyEz")
+
+        mesh.point_data["Ex-Real"] = np.real(self.pattern[:, :, 0]).ravel()
+        mesh.point_data["Ex-Imag"] = np.imag(self.pattern[:, :, 0]).ravel()
+        mesh.point_data["Ey-Real"] = np.real(self.pattern[:, :, 1]).ravel()
+        mesh.point_data["Ey-Imag"] = np.imag(self.pattern[:, :, 1]).ravel()
+        mesh.point_data["Ez-Real"] = np.real(self.pattern[:, :, 2]).ravel()
+        mesh.point_data["Ez-Imag"] = np.imag(self.pattern[:, :, 2]).ravel()
+
+        from lyceanem.electromagnetics.emfunctions import PoyntingVector, Directivity
+
+        # pattern_mesh=pv.to_meshio(mesh.extract_surface().triangulate())
+        pattern_mesh = Directivity(PoyntingVector(mesh))
 
         return mesh
 
