@@ -65,22 +65,24 @@ def aperture_projection(
     triangle_centroids.points += 1e-6 * triangle_normals
     import pyvista as pv
 
-    pl = pv.Plotter()
-    pl.add_mesh(pv.from_meshio(aperture), scalars="Area")
-    pl.add_mesh(pv.from_meshio(environment.solids[0]), color="red")
-    pl.add_mesh(pv.from_meshio(triangle_centroids), color="green")
-    pl.show()
+    # pl = pv.Plotter()
+    # pl.add_mesh(pv.from_meshio(aperture), scalars="Area")
+    # pl.add_mesh(pv.from_meshio(environment.solids[0]), color="red")
+    # pl.add_mesh(pv.from_meshio(triangle_centroids), color="green")
+    # pl.show()
     visible_patterns, pcd = RF.visiblespace(
         triangle_centroids,
         triangle_normals,
         blocking_triangles,
-        vertex_area=aperture.point_data["Area"],
+        vertex_area=triangle_centroids.point_data["Area"],
         az_range=az_range,
         elev_range=elev_range,
         shell_range=farfield_distance,
     )
     directivity_envelope[:, :] = (4 * np.pi * visible_patterns) / (wavelength**2)
-
+    pcd.point_data["Directivity Envelope"] = (4 * np.pi * pcd.point_data["Area"]) / (
+        wavelength**2
+    )
     return directivity_envelope, pcd
 
 

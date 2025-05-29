@@ -38,7 +38,7 @@ def UAV_Demo(mesh_resolution,
     
     gmsh.model.add("Demo UAV")
     
-    gmsh.merge(uav_path.as_posix())   
+    gmsh.merge(uav_path.as_posix())
     aperture_surfaces=[(2,6),(2,7),(2,13)]
     gmsh.model.occ.remove(aperture_surfaces)
     gmsh.model.occ.fuse([(3,1)], [(3,2)])
@@ -47,6 +47,8 @@ def UAV_Demo(mesh_resolution,
     gmsh.write(file_name)
     gmsh.finalize()
     mesh=meshio.read(file_name)
+    
+    mesh=GF.compute_normals(GF.compute_areas(mesh))
     return mesh
 
 def UAV_Demo_Aperture(mesh_resolution,
@@ -58,7 +60,7 @@ def UAV_Demo_Aperture(mesh_resolution,
     
     gmsh.model.add("UAV Conformal Array")
     
-    gmsh.merge(UAv_path.as_posix())
+    gmsh.merge(uav_path.as_posix())
     
     all_entities=gmsh.model.occ.getEntities()
     surfaces=all_entities[370:455]
@@ -83,6 +85,7 @@ def UAV_Demo_Aperture(mesh_resolution,
     gmsh.write(file_name)
     gmsh.finalize()
     mesh=meshio.read(file_name)
+    mesh=GF.compute_normals(GF.compute_areas(mesh))
     return mesh
 def exampleUAV(frequency):
     bodystream = files(lyceanem.tests.data).joinpath("UAV.stl")

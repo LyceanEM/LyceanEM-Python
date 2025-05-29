@@ -86,11 +86,32 @@ def points2pointcloud(xyz):
         The converted meshio point cloud.
 
     """
+    import numpy as np
+
     if xyz.shape[1] == 3:
-        new_point_cloud = meshio.Mesh(points=xyz, cells=[])
+        reshaped = xyz
 
     else:
         reshaped = xyz.reshape((int(len(xyz.ravel()) / 3), 3))
-        new_point_cloud = meshio.Mesh(points=reshaped, cells=[])
 
-    return new_point_cloud
+    # assume mean of xyz is centre, and normals are outwards facing from center.
+    center = np.mean(xyz, axis=0)
+    normals = reshaped - center
+    mesh_points = meshio.Mesh(
+        points=reshaped,
+        cells=[
+            (
+                "vertex",
+                np.array(
+                    [
+                        [
+                            i,
+                        ]
+                        for i in range(reshaped.shape[0])
+                    ]
+                ),
+            )
+        ],
+        point_data={"Normals": normals / np.linalg.norm(normals, axis=1)},
+    )
+    return mesh_points
