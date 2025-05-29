@@ -309,11 +309,11 @@ def EGCWeights(
 
 
     """
-    if az_range==None:
-        az_range=np.linspace(-180.0, 180.0, 19)
+    if az_range is None:
+        az_range = np.linspace(-180.0, 180.0, 19)
 
-    if elev_range==None:
-        elev_range=np.linspace(-90.0, 90.0, 19)
+    if elev_range is None:
+        elev_range = np.linspace(-90.0, 90.0, 19)
     weights = np.zeros((Etheta.shape[0]), dtype=np.complex64)
     az_index = np.argmin(np.abs(az_range - command_angles[0]))
     elev_index = np.argmin(np.abs(elev_range - command_angles[1]))
@@ -538,15 +538,15 @@ def MaximumDirectivityMap(
         that command angle. Arranged as elev axis, azimuth axis, Dtheta,Dphi,Dtot
 
     """
-    if az_range==None:
-        az_range=np.linspace(-180.0, 180.0, 19)
-    if elev_range==None:
-        elev_range=np.linspace(-90.0, 90.0, 19)
-    if elev_index == None:
+    if az_range is None:
+        az_range = np.linspace(-180.0, 180.0, 19)
+    if elev_range is None:
+        elev_range = np.linspace(-90.0, 90.0, 19)
+    if elev_index is None:
         # if no elev index is provided then generate for all possible values (assumes every elevation point is of interest)
         elev_index = np.linspace(0, len(elev_range) - 1, len(elev_range)).astype(int)
 
-    if az_index == None:
+    if az_index is None:
         # if no az index is provided then generate for all possible values (assumes every azimuth point is of interest)
         az_index = np.linspace(0, len(az_range) - 1, len(az_range)).astype(int)
 
@@ -730,16 +730,16 @@ def MaximumDirectivityMapDiscrete(
         that command angle.
 
     """
-    if az_range==None:
-        az_range=np.linspace(-180.0, 180.0, 19)
-    if elev_range==None:
-        elev_range=np.linspace(-90.0, 90.0, 19)
+    if az_range is None:
+        az_range = np.linspace(-180.0, 180.0, 19)
+    if elev_range is None:
+        elev_range = np.linspace(-90.0, 90.0, 19)
 
-    if elev_index == None:
+    if elev_index is None:
         # if no elev index is provided then generate for all possible values (assumes every elevation point is of interest)
         elev_index = np.linspace(0, len(elev_range) - 1, len(elev_range)).astype(int)
 
-    if az_index == None:
+    if az_index is None:
         # if no az index is provided then generate for all possible values (assumes every azimuth point is of interest)
         az_index = np.linspace(0, len(az_range) - 1, len(az_range)).astype(int)
 
@@ -905,10 +905,10 @@ def MaximumfieldMapDiscrete(
     total_solid_angle=(4 * np.pi),
     phase_resolution=[24],
 ):
-    if az_range==None:
-        az_range=np.linspace(-180.0, 180.0, 19)
-    if elev_range==None:
-        elev_range=np.linspace(-90.0, 90.0, 19)
+    if az_range is None:
+        az_range = np.linspace(-180.0, 180.0, 19)
+    if elev_range is None:
+        elev_range = np.linspace(-90.0, 90.0, 19)
     efield_map = np.zeros(
         (elev_res, az_res, 3, len(phase_resolution)), dtype=np.complex64
     )
@@ -1071,10 +1071,10 @@ def directivity_transform(
 
 
     """
-    if az_range==None:
-        az_range=np.linspace(-180.0, 180.0, 19)
-    if elev_range==None:
-        elev_range=np.linspace(-90.0, 90.0, 19)
+    if az_range is None:
+        az_range = np.linspace(-180.0, 180.0, 19)
+    if elev_range is None:
+        elev_range = np.linspace(-90.0, 90.0, 19)
     # transform Etheta and Ephi data into antenna directivity
     # directivity is defined in terms of the power radiated in a specific direction, over the average radiated power
     # power per unit solid angle
@@ -1433,7 +1433,7 @@ def PatternPlot2D(
 ):
     """
     Plot the relevant 2D data in relative power (dB) or normalised directivity (dBi) in a polar plot.
-    
+
     Parameters
     ----------
     data : numpy.ndarray of float
@@ -1454,11 +1454,11 @@ def PatternPlot2D(
         The graph title, defaults to [None].
     fontsize : int, optional
         The font size for the plot, default is [16].
-        
+
     Returns
     -------
     None
-    
+
     """
     # condition data
     data = np.abs(data)
@@ -1490,7 +1490,7 @@ def PatternPlot2D(
     fig, ax = plt.subplots(subplot_kw={"projection": "polar"})
     if multiline == True:
         for line in range(num_lines):
-            if not (line_labels == None):
+            if not (line_labels is None):
                 ax.plot(az_rad, logdata[:, line], label=line_labels[line])
             else:
                 ax.plot(az_rad, logdata[:, line])
@@ -1501,7 +1501,7 @@ def PatternPlot2D(
     ax.set_rticks(tick_marks, fontsize=fontsize)  # Less radial ticks
     ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
     ax.grid(True)
-    if not (line_labels == None):
+    if not (line_labels is None):
         # legend position
         legend_angle = np.deg2rad(30)
         ax.legend(
@@ -1513,7 +1513,7 @@ def PatternPlot2D(
             fontsize=fontsize,
         )
 
-    if not (title_text == None):
+    if not (title_text is None):
         ax.set_title(title_text, va="bottom", fontsize=fontsize)
 
     label_angle = np.deg2rad(280)
@@ -1565,7 +1565,7 @@ def GPUBeamformingMap(Etheta, Ephi, DirectivityMap, az_range, el_range, waveleng
 def create_display_mesh(
     field_data,
     field_radius=1.0,
-    label='Poynting_Vector_(Magnitude_(W/m2))',
+    label="Poynting_Vector_(Magnitude_(W/m2))",
     log_type="power",
     plot_max=None,
 ):
@@ -1613,7 +1613,7 @@ def create_display_mesh(
     if np.nanmax(logdata) <= 0.0:
         logdata -= np.nanmax(logdata)
 
-    if plot_max == None:
+    if plot_max is None:
         pattern_max = np.ceil(np.nanmax(logdata) / 5) * 5.0
     else:
         pattern_max = plot_max

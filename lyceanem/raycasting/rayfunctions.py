@@ -347,10 +347,10 @@ def visiblespace(
     resultant_pcd : :type:`meshio.Mesh`
         colour data to scale the points fractional visibility from the source aperture
     """
-    if az_range == None:
+    if az_range is None:
         az_range = np.linspace(-180.0, 180.0, 19)
 
-    if elev_range == None:
+    if elev_range is None:
         elev_range = np.linspace(-90.0, 90.0, 19)
     azaz, elel = np.meshgrid(az_range, elev_range)
     sourcenum = source_coords.points.shape[0]
@@ -530,7 +530,7 @@ def convertTriangles(triangle_object):
     """
     convert meshio.Mesh triangle object to ray tracer triangle class
     """
-    if triangle_object == None:
+    if triangle_object is None:
         triangles = np.empty(0, dtype=base_types.triangle_t)
     else:
         # assert triangle_object.cells[1].type == "triangle", "Not a triangle mesh"

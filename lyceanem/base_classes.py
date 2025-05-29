@@ -55,7 +55,7 @@ class points(object3d):
     def __init__(self, points=None):
         super().__init__()
         # solids is a list of meshio :class:`meshio.Mesh` structures
-        if points == None:
+        if points is None:
             # no points provided at creation,
             print("Empty Object Created, please add points")
             self.points = []
@@ -178,7 +178,7 @@ class points(object3d):
         -------
         combined points
         """
-        if point_index == None:
+        if point_index is None:
             points = np.empty((0, 3))
             for item in range(len(self.points)):
                 if item == 0:
@@ -283,7 +283,7 @@ class structures(object3d):
     def __init__(self, solids=None):
         super().__init__()
         # solids is a list of meshio :class:`meshio.Mesh` structures
-        if solids == None:
+        if solids is None:
             # no points provided at creation,
             print("Empty Object Created, please add solids")
             self.solids = []
@@ -462,7 +462,7 @@ class antenna_structures(object3d):
         """
         Exports all the points in the antenna structure as a :type:`meshio.Mesh` point cloud, transforming them to the global coordinate system
         """
-        if point_index == None:
+        if point_index is None:
             point_cloud = self.points.export_points()
         else:
             point_cloud = self.points.export_points(point_index=point_index)
@@ -506,7 +506,7 @@ class antenna_structures(object3d):
         excitation_weights : numpy.ndarray of complex
 
         """
-        if point_index == None:
+        if point_index is None:
             aperture_points = self.export_all_points()
         else:
             aperture_points = self.export_all_points(point_index=point_index)
