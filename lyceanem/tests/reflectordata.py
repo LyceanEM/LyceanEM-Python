@@ -29,64 +29,73 @@ import lyceanem.utility.mesh_functions as MF
 # reference_point=np.asarray([[np.min(temp[:,0]),np.min(temp[:,1]),np.min(temp[:,2])]])/1000
 
 
-def UAV_Demo(mesh_resolution,
-             file_name="DemoUAV.stl"):
+def UAV_Demo(mesh_resolution, file_name="DemoUAV.stl"):
     import gmsh
     import meshio
-    uav_path=files(lyceanem.tests.data).joinpath("Demo UAV.step")
+
+    uav_path = files(lyceanem.tests.data).joinpath("Demo UAV.step")
     gmsh.initialize()
-    
+
     gmsh.model.add("Demo UAV")
-    
+
     gmsh.merge(uav_path.as_posix())
-    aperture_surfaces=[(2,6),(2,7),(2,13)]
+    # scale from mm to m
+    all_entities = gmsh.model.occ.getEntities()
+    gmsh.model.occ.dilate(all_entities, 0, 0, 0, 1 / 1000, 1 / 1000, 1 / 1000)
+    gmsh.model.occ.synchronize()
+    aperture_surfaces = [(2, 6), (2, 7), (2, 13)]
     gmsh.model.occ.remove(aperture_surfaces)
-    gmsh.model.occ.fuse([(3,1)], [(3,2)])
-    
+    gmsh.model.occ.fuse([(3, 1)], [(3, 2)])
+
     gmsh.model.mesh.generate(dim=2)
     gmsh.write(file_name)
     gmsh.finalize()
-    mesh=meshio.read(file_name)
-    
-    mesh=GF.compute_normals(GF.compute_areas(mesh))
+    mesh = meshio.read(file_name)
+
+    mesh = GF.compute_normals(GF.compute_areas(mesh))
     return mesh
 
-def UAV_Demo_Aperture(mesh_resolution,
-                      file_name="DemoAperture.stl"):
+
+def UAV_Demo_Aperture(mesh_resolution, file_name="DemoAperture.stl"):
     import gmsh
     import meshio
-    uav_path=files(lyceanem.tests.data).joinpath("Demo UAV.step")
+
+    uav_path = files(lyceanem.tests.data).joinpath("Demo UAV.step")
     gmsh.initialize()
-    
+
     gmsh.model.add("UAV Conformal Array")
-    
+
     gmsh.merge(uav_path.as_posix())
-    
-    all_entities=gmsh.model.occ.getEntities()
-    surfaces=all_entities[370:455]
-    volumes=all_entities[455:]
-    
+    # scale from mm to m
+    all_entities = gmsh.model.occ.getEntities()
+    gmsh.model.occ.dilate(all_entities, 0, 0, 0, 1 / 1000, 1 / 1000, 1 / 1000)
+    gmsh.model.occ.synchronize()
+    surfaces = all_entities[370:455]
+    volumes = all_entities[455:]
+
     # Only want surfaces 6,7,13 for the array face.
-    wanted=[6-1,7-2,13-3] # adjust index for removal of items in list.
+    wanted = [6 - 1, 7 - 2, 13 - 3]  # adjust index for removal of items in list.
     for i in wanted:
         surfaces.pop(i)
-    
-    #delete all volumes
+
+    # delete all volumes
     gmsh.model.occ.remove(volumes)
     gmsh.model.occ.synchronize()
-    #delete all but wanted surfaces
-    gmsh.model.occ.remove(surfaces,recursive=True)
+    # delete all but wanted surfaces
+    gmsh.model.occ.remove(surfaces, recursive=True)
     gmsh.model.occ.synchronize()
-    remaining_entities=gmsh.model.occ.getEntities()
-    
-    gmsh.model.occ.fuse([(2,6)], [(2,7),(2,13)])
-    
+    remaining_entities = gmsh.model.occ.getEntities()
+
+    gmsh.model.occ.fuse([(2, 6)], [(2, 7), (2, 13)])
+
     gmsh.model.mesh.generate(dim=2)
     gmsh.write(file_name)
     gmsh.finalize()
-    mesh=meshio.read(file_name)
-    mesh=GF.compute_normals(GF.compute_areas(mesh))
+    mesh = meshio.read(file_name)
+    mesh = GF.compute_normals(GF.compute_areas(mesh))
     return mesh
+
+
 def exampleUAV(frequency):
     bodystream = files(lyceanem.tests.data).joinpath("UAV.stl")
     arraystream = files(lyceanem.tests.data).joinpath("UAVarray.stl")

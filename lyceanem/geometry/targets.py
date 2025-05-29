@@ -544,18 +544,18 @@ def spherical_field(az_range, elev_range, outward_normals=False, field_radius=1.
     mesh : :type:`meshio.Mesh`
         spherical field of points at specified azimuth and elevation angles, with meshed triangles
     """
-    vista_pattern = pv.Sphere(
-        radius=field_radius,
-        theta_resolution=az_range.shape[0],
-        phi_resolution=elev_range.shape[0],
-        start_theta=az_range[0],
-        end_theta=az_range[-1],
-        start_phi=elev_range[0],
-        end_phi=elev_range[-1],
-    ).extract_surface()
-    # vista_pattern = pv.grid_from_sph_coords(
-    #    az_range, (90 - elev_range), field_radius
+    # vista_pattern = pv.Sphere(
+    #    radius=field_radius,
+    #    theta_resolution=az_range.shape[0],
+    #    phi_resolution=elev_range.shape[0],
+    #    start_theta=az_range[0],
+    #    end_theta=az_range[-1],
+    #    start_phi=elev_range[0],
+    #    end_phi=elev_range[-1],
     # ).extract_surface()
+    vista_pattern = pv.grid_from_sph_coords(
+        az_range, (90 - elev_range), field_radius
+    ).extract_surface()
     if outward_normals:
         vista_pattern.point_data["Normals"] = vista_pattern.points / (
             np.linalg.norm(vista_pattern.points, axis=1).reshape(-1, 1)

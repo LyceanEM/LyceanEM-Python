@@ -13,6 +13,7 @@ from scipy.spatial import distance
 
 import lyceanem.base_types as base_types
 import lyceanem.electromagnetics.empropagation as EM
+import lyceanem.geometry.targets as TG
 from ..utility import math_functions as math_functions
 
 EPSILON = 1e-7  # how close to zero do we consider zero? example used 1e-7
@@ -355,11 +356,10 @@ def visiblespace(
         elev_range = np.linspace(-90.0, 90.0, 19)
     azaz, elel = np.meshgrid(az_range, elev_range)
     sourcenum = source_coords.points.shape[0]
-
-    sinks = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
-    sinks[:, 0], sinks[:, 1], sinks[:, 2] = azeltocart(
-        np.ravel(azaz), np.ravel(elel), 1e9
+    sample_shell = TG.spherical_field(
+        az_range, elev_range, outward_normals=True, field_radius=shell_range
     )
+    sinks = sample_shell.points
     sinknum = len(sinks)
     #
     # initial_index=np.full((len(source_coords),2),np.nan,dtype=np.int32)
@@ -412,18 +412,19 @@ def visiblespace(
     visible_patterns = patternsort(
         visible_patterns, sourcenum, sinknum, portion, hit_index
     ).reshape(len(elev_range), len(az_range))
-    shell_coords = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
-    shell_coords[:, 0], shell_coords[:, 1], shell_coords[:, 2] = azeltocart(
-        np.ravel(azaz), np.ravel(elel), shell_range
-    )
-    maxarea = np.nanmax(np.nanmax(visible_patterns))
-    resultant_pcd = patterntocloud(
-        np.reshape(visible_patterns, (len(az_range) * len(elev_range), 1)),
-        shell_coords,
-        maxarea,
-    )
+    # shell_coords = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
+    # shell_coords[:, 0], shell_coords[:, 1], shell_coords[:, 2] = azeltocart(
+    #    np.ravel(azaz), np.ravel(elel), shell_range
+    # )
 
-    return visible_patterns, resultant_pcd
+    maxarea = np.nanmax(np.nanmax(visible_patterns))
+    # resultant_pcd = patterntocloud(
+    #    np.reshape(visible_patterns, (len(az_range) * len(elev_range), 1)),
+    #    shell_coords,
+    #    maxarea,
+    # )
+    sample_shell.point_data["Projected Area"] = visible_patterns.reshape(-1, 1)
+    return visible_patterns, sample_shell
 
 
 @njit(cache=True, nogil=True)
