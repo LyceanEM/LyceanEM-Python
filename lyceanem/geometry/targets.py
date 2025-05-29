@@ -8,8 +8,6 @@ import sys
 import numpy as np
 import gmsh
 import pyvista as pv
-
-# from ..base_classes import antenna_structures, structures, points
 from ..geometry import geometryfunctions as GF
 
 EPSILON = 1e-6  # how close to zero do we consider zero?
@@ -578,11 +576,21 @@ def spherical_field(az_range, elev_range, outward_normals=False, field_radius=1.
     return mesh
 
 
-def linear_parabolic_aperture(
-    diameter, focal_length, height, thickness, mesh_size, lip=False, lip_width=1e-3
+def linear_parabolic_reflector(
+    diameter,
+    focal_length,
+    height,
+    thickness,
+    mesh_size,
+    lip=False,
+    lip_height=1e-3,
+    lip_width=1e-3,
+    file_name="Linear_Parabolic_Reflector.stl",
+    ONELAB=True,
 ):
     """
-    Create a linear (rectangular section) parabolic reflector with a specified diameter and focal length, and generate a mesh of points on the surface.
+    Create a parabolic reflector with a specified diameter and focal length, and generate a mesh of points on the surface. If only the points on the front surface are required, then :func:`parabolic_surface` can be used instead.
+    Alternatively if scattering points on all sides are desired, then the points from the reflector mesh may be used.
 
     Parameters
     ----------
@@ -591,85 +599,232 @@ def linear_parabolic_aperture(
     focal_length : float
         Focal length of the parabolic reflector.
     height : float
-        Height of the rectangular section of the reflector.
+        Height of the parabolic reflector. This is the height of the rectangular section which is used to intersect the parabolic reflector and create the final shape.
     thickness : float
         Thickness of the reflector.
     mesh_size : float
-        Desired seperation of the mesh points.
+        Desired separation of the mesh points.
     lip : bool, optional
         If True, adds a flat lip to the reflector. Default is False.
+    lip_height : float, optional
+        Height of the reflector lip if `lip` is True. Default is 1e-3.
     lip_width : float, optional
         Width of the reflector lip if `lip` is True. Default is 1e-3.
+    file_name : str, optional
+        Name of the file to save the mesh. Default is "Parabolic_Reflector.stl".
+    ONELAB : bool, optional
+        If True, enables ONELAB for interactive geometry manipulation. Default is False.
+
     Returns
     -------
     mesh : :type:`meshio.Mesh`
-        A mesh object containing the parabolic reflector surface.
+        A mesh object containing the parabolic reflector.
     aperture_points : :type:`meshio.Mesh`
-        A mesh object containing the points on the surface of the parabolic reflector, with normals.
+        A mesh object containing the points on the front surface of the parabolic reflector.
 
     """
 
     def parabola(x):
         return (1 / (4 * focal_length)) * x**2
 
-    with pygmsh.occ.Geometry() as geom:
-        geom.characteristic_length_max = mesh_size * 0.8
-        # Define points
-        point_num = 15
-        x_pos = np.linspace(-0.5 * diameter, 0.5 * diameter, point_num)
-        z_pos = parabola(x_pos)
-        coords = np.array(
-            [x_pos.ravel(), np.zeros((point_num)), z_pos.ravel()]
-        ).transpose()
-        points_list = []
-        for inc in range(point_num):
-            points_list.append(geom.add_point(coords[inc, :].tolist()))
+    gmsh.initialize()
+    gmsh.option.setNumber("Mesh.CharacteristicLengthMax", mesh_size)
+    # gmsh.option.setNumber("Geometry.OCCImportLabels", 1) # import colors from STEP
+    # Create a new geometry object
+    geo = gmsh.model.add("Parabolic Reflector")
+    # Define points
+    point_num = 15
+    x_pos = np.linspace(0, 0.5 * diameter, point_num)
+    z_pos = parabola(x_pos)
+    coords = np.array([x_pos.ravel(), np.zeros((point_num)), z_pos.ravel()]).transpose()
+    points_list = []
+    for inc in range(point_num):
+        points_list.append(gmsh.model.occ.add_point(*coords[inc, :].tolist()))
 
-        # Define top line based on points
-        line = geom.add_bspline(points_list)
+    # Define top line based on points
+    line = gmsh.model.occ.add_bspline(points_list)
 
-        _, surface, _ = geom.extrude(line, translation_axis=[0.0, 0.0, -thickness])
+    temp = gmsh.model.occ.extrude([(1, line)], 0.0, 0.0, -thickness)
+    surface = temp[1]
 
-        # Extrude surface to create volume
-        volume_list = []
-        _, b, _ = geom.extrude(surface, translation_axis=[0.0, height, 0.0])
-        volume_list.append(b)
+    # Revolve line to create revolution surface
+    volume_list = []
 
-        # for inc in range(7):
+    temp2 = gmsh.model.occ.revolve(
+        [surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.25 * np.pi
+    )
+    volume_list.append(temp2[1])
+    for inc in range(7):
+        gmsh.model.occ.rotate([surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, (1 / 4) * np.pi)
 
-        #    geom.extrude(surface, translation_axis=[0.0,height,0.0])
-        #    _, b2, _ = geom.extrude(surface, translation_axis=[0.0,height,0.0])
-        #    volume_list.append(b2)
+        temp3 = gmsh.model.occ.revolve(
+            [surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.25 * np.pi
+        )
+        volume_list.append(temp3[1])
 
-        if lip:
-            start_point = np.array(
-                [0.5 * diameter, 0.0, parabola(diameter * 0.5) - thickness]
-            )
-            r1 = geom.add_box(start_point, [lip_width, height, thickness])
-            start_point2 = np.array(
-                [-0.5 * diameter - lip_width, 0.0, parabola(diameter * 0.5) - thickness]
-            )
-            r2 = geom.add_box(start_point2, [lip_width, height, thickness])
+    if lip:
+        axis1 = np.array([0.0, 0.0, -lip_height])
 
-            volume_list.append(r1)
-            volume_list.append(r2)
+        start_point = np.array([0.0, 0.0, parabola(diameter * 0.5)])
+        cylinder1 = gmsh.model.occ.addCylinder(
+            *start_point.ravel(), *axis1, diameter / 2
+        )
+        cylinder2 = gmsh.model.occ.addCylinder(
+            *start_point.ravel(), *axis1, diameter / 2 + lip_width
+        )
+        final = gmsh.model.occ.cut([(3, cylinder2)], [(3, cylinder1)])[0]
+        volume_list.append(final[0])
 
-        if len(volume_list) > 1:
-            full_reflector = geom.boolean_union(volume_list)
+    full_reflector = gmsh.model.occ.fuse(volume_list[0:-1], [volume_list[-1]])
 
-        mesh_temp = geom.generate_mesh(dim=2)
-    for inc, cell in enumerate(mesh_temp.cells):
-        if cell.type == "triangle":
-            triangle_index = inc
+    gmsh.model.occ.synchronize()
 
-    import meshio
+    # define box for intersection
+    box1 = gmsh.model.occ.addBox(
+        -(diameter / 2 + lip_width * 2),
+        -height / 2,
+        parabola(diameter / 2) * 1.5,
+        diameter + lip_width * 4,
+        height,
+        -parabola(diameter / 2) * 2.0,
+    )
 
-    triangle_cells = [("triangle", mesh_temp.cells[triangle_index].data)]
-    mesh = meshio.Mesh(mesh_temp.points, triangle_cells)
-    mesh = GF.compute_normals(mesh)
-    mesh = GF.compute_areas(mesh)
-    aperture_points = GF.cell_centroids(mesh)
+    truncated_reflector = gmsh.model.occ.intersect(full_reflector[0], [(3, box1)])
+    gmsh.model.occ.synchronize()
+    if "-nopopup" not in sys.argv and ONELAB:
+        gmsh.fltk.run()
+
+    gmsh.model.mesh.generate(dim=2)
+    gmsh.write(file_name)
+    gmsh.finalize()
+    mesh = meshio.read(file_name)
+
+    aperture_points = gmsh_linear_parabolic_surface(
+        diameter,
+        focal_length,
+        height,
+        mesh_size,
+        lip=lip,
+        lip_width=lip_width,
+        file_name="Linear_Parabolic_Surface.stl",
+        ONELAB=ONELAB,
+    )
     return mesh, aperture_points
+
+
+def linear_parabolic_surface(
+    diameter,
+    focal_length,
+    height,
+    mesh_size,
+    lip=False,
+    lip_width=1e-3,
+    file_name="Linear_Parabolic_Surface.stl",
+    ONELAB=True,
+):
+    """
+    Create a linear parabolic surface with a specified diameter, focal length and height, and generate a mesh of points on the surface. This function is useful for generating the front surface of a parabolic reflector.
+
+    Parameters
+    ----------
+    diameter : float
+        Diameter of the parabolic surface.
+    focal_length : float
+        Focal length of the parabolic surface.
+    height : float
+        Height of the parabolic surface. This creates a rectangular section of the full parabolic surface.
+    mesh_size : float
+        Desired separation of the mesh points.
+    lip : bool, optional
+        If True, adds a flat lip to the surface. Default is False.
+    lip_width : float, optional
+        Width of the surface lip if `lip` is True. Default is 1e-3.
+    file_name : str, optional
+        Name of the file to save the mesh. Default is "Parabolic_Surface.stl".
+    ONELAB : bool, optional
+        If True, enables ONELAB for interactive geometry manipulation. Default is False.
+
+    Returns
+    -------
+    mesh : :type:`meshio.Mesh`
+        A mesh object containing the parabolic surface.
+
+
+    """
+
+    def parabola(x):
+        return (1 / (4 * focal_length)) * x**2
+
+    gmsh.initialize()
+    gmsh.option.setNumber("Mesh.CharacteristicLengthMax", mesh_size)
+    # gmsh.option.setNumber("Geometry.OCCImportLabels", 1) # import colors from STEP
+    # Create a new geometry object
+    geo = gmsh.model.add("Parabolic Reflector")
+    # Define points
+    point_num = 15
+    x_pos = np.linspace(0, 0.5 * diameter, point_num)
+    z_pos = parabola(x_pos)
+    coords = np.array([x_pos.ravel(), np.zeros((point_num)), z_pos.ravel()]).transpose()
+    points_list = []
+    for inc in range(point_num):
+        points_list.append(gmsh.model.occ.add_point(*coords[inc, :].tolist()))
+
+    # Define top line based on points
+    line = gmsh.model.occ.add_bspline(points_list)
+
+    # temp = gmsh.model.occ.extrude([(1,line)], 0.0, 0.0, -thickness)
+    surface = (1, line)
+
+    # Revolve line to create revolution surface
+    volume_list = []
+
+    temp2 = gmsh.model.occ.revolve(
+        [surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.25 * np.pi
+    )
+    volume_list.append(temp2[1])
+    for inc in range(7):
+        gmsh.model.occ.rotate([surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, (1 / 4) * np.pi)
+
+        temp3 = gmsh.model.occ.revolve(
+            [surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.25 * np.pi
+        )
+        volume_list.append(temp3[1])
+
+    if lip:
+
+        start_point = np.array([0.0, 0.0, parabola(diameter * 0.5)])
+        cylinder1 = gmsh.model.occ.addDisk(
+            *start_point.ravel(), diameter / 2, diameter / 2
+        )
+        cylinder2 = gmsh.model.occ.addDisk(
+            *start_point.ravel(), diameter / 2 + lip_width, diameter / 2 + lip_width
+        )
+        final = gmsh.model.occ.cut([(2, cylinder2)], [(2, cylinder1)])[0]
+        volume_list.append(final[0])
+
+    full_reflector = gmsh.model.occ.fuse(volume_list[0:-1], [volume_list[-1]])
+
+    gmsh.model.occ.synchronize()
+    # define box for intersection
+    box1 = gmsh.model.occ.addBox(
+        -(diameter / 2 + lip_width * 2),
+        -height / 2,
+        parabola(diameter / 2) * 1.5,
+        diameter + lip_width * 4,
+        height,
+        -parabola(diameter / 2) * 2.0,
+    )
+
+    truncated_reflector = gmsh.model.occ.intersect(full_reflector[0], [(3, box1)])
+    gmsh.model.occ.synchronize()
+    if "-nopopup" not in sys.argv and ONELAB:
+        gmsh.fltk.run()
+
+    gmsh.model.mesh.generate(dim=2)
+    gmsh.write(file_name)
+    gmsh.finalize()
+    mesh = meshio.read(file_name)
+    return mesh
 
 
 def gridedReflectorPoints(
