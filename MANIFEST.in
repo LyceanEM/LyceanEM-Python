@@ -1,3 +1,3 @@
-recursive-include  lyceanem *.txt *.npy *.stl *.ply
-recursive-include  tests *.txt *.npy *.stl *.ply
+recursive-include  lyceanem *.txt *.npy *.stl *.ply *.step
+recursive-include  tests *.txt *.npy *.stl *.ply *.step
 

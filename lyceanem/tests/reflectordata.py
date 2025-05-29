@@ -29,9 +29,61 @@ import lyceanem.utility.mesh_functions as MF
 # reference_point=np.asarray([[np.min(temp[:,0]),np.min(temp[:,1]),np.min(temp[:,2])]])/1000
 
 
-# downsampled_reflector=medium_reference_reflector.voxel_down_sample(voxel_size=wavelength*0.5)
-# downsampled_reflector.translate(-reference_point.ravel(),relative=True)
-# downsampled_reflector.translate([-0.15,-0.15,0],relative=True)
+def UAV_Demo(mesh_resolution,
+             file_name="DemoUAV.stl"):
+    import gmsh
+    import meshio
+    uav_path=files(lyceanem.tests.data).joinpath("Demo UAV.step")
+    gmsh.initialize()
+    
+    gmsh.model.add("Demo UAV")
+    
+    gmsh.merge(uav_path.as_posix())   
+    aperture_surfaces=[(2,6),(2,7),(2,13)]
+    gmsh.model.occ.remove(aperture_surfaces)
+    gmsh.model.occ.fuse([(3,1)], [(3,2)])
+    
+    gmsh.model.mesh.generate(dim=2)
+    gmsh.write(file_name)
+    gmsh.finalize()
+    mesh=meshio.read(file_name)
+    return mesh
+
+def UAV_Demo_Aperture(mesh_resolution,
+                      file_name="DemoAperture.stl"):
+    import gmsh
+    import meshio
+    uav_path=files(lyceanem.tests.data).joinpath("Demo UAV.step")
+    gmsh.initialize()
+    
+    gmsh.model.add("UAV Conformal Array")
+    
+    gmsh.merge(UAv_path.as_posix())
+    
+    all_entities=gmsh.model.occ.getEntities()
+    surfaces=all_entities[370:455]
+    volumes=all_entities[455:]
+    
+    # Only want surfaces 6,7,13 for the array face.
+    wanted=[6-1,7-2,13-3] # adjust index for removal of items in list.
+    for i in wanted:
+        surfaces.pop(i)
+    
+    #delete all volumes
+    gmsh.model.occ.remove(volumes)
+    gmsh.model.occ.synchronize()
+    #delete all but wanted surfaces
+    gmsh.model.occ.remove(surfaces,recursive=True)
+    gmsh.model.occ.synchronize()
+    remaining_entities=gmsh.model.occ.getEntities()
+    
+    gmsh.model.occ.fuse([(2,6)], [(2,7),(2,13)])
+    
+    gmsh.model.mesh.generate(dim=2)
+    gmsh.write(file_name)
+    gmsh.finalize()
+    mesh=meshio.read(file_name)
+    return mesh
 def exampleUAV(frequency):
     bodystream = files(lyceanem.tests.data).joinpath("UAV.stl")
     arraystream = files(lyceanem.tests.data).joinpath("UAVarray.stl")
