@@ -34,13 +34,14 @@ wavelength = 3e8 / 10e9
 from lyceanem.base_classes import points,structures,antenna_structures
 import meshio
 
-point1=np.asarray([0.0,0,0]).reshape(1,3)
-normal1=np.asarray([0.00,0.0,1.0]).reshape(1,3)
-aperture_coords = meshio.Mesh(points=point1, cells=[], point_data={"Normals": normal1})
-#aperture_coords.points=o3d.utility.Vector3dVector(point1)
-#aperture_coords.normals=o3d.utility.Vector3dVector(normal1)
-aperture=points([aperture_coords])
-blockers=structures([None])
+import lyceanem.geometry.targets as TL
+import lyceanem.geometry.geometryfunctions as GF
+
+transmit_horn_structure, transmitting_antenna_surface_coords = TL.meshedHorn(
+    58e-3, 58e-3, 128e-3, 2e-3, 0.21, wavelength*0.5
+)
+aperture=points([transmitting_antenna_surface_coords])
+blockers=structures([transmit_horn_structure])
 point_antenna=antenna_structures(blockers, aperture)
 
 
@@ -52,7 +53,7 @@ from lyceanem.models.frequency_domain import calculate_farfield
 desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
 desired_E_axis[0, 0] = 1.0
 Etheta, Ephi = calculate_farfield(
-    aperture_coords,
+    point_antenna.export_all_points(),
     point_antenna.export_all_structures(),
     point_antenna.excitation_function(desired_e_vector=desired_E_axis),
     az_range=np.linspace(-180, 180, az_res),
@@ -93,6 +94,7 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 
 
@@ -147,6 +149,7 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 u_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
 u_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
@@ -165,6 +168,7 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 v_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
 v_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
@@ -183,6 +187,7 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=False,
     project_vectors=False,
+    beta=(2*np.pi)/wavelength
 )
 n_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
 n_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)

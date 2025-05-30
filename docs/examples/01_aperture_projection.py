@@ -9,10 +9,10 @@ an unmanned aerial vehicle.
 
 Aperture Projection as a technique is based upon Hannan's formulation of the gain of an aperture based upon its surface
 area and the freuqency of interest. This is defined in terms of the maximum gain :math:`G_{max}`, the effective area of
-the aperture :math:`A_{e}`, and the wavelength of interest :math:`\lambda`.
+the aperture :math:`A_{e}`, and the wavelength of interest :math:`\\lambda`.
 
 .. math::
-    G_{max}=\dfrac{4 \pi A_{e}}{\lambda^{2}}
+    G_{max}=\\dfrac{4 \\pi A_{e}}{\\lambda^{2}}
 
 While this has been in common use since the 70s, as a formula it is limited to planar surfaces, and only providing the
 maximum gain in the boresight direction for that surface.
@@ -50,13 +50,15 @@ wavelength = 3e8 / 10e9
 # In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
 # meshio trianglemesh structures can be accessed by importing the data subpackage
 import lyceanem.tests.reflectordata as data
-body=data.UAV_Demo(wavelength*0.5)
-array=data.UAV_Demo_Aperture(wavelength*0.5)
+
+body = data.UAV_Demo(wavelength * 0.5)
+array = data.UAV_Demo_Aperture(wavelength * 0.5)
 
 import pyvista as pv
-pl=pv.Plotter()
-pl.add_mesh(pv.from_meshio(body),color="green")
-pl.add_mesh(pv.from_meshio(array),color="aqua")
+
+pl = pv.Plotter()
+pl.add_mesh(pv.from_meshio(body), color="green")
+pl.add_mesh(pv.from_meshio(array), color="aqua")
 pl.add_axes()
 pl.show()
 
@@ -155,9 +157,14 @@ ax.set_ylabel("Elevation (degrees)")
 ax.set_title("Maximum Directivity Envelope")
 fig.show()
 
-pl=pv.Plotter()
-pl.add_mesh(pv.from_meshio(body),color="green")
-pl.add_mesh(pv.from_meshio(array),color="aqua")
-pl.add_mesh(pv.from_meshio(pcd),scalars="Directivity Envelope (dBi)",style='points',clim=[0,np.nanmax(pcd.point_data['Directivity Envelope (dBi)'])])
+pl = pv.Plotter()
+pl.add_mesh(pv.from_meshio(body), color="green")
+pl.add_mesh(pv.from_meshio(array), color="aqua")
+pl.add_mesh(
+    pv.from_meshio(pcd),
+    scalars="Directivity Envelope (dBi)",
+    style="points",
+    clim=[0, np.nanmax(pcd.point_data["Directivity Envelope (dBi)"])],
+)
 pl.add_axes()
 pl.show()

@@ -57,13 +57,20 @@ rotation_vector1 = np.radians(np.asarray([90.0, 0.0, 0.0]))
 rotation_vector2 = np.radians(np.asarray([0.0, 0.0, -90.0]))
 
 
-
 transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure, rotation_vector1)
 transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure, rotation_vector2)
-transmit_horn_structure = GF.mesh_translate(transmit_horn_structure, np.asarray([2.695, 0, 0]))
-transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords, rotation_vector1)
-transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords, rotation_vector2)
-transmitting_antenna_surface_coords = GF.mesh_translate(transmitting_antenna_surface_coords, np.asarray([2.695, 0, 0]))
+transmit_horn_structure = GF.mesh_translate(
+    transmit_horn_structure, np.asarray([2.695, 0, 0])
+)
+transmitting_antenna_surface_coords = GF.mesh_rotate(
+    transmitting_antenna_surface_coords, rotation_vector1
+)
+transmitting_antenna_surface_coords = GF.mesh_rotate(
+    transmitting_antenna_surface_coords, rotation_vector2
+)
+transmitting_antenna_surface_coords = GF.mesh_translate(
+    transmitting_antenna_surface_coords, np.asarray([2.695, 0, 0])
+)
 # %%
 # Position Receiver
 # ------------------
@@ -71,9 +78,15 @@ transmitting_antenna_surface_coords = GF.mesh_translate(transmitting_antenna_sur
 
 
 receive_horn_structure = GF.mesh_rotate(receive_horn_structure, rotation_vector1)
-receive_horn_structure = GF.mesh_translate(receive_horn_structure, np.asarray([0, 1.427, 0]))
-receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords, rotation_vector1)
-receiving_antenna_surface_coords = GF.mesh_translate(receiving_antenna_surface_coords, np.asarray([0, 1.427, 0]))
+receive_horn_structure = GF.mesh_translate(
+    receive_horn_structure, np.asarray([0, 1.427, 0])
+)
+receiving_antenna_surface_coords = GF.mesh_rotate(
+    receiving_antenna_surface_coords, rotation_vector1
+)
+receiving_antenna_surface_coords = GF.mesh_translate(
+    receiving_antenna_surface_coords, np.asarray([0, 1.427, 0])
+)
 
 # %%
 # Create Scattering Plate
@@ -173,8 +186,8 @@ for angle_inc in tqdm(range(len(angle_values))):
     output_amplitude_rms = v_transmit / (1 / np.sqrt(2))
     output_amplitude_peak = v_transmit
 
-    desired_E_axis = np.zeros((1,3), dtype=np.float32)
-    desired_E_axis[0,1] = 1.0
+    desired_E_axis = np.zeros((1, 3), dtype=np.float32)
+    desired_E_axis[0, 1] = 1.0
     noise_volts_peak = (10 ** (noise_power / 10) * receiver_impedence) * 0.5
 
     excitation_signal = output_amplitude_rms * sig.chirp(
@@ -203,7 +216,7 @@ for angle_inc in tqdm(range(len(angle_values))):
         elements=False,
         sampling_freq=sampling_freq,
         num_samples=num_samples,
-        beta=(2 * np.pi) / wavelength
+        beta=(2 * np.pi) / wavelength,
     )
 
     noise_volts = np.random.normal(mean_noise, noise_volts_peak, num_samples)
@@ -225,9 +238,9 @@ time, anglegrid = np.meshgrid(time_index[:1801], angle_values - 45)
 norm_max = np.nanmax(
     np.array(
         [
-            np.nanmax(10 * np.log10((Ex ** 2) / receiver_impedence)),
-            np.nanmax(10 * np.log10((Ey ** 2) / receiver_impedence)),
-            np.nanmax(10 * np.log10((Ez ** 2) / receiver_impedence)),
+            np.nanmax(10 * np.log10((Ex**2) / receiver_impedence)),
+            np.nanmax(10 * np.log10((Ey**2) / receiver_impedence)),
+            np.nanmax(10 * np.log10((Ez**2) / receiver_impedence)),
         ]
     )
 )
@@ -265,7 +278,7 @@ from scipy.fft import fft, fftfreq
 import scipy
 
 xf = fftfreq(len(time_index), 1 / sampling_freq)[: len(time_index) // 2]
-frequency_index=np.where(xf==model_freq)
+frequency_index = np.where(xf == model_freq)
 input_signal = excitation_signal * (output_amplitude_peak)
 inputfft = fft(input_signal)
 input_freq = fftfreq(120, 1 / sampling_freq)[:60]
@@ -275,9 +288,6 @@ newinput = freqfuncabs(xf[frequency_index]) * np.exp(freqfuncangle(xf[frequency_
 Exf = fft(Ex)
 Eyf = fft(Ey)
 Ezf = fft(Ez)
-
-# %%
-# .. image:: ../_static/sphx_glr_04_time_domain_channel_modelling_001.png
 
 # %%
 # Frequency Specific Results
@@ -304,6 +314,3 @@ legend = ax.legend(loc="upper right", shadow=True)
 plt.grid()
 plt.title("$S_{21}$ at 16GHz")
 plt.show()
-
-# %%
-# .. image:: ../_static/sphx_glr_04_time_domain_channel_modelling_002.png

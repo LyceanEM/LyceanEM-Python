@@ -17,7 +17,7 @@ import numpy as np
 # -------------------------------------------
 # LyceanEM uses Elevation and Azimuth to record spherical coordinates, ranging from -180 to 180 degrees in azimuth,
 # and from -90 to 90 degrees in elevation. In order to launch the aperture projection function, the resolution in
-# both azimuth and elevation is requried.
+# both azimuth and elevation is required.
 # In order to ensure a fast example, 37 points have been used here for both, giving a total of 1369 farfield points.
 #
 # The wavelength of interest is also an important variable for antenna array analysis, so we set it now for 10GHz,
@@ -35,25 +35,26 @@ wavelength = 3e8 / 10e9
 import lyceanem.tests.reflectordata as data
 
 import lyceanem.tests.reflectordata as data
-body=data.UAV_Demo(wavelength*0.5)
-array=data.UAV_Demo_Aperture(wavelength*0.5)
+
+body = data.UAV_Demo(wavelength * 0.5)
+array = data.UAV_Demo_Aperture(wavelength * 0.5)
 
 # %%
 
 import pyvista as pv
 
-pl=pv.Plotter()
-pl.add_mesh(pv.from_meshio(body),color="green")
+pl = pv.Plotter()
+pl.add_mesh(pv.from_meshio(body), color="green")
 pl.add_mesh(pv.from_meshio(array))
 pl.add_axes()
 pl.show()
 
 
-from lyceanem.base_classes import structures, points,antenna_structures
+from lyceanem.base_classes import structures, points, antenna_structures
 
 blockers = structures([body])
-aperture=points([array])
-array_on_platform=antenna_structures(blockers, aperture)
+aperture = points([array])
+array_on_platform = antenna_structures(blockers, aperture)
 
 # %%
 # Model Farfield Array Patterns
@@ -78,7 +79,7 @@ Etheta, Ephi = calculate_farfield(
     farfield_distance=20,
     elements=True,
     project_vectors=False,
-    beta=(2*np.pi)/wavelength
+    beta=(2 * np.pi) / wavelength,
 )
 
 
@@ -86,9 +87,14 @@ from lyceanem.electromagnetics.beamforming import MaximumDirectivityMap
 
 az_range = np.linspace(-180, 180, az_res)
 el_range = np.linspace(-90, 90, elev_res)
-num_elements=Etheta.shape[0]
+num_elements = Etheta.shape[0]
 directivity_map = MaximumDirectivityMap(
-    Etheta.reshape(num_elements,elev_res,az_res), Ephi.reshape(num_elements,elev_res,az_res), array, wavelength, az_range, el_range
+    Etheta.reshape(num_elements, elev_res, az_res),
+    Ephi.reshape(num_elements, elev_res, az_res),
+    array,
+    wavelength,
+    az_range,
+    el_range,
 )
 
 from lyceanem.electromagnetics.beamforming import PatternPlot
@@ -99,8 +105,6 @@ PatternPlot(
     directivity_map[:, :, 2], az_mesh, elev_mesh, logtype="power", plottype="Contour"
 )
 
-# %%
-# .. image:: ../_static/sphx_glr_05_array_beamforming_001.png
 
 from lyceanem.electromagnetics.beamforming import Steering_Efficiency
 
@@ -123,16 +127,24 @@ print(
 )
 from lyceanem.geometry.targets import spherical_field
 from lyceanem.electromagnetics.beamforming import create_display_mesh
-pattern_mesh=spherical_field(az_range, el_range,outward_normals=True)
-pattern_mesh.point_data['D(Total)']=directivity_map[:,:,2].ravel()
-display_mesh=create_display_mesh(pattern_mesh,label="D(Total)",dynamic_range=60)
-display_mesh.point_data['D(Total - dBi)']=10*np.log10(display_mesh.point_data['D(Total)'])
-plot_max=5*np.ceil(np.nanmax(display_mesh.point_data['D(Total - dBi)'])/5)
+
+pattern_mesh = spherical_field(az_range, el_range, outward_normals=True)
+pattern_mesh.point_data["D(Total)"] = directivity_map[:, :, 2].ravel()
+display_mesh = create_display_mesh(pattern_mesh, label="D(Total)", dynamic_range=60)
+display_mesh.point_data["D(Total - dBi)"] = 10 * np.log10(
+    display_mesh.point_data["D(Total)"]
+)
+plot_max = 5 * np.ceil(np.nanmax(display_mesh.point_data["D(Total - dBi)"]) / 5)
 
 
-pl=pv.Plotter()
-pl.add_mesh(pv.from_meshio(body),color="green")
-pl.add_mesh(pv.from_meshio(array),color="aqua")
-pl.add_mesh(display_mesh,scalars="D(Total - dBi)",style="points",clim=[plot_max-60,plot_max])
+pl = pv.Plotter()
+pl.add_mesh(pv.from_meshio(body), color="green")
+pl.add_mesh(pv.from_meshio(array), color="aqua")
+pl.add_mesh(
+    display_mesh,
+    scalars="D(Total - dBi)",
+    style="points",
+    clim=[plot_max - 60, plot_max],
+)
 pl.add_axes()
 pl.show()

@@ -35,25 +35,19 @@ wavelength = 3e8 / 10e9
 # In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
 # triangle structures can be accessed by importing the data subpackage
 import lyceanem.tests.reflectordata as data
-
-body, array, source_coords = data.exampleUAV(10e9)
+body=data.UAV_Demo(wavelength*0.5)
+array=data.UAV_Demo_Aperture(wavelength*0.5)
 
 
 
 # %%
-## .. image:: ../_static/open3d_structure.png
 
-# crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to
-# the hidden surfaces, but correctly an aperture will only have an outer face.
-surface_array = copy.deepcopy(array)
-surface_array.cells[0].data = np.asarray(array.cells[0].data)[: (array.cells[0].data).shape[0] // 2, :]
 
-surface_array.cell_data["Normals"] = np.array(array.cell_data["Normals"])[: (array.cells[0].data).shape[0] // 2]
+from lyceanem.base_classes import structures, points,antenna_structures
 
-from lyceanem.base_classes import structures
-
-blockers = structures([body, array])
-
+blockers = structures([body])
+aperture=points([array])
+array_on_platform=antenna_structures(blockers, aperture)
 from lyceanem.models.frequency_domain import calculate_farfield
 
 
@@ -63,35 +57,23 @@ import pyvista as pv
 
 pl=pv.Plotter()
 pl.add_mesh(pv.from_meshio(body),color="green")
-pl.add_mesh(pv.from_meshio(array),color="aqua")
+pl.add_mesh(pv.from_meshio(array))
 pl.add_axes()
 pl.show()
 
-source_points = surface_array.points
-
-
-# %%
-# .. image:: ../_static/sourcecloudfromshapeuav.png
-
-# %%
-# Drawbacks of :func:`lyceanem.geometry.geometryfunctions.sourcecloudfromshape`
-# ------------------------------------------------------------------------------
-# As can be seen by comparing the two source point sets, :func:`lyceanem.geometry.geometryfunctions.sourcecloudfromshape`
-# has a significant drawback when used for complex sharply curved antenna arrays, as the poisson disk sampling method
-# does not produce consistently spaced results.
 
 desired_E_axis = np.zeros((1, 3), dtype=np.float32)
 desired_E_axis[0, 1] = 1.0
 
 Etheta, Ephi = calculate_farfield(
-    source_coords,
-    blockers,
-    desired_E_axis,
+    array_on_platform.export_all_points(),
+    array_on_platform.export_all_structures(),
+    array_on_platform.excitation_function(desired_e_vector=desired_E_axis,wavelength=wavelength,transmit_power=1.0),
     az_range=np.linspace(-180, 180, az_res),
     el_range=np.linspace(-90, 90, elev_res),
     wavelength=wavelength,
     farfield_distance=20,
-    project_vectors=True,
+    project_vectors=False,
     beta=(2*np.pi)/wavelength
 )
 
@@ -115,12 +97,20 @@ UAV_Static_Pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
 
 UAV_Static_Pattern.display_pattern(desired_pattern='Power')
 
-# %%
-# .. image:: ../_static/sphx_glr_02_coherently_polarised_array_001.png
-# .. image:: ../_static/sphx_glr_02_coherently_polarised_array_002.png
-
 UAV_Static_Pattern.display_pattern(plottype="Contour")
 
-# %%
-# .. image:: ../_static/sphx_glr_02_coherently_polarised_array_003.png
-# .. image:: ../_static/sphx_glr_02_coherently_polarised_array_004.png
+pattern_mesh=UAV_Static_Pattern.pattern_mesh()
+
+from lyceanem.electromagnetics.beamforming import create_display_mesh
+
+display_mesh=create_display_mesh(pattern_mesh,label="D(Total)",dynamic_range=60)
+display_mesh.point_data['D(Total - dBi)']=10*np.log10(display_mesh.point_data['D(Total)'])
+plot_max=5*np.ceil(np.nanmax(display_mesh.point_data['D(Total - dBi)'])/5)
+
+
+pl=pv.Plotter()
+pl.add_mesh(pv.from_meshio(body),color="green")
+pl.add_mesh(pv.from_meshio(array),color="aqua")
+pl.add_mesh(display_mesh,scalars="D(Total - dBi)",style="points",clim=[plot_max-60,plot_max])
+pl.add_axes()
+pl.show()

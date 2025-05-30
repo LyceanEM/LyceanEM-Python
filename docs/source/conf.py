@@ -16,7 +16,6 @@ import sys
 from pathlib import Path
 
 
-os.environ['PYVISTA_DOCUMENTATION_BULKY_IMPORTS_ALLOWED'] = 'true'
 # -- pyvista configuration ---------------------------------------------------
 import pyvista
 from pyvista.core.errors import PyVistaDeprecationWarning
@@ -25,121 +24,16 @@ from pyvista.core.utilities.docs import pv_html_page_context
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 
 # Manage errors
-pyvista.set_error_output_file('errors.txt')
+pyvista.set_error_output_file("errors.txt")
 # Ensure that offscreen rendering is used for docs generation
 pyvista.OFF_SCREEN = True  # Not necessary - simply an insurance policy
 # Preferred plotting style for documentation
-#pyvista.set_plot_theme('DocumentTheme')
+# pyvista.set_plot_theme('DocumentTheme')
 pyvista.set_jupyter_backend(None)
 # Save figures in specified directory
-pyvista.FIGURE_PATH = str(Path('./_static/').resolve() / 'auto-generated/')
-
-# Configuration of pyvista.ext.coverage
-coverage_additional_modules = [
-    'pyvista',
-    'pyvista.errors',
-    'pyvista.report',
-    # core
-    'pyvista.core.cell',
-    'pyvista.core.celltype',
-    'pyvista.core.composite',
-    'pyvista.core.dataobject',
-    'pyvista.core.dataset',
-    'pyvista.core.datasetattributes',
-    'pyvista.core.errors',
-    'pyvista.core.grid',
-    'pyvista.core.objects',
-    'pyvista.core.pointset',
-    'pyvista.core.pyvista_ndarray',
-    'pyvista.core.filters.composite',
-    'pyvista.core.filters.data_set',
-    'pyvista.core.filters.poly_data',
-    'pyvista.core.filters.structured_grid',
-    'pyvista.core.filters.image_data',
-    'pyvista.core.filters.unstructured_grid',
-    'pyvista.core.utilitis.arrays',
-    'pyvista.core.utilitis.cell_type_helper',
-    'pyvista.core.utilitis.cells',
-    'pyvista.core.utilitis.features',
-    'pyvista.core.utilitis.fileio',
-    'pyvista.core.utilitis.geometric_objects',
-    'pyvista.core.utilitis.helpers',
-    'pyvista.core.utilitis.misc',
-    'pyvista.core.utilitis.observers',
-    'pyvista.core.utilitis.parametric_objects',
-    'pyvista.core.utilitis.points',
-    'pyvista.core.utilitis.reader',
-    'pyvista.core.utilitis.transformations',
-    # demos
-    'pyvista.demos.demos',
-    'pyvista.demos.logo',
-    # examples
-    'pyvista.examples.cells',
-    'pyvista.examples.downloads',
-    'pyvista.examples.examples',
-    'pyvista.examples.gltf',
-    'pyvista.examples.planets',
-    'pyvista.examples.vrml',
-    # plotting
-    'pyvista.plotting.actor_properties',
-    'pyvista.plotting.actor',
-    'pyvista.plotting.axes_actor',
-    'pyvista.plotting.axes',
-    'pyvista.plotting.background_renderer',
-    'pyvista.plotting.camera',
-    'pyvista.plotting.charts',
-    'pyvista.plotting.colors',
-    'pyvista.plotting.composite_mapper',
-    'pyvista.plotting.cube_axes_actor',
-    'pyvista.plotting.errors',
-    'pyvista.plotting.helpers',
-    'pyvista.plotting.lights',
-    'pyvista.plotting.lookup_table',
-    'pyvista.plotting.mapper',
-    'pyvista.plotting.opts',
-    'pyvista.plotting.picking',
-    'pyvista.plotting.plotter',
-    'pyvista.plotting.prop3d',
-    'pyvista.plotting.render_passes',
-    'pyvista.plotting.render_window_interactor',
-    'pyvista.plotting.renderer',
-    'pyvista.plotting.renderers',
-    'pyvista.plotting.scalar_bars',
-    'pyvista.plotting.texture',
-    'pyvista.plotting.themes',
-    'pyvista.plotting.tools',
-    'pyvista.plotting.volume_property',
-    'pyvista.plotting.volume',
-    'pyvista.plotting.widgets',
-]
-# -- Sphinx Gallery Options
-from sphinx_gallery.sorting import FileNameSortKey
+pyvista.FIGURE_PATH = str(Path("./_static/").resolve() / "auto-generated/")
 
 
-class ResetPyVista:
-    """Reset pyvista module to default settings."""
-
-    def __call__(self, gallery_conf, fname):
-        """Reset pyvista module to default settings.
-
-        If default documentation settings are modified in any example, reset here.
-        """
-        import pyvista
-
-        pyvista._wrappers['vtkPolyData'] = pyvista.PolyData
-        #pyvista.set_plot_theme('document_build')
-
-    def __repr__(self):
-        return 'ResetPyVista'
-
-
-reset_pyvista = ResetPyVista()
-if not Path(pyvista.FIGURE_PATH).exists():
-    Path(pyvista.FIGURE_PATH).mkdir()
-
-# necessary when building the sphinx gallery
-pyvista.BUILDING_GALLERY = True
-os.environ['PYVISTA_BUILDING_GALLERY'] = 'true'
 try:
     from importlib import metadata
 except ImportError:  # for Python<3.8
@@ -155,32 +49,9 @@ except metadata.PackageNotFoundError:
 # for example take major/minor
 version = ".".join(__version__.split(".")[:2])
 
-# class PNGScraper(object):
-#    def __init__(self):
-#        self.seen = set()
 
-#    def __repr__(self):
-#        return 'PNGScraper'
-
-#    def __call__(self, block, block_vars, gallery_conf):
-# Find all PNG files in the directory of this example.
-#        path_current_example = os.path.dirname(block_vars['src_file'])
-#        pngs = sorted(glob(os.path.join(path_current_example, '*.png')))
-
-# Iterate through PNGs, copy them to the sphinx-gallery output directory
-#        image_names = list()
-#        image_path_iterator = block_vars['image_path_iterator']
-#        for png in pngs:
-#            if png not in self.seen:
-#                self.seen |= set(png)
-#                this_image_path = image_path_iterator.next()
-#                image_names.append(this_image_path)
-#                shutil.move(png, this_image_path)
-# Use the `figure_rst` helper function to generate rST for image files
-#        return figure_rst(image_names, gallery_conf['src_dir'])
-
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("../../"))
+# sys.path.insert(0, os.path.abspath("."))
+# sys.path.insert(0, os.path.abspath("../../"))
 # -- Project information -----------------------------------------------------
 
 project = "LyceanEM"
@@ -204,8 +75,9 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.imgmath",
-    "myst_parser",
-    "sphinx_c_autodoc",
+    "pyvista.ext.plot_directive",
+    "pyvista.ext.viewer_directive",
+    "sphinx_design",
 ]
 bibtex_bibfiles = ["_static/lyceanemrefs.bib"]
 # Add any paths that contain templates here, relative to this directory.
@@ -236,20 +108,19 @@ sphinx_gallery_conf = {
     "gallery_dirs": ["auto_examples"],
     "filename_pattern": re.escape(os.sep),
     # Modules for which function level galleries are created.  In
-    'doc_module': 'pyvista',
-    'reference_url': {'pyvista': None},  # Add hyperlinks inside code blocks to pyvista methods
-    'image_scrapers': (DynamicScraper(), 'matplotlib'),
-    'first_notebook_cell': '%matplotlib inline',
-    'reset_modules': (reset_pyvista,),
-    'reset_modules_order': 'both',
+    "doc_module": "pyvista",
+    "image_scrapers": ("pyvista", "matplotlib"),
+    "first_notebook_cell": "%matplotlib inline",
+    "reset_modules_order": "both",
     "matplotlib_animations": True,
     "run_stale_examples": True,
-    'junit': str(Path('sphinx-gallery') / 'junit-results.xml'),
+    "junit": str(Path("sphinx-gallery") / "junit-results.xml"),
     "reference_url": {
         # The module you locally document uses None
         "sphinx_gallery": None,
+        "pyvista": None,
     },
-    "plot_gallery": True,  # documentation examples require cuda on build machine, so must be fully built before being passed to readthedocs
+    "plot_gallery": False,  # documentation examples require cuda on build machine, so must be fully built before being passed to readthedocs
 }
 
 # -- Options for HTML output -------------------------------------------------

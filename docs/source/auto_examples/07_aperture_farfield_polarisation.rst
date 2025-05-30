@@ -32,6 +32,12 @@ weights.
     import numpy as np
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 16-25
 
 Setting Farfield Resolution and Wavelength
@@ -54,12 +60,18 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 31-33
 
 Generating consistent aperture to explore farfield polarisations, and rotating the source
 ----------------------------------------------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 33-45
+.. GENERATED FROM PYTHON SOURCE LINES 33-44
 
 .. code-block:: Python
 
@@ -72,15 +84,20 @@ Generating consistent aperture to explore farfield polarisations, and rotating t
 
     horn_antenna=antenna_structures(structures(solids=[structure]), points(points=[array_points]))
 
-
     from lyceanem.models.frequency_domain import calculate_farfield
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 46-47
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 45-46
 
 The first source polarisation is based upon the u-vector of the source point. When the excitation_function method of the antenna structure class is used, it will calculate the appropriate polarisation vectors based upon the local normal vectors.
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-63
+.. GENERATED FROM PYTHON SOURCE LINES 46-62
 
 .. code-block:: Python
 
@@ -101,12 +118,18 @@ The first source polarisation is based upon the u-vector of the source point. Wh
     )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-66
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 63-65
 
 Antenna Pattern class is used to manipulate and record antenna patterns
 ------------------------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-77
+.. GENERATED FROM PYTHON SOURCE LINES 65-76
 
 .. code-block:: Python
 
@@ -122,11 +145,29 @@ Antenna Pattern class is used to manipulate and record antenna patterns
     u_pattern.display_pattern(desired_pattern='Power')
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 78-79
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_001.png
+   :alt: Power Pattern
+   :srcset: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_001.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 77-78
 
 The second source polarisation is based upon the v-vector of the source point.
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-103
+.. GENERATED FROM PYTHON SOURCE LINES 78-102
 
 .. code-block:: Python
 
@@ -155,11 +196,29 @@ The second source polarisation is based upon the v-vector of the source point.
     v_pattern.display_pattern(desired_pattern='Power')
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-105
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_002.png
+   :alt: Power Pattern
+   :srcset: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_002.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 103-104
 
 The third source polarisation is based upon the n-vector of the source point. Aligned with the source point normal.
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-128
+.. GENERATED FROM PYTHON SOURCE LINES 104-127
 
 .. code-block:: Python
 
@@ -187,11 +246,29 @@ The third source polarisation is based upon the n-vector of the source point. Al
     n_pattern.display_pattern(desired_pattern='Power')
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-130
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_003.png
+   :alt: Power Pattern
+   :srcset: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_003.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 128-129
 
 The point source can then be rotated, by providing a rotation matrix, and the u,v,n directions are moved with it in a consistent way.
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-190
+.. GENERATED FROM PYTHON SOURCE LINES 129-189
 
 .. code-block:: Python
 
@@ -256,6 +333,52 @@ The point source can then be rotated, by providing a rotation matrix, and the u,
     n_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
     n_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
     n_pattern.display_pattern(desired_pattern='Power')
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_004.png
+         :alt: Power Pattern
+         :srcset: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_004.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_005.png
+         :alt: Power Pattern
+         :srcset: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_005.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_006.png
+         :alt: Power Pattern
+         :srcset: /auto_examples/images/sphx_glr_07_aperture_farfield_polarisation_006.png
+         :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+
+
+
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** (0 minutes 24.210 seconds)
+
 
 .. _sphx_glr_download_auto_examples_07_aperture_farfield_polarisation.py:
 
