@@ -30,12 +30,27 @@ import lyceanem.utility.mesh_functions as MF
 
 
 def UAV_Demo(mesh_resolution, file_name="DemoUAV.stl"):
+    """
+    Creates a meshed UAV as a demonstrator for the examples, with the mesh resolution set by the user.
+    Parameters
+    -----------
+    mesh_resolution : float
+        The target separation between mesh points in the final mesh.
+    file_name : str
+        The file name of the exported mesh file.
+
+    Returns
+    --------
+    mesh : :class:`meshio.Mesh`
+        The resultant mesh with areas and normal vectors as point data.
+
+    """
     import gmsh
     import meshio
 
     uav_path = files(lyceanem.tests.data).joinpath("Demo UAV.step")
     gmsh.initialize()
-
+    gmsh.option.setNumber("Mesh.CharacteristicLengthMax", mesh_resolution)
     gmsh.model.add("Demo UAV")
 
     gmsh.merge(uav_path.as_posix())
@@ -53,16 +68,35 @@ def UAV_Demo(mesh_resolution, file_name="DemoUAV.stl"):
     mesh = meshio.read(file_name)
 
     mesh = GF.compute_normals(GF.compute_areas(mesh))
+    rotation_vector1 = np.asarray([0.0, np.deg2rad(90), 0.0])
+    rotation_vector2 = np.asarray([np.deg2rad(90), 0.0, 0.0])
+    mesh=GF.mesh_rotate(mesh, rotation_vector1)
+    mesh=GF.mesh_rotate(mesh, rotation_vector2)
     return mesh
 
 
 def UAV_Demo_Aperture(mesh_resolution, file_name="DemoAperture.stl"):
+    """
+    Creates a meshed conformal antenna array as a demonstrator for the examples, with the mesh resolution set by the user.
+    Parameters
+    -----------
+    mesh_resolution : float
+        The target separation between mesh points in the final mesh.
+    file_name : str
+        The file name of the exported mesh file.
+
+    Returns
+    --------
+    mesh : :class:`meshio.Mesh`
+        The resultant mesh with areas and normal vectors as point data.
+
+    """
     import gmsh
     import meshio
 
     uav_path = files(lyceanem.tests.data).joinpath("Demo UAV.step")
     gmsh.initialize()
-
+    gmsh.option.setNumber("Mesh.CharacteristicLengthMax", mesh_resolution)
     gmsh.model.add("UAV Conformal Array")
 
     gmsh.merge(uav_path.as_posix())
@@ -93,6 +127,10 @@ def UAV_Demo_Aperture(mesh_resolution, file_name="DemoAperture.stl"):
     gmsh.finalize()
     mesh = meshio.read(file_name)
     mesh = GF.compute_normals(GF.compute_areas(mesh))
+    rotation_vector1 = np.asarray([0.0, np.deg2rad(90), 0.0])
+    rotation_vector2 = np.asarray([np.deg2rad(90), 0.0, 0.0])
+    mesh=GF.mesh_rotate(mesh, rotation_vector1)
+    mesh=GF.mesh_rotate(mesh, rotation_vector2)
     return mesh
 
 

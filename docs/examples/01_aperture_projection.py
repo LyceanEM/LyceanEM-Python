@@ -57,14 +57,8 @@ import pyvista as pv
 pl=pv.Plotter()
 pl.add_mesh(pv.from_meshio(body),color="green")
 pl.add_mesh(pv.from_meshio(array),color="aqua")
+pl.add_axes()
 pl.show()
-
-# %%
-## .. image:: ../_static/open3d_structure.png
-
-
-
-
 
 # %%
 # Structures
@@ -98,13 +92,8 @@ directivity_envelope, pcd = aperture_projection(
 # ------------------------
 # The resultant maximum directivity envelope is provided as both a numpy array of directivities for each angle, but
 # also as an meshio point cloud. This allows easy visualisation using pyvista.
-# %%
-
 
 # %%
-# .. image:: ../_static/open3d_results_rendering.png
-
-
 # Maximum Directivity
 print(
     "Maximum Directivity of {:3.1f} dBi".format(
