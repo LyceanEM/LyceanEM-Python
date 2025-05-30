@@ -1568,6 +1568,7 @@ def create_display_mesh(
     label="Poynting_Vector_(Magnitude_(W/m2))",
     log_type="power",
     plot_max=None,
+    dynamic_range=40
 ):
     """
     Create a display mesh for the field data, with normals and scaled points based on the field radius.
@@ -1584,6 +1585,8 @@ def create_display_mesh(
         The type of logarithm to use for the data, either "amplitude" or "power". Defaults to "power".
     plot_max : float, optional
         The maximum value for the plot, if None, it will be calculated as the maximum of the log data rounded up to the nearest 5. Defaults to None.
+    dynamic_range : float
+        The desired maximum plot range in decibels. The default is 40dB.
 
     Returns
     -------
@@ -1618,7 +1621,7 @@ def create_display_mesh(
     else:
         pattern_max = plot_max
 
-    pattern_min = pattern_max - 40
+    pattern_min = pattern_max - dynamic_range
 
     normed_logdata = copy.deepcopy(logdata)
     normed_logdata -= np.max(logdata)

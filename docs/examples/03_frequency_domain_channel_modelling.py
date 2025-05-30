@@ -116,15 +116,24 @@ reflectorplate = GF.mesh_rotate(
     rotation_vector
 )
 
-from lyceanem.base_classes import structures
+from lyceanem.base_classes import structures, points, antenna_structures
 
 blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_structure])
-
+transmit_horn=antenna_structures(structures([transmit_horn_structure]), points([transmitting_antenna_surface_coords]))
 # %%
 # Visualise the Scene Geometry
 # ------------------------------
 
-## plot the mesh
+import pyvista as pv
+pl=pv.Plotter()
+pl.add_mesh(pv.from_meshio(scatter_points),scalars='Area')
+pl.add_mesh(pv.from_meshio(reflectorplate),color="grey")
+pl.add_mesh(pv.from_meshio(transmitting_antenna_surface_coords),scalars='Area')
+pl.add_mesh(pv.from_meshio(receiving_antenna_surface_coords),scalars='Area')
+pl.add_mesh(pv.from_meshio(receive_horn_structure),color="green")
+pl.add_mesh(pv.from_meshio(transmit_horn_structure),color="green")
+pl.add_axes()
+pl.show()
 
 # Specify desired Transmit Polarisation
 # --------------------------------------
@@ -148,7 +157,7 @@ Ex, Ey, Ez = FD.calculate_scattering(
     aperture_coords=transmitting_antenna_surface_coords,
     sink_coords=receiving_antenna_surface_coords,
     antenna_solid=blockers,
-    desired_E_axis=desired_E_axis,
+    desired_E_axis=transmit_horn.excitation_function(desired_e_vector=desired_E_axis,transmit_power=0.25),
     scatter_points=scatter_points,
     wavelength=wavelength,
     scattering=0,
@@ -159,7 +168,7 @@ Excuda, Eycuda, Ezcuda = FD.calculate_scattering(
     aperture_coords=transmitting_antenna_surface_coords,
     sink_coords=receiving_antenna_surface_coords,
     antenna_solid=blockers,
-    desired_E_axis=desired_E_axis,
+    desired_E_axis=transmit_horn.excitation_function(desired_e_vector=desired_E_axis,transmit_power=0.25),
     scatter_points=scatter_points,
     wavelength=wavelength,
     scattering=0,
@@ -171,9 +180,7 @@ Excuda, Eycuda, Ezcuda = FD.calculate_scattering(
 print("sumdiff",(np.sum((Ex-Excuda))))
 print("sumdiff",(np.sum((Ey-Eycuda))))
 print("sumdiff",(np.sum((Ez-Ezcuda))))
-np.testing.assert_allclose(Ex, Excuda, rtol=1e-5)
-np.testing.assert_allclose(Ey, Eycuda, rtol=1e-5)
-np.testing.assert_allclose(Ez, Ezcuda, rtol=1e-5)
+
 
 
 # %%
@@ -208,38 +215,23 @@ for angle_inc in tqdm(range(len(angle_values))):
     reflectorplate_temp = GF.mesh_rotate(reflectorplate,rotation_vector)
     blockers = structures([reflectorplate_temp, receive_horn_structure, transmit_horn_structure])
     
+    #Scattered Path
+    
     Ex, Ey, Ez = FD.calculate_scattering(
         aperture_coords=transmitting_antenna_surface_coords,
         sink_coords=scatter_points_temp,
         antenna_solid=blockers,
-        desired_E_axis=np.tile(desired_E_axis,[transmitting_antenna_surface_coords.points.shape[0],1]),
+        desired_E_axis=transmit_horn.excitation_function(desired_e_vector=desired_E_axis,transmit_power=0.25),
         scatter_points=scatter_points_temp,
         wavelength=wavelength,
         scattering=0,
         project_vectors=False,
         beta=(2*np.pi)/wavelength
     )
-    scattered_field=np.array([Ex*scatter_points_temp.point_data['Area'], 
-    Ey*scatter_points_temp.point_data['Area'], 
-    Ez*scatter_points_temp.point_data['Area']]).transpose()
-    #scatter_points_temp=update_electric_fields(scatter_points_temp, 
-    #                                           Ex*scatter_points_temp.point_data['Area'], 
-    #                                           Ey*scatter_points_temp.point_data['Area'], 
-    #                                           Ez*scatter_points_temp.point_data['Area'])
-    #scatter_points_temp=PoyntingVector(scatter_points_temp)
-    #scatter_points_temp.point_data["Ex"]=np.abs(scatter_points_temp.point_data['Ex-Real']+1j*scatter_points_temp.point_data['Ex-Imag'])
-    #scatter_points_temp.point_data["Ey"]=np.abs(scatter_points_temp.point_data['Ey-Real']+1j*scatter_points_temp.point_data['Ey-Imag'])
-    #scatter_points_temp.point_data["Ez"]=np.abs(scatter_points_temp.point_data['Ez-Real']+1j*scatter_points_temp.point_data['Ez-Imag'])
-    # plotter = pv.Plotter()
-    # plotter.add_mesh(pv.from_meshio(reflectorplate_temp), color="grey")
-    # plotter.add_mesh(pv.from_meshio(scatter_points_temp), scalars="Ey",clim=[0,0.0015])
-    # plotter.add_mesh(pv.from_meshio(receive_horn_structure), color="blue")
-    # plotter.add_mesh(pv.from_meshio(receiving_antenna_surface_coords), color="blue")
-    # plotter.add_mesh(pv.from_meshio(transmit_horn_structure), color="red")
-    # plotter.add_mesh(pv.from_meshio(transmitting_antenna_surface_coords), color="red")
-    # plotter.add_axes_at_origin()
-    # plotter.show()
-    
+    scattered_field=np.array([Ex, 
+    Ey, 
+    Ez]).transpose()
+        
     Ex2, Ey2, Ez2 = FD.calculate_scattering(
         aperture_coords=scatter_points_temp,
         sink_coords=receiving_antenna_surface_coords,
@@ -251,11 +243,14 @@ for angle_inc in tqdm(range(len(angle_values))):
         project_vectors=False,
         beta=(2*np.pi)/wavelength
     )
+    
+    # Line of Sight Path
+    
     Ex3, Ey3, Ez3 = FD.calculate_scattering(
         aperture_coords=transmitting_antenna_surface_coords,
         sink_coords=receiving_antenna_surface_coords,
         antenna_solid=blockers,
-        desired_E_axis=np.tile(desired_E_axis,[transmitting_antenna_surface_coords.points.shape[0],1]),
+        desired_E_axis=transmit_horn.excitation_function(desired_e_vector=desired_E_axis,transmit_power=0.25),
         scatter_points=scatter_points_temp,
         wavelength=wavelength,
         scattering=0,

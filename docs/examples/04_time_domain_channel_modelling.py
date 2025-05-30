@@ -18,7 +18,7 @@ import numpy as np
 # Frequency and Mesh Resolution
 # ------------------------------
 #
-sampling_freq = 60e9
+sampling_freq = 23e9
 model_time = 1e-7
 num_samples = int(model_time * (sampling_freq))
 
@@ -30,7 +30,7 @@ thermal_noise_power = 4 * kb * 293.15 * receiver_impedence * bandwidth
 noise_power = -80  # dbw
 mean_noise = 0
 
-model_freq = 24e9
+model_freq = 10e9
 wavelength = 3e8 / model_freq
 
 # %%
@@ -60,10 +60,10 @@ rotation_vector2 = np.radians(np.asarray([0.0, 0.0, -90.0]))
 
 transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure, rotation_vector1)
 transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure, rotation_vector2)
-transmit_horn_structure = GF.translate_mesh(transmit_horn_structure, np.asarray([2.695, 0, 0]))
+transmit_horn_structure = GF.mesh_translate(transmit_horn_structure, np.asarray([2.695, 0, 0]))
 transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords, rotation_vector1)
 transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords, rotation_vector2)
-transmitting_antenna_surface_coords = GF.translate_mesh(transmitting_antenna_surface_coords, np.asarray([2.695, 0, 0]))
+transmitting_antenna_surface_coords = GF.mesh_translate(transmitting_antenna_surface_coords, np.asarray([2.695, 0, 0]))
 # %%
 # Position Receiver
 # ------------------
@@ -71,9 +71,9 @@ transmitting_antenna_surface_coords = GF.translate_mesh(transmitting_antenna_sur
 
 
 receive_horn_structure = GF.mesh_rotate(receive_horn_structure, rotation_vector1)
-receive_horn_structure = GF.translate_mesh(receive_horn_structure, np.asarray([0, 1.427, 0]))
+receive_horn_structure = GF.mesh_translate(receive_horn_structure, np.asarray([0, 1.427, 0]))
 receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords, rotation_vector1)
-receiving_antenna_surface_coords = GF.translate_mesh(receiving_antenna_surface_coords, np.asarray([0, 1.427, 0]))
+receiving_antenna_surface_coords = GF.mesh_translate(receiving_antenna_surface_coords, np.asarray([0, 1.427, 0]))
 
 # %%
 # Create Scattering Plate
@@ -87,8 +87,8 @@ position_vector = np.asarray([29e-3, 0.0, 0])
 rotation_vector1 = np.radians(np.asarray([0.0, 90.0, 0.0]))
 scatter_points = GF.mesh_rotate(scatter_points, rotation_vector1)
 reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector1)
-reflectorplate = GF.translate_mesh(reflectorplate, position_vector)
-scatter_points = GF.translate_mesh(scatter_points, position_vector)
+reflectorplate = GF.mesh_translate(reflectorplate, position_vector)
+scatter_points = GF.mesh_translate(scatter_points, position_vector)
 
 
 # %%
@@ -113,18 +113,12 @@ blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_str
 
 import pyvista as pv
 
-def structure_cells(array):
-    ## add collumn of 3s to beggining of each row
-    array = np.append(np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1)
-    return array
-pyvista_mesh = pv.PolyData(reflectorplate.points, structure_cells(reflectorplate.cells[0].data))
-pyvista_mesh2 = pv.PolyData(receive_horn_structure.points, structure_cells(receive_horn_structure.cells[0].data))
-pyvista_mesh3 = pv.PolyData(transmit_horn_structure.points, structure_cells(transmit_horn_structure.cells[0].data))
+
 ## plot the mesh
 plotter = pv.Plotter()
-plotter.add_mesh(pyvista_mesh, color="white", show_edges=True)
-plotter.add_mesh(pyvista_mesh2, color="blue", show_edges=True)
-plotter.add_mesh(pyvista_mesh3, color="red", show_edges=True)
+plotter.add_mesh(pv.from_meshio(reflectorplate), color="white", show_edges=True)
+plotter.add_mesh(pv.from_meshio(receive_horn_structure), color="blue", show_edges=True)
+plotter.add_mesh(pv.from_meshio(transmit_horn_structure), color="red", show_edges=True)
 plotter.add_axes_at_origin()
 plotter.show()
 
@@ -180,8 +174,8 @@ for angle_inc in tqdm(range(len(angle_values))):
     output_amplitude_rms = v_transmit / (1 / np.sqrt(2))
     output_amplitude_peak = v_transmit
 
-    desired_E_axis = np.zeros((3), dtype=np.float32)
-    desired_E_axis[1] = 1.0
+    desired_E_axis = np.zeros((1,3), dtype=np.float32)
+    desired_E_axis[0,1] = 1.0
     noise_volts_peak = (10 ** (noise_power / 10) * receiver_impedence) * 0.5
 
     excitation_signal = output_amplitude_rms * sig.chirp(
@@ -272,12 +266,13 @@ from scipy.fft import fft, fftfreq
 import scipy
 
 xf = fftfreq(len(time_index), 1 / sampling_freq)[: len(time_index) // 2]
+frequency_index=np.where(xf==model_freq)
 input_signal = excitation_signal * (output_amplitude_peak)
 inputfft = fft(input_signal)
 input_freq = fftfreq(120, 1 / sampling_freq)[:60]
 freqfuncabs = scipy.interpolate.interp1d(input_freq, np.abs(inputfft[:60]))
 freqfuncangle = scipy.interpolate.interp1d(input_freq, np.angle(inputfft[:60]))
-newinput = freqfuncabs(xf[1600]) * np.exp(freqfuncangle(xf[1600]))
+newinput = freqfuncabs(xf[frequency_index]) * np.exp(freqfuncangle(xf[frequency_index]))
 Exf = fft(Ex)
 Eyf = fft(Ey)
 Ezf = fft(Ez)
@@ -292,9 +287,9 @@ Ezf = fft(Ez)
 # physically happening in the channel, but to get an idea of the behaviour in the frequency domain we need to use a
 # fourier transform to move from time and voltages to frequency.
 
-s21x = 20 * np.log10(np.abs(Exf[:, 1600] / newinput))
-s21y = 20 * np.log10(np.abs(Eyf[:, 1600] / newinput))
-s21z = 20 * np.log10(np.abs(Ezf[:, 1600] / newinput))
+s21x = 20 * np.log10(np.abs(Exf[:, frequency_index] / newinput)).ravel()
+s21y = 20 * np.log10(np.abs(Eyf[:, frequency_index] / newinput)).ravel()
+s21z = 20 * np.log10(np.abs(Ezf[:, frequency_index] / newinput)).ravel()
 tdangles = np.linspace(-45, 45, 91)
 fig, ax = plt.subplots()
 ax.plot(tdangles, s21x - np.max(s21z), label="Ex")

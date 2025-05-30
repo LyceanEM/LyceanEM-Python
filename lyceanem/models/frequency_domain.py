@@ -773,7 +773,7 @@ def calculate_scattering(
         ].reshape(-1, 1)
         # set all sources as magnetic current sources, and permittivity and permeability as free space
         aperture_coords.point_data["is_electric"] = np.ones(
-            (num_sources), dtype=np.bool
+            (num_sources), dtype=bool
         )
         aperture_coords.point_data["permittivity"] = (
             np.ones((num_sources), dtype=np.complex64) * permittivity
@@ -794,7 +794,7 @@ def calculate_scattering(
         if scattering > 0:
             num_scatters = len(np.asarray(scatter_points.points))
             scatter_points.point_data["is_electric"] = np.ones(
-                (num_scatters), dtype=np.bool
+                (num_scatters), dtype=bool
             )
             scatter_points.point_data["permittivity"] = (
                 np.ones((num_scatters), dtype=np.complex64) * permittivity

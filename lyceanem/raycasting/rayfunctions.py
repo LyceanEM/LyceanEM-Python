@@ -260,8 +260,8 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
         (ray_index.shape[0], ray_index.shape[1]), dtype=np.int32
     )
     d_ray_index = cuda.to_device(ray_index)
-    ray_flags = np.full(ray_index.shape[0], False, dtype=np.bool)
-    d_ray_flag = cuda.device_array(ray_index.shape[0], dtype=np.bool)
+    ray_flags = np.full(ray_index.shape[0], False, dtype=bool)
+    d_ray_flag = cuda.device_array(ray_index.shape[0], dtype=bool)
     d_ray_flag = cuda.to_device(ray_flags)
     cuda.to_device(environment_local, to=d_environment)
     d_point_information = cuda.device_array(
@@ -2531,7 +2531,7 @@ def shadowRaycaster(filtered_network, sinks, filtered_index, environment_local):
             chunk_ray_size = len(chunk_payload)
             distance_temp = np.empty((chunk_ray_size), dtype=np.float32)
             distance_temp[:] = math.inf
-            ray_temp = np.empty((chunk_ray_size), dtype=np.bool)
+            ray_temp = np.empty((chunk_ray_size), dtype=bool)
             ray_temp[:] = False
             dist_list = cuda.to_device(distance_temp)
             d_ray_flag = cuda.to_device(ray_temp)

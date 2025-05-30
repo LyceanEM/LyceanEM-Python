@@ -3086,6 +3086,8 @@ def TimeDomainv3(
         d_arrival_times = cuda.to_device(
             np.zeros(full_index.shape[0], dtype=np.float64)
         )
+        d_alpha = cuda.to_device(np.ones((1), dtype=np.float64) * alpha)
+        d_beta = cuda.to_device(np.ones((1), dtype=np.float64) * beta)
         # divide in terms of a block for each source, then
         depthslice, _ = targettingindex(copy.deepcopy(full_index))
         depthslice[:, 0] -= 1
@@ -3121,6 +3123,8 @@ def TimeDomainv3(
             d_arrival_times,
             d_wake_time,
             d_time_map,
+            d_alpha,
+            d_beta,
         )
         # polaranddistance(d_full_index,d_point_information,polar_c,paths)
         # cuda.profile_stop()

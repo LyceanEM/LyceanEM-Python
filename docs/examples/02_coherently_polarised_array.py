@@ -85,7 +85,7 @@ Etheta, Ephi = calculate_farfield(
     el_range=np.linspace(-90, 90, elev_res),
     wavelength=wavelength,
     farfield_distance=20,
-    project_vectors=True,
+    project_vectors=False,
     beta=(2*np.pi)/wavelength
 )
 
@@ -122,14 +122,14 @@ pattern_mesh=UAV_Static_Pattern.pattern_mesh()
 
 from lyceanem.electromagnetics.beamforming import create_display_mesh
 
-display_mesh=create_display_mesh(pattern_mesh,label="D(Total)")
-display_mesh.plot(scalars="D(Total)")
-
+display_mesh=create_display_mesh(pattern_mesh,label="D(Total)",dynamic_range=60)
+display_mesh.point_data['D(Total - dBi)']=10*np.log10(display_mesh.point_data['D(Total)'])
+plot_max=5*np.ceil(np.nanmax(display_mesh.point_data['D(Total - dBi)'])/5)
 
 
 pl=pv.Plotter()
 pl.add_mesh(pv.from_meshio(body),color="green")
 pl.add_mesh(pv.from_meshio(array),color="aqua")
-pl.add_mesh(display_mesh,scalars="D(Total)",style="points")
+pl.add_mesh(display_mesh,scalars="D(Total - dBi)",style="points",clim=[plot_max-60,plot_max])
 pl.add_axes()
 pl.show()
