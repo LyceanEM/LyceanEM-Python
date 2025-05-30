@@ -76,8 +76,6 @@ receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coor
 #receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector3)
 receiving_antenna_surface_coords = GF.mesh_translate(receiving_antenna_surface_coords,np.asarray([0, 1.609, 0]))
 
-
-
 # %%
 # Create Scattering Plate
 # --------------------------
@@ -181,16 +179,12 @@ print("sumdiff",(np.sum((Ex-Excuda))))
 print("sumdiff",(np.sum((Ey-Eycuda))))
 print("sumdiff",(np.sum((Ez-Ezcuda))))
 
-
-
 # %%
 # Examine Scattering
 # ---------------------
 # The resultant scattering is decomposed into the Ex,Ey,Ez components at the receiving antenna, by itself this is not
 # that interesting, so for this example we will rotate the reflector back, and then create a loop to step the reflector
 # through different angles from 0 to 90 degrees in 1 degree steps.
-
-
 
 
 angle_values = np.linspace(0, 90, 181)

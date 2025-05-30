@@ -37,7 +37,6 @@ import meshio
 import lyceanem.geometry.targets as TL
 import lyceanem.geometry.geometryfunctions as GF
 
-
 transmit_horn_structure, transmitting_antenna_surface_coords = TL.meshedHorn(
     58e-3, 58e-3, 128e-3, 2e-3, 0.21, wavelength*0.5
 )

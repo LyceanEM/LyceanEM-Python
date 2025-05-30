@@ -62,13 +62,6 @@ pl.add_axes()
 pl.show()
 
 
-# %%
-# Drawbacks of :func:`lyceanem.geometry.geometryfunctions.sourcecloudfromshape`
-# ------------------------------------------------------------------------------
-# As can be seen by comparing the two source point sets, :func:`lyceanem.geometry.geometryfunctions.sourcecloudfromshape`
-# has a significant drawback when used for complex sharply curved antenna arrays, as the poisson disk sampling method
-# does not produce consistently spaced results.
-
 desired_E_axis = np.zeros((1, 3), dtype=np.float32)
 desired_E_axis[0, 1] = 1.0
 

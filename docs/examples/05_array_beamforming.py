@@ -9,7 +9,6 @@ the farfield patterns for a linearly polarised aperture with multiple elements. 
 
 The Steering Efficiency can then be evaluated using :func:`lyceanem.electromagnetics.beamforming.Steering_Efficiency` for the resultant achieved beamforming.
 
-
 """
 import numpy as np
 
@@ -38,8 +37,6 @@ import lyceanem.tests.reflectordata as data
 import lyceanem.tests.reflectordata as data
 body=data.UAV_Demo(wavelength*0.5)
 array=data.UAV_Demo_Aperture(wavelength*0.5)
-
-
 
 # %%
 

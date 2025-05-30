@@ -110,7 +110,6 @@ blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_str
 # Visualise the Scene Geometry
 # ------------------------------
 
-
 import pyvista as pv
 
 

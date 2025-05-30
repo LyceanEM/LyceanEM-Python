@@ -39,7 +39,6 @@ structure,array_points=meshedHorn(3*wavelength, 1*wavelength, 4*wavelength, 1*wa
 
 horn_antenna=antenna_structures(structures(solids=[structure]), points(points=[array_points]))
 
-
 from lyceanem.models.frequency_domain import calculate_farfield
 
 # %%
