@@ -120,7 +120,7 @@ sphinx_gallery_conf = {
         "sphinx_gallery": None,
         "pyvista": None,
     },
-    "plot_gallery": False,  # documentation examples require cuda on build machine, so must be fully built before being passed to readthedocs
+    "plot_gallery": 'False',  # documentation examples require cuda on build machine, so must be fully built before being passed to readthedocs
 }
 
 # -- Options for HTML output -------------------------------------------------
