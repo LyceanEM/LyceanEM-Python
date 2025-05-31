@@ -90,7 +90,7 @@ Geometries
 In order to make things easy to start, an example geometry has been included within LyceanEM for a UAV, and the
 meshio trianglemesh structures can be accessed by importing the data subpackage
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-65
+.. GENERATED FROM PYTHON SOURCE LINES 52-56
 
 .. code-block:: Python
 
@@ -99,8 +99,37 @@ meshio trianglemesh structures can be accessed by importing the data subpackage
     body = data.UAV_Demo(wavelength * 0.5)
     array = data.UAV_Demo_Aperture(wavelength * 0.5)
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\meshio\stl\_stl.py:40: RuntimeWarning: overflow encountered in scalar multiply
+      if 84 + num_triangles * 50 == filesize_bytes:
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 57-59
+
+.. code-block:: Python
+
     import pyvista as pv
 
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 60-67
+
+.. code-block:: Python
+
+    PYVISTA_GALLERY_FORCE_STATIC = False
     pl = pv.Plotter()
     pl.add_mesh(pv.from_meshio(body), color="green")
     pl.add_mesh(pv.from_meshio(array), color="aqua")
@@ -116,17 +145,10 @@ meshio trianglemesh structures can be accessed by importing the data subpackage
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\meshio\stl\_stl.py:40: RuntimeWarning: overflow encountered in scalar multiply
-      if 84 + num_triangles * 50 == filesize_bytes:
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 66-72
+.. GENERATED FROM PYTHON SOURCE LINES 68-74
 
 Structures
 --------------
@@ -135,7 +157,7 @@ is the class itself, and methods to allow translation and rotation of the triang
 passed to the models to provide the environment to be considered as blockers.
 structures are created by calling the class, and passing it a list of the meshio trianglemesh structures to be added.
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-76
+.. GENERATED FROM PYTHON SOURCE LINES 74-78
 
 .. code-block:: Python
 
@@ -150,7 +172,7 @@ structures are created by calling the class, and passing it a list of the meshio
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 77-83
+.. GENERATED FROM PYTHON SOURCE LINES 79-85
 
 Aperture Projection
 -----------------------
@@ -159,7 +181,7 @@ be considered, and the azimuth and elevation ranges. The function then returns t
 array of floats, and a meshio point cloud with points and colors corresponding to the directivity envelope of the
 provided aperture, scaling from yellow at maximum to dark purple at minimum.
 
-.. GENERATED FROM PYTHON SOURCE LINES 83-92
+.. GENERATED FROM PYTHON SOURCE LINES 85-94
 
 .. code-block:: Python
 
@@ -186,18 +208,18 @@ provided aperture, scaling from yellow at maximum to dark purple at minimum.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-97
+.. GENERATED FROM PYTHON SOURCE LINES 95-99
 
 Visualisation
 ------------------------
 The resultant maximum directivity envelope is provided as both a numpy array of directivities for each angle, but
 also as an meshio point cloud. This allows easy visualisation using pyvista.
 
-.. GENERATED FROM PYTHON SOURCE LINES 99-100
+.. GENERATED FROM PYTHON SOURCE LINES 101-102
 
 Maximum Directivity
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-106
+.. GENERATED FROM PYTHON SOURCE LINES 102-108
 
 .. code-block:: Python
 
@@ -215,14 +237,14 @@ Maximum Directivity
 
  .. code-block:: none
 
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:102: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:104: RuntimeWarning: divide by zero encountered in log10
       np.max(10 * np.log10(directivity_envelope))
     Maximum Directivity of 17.4 dBi
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-113
+.. GENERATED FROM PYTHON SOURCE LINES 109-115
 
 Plotting the Output
 ------------------------
@@ -231,7 +253,7 @@ difficult to consider the full 3D space, and cannot be included in documentation
 can be used to generate contour plots with 3dB contours to give a more systematic understanding of the resultant
 maximum directivity envelope.
 
-.. GENERATED FROM PYTHON SOURCE LINES 113-171
+.. GENERATED FROM PYTHON SOURCE LINES 115-173
 
 .. code-block:: Python
 
@@ -297,12 +319,12 @@ maximum directivity envelope.
 
 
 .. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_002.png
-   :alt: 01 aperture projection
+   :alt: Maximum Directivity Envelope
    :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_002.png
    :class: sphx-glr-single-img
 
 .. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_003.png
-   :alt: Maximum Directivity Envelope
+   :alt: 01 aperture projection
    :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_003.png
    :class: sphx-glr-single-img
 
@@ -311,15 +333,15 @@ maximum directivity envelope.
 
  .. code-block:: none
 
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:117: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:119: RuntimeWarning: divide by zero encountered in log10
       plot_max = ((np.ceil(np.nanmax(10 * np.log10(directivity_envelope))) // 5.0) + 1) * 5
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:128: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:130: RuntimeWarning: divide by zero encountered in log10
       10 * np.log10(directivity_envelope),
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:138: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:140: RuntimeWarning: divide by zero encountered in log10
       np.nanmax(10 * np.log10(directivity_envelope)) - 60,
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:139: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:141: RuntimeWarning: divide by zero encountered in log10
       np.nanmax(10 * np.log10(directivity_envelope)),
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:145: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:147: RuntimeWarning: divide by zero encountered in log10
       10 * np.log10(directivity_envelope),
 
 
@@ -328,7 +350,7 @@ maximum directivity envelope.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 39.790 seconds)
+   **Total running time of the script:** (0 minutes 41.129 seconds)
 
 
 .. _sphx_glr_download_auto_examples_01_aperture_projection.py:

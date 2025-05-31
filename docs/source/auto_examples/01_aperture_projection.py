@@ -53,9 +53,11 @@ import lyceanem.tests.reflectordata as data
 
 body = data.UAV_Demo(wavelength * 0.5)
 array = data.UAV_Demo_Aperture(wavelength * 0.5)
-
+# %%
 import pyvista as pv
 
+# %%
+PYVISTA_GALLERY_FORCE_STATIC = False
 pl = pv.Plotter()
 pl.add_mesh(pv.from_meshio(body), color="green")
 pl.add_mesh(pv.from_meshio(array), color="aqua")

@@ -207,34 +207,34 @@ plottype='Contour' to the function.
     pl.show()
 
 
-.. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
-   :alt: 02 coherently polarised array
-   :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
-   :class: sphx-glr-single-img
-
 .. rst-class:: sphx-glr-horizontal
 
 
     *
 
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
+      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
          :alt: Power Pattern
+         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
+         :alt: Etheta
          :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
          :class: sphx-glr-multi-img
 
     *
 
       .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
-         :alt: Etheta
+         :alt: Ephi
          :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
          :class: sphx-glr-multi-img
 
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
-         :alt: Ephi
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
-         :class: sphx-glr-multi-img
+.. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
+   :alt: 02 coherently polarised array
+   :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
+   :class: sphx-glr-single-img
 
 
 .. rst-class:: sphx-glr-script-out
@@ -260,7 +260,7 @@ plottype='Contour' to the function.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 1.919 seconds)
+   **Total running time of the script:** (1 minutes 59.938 seconds)
 
 
 .. _sphx_glr_download_auto_examples_02_coherently_polarised_array.py:

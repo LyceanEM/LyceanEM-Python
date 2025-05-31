@@ -31,6 +31,15 @@
    "name": "QuadContourSet"
   }
  ],
+ "PYVISTA_GALLERY_FORCE_STATIC": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "bool"
+  }
+ ],
  "aperture_projection": [
   {
    "is_class": false,

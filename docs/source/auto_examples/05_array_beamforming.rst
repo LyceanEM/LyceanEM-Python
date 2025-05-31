@@ -270,7 +270,7 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (3 minutes 46.771 seconds)
+   **Total running time of the script:** (4 minutes 6.442 seconds)
 
 
 .. _sphx_glr_download_auto_examples_05_array_beamforming.py:
