@@ -1,6 +1,6 @@
 package:
   name: lyceanem
-  version: 0.0.8
+  version: 0.1.0
 source:
   path: ..
 
@@ -59,11 +59,11 @@ requirements:
 
 
 about:
-  home: https://lyceanem-python.readthedocs.io/en/latest/index.html
+  home: https://documentation.lyceanem.com/en/latest/
   summary: >
     LyceanEM is a Python library for modelling electromagnetic propagation
     for sensors and communications. You can find the documentation at
-    https://lyceanem-python.readthedocs.io/en/latest/
+    https://documentation.lyceanem.com/en/latest/
   license: GPL-3.0
   license_file: LICENSE.txt
 

@@ -2,11 +2,9 @@ name: Build
 
 
 on:
+  release:
+    types: [ published ]
   workflow_dispatch:
-  push:
-    branches: [ Scattering-Farfield-CUDA ]
-  pull_request:
-    branches: [ Scattering-Farfield-CUDA ]
 
 jobs:
   build:
@@ -45,14 +43,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           activate-environment: build_env
           miniforge-version: latest
-#
-      - name: Clone the devel branch (push to devel)
-        run: git clone --branch Scattering-Farfield-CUDA https://github.com/${{ env.REPO }}
-        if: github.event_name != 'pull_request'
-#
-      - name: Clone the feature branch (pull request to devel)
-        run: git clone --branch Scattering-Farfield-CUDA https://github.com/${{ env.REPO }}
-        if: github.event_name == 'pull_request'
+
 #
       - name: Setup Conda
         run: conda install -y -c conda-forge boa anaconda-client ninja
