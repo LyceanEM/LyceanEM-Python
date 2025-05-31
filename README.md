@@ -39,33 +39,27 @@ If you use LyceanEM in an academic project, please cite our paper:
 
 The package has been tested on:
 
-* Ubuntu and Mint 18.04 and 20.04
+* Ubuntu and Mint 18.04,20.04,and 22.04
 * Windows 10 64-bit
 
 With Python versions:
 
-* 3.7
+
 * 3.8
 * 3.9
 * 3.10
+* 3.11
+* 3.12
 
 ## Installation
 
 LyceanEM uses CUDA for GPU acceleration. The advised installation method is to use Conda to setup a virtual
-environment, and installing both cudatoolkit and cupy.
+environment, and then the `lyceanem` package can be installed from the `lyceanem` channel.
 
 ```
 
-   $ conda install -c conda-forge cudatoolkit
-   $ conda install -c conda-forge cupy
-   $ pip install lyceanem
+   $ conda install -c lyceanem lyceanem
 
-```
-
-Assuming the cudatoolkit and cupy are already installed, then LyceanEM can also be installed via pip.
-
-```
- pip install LyceanEM
 ```
 
 ## Development Roadmap
@@ -77,14 +71,14 @@ includes three key areas:
 * Computational efficiency and scalability: The developers plan to improve the computational efficiency of `LyceanEM` so
   that it can be used on a wider range of hardware platforms, including desktop computers and high-performance
   computing (HPC) clusters. This will make `LyceanEM` more accessible to a wider range of users. It is the intention of
-  the developers to support antenna arrays with multiple billon antenna elements, `Giga-scale` antenna arrays.
+  the developers to support antenna arrays with multiple billon antenna elements, `Giga-scale` antenna arrays. `Complete!`
 * Core propagation engine: The developers plan to improve the core propagation engine of `LyceanEM` to include more
   realistic models of lossy propagation, atmospheric effects for each layer of the atmosphere, and dynamic environments.
-  This will make `LyceanEM` more accurate and versatile for a wider range of applications.
+  This will make `LyceanEM` more accurate and versatile for a wider range of applications. `Complete!`
 * Modelling fidelity: The developers plan to add new features to `LyceanEM` that will allow users to model
   electromagnetic systems with greater fidelity. This includes support for importing antenna patterns and time domain
   sources, as well as the development of open source standards for antenna array designs, antenna patterns and field
-  sources, and wireless power transfer.
+  sources, and wireless power transfer. `Complete!`
 
 Here are some specific ways that users can contribute to the development of `LyceanEM`:
 

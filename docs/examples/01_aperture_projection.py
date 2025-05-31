@@ -9,10 +9,10 @@ an unmanned aerial vehicle.
 
 Aperture Projection as a technique is based upon Hannan's formulation of the gain of an aperture based upon its surface
 area and the freuqency of interest. This is defined in terms of the maximum gain :math:`G_{max}`, the effective area of
-the aperture :math:`A_{e}`, and the wavelength of interest :math:`\lambda`.
+the aperture :math:`A_{e}`, and the wavelength of interest :math:`\\lambda`.
 
 .. math::
-    G_{max}=\dfrac{4 \pi A_{e}}{\lambda^{2}}
+    G_{max}=\\dfrac{4 \\pi A_{e}}{\\lambda^{2}}
 
 While this has been in common use since the 70s, as a formula it is limited to planar surfaces, and only providing the
 maximum gain in the boresight direction for that surface.
@@ -51,27 +51,18 @@ wavelength = 3e8 / 10e9
 # meshio trianglemesh structures can be accessed by importing the data subpackage
 import lyceanem.tests.reflectordata as data
 
-body, array, _ = data.exampleUAV(10e9)
-
+body = data.UAV_Demo(wavelength * 0.5)
+array = data.UAV_Demo_Aperture(wavelength * 0.5)
+# %%
 import pyvista as pv
-pl=pv.Plotter()
-pl.add_mesh(pv.from_meshio(body),color="green")
-pl.add_mesh(pv.from_meshio(array),color="aqua")
-pl.show()
 
 # %%
-## .. image:: ../_static/open3d_structure.png
-
-# crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to
-# the hidden surfaces, but correctly an aperture will only have an outer face.
-surface_array = copy.deepcopy(array)
-surface_array.cells[0].data = np.asarray(array.cells[0].data)[: (array.cells[0].data).shape[0] // 2, :]
-
-surface_array.cell_data["Normals"] = np.array(array.cell_data["Normals"])[: (array.cells[0].data).shape[0] // 2]
-#Recalculate Normals
-from lyceanem.geometry.geometryfunctions import compute_normals
-surface_array=compute_normals(surface_array)
-
+PYVISTA_GALLERY_FORCE_STATIC = False
+pl = pv.Plotter()
+pl.add_mesh(pv.from_meshio(body), color="green")
+pl.add_mesh(pv.from_meshio(array), color="aqua")
+pl.add_axes()
+pl.show()
 
 # %%
 # Structures
@@ -94,7 +85,7 @@ blockers = structures([body])
 from lyceanem.models.frequency_domain import aperture_projection
 
 directivity_envelope, pcd = aperture_projection(
-    surface_array,
+    array,
     environment=blockers,
     wavelength=wavelength,
     az_range=np.linspace(-180.0, 180.0, az_res),
@@ -105,13 +96,8 @@ directivity_envelope, pcd = aperture_projection(
 # ------------------------
 # The resultant maximum directivity envelope is provided as both a numpy array of directivities for each angle, but
 # also as an meshio point cloud. This allows easy visualisation using pyvista.
-# %%
-
 
 # %%
-# .. image:: ../_static/open3d_results_rendering.png
-
-
 # Maximum Directivity
 print(
     "Maximum Directivity of {:3.1f} dBi".format(
@@ -172,3 +158,15 @@ ax.set_xlabel("Azimuth (degrees)")
 ax.set_ylabel("Elevation (degrees)")
 ax.set_title("Maximum Directivity Envelope")
 fig.show()
+
+pl = pv.Plotter()
+pl.add_mesh(pv.from_meshio(body), color="green")
+pl.add_mesh(pv.from_meshio(array), color="aqua")
+pl.add_mesh(
+    pv.from_meshio(pcd),
+    scalars="Directivity Envelope (dBi)",
+    style="points",
+    clim=[0, np.nanmax(pcd.point_data["Directivity Envelope (dBi)"])],
+)
+pl.add_axes()
+pl.show()

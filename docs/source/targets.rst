@@ -7,5 +7,5 @@ A collection of useful primatives for scattering and propagation modelling, incl
 Targets is named so because it generates objects for the purpose of scattering rays and calculating their contribution to the channel.
 
 .. automodule:: lyceanem.geometry.targets
-    :members: meshedHorn, meshedReflector
+    :members:
 

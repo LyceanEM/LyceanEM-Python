@@ -13,6 +13,5 @@ scipy~=1.6.2
 importlib_resources~=5.2.0
 packaging~=20.9
 numba~=0.52.0
-solidpython~=1.1.1
 cupy~=8.3.0
 setuptools~=52.0.0

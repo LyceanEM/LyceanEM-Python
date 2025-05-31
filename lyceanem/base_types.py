@@ -32,15 +32,22 @@ triangle_data = np.dtype(
         ("v2x", "f4"),
         ("v2y", "f4"),
         ("v2z", "f4"),
-        # normal vector
-        # ('normx', 'f4'),  ('normy', 'f4'), ('normz', 'f4'),
-        # ('reflection', np.float64),
-        # ('diffuse_c', np.float64),
-        # ('specular_c', np.float64),
     ],
     align=True,
 )
 triangle_t = from_dtype(triangle_data)  # Create a type that numba can recognize!
+"""
+A Numba type representing a triangle in 3D space, based on a numpy record array.
+
+Attributes
+----------
+v0x, v0y, v0z : float
+    Coordinates of the first vertex of the triangle.
+v1x, v1y, v1z : float
+    Coordinates of the second vertex of the triangle.
+v2x, v2y, v2z : float
+    Coordinates of the third vertex of the triangle.    
+"""
 
 # ray class, to hold the ray origin, direction, and eventuall other data.
 ray_data = np.dtype(
@@ -63,8 +70,21 @@ ray_data = np.dtype(
     ],
     align=True,
 )
-ray_t = from_dtype(ray_data)  # Create a type that numba can recognize!
-# We can use that type in our device functions and later the kernel!
+ray_t = from_dtype(ray_data)
+"""
+A Numba type representing a ray in 3D space, based on a numpy record array.
+
+Attributes
+----------
+ox, oy, oz : float
+    Coordinates of the origin of the ray.
+dx, dy, dz : float
+    Direction vector of the ray.
+dist : float
+    Distance traveled by the ray.
+intersect : bool
+    Whether the ray has intersected with an object.
+"""
 
 scattering_point = np.dtype(
     [
@@ -97,3 +117,23 @@ scattering_point = np.dtype(
 )
 
 scattering_t = from_dtype(scattering_point)  # Create a type that numba can recognize!
+""" 
+A Numba type representing a scattering point in 3D space, based on a numpy record array.
+
+Attributes
+----------
+px, py, pz : float
+    Coordinates of the scattering point.
+vx, vy, vz : float
+    Velocity vector of the scattering point. Not used in the current implementation.
+nx, ny, nz : float
+    Normal vector at the scattering point.
+ex, ey, ez : complex
+    Electric field components at the scattering point.
+permittivity : complex
+    Permittivity of the medium at the scattering point.
+permeability : complex
+    Permeability of the medium at the scattering point.
+Electric : bool
+    Indicates whether the scattering point is an electric source (True) or a magnetic source (False).
+"""

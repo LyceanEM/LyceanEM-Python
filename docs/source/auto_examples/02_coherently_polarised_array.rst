@@ -32,7 +32,13 @@ weights.
     import copy
 
     import numpy as np
-    import meshio
+
+
+
+
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 18-27
 
@@ -56,6 +62,12 @@ an X band aperture.
     wavelength = 3e8 / 10e9
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 33-37
 
 Geometries
@@ -68,32 +80,36 @@ triangle structures can be accessed by importing the data subpackage
 .. code-block:: Python
 
     import lyceanem.tests.reflectordata as data
-
-    body, array, source_coords = data.exampleUAV(10e9)
-
-
+    body=data.UAV_Demo(wavelength*0.5)
+    array=data.UAV_Demo_Aperture(wavelength*0.5)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-45
 
-# .. image:: ../_static/open3d_structure.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 45-68
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\meshio\stl\_stl.py:40: RuntimeWarning: overflow encountered in scalar multiply
+      if 84 + num_triangles * 50 == filesize_bytes:
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 44-80
 
 .. code-block:: Python
 
 
-    # crop the inner surface of the array trianglemesh (not strictly required, as the UAV main body provides blocking to
-    # the hidden surfaces, but correctly an aperture will only have an outer face.
-    surface_array = copy.deepcopy(array)
-    surface_array.cells[0].data = np.asarray(array.cells[0].data)[: (array.cells[0].data).shape[0] // 2, :]
 
-    surface_array.cell_data["Normals"] = np.array(array.cell_data["Normals"])[: (array.cells[0].data).shape[0] // 2]
+    from lyceanem.base_classes import structures, points,antenna_structures
 
-    from lyceanem.base_classes import structures
-
-    blockers = structures([body, array])
-
+    blockers = structures([body])
+    aperture=points([array])
+    array_on_platform=antenna_structures(blockers, aperture)
     from lyceanem.models.frequency_domain import calculate_farfield
 
 
@@ -101,44 +117,52 @@ triangle structures can be accessed by importing the data subpackage
 
     import pyvista as pv
 
-
-    source_points = surface_array.points
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 69-70
-
-.. image:: ../_static/sourcecloudfromshapeuav.png
-
-.. GENERATED FROM PYTHON SOURCE LINES 72-77
-
-Drawbacks of :func:`lyceanem.geometry.geometryfunctions.sourcecloudfromshape`
-------------------------------------------------------------------------------
-As can be seen by comparing the two source point sets, :func:`lyceanem.geometry.geometryfunctions.sourcecloudfromshape`
-has a significant drawback when used for complex sharply curved antenna arrays, as the poisson disk sampling method
-does not produce consistently spaced results.
-
-.. GENERATED FROM PYTHON SOURCE LINES 77-92
-
-.. code-block:: Python
+    pl=pv.Plotter()
+    pl.add_mesh(pv.from_meshio(body),color="green")
+    pl.add_mesh(pv.from_meshio(array))
+    pl.add_axes()
+    pl.show()
 
 
     desired_E_axis = np.zeros((1, 3), dtype=np.float32)
     desired_E_axis[0, 1] = 1.0
 
     Etheta, Ephi = calculate_farfield(
-        source_coords,
-        blockers,
-        desired_E_axis,
+        array_on_platform.export_all_points(),
+        array_on_platform.export_all_structures(),
+        array_on_platform.excitation_function(desired_e_vector=desired_E_axis,wavelength=wavelength,transmit_power=1.0),
         az_range=np.linspace(-180, 180, az_res),
         el_range=np.linspace(-90, 90, elev_res),
         wavelength=wavelength,
         farfield_distance=20,
-        project_vectors=True,
+        project_vectors=False,
+        beta=(2*np.pi)/wavelength
     )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-101
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_001.png
+   :alt: 02 coherently polarised array
+   :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_001.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3719: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[2, :] = point_vector
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3736: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3758: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 81-89
 
 Storing and Manipulating Antenna Patterns
 ---------------------------------------------
@@ -149,7 +173,7 @@ to :func:`lyceanem.base.antenna_pattern.display_pattern`. This produces 3D polar
 give a better view of the whole pattern, but if contour plots are required, then this can also be produced by passing
 plottype='Contour' to the function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-112
+.. GENERATED FROM PYTHON SOURCE LINES 89-116
 
 .. code-block:: Python
 
@@ -159,29 +183,84 @@ plottype='Contour' to the function.
     UAV_Static_Pattern = antenna_pattern(
         azimuth_resolution=az_res, elevation_resolution=elev_res
     )
-    UAV_Static_Pattern.pattern[:, :, 0] = Etheta
-    UAV_Static_Pattern.pattern[:, :, 0] = Ephi
+    UAV_Static_Pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    UAV_Static_Pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
 
-    UAV_Static_Pattern.display_pattern()
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 113-115
-
-.. image:: ../_static/sphx_glr_02_coherently_polarised_array_001.png
-.. image:: ../_static/sphx_glr_02_coherently_polarised_array_002.png
-
-.. GENERATED FROM PYTHON SOURCE LINES 115-118
-
-.. code-block:: Python
-
+    UAV_Static_Pattern.display_pattern(desired_pattern='Power')
 
     UAV_Static_Pattern.display_pattern(plottype="Contour")
 
+    pattern_mesh=UAV_Static_Pattern.pattern_mesh()
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-121
+    from lyceanem.electromagnetics.beamforming import create_display_mesh
 
-.. image:: ../_static/sphx_glr_02_coherently_polarised_array_003.png
-.. image:: ../_static/sphx_glr_02_coherently_polarised_array_004.png
+    display_mesh=create_display_mesh(pattern_mesh,label="D(Total)",dynamic_range=60)
+    display_mesh.point_data['D(Total - dBi)']=10*np.log10(display_mesh.point_data['D(Total)'])
+    plot_max=5*np.ceil(np.nanmax(display_mesh.point_data['D(Total - dBi)'])/5)
+
+
+    pl=pv.Plotter()
+    pl.add_mesh(pv.from_meshio(body),color="green")
+    pl.add_mesh(pv.from_meshio(array),color="aqua")
+    pl.add_mesh(display_mesh,scalars="D(Total - dBi)",style="points",clim=[plot_max-60,plot_max])
+    pl.add_axes()
+    pl.show()
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
+         :alt: Power Pattern
+         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
+         :alt: Etheta
+         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
+         :alt: Ephi
+         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
+         :class: sphx-glr-multi-img
+
+.. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
+   :alt: 02 coherently polarised array
+   :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1280: RuntimeWarning: divide by zero encountered in log10
+      logdata = 20 * np.log10(data)
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1280: RuntimeWarning: divide by zero encountered in log10
+      logdata = 20 * np.log10(data)
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\emfunctions.py:539: RuntimeWarning: divide by zero encountered in log10
+      field_data.point_data["Poynting_Vector_(Magnitude_(dBW/m2))"] = 10 * np.log10(
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1615: RuntimeWarning: divide by zero encountered in log10
+      logdata = log_multiplier * np.log10(pattern_mesh.point_data[label])
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\02_coherently_polarised_array.py:107: RuntimeWarning: divide by zero encountered in log10
+      display_mesh.point_data['D(Total - dBi)']=10*np.log10(display_mesh.point_data['D(Total)'])
+
+
+
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** (1 minutes 59.938 seconds)
 
 
 .. _sphx_glr_download_auto_examples_02_coherently_polarised_array.py:
@@ -197,6 +276,10 @@ plottype='Contour' to the function.
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: 02_coherently_polarised_array.py <02_coherently_polarised_array.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: 02_coherently_polarised_array.zip <02_coherently_polarised_array.zip>`
 
 
 .. only:: html

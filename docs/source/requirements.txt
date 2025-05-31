@@ -6,7 +6,6 @@ pygmsh
 cupy
 matplotlib
 numba
-solidpython
 scipy
 lyceanem
 sphinx

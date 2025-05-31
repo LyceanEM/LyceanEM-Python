@@ -1,0 +1,71 @@
+name: Build
+
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ Scattering-Farfield-CUDA ]
+  pull_request:
+    branches: [ Scattering-Farfield-CUDA ]
+
+jobs:
+  build:
+    name: build (${{ matrix.python-version }}, ${{ matrix.platform.name }})
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      max-parallel: 9
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        platform:
+
+          - {
+              name: "linux",
+              os: "ubuntu-latest",
+              shell: "bash -l {0}"
+            }
+          - {
+              name: "windows",
+              os: "windows-latest",
+              shell: "powershell {0}"
+              
+          }
+
+    environment:
+      name: build_env
+    defaults:
+      run:
+        shell: ${{ matrix.platform.shell }}
+    env:
+      REPO: "${{ github.event.pull_request.head.repo.full_name || github.repository }}"
+    steps:
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          activate-environment: build_env
+          miniforge-version: latest
+#
+      - name: Clone the devel branch (push to devel)
+        run: git clone --branch Scattering-Farfield-CUDA https://github.com/${{ env.REPO }}
+        if: github.event_name != 'pull_request'
+#
+      - name: Clone the feature branch (pull request to devel)
+        run: git clone --branch Scattering-Farfield-CUDA https://github.com/${{ env.REPO }}
+        if: github.event_name == 'pull_request'
+#
+      - name: Setup Conda
+        run: conda install -y -c conda-forge boa anaconda-client ninja
+      
+#
+      - name: Build Conda package using mamba build
+        run:  conda mambabuild ${{ github.workspace }}/LyceanEM-Python/conda/
+#
+
+#
+      - name: Upload Conda package
+        run: python ${{ github.workspace }}/LyceanEM-Python/actions/upload.py
+        env:
+
+          ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+        if: github.event_name != 'pull_request'

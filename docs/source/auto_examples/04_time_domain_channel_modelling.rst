@@ -33,7 +33,13 @@ rather than an aperture antenna such as a horn.
 
 
     import numpy as np
-    import meshio
+
+
+
+
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 18-21
 
@@ -45,7 +51,7 @@ Frequency and Mesh Resolution
 
 .. code-block:: Python
 
-    sampling_freq = 60e9
+    sampling_freq = 23e9
     model_time = 1e-7
     num_samples = int(model_time * (sampling_freq))
 
@@ -57,8 +63,14 @@ Frequency and Mesh Resolution
     noise_power = -80  # dbw
     mean_noise = 0
 
-    model_freq = 24e9
+    model_freq = 10e9
     wavelength = 3e8 / model_freq
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 37-40
@@ -82,6 +94,12 @@ Setup transmitters and receivers
     )
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 51-56
 
 Position Transmitter
@@ -90,7 +108,7 @@ rotate the transmitting antenna to the desired orientation, and then translate t
 :func:`lyceanem.geometry.geometryfunctions.translate_mesh`, :func:`lyceanem.geometry.geometryfunctions.mesh_rotate` and :func:`lyceanem.geometry.geometryfunctions.mesh_transform` are included, allowing translation, rotation, and transformation of the meshio objects as required.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-67
+.. GENERATED FROM PYTHON SOURCE LINES 56-74
 
 .. code-block:: Python
 
@@ -98,39 +116,64 @@ rotate the transmitting antenna to the desired orientation, and then translate t
     rotation_vector2 = np.radians(np.asarray([0.0, 0.0, -90.0]))
 
 
-
     transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure, rotation_vector1)
     transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure, rotation_vector2)
-    transmit_horn_structure = GF.translate_mesh(transmit_horn_structure, np.asarray([2.695, 0, 0]))
-    transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords, rotation_vector1)
-    transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords, rotation_vector2)
-    transmitting_antenna_surface_coords = GF.translate_mesh(transmitting_antenna_surface_coords, np.asarray([2.695, 0, 0]))
+    transmit_horn_structure = GF.mesh_translate(
+        transmit_horn_structure, np.asarray([2.695, 0, 0])
+    )
+    transmitting_antenna_surface_coords = GF.mesh_rotate(
+        transmitting_antenna_surface_coords, rotation_vector1
+    )
+    transmitting_antenna_surface_coords = GF.mesh_rotate(
+        transmitting_antenna_surface_coords, rotation_vector2
+    )
+    transmitting_antenna_surface_coords = GF.mesh_translate(
+        transmitting_antenna_surface_coords, np.asarray([2.695, 0, 0])
+    )
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-71
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 75-78
 
 Position Receiver
 ------------------
 rotate the receiving horn to desired orientation and translate to final position.
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-78
+.. GENERATED FROM PYTHON SOURCE LINES 78-91
 
 .. code-block:: Python
 
 
 
     receive_horn_structure = GF.mesh_rotate(receive_horn_structure, rotation_vector1)
-    receive_horn_structure = GF.translate_mesh(receive_horn_structure, np.asarray([0, 1.427, 0]))
-    receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords, rotation_vector1)
-    receiving_antenna_surface_coords = GF.translate_mesh(receiving_antenna_surface_coords, np.asarray([0, 1.427, 0]))
+    receive_horn_structure = GF.mesh_translate(
+        receive_horn_structure, np.asarray([0, 1.427, 0])
+    )
+    receiving_antenna_surface_coords = GF.mesh_rotate(
+        receiving_antenna_surface_coords, rotation_vector1
+    )
+    receiving_antenna_surface_coords = GF.mesh_translate(
+        receiving_antenna_surface_coords, np.asarray([0, 1.427, 0])
+    )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-82
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 92-95
 
 Create Scattering Plate
 --------------------------
 Create a Scattering plate a source of multipath reflections
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-94
+.. GENERATED FROM PYTHON SOURCE LINES 95-107
 
 .. code-block:: Python
 
@@ -142,18 +185,34 @@ Create a Scattering plate a source of multipath reflections
     rotation_vector1 = np.radians(np.asarray([0.0, 90.0, 0.0]))
     scatter_points = GF.mesh_rotate(scatter_points, rotation_vector1)
     reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector1)
-    reflectorplate = GF.translate_mesh(reflectorplate, position_vector)
-    scatter_points = GF.translate_mesh(scatter_points, position_vector)
+    reflectorplate = GF.mesh_translate(reflectorplate, position_vector)
+    scatter_points = GF.mesh_translate(scatter_points, position_vector)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-98
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    meshing reflector
+    args 0.3 0.3 0.006
+    majorsize 0.3
+    minorsize 0.3
+    thickness 0.006
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 108-111
 
 Specify Reflection Angle
 --------------------------
 Rotate the scattering plate to the optimum angle for reflection from the transmitting to receiving horn
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-109
+.. GENERATED FROM PYTHON SOURCE LINES 111-122
 
 .. code-block:: Python
 
@@ -169,42 +228,52 @@ Rotate the scattering plate to the optimum angle for reflection from the transmi
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-112
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 123-125
 
 Visualise the Scene Geometry
 ------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-131
+.. GENERATED FROM PYTHON SOURCE LINES 125-137
 
 .. code-block:: Python
 
 
-
     import pyvista as pv
 
-    def structure_cells(array):
-        ## add collumn of 3s to beggining of each row
-        array = np.append(np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1)
-        return array
-    pyvista_mesh = pv.PolyData(reflectorplate.points, structure_cells(reflectorplate.cells[0].data))
-    pyvista_mesh2 = pv.PolyData(receive_horn_structure.points, structure_cells(receive_horn_structure.cells[0].data))
-    pyvista_mesh3 = pv.PolyData(transmit_horn_structure.points, structure_cells(transmit_horn_structure.cells[0].data))
+
     ## plot the mesh
     plotter = pv.Plotter()
-    plotter.add_mesh(pyvista_mesh, color="white", show_edges=True)
-    plotter.add_mesh(pyvista_mesh2, color="blue", show_edges=True)
-    plotter.add_mesh(pyvista_mesh3, color="red", show_edges=True)
+    plotter.add_mesh(pv.from_meshio(reflectorplate), color="white", show_edges=True)
+    plotter.add_mesh(pv.from_meshio(receive_horn_structure), color="blue", show_edges=True)
+    plotter.add_mesh(pv.from_meshio(transmit_horn_structure), color="red", show_edges=True)
     plotter.add_axes_at_origin()
     plotter.show()
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-135
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_04_time_domain_channel_modelling_001.png
+   :alt: 04 time domain channel modelling
+   :srcset: /auto_examples/images/sphx_glr_04_time_domain_channel_modelling_001.png
+   :class: sphx-glr-single-img
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 138-141
 
 Specify desired Transmit Polarisation
 --------------------------------------
 The transmit polarisation has a significant effect on the channel characteristics. In this example the transmit horn will be vertically polarised, (e-vector aligned with the z direction)
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-139
+.. GENERATED FROM PYTHON SOURCE LINES 141-145
 
 .. code-block:: Python
 
@@ -213,13 +282,19 @@ The transmit polarisation has a significant effect on the channel characteristic
     desired_E_axis[0, 1] = 1.0
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 140-143
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 146-149
 
 Time Domain Scattering
 ----------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-221
+.. GENERATED FROM PYTHON SOURCE LINES 149-228
 
 .. code-block:: Python
 
@@ -263,8 +338,8 @@ Time Domain Scattering
         output_amplitude_rms = v_transmit / (1 / np.sqrt(2))
         output_amplitude_peak = v_transmit
 
-        desired_E_axis = np.zeros((3), dtype=np.float32)
-        desired_E_axis[1] = 1.0
+        desired_E_axis = np.zeros((1, 3), dtype=np.float32)
+        desired_E_axis[0, 1] = 1.0
         noise_volts_peak = (10 ** (noise_power / 10) * receiver_impedence) * 0.5
 
         excitation_signal = output_amplitude_rms * sig.chirp(
@@ -293,6 +368,7 @@ Time Domain Scattering
             elements=False,
             sampling_freq=sampling_freq,
             num_samples=num_samples,
+            beta=(2 * np.pi) / wavelength,
         )
 
         noise_volts = np.random.normal(mean_noise, noise_volts_peak, num_samples)
@@ -302,13 +378,43 @@ Time Domain Scattering
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-225
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+      0%|                                                                                                                                                                                                       | 0/91 [00:00<?, ?it/s]C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3719: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[2, :] = point_vector
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3736: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3758: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 25 will likely result in GPU under-utilization due to low occupancy.
+      warn(NumbaPerformanceWarning(msg))
+      1%|██                                                                                                                                                                                             | 1/91 [00:04<06:21,  4.24s/it]C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3719: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[2, :] = point_vector
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3736: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3758: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
+      2%|████▏                                                                                                                                                                                          | 2/91 [00:04<02:44,  1.85s/it]      3%|██████▎                                                                                                                                                                                        | 3/91 [00:04<01:34,  1.08s/it]      4%|████████▍                                                                                                                                                                                      | 4/91 [00:04<01:01,  1.41it/s]      5%|██████████▍                                                                                                                                                                                    | 5/91 [00:04<00:42,  2.02it/s]      7%|████████████▌                                                                                                                                                                                  | 6/91 [00:04<00:31,  2.73it/s]      8%|██████████████▋                                                                                                                                                                                | 7/91 [00:05<00:23,  3.51it/s]      9%|████████████████▊                                                                                                                                                                              | 8/91 [00:05<00:19,  4.34it/s]     10%|██████████████████▉                                                                                                                                                                            | 9/91 [00:05<00:15,  5.16it/s]     11%|████████████████████▉                                                                                                                                                                         | 10/91 [00:05<00:13,  5.94it/s]     12%|██████████████████████▉                                                                                                                                                                       | 11/91 [00:05<00:12,  6.62it/s]     13%|█████████████████████████                                                                                                                                                                     | 12/91 [00:05<00:10,  7.23it/s]     14%|███████████████████████████▏                                                                                                                                                                  | 13/91 [00:05<00:10,  7.72it/s]     15%|█████████████████████████████▏                                                                                                                                                                | 14/91 [00:05<00:09,  8.16it/s]     16%|███████████████████████████████▎                                                                                                                                                              | 15/91 [00:05<00:08,  8.47it/s]     18%|█████████████████████████████████▍                                                                                                                                                            | 16/91 [00:06<00:08,  8.71it/s]     19%|███████████████████████████████████▍                                                                                                                                                          | 17/91 [00:06<00:08,  8.85it/s]     20%|█████████████████████████████████████▌                                                                                                                                                        | 18/91 [00:06<00:08,  9.01it/s]     21%|███████████████████████████████████████▋                                                                                                                                                      | 19/91 [00:06<00:07,  9.04it/s]     22%|█████████████████████████████████████████▊                                                                                                                                                    | 20/91 [00:06<00:07,  9.02it/s]     23%|███████████████████████████████████████████▊                                                                                                                                                  | 21/91 [00:06<00:07,  9.10it/s]     24%|█████████████████████████████████████████████▉                                                                                                                                                | 22/91 [00:06<00:07,  9.16it/s]     25%|████████████████████████████████████████████████                                                                                                                                              | 23/91 [00:06<00:07,  9.20it/s]     26%|██████████████████████████████████████████████████                                                                                                                                            | 24/91 [00:06<00:07,  9.25it/s]     27%|████████████████████████████████████████████████████▏                                                                                                                                         | 25/91 [00:07<00:07,  9.24it/s]     29%|██████████████████████████████████████████████████████▎                                                                                                                                       | 26/91 [00:07<00:07,  9.20it/s]     30%|████████████████████████████████████████████████████████▎                                                                                                                                     | 27/91 [00:07<00:06,  9.18it/s]     31%|██████████████████████████████████████████████████████████▍                                                                                                                                   | 28/91 [00:07<00:06,  9.22it/s]     32%|████████████████████████████████████████████████████████████▌                                                                                                                                 | 29/91 [00:07<00:06,  9.27it/s]     33%|██████████████████████████████████████████████████████████████▋                                                                                                                               | 30/91 [00:07<00:06,  9.28it/s]     34%|████████████████████████████████████████████████████████████████▋                                                                                                                             | 31/91 [00:07<00:06,  9.29it/s]     35%|██████████████████████████████████████████████████████████████████▊                                                                                                                           | 32/91 [00:07<00:06,  9.29it/s]     36%|████████████████████████████████████████████████████████████████████▉                                                                                                                         | 33/91 [00:07<00:06,  9.32it/s]     37%|██████████████████████████████████████████████████████████████████████▉                                                                                                                       | 34/91 [00:08<00:06,  9.29it/s]     38%|█████████████████████████████████████████████████████████████████████████                                                                                                                     | 35/91 [00:08<00:06,  9.29it/s]     40%|███████████████████████████████████████████████████████████████████████████▏                                                                                                                  | 36/91 [00:08<00:05,  9.24it/s]     41%|█████████████████████████████████████████████████████████████████████████████▎                                                                                                                | 37/91 [00:08<00:05,  9.27it/s]     42%|███████████████████████████████████████████████████████████████████████████████▎                                                                                                              | 38/91 [00:08<00:05,  9.31it/s]     43%|█████████████████████████████████████████████████████████████████████████████████▍                                                                                                            | 39/91 [00:08<00:05,  9.28it/s]     44%|███████████████████████████████████████████████████████████████████████████████████▌                                                                                                          | 40/91 [00:08<00:05,  9.29it/s]     45%|█████████████████████████████████████████████████████████████████████████████████████▌                                                                                                        | 41/91 [00:08<00:05,  9.29it/s]     46%|███████████████████████████████████████████████████████████████████████████████████████▋                                                                                                      | 42/91 [00:08<00:05,  9.29it/s]     47%|█████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                    | 43/91 [00:08<00:05,  9.24it/s]     48%|███████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                  | 44/91 [00:09<00:05,  9.21it/s]     49%|█████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                                | 45/91 [00:09<00:05,  9.19it/s]     51%|████████████████████████████████████████████████████████████████████████████████████████████████                                                                                              | 46/91 [00:09<00:04,  9.12it/s]     52%|██████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                           | 47/91 [00:09<00:04,  9.20it/s]     53%|████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                         | 48/91 [00:09<00:04,  9.18it/s]     54%|██████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                       | 49/91 [00:09<00:04,  9.23it/s]     55%|████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                                     | 50/91 [00:09<00:04,  9.25it/s]     56%|██████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                                   | 51/91 [00:09<00:04,  9.26it/s]     57%|████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                                 | 52/91 [00:09<00:04,  9.28it/s]     58%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                               | 53/91 [00:10<00:04,  9.28it/s]     59%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                             | 54/91 [00:10<00:03,  9.29it/s]     60%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                           | 55/91 [00:10<00:03,  9.29it/s]     62%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                                         | 56/91 [00:10<00:03,  9.32it/s]     63%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                                       | 57/91 [00:10<00:03,  9.34it/s]     64%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                                     | 58/91 [00:10<00:03,  9.33it/s]     65%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                  | 59/91 [00:10<00:03,  9.32it/s]     66%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                | 60/91 [00:10<00:03,  9.26it/s]     67%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                              | 61/91 [00:10<00:03,  9.30it/s]     68%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                            | 62/91 [00:11<00:03,  9.31it/s]     69%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                          | 63/91 [00:11<00:03,  9.31it/s]     70%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                        | 64/91 [00:11<00:02,  9.23it/s]     71%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                      | 65/91 [00:11<00:02,  9.28it/s]     73%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                    | 66/91 [00:11<00:02,  9.31it/s]     74%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                  | 67/91 [00:11<00:02,  9.28it/s]     75%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                | 68/91 [00:11<00:02,  9.26it/s]     76%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                              | 69/91 [00:11<00:02,  9.25it/s]     77%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                           | 70/91 [00:11<00:02,  9.21it/s]     78%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                         | 71/91 [00:12<00:02,  9.16it/s]     79%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                       | 72/91 [00:12<00:02,  9.18it/s]     80%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                     | 73/91 [00:12<00:01,  9.19it/s]     81%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                   | 74/91 [00:12<00:01,  9.26it/s]     82%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                 | 75/91 [00:12<00:01,  9.30it/s]     84%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                               | 76/91 [00:12<00:01,  9.22it/s]     85%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                             | 77/91 [00:12<00:01,  9.22it/s]     86%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                           | 78/91 [00:12<00:01,  9.24it/s]     87%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                         | 79/91 [00:12<00:01,  9.29it/s]     88%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                       | 80/91 [00:12<00:01,  9.27it/s]     89%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                     | 81/91 [00:13<00:01,  8.86it/s]     90%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                  | 82/91 [00:13<00:01,  8.82it/s]     91%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                | 83/91 [00:13<00:00,  8.04it/s]     92%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍              | 84/91 [00:13<00:00,  8.26it/s]     93%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍            | 85/91 [00:13<00:00,  8.37it/s]     95%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌          | 86/91 [00:13<00:00,  8.59it/s]     96%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋        | 87/91 [00:13<00:00,  8.79it/s]C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 115 will likely result in GPU under-utilization due to low occupancy.
+      warn(NumbaPerformanceWarning(msg))
+     98%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊    | 89/91 [00:13<00:00, 10.61it/s]C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 20 will likely result in GPU under-utilization due to low occupancy.
+      warn(NumbaPerformanceWarning(msg))
+    100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 91/91 [00:14<00:00,  6.49it/s]
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 229-232
 
 Plot Normalised Response
 ----------------------------
 Using matplotlib, plot the results
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-284
+.. GENERATED FROM PYTHON SOURCE LINES 232-292
 
 .. code-block:: Python
 
@@ -321,9 +427,9 @@ Using matplotlib, plot the results
     norm_max = np.nanmax(
         np.array(
             [
-                np.nanmax(10 * np.log10((Ex ** 2) / receiver_impedence)),
-                np.nanmax(10 * np.log10((Ey ** 2) / receiver_impedence)),
-                np.nanmax(10 * np.log10((Ez ** 2) / receiver_impedence)),
+                np.nanmax(10 * np.log10((Ex**2) / receiver_impedence)),
+                np.nanmax(10 * np.log10((Ey**2) / receiver_impedence)),
+                np.nanmax(10 * np.log10((Ez**2) / receiver_impedence)),
             ]
         )
     )
@@ -361,22 +467,30 @@ Using matplotlib, plot the results
     import scipy
 
     xf = fftfreq(len(time_index), 1 / sampling_freq)[: len(time_index) // 2]
+    frequency_index = np.where(xf == model_freq)
     input_signal = excitation_signal * (output_amplitude_peak)
     inputfft = fft(input_signal)
     input_freq = fftfreq(120, 1 / sampling_freq)[:60]
     freqfuncabs = scipy.interpolate.interp1d(input_freq, np.abs(inputfft[:60]))
     freqfuncangle = scipy.interpolate.interp1d(input_freq, np.angle(inputfft[:60]))
-    newinput = freqfuncabs(xf[1600]) * np.exp(freqfuncangle(xf[1600]))
+    newinput = freqfuncabs(xf[frequency_index]) * np.exp(freqfuncangle(xf[frequency_index]))
     Exf = fft(Ex)
     Eyf = fft(Ey)
     Ezf = fft(Ez)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 285-286
 
-.. image:: ../_static/sphx_glr_04_time_domain_channel_modelling_001.png
 
-.. GENERATED FROM PYTHON SOURCE LINES 288-293
+.. image-sg:: /auto_examples/images/sphx_glr_04_time_domain_channel_modelling_002.png
+   :alt: Received Power vs Time for rotating Plate (24GHz)
+   :srcset: /auto_examples/images/sphx_glr_04_time_domain_channel_modelling_002.png
+   :class: sphx-glr-single-img
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 293-298
 
 Frequency Specific Results
 -------------------------------
@@ -384,14 +498,14 @@ The time of flight plot is useful to displaying the output of the model, giving 
 physically happening in the channel, but to get an idea of the behaviour in the frequency domain we need to use a
 fourier transform to move from time and voltages to frequency.
 
-.. GENERATED FROM PYTHON SOURCE LINES 293-313
+.. GENERATED FROM PYTHON SOURCE LINES 298-317
 
 .. code-block:: Python
 
 
-    s21x = 20 * np.log10(np.abs(Exf[:, 1600] / newinput))
-    s21y = 20 * np.log10(np.abs(Eyf[:, 1600] / newinput))
-    s21z = 20 * np.log10(np.abs(Ezf[:, 1600] / newinput))
+    s21x = 20 * np.log10(np.abs(Exf[:, frequency_index] / newinput)).ravel()
+    s21y = 20 * np.log10(np.abs(Eyf[:, frequency_index] / newinput)).ravel()
+    s21z = 20 * np.log10(np.abs(Ezf[:, frequency_index] / newinput)).ravel()
     tdangles = np.linspace(-45, 45, 91)
     fig, ax = plt.subplots()
     ax.plot(tdangles, s21x - np.max(s21z), label="Ex")
@@ -409,9 +523,20 @@ fourier transform to move from time and voltages to frequency.
     plt.show()
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 314-315
 
-.. image:: ../_static/sphx_glr_04_time_domain_channel_modelling_002.png
+.. image-sg:: /auto_examples/images/sphx_glr_04_time_domain_channel_modelling_003.png
+   :alt: $S_{21}$ at 16GHz
+   :srcset: /auto_examples/images/sphx_glr_04_time_domain_channel_modelling_003.png
+   :class: sphx-glr-single-img
+
+
+
+
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** (0 minutes 14.687 seconds)
 
 
 .. _sphx_glr_download_auto_examples_04_time_domain_channel_modelling.py:
@@ -427,6 +552,10 @@ fourier transform to move from time and voltages to frequency.
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: 04_time_domain_channel_modelling.py <04_time_domain_channel_modelling.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: 04_time_domain_channel_modelling.zip <04_time_domain_channel_modelling.zip>`
 
 
 .. only:: html

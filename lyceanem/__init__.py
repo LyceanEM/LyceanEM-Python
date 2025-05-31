@@ -1,4 +1,5 @@
 """LyceanEM : Electromagnetics Modelling for Antenna and Antenna Array Development on Complex Platforms"""
+
 try:
     from importlib import metadata
 except ImportError:  # for Python<3.8
@@ -12,7 +13,8 @@ except metadata.PackageNotFoundError:
     # package is not installed
     pass
 
+
 __copyright__ = """\
-© Timothy Pelham 2016-2024
+© Timothy Pelham 2016-2025
 """
 __license__ = "GNU Affero General Public License v3"

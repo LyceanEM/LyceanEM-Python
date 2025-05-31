@@ -52,7 +52,7 @@ Frequency and Mesh Resolution
 
 .. code-block:: Python
 
-    freq = np.asarray(16.0e9)
+    freq = np.asarray(24.0e9)
     wavelength = 3e8 / freq
     mesh_resolution = 0.5 * wavelength
 
@@ -89,21 +89,6 @@ Setup transmitters and receivers
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    HIHIH
-    <meshio mesh object>
-      Number of points: 8
-      Number of cells:
-        triangle: 12
-    HIHIH
-    <meshio mesh object>
-      Number of points: 8
-      Number of cells:
-        triangle: 12
-
 
 
 
@@ -112,7 +97,7 @@ Setup transmitters and receivers
 Position Transmitter
 ----------------------
 rotate the transmitting antenna to the desired orientation, and then translate to final position.
-:func:`lyceanem.geometryfunctions.mesh_rotate` and :func:`lyceanem.geometryfunctions.translate_mesh` are used to achive this
+:func:`lyceanem.geometryfunctions.mesh_rotate` and :func:`lyceanem.geometryfunctions.mesh_translate` are used to achive this
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 50-67
@@ -128,14 +113,14 @@ rotate the transmitting antenna to the desired orientation, and then translate t
     )
     transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure,rotation_vector2)
 
-    transmit_horn_structure = GF.translate_mesh(transmit_horn_structure,np.asarray([2.695, 0, 0]))
+    transmit_horn_structure = GF.mesh_translate(transmit_horn_structure,np.asarray([2.529, 0, 0]))
 
     transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords,rotation_vector1)
 
     transmitting_antenna_surface_coords = GF.mesh_rotate(
         transmitting_antenna_surface_coords,rotation_vector2)
 
-    transmitting_antenna_surface_coords = GF.translate_mesh(transmitting_antenna_surface_coords,np.asarray([2.695, 0, 0]))
+    transmitting_antenna_surface_coords = GF.mesh_translate(transmitting_antenna_surface_coords,np.asarray([2.529, 0, 0]))
 
 
 
@@ -149,17 +134,17 @@ Position Receiver
 ------------------
 rotate the receiving horn to desired orientation and translate to final position.
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-81
+.. GENERATED FROM PYTHON SOURCE LINES 71-79
 
 .. code-block:: Python
 
 
     receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector1)
     #receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector3)
-    receive_horn_structure = GF.translate_mesh(receive_horn_structure,np.asarray([0, 1.427, 0]))
+    receive_horn_structure = GF.mesh_translate(receive_horn_structure,np.asarray([0, 1.609, 0]))
     receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector1)
     #receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector3)
-    receiving_antenna_surface_coords = GF.translate_mesh(receiving_antenna_surface_coords,np.asarray([0, 1.427, 0]))
+    receiving_antenna_surface_coords = GF.mesh_translate(receiving_antenna_surface_coords,np.asarray([0, 1.609, 0]))
 
 
 
@@ -168,15 +153,13 @@ rotate the receiving horn to desired orientation and translate to final position
 
 
 
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 82-85
+.. GENERATED FROM PYTHON SOURCE LINES 80-83
 
 Create Scattering Plate
 --------------------------
 Create a Scattering plate a source of multipath reflections
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-103
+.. GENERATED FROM PYTHON SOURCE LINES 83-101
 
 .. code-block:: Python
 
@@ -195,8 +178,8 @@ Create a Scattering plate a source of multipath reflections
         reflectorplate,
         rotation_vector1
     )
-    reflectorplate = GF.translate_mesh(reflectorplate,position_vector)
-    scatter_points = GF.translate_mesh(scatter_points,position_vector)
+    reflectorplate = GF.mesh_translate(reflectorplate,position_vector)
+    scatter_points = GF.mesh_translate(scatter_points,position_vector)
 
 
 
@@ -215,13 +198,13 @@ Create a Scattering plate a source of multipath reflections
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-107
+.. GENERATED FROM PYTHON SOURCE LINES 102-105
 
 Specify Reflection Angle
 --------------------------
 Rotate the scattering plate to the optimum angle for reflection from the transmitting to receiving horn
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-123
+.. GENERATED FROM PYTHON SOURCE LINES 105-121
 
 .. code-block:: Python
 
@@ -237,9 +220,10 @@ Rotate the scattering plate to the optimum angle for reflection from the transmi
         rotation_vector
     )
 
-    from lyceanem.base_classes import structures
+    from lyceanem.base_classes import structures, points, antenna_structures
 
     blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_structure])
+    transmit_horn=antenna_structures(structures([transmit_horn_structure]), points([transmitting_antenna_surface_coords]))
 
 
 
@@ -247,32 +231,27 @@ Rotate the scattering plate to the optimum angle for reflection from the transmi
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 124-127
+.. GENERATED FROM PYTHON SOURCE LINES 122-124
 
 Visualise the Scene Geometry
- ------------------------------
-############################################NEED TO FIX THIS with pyvista
+------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-150
+.. GENERATED FROM PYTHON SOURCE LINES 124-144
 
 .. code-block:: Python
 
+
     import pyvista as pv
-    def structure_cells(array):
-        ## add collumn of 3s to beggining of each row
-        array = np.append(np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1)
-        return array
-    pyvista_mesh = pv.PolyData(reflectorplate.points, structure_cells(reflectorplate.cells[0].data))
-    pyvista_mesh2 = pv.PolyData(receive_horn_structure.points, structure_cells(receive_horn_structure.cells[0].data))
-    pyvista_mesh3 = pv.PolyData(transmit_horn_structure.points, structure_cells(transmit_horn_structure.cells[0].data))
-    ## plot the mesh
-    plotter = pv.Plotter()
-    plotter.add_mesh(pyvista_mesh, color="white", show_edges=True)
-    plotter.add_mesh(pyvista_mesh2, color="blue", show_edges=True)
-    plotter.add_mesh(pyvista_mesh3, color="red", show_edges=True)
-    plotter.add_axes_at_origin()
-    plotter.show()
+    pl=pv.Plotter()
+    pl.add_mesh(pv.from_meshio(scatter_points),scalars='Area')
+    pl.add_mesh(pv.from_meshio(reflectorplate),color="grey")
+    pl.add_mesh(pv.from_meshio(transmitting_antenna_surface_coords),scalars='Area')
+    pl.add_mesh(pv.from_meshio(receiving_antenna_surface_coords),scalars='Area')
+    pl.add_mesh(pv.from_meshio(receive_horn_structure),color="green")
+    pl.add_mesh(pv.from_meshio(transmit_horn_structure),color="green")
+    pl.add_axes()
+    pl.show()
+
     # Specify desired Transmit Polarisation
     # --------------------------------------
     # The transmit polarisation has a significant effect on the channel characteristics. In this example the transmit
@@ -293,7 +272,7 @@ Visualise the Scene Geometry
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-157
+.. GENERATED FROM PYTHON SOURCE LINES 145-151
 
 Frequency Domain Scattering
 ----------------------------
@@ -302,7 +281,7 @@ be called, using raycasting to calculate the scattering parameters based upon th
 determines how many reflections will be considered. A value of 0 would mean only line of sight contributions will be
 calculated, with 1 including single reflections, and 2 including double reflections as well.
 
-.. GENERATED FROM PYTHON SOURCE LINES 157-172
+.. GENERATED FROM PYTHON SOURCE LINES 151-182
 
 .. code-block:: Python
 
@@ -313,13 +292,29 @@ calculated, with 1 including single reflections, and 2 including double reflecti
         aperture_coords=transmitting_antenna_surface_coords,
         sink_coords=receiving_antenna_surface_coords,
         antenna_solid=blockers,
-        desired_E_axis=desired_E_axis,
+        desired_E_axis=transmit_horn.excitation_function(desired_e_vector=desired_E_axis,transmit_power=0.25),
         scatter_points=scatter_points,
         wavelength=wavelength,
-        scattering=1,
-        project_vectors=False
+        scattering=0,
+        project_vectors=False,
+        beta=(2*np.pi)/wavelength
     )
+    Excuda, Eycuda, Ezcuda = FD.calculate_scattering(
+        aperture_coords=transmitting_antenna_surface_coords,
+        sink_coords=receiving_antenna_surface_coords,
+        antenna_solid=blockers,
+        desired_E_axis=transmit_horn.excitation_function(desired_e_vector=desired_E_axis,transmit_power=0.25),
+        scatter_points=scatter_points,
+        wavelength=wavelength,
+        scattering=0,
+        project_vectors=False,
+        beta=(2*np.pi)/wavelength,
+        cuda=True
 
+    )
+    print("sumdiff",(np.sum((Ex-Excuda))))
+    print("sumdiff",(np.sum((Ey-Eycuda))))
+    print("sumdiff",(np.sum((Ez-Ezcuda))))
 
 
 
@@ -329,18 +324,23 @@ calculated, with 1 including single reflections, and 2 including double reflecti
 
  .. code-block:: none
 
-    hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3719: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[2, :] = point_vector
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3736: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3758: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 40 will likely result in GPU under-utilization due to low occupancy.
+      warn(NumbaPerformanceWarning(msg))
+    scatter_source_sink
+    sumdiff (-7.478353599761232e-08+4.723203539624922e-09j)
+    sumdiff (4.6496070964463726e-08-1.828645673300738e-09j)
+    sumdiff (-0.00036213591731276695-0.00097871361311673j)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-178
+.. GENERATED FROM PYTHON SOURCE LINES 183-188
 
 Examine Scattering
 ---------------------
@@ -348,11 +348,9 @@ The resultant scattering is decomposed into the Ex,Ey,Ez components at the recei
 that interesting, so for this example we will rotate the reflector back, and then create a loop to step the reflector
 through different angles from 0 to 90 degrees in 1 degree steps.
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-234
+.. GENERATED FROM PYTHON SOURCE LINES 188-262
 
 .. code-block:: Python
-
-
 
 
 
@@ -369,40 +367,60 @@ through different angles from 0 to 90 degrees in 1 degree steps.
     )
     scatter_points = GF.mesh_rotate(scatter_points,rotation_vector)
     reflectorplate = GF.mesh_rotate(reflectorplate,rotation_vector)
-    import copy
 
     from tqdm import tqdm
 
     for angle_inc in tqdm(range(len(angle_values))):
         rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_values[angle_inc]]))
-        scatter_points_temp = GF.mesh_rotate(copy.deepcopy(scatter_points),rotation_vector)
-        reflectorplate_temp = GF.mesh_rotate(copy.deepcopy(reflectorplate),rotation_vector)
+        scatter_points_temp = GF.mesh_rotate(scatter_points,rotation_vector)
+        reflectorplate_temp = GF.mesh_rotate(reflectorplate,rotation_vector)
         blockers = structures([reflectorplate_temp, receive_horn_structure, transmit_horn_structure])
-        # pyvista_mesh = pv.PolyData(reflectorplate_temp.points, structure_cells(reflectorplate_temp.cells[0].data))
-        # pyvista_mesh2 = pv.PolyData(receive_horn_structure.points, structure_cells(receive_horn_structure.cells[0].data))
-        # pyvista_mesh3 = pv.PolyData(transmit_horn_structure.points, structure_cells(transmit_horn_structure.cells[0].data))
-        # pyvista_mesh4 = pv.PolyData(scatter_points_temp.points)
-        # ## plot the mesh
-        # plotter = pv.Plotter()
-        # plotter.add_mesh(pyvista_mesh, color="white", show_edges=True)
-        # plotter.add_mesh(pyvista_mesh2, color="blue", show_edges=True)
-        # plotter.add_mesh(pyvista_mesh3, color="red", show_edges=True)
-        # plotter.add_mesh(pyvista_mesh4, color="green")
-        # plotter.add_axes_at_origin()
-        # plotter.show()
+    
+        #Scattered Path
+    
         Ex, Ey, Ez = FD.calculate_scattering(
+            aperture_coords=transmitting_antenna_surface_coords,
+            sink_coords=scatter_points_temp,
+            antenna_solid=blockers,
+            desired_E_axis=transmit_horn.excitation_function(desired_e_vector=desired_E_axis,transmit_power=0.25),
+            scatter_points=scatter_points_temp,
+            wavelength=wavelength,
+            scattering=0,
+            project_vectors=False,
+            beta=(2*np.pi)/wavelength
+        )
+        scattered_field=np.array([Ex, 
+        Ey, 
+        Ez]).transpose()
+        
+        Ex2, Ey2, Ez2 = FD.calculate_scattering(
+            aperture_coords=scatter_points_temp,
+            sink_coords=receiving_antenna_surface_coords,
+            antenna_solid=blockers,
+            desired_E_axis=scattered_field,
+            scatter_points=scatter_points_temp,
+            wavelength=wavelength,
+            scattering=0,
+            project_vectors=False,
+            beta=(2*np.pi)/wavelength
+        )
+    
+        # Line of Sight Path
+    
+        Ex3, Ey3, Ez3 = FD.calculate_scattering(
             aperture_coords=transmitting_antenna_surface_coords,
             sink_coords=receiving_antenna_surface_coords,
             antenna_solid=blockers,
-            desired_E_axis=desired_E_axis,
+            desired_E_axis=transmit_horn.excitation_function(desired_e_vector=desired_E_axis,transmit_power=0.25),
             scatter_points=scatter_points_temp,
             wavelength=wavelength,
-            scattering=1,
-            project_vectors=False
+            scattering=0,
+            project_vectors=False,
+            beta=(2*np.pi)/wavelength
         )
-        responsex[angle_inc] = np.sum(Ex)
-        responsey[angle_inc] = np.sum(Ey)
-        responsez[angle_inc] = np.sum(Ez)
+        responsex[angle_inc] = np.sum((Ex2+Ex3)*receiving_antenna_surface_coords.point_data["Area"])
+        responsey[angle_inc] = np.sum((Ey2+Ey3)*receiving_antenna_surface_coords.point_data["Area"])
+        responsez[angle_inc] = np.sum((Ez2+Ez3)*receiving_antenna_surface_coords.point_data["Area"])
 
 
 
@@ -416,1285 +434,20 @@ through different angles from 0 to 90 degrees in 1 degree steps.
 
  .. code-block:: none
 
-      0%|                                                                                                                                                                                                      | 0/181 [00:00<?, ?it/s]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      1%|█                                                                                                                                                                                             | 1/181 [00:00<02:20,  1.28it/s]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      1%|██                                                                                                                                                                                            | 2/181 [00:01<02:26,  1.22it/s]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      2%|███▏                                                                                                                                                                                          | 3/181 [00:02<02:32,  1.16it/s]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      2%|████▏                                                                                                                                                                                         | 4/181 [00:03<02:39,  1.11it/s]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      3%|█████▏                                                                                                                                                                                        | 5/181 [00:04<02:50,  1.03it/s]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      3%|██████▎                                                                                                                                                                                       | 6/181 [00:05<03:00,  1.03s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      4%|███████▎                                                                                                                                                                                      | 7/181 [00:06<03:06,  1.07s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      4%|████████▍                                                                                                                                                                                     | 8/181 [00:08<03:11,  1.11s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      5%|█████████▍                                                                                                                                                                                    | 9/181 [00:09<03:12,  1.12s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      6%|██████████▍                                                                                                                                                                                  | 10/181 [00:10<03:12,  1.13s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      6%|███████████▍                                                                                                                                                                                 | 11/181 [00:11<03:12,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      7%|████████████▌                                                                                                                                                                                | 12/181 [00:12<03:12,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      7%|█████████████▌                                                                                                                                                                               | 13/181 [00:13<03:11,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      8%|██████████████▌                                                                                                                                                                              | 14/181 [00:14<03:10,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      8%|███████████████▋                                                                                                                                                                             | 15/181 [00:16<03:09,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      9%|████████████████▋                                                                                                                                                                            | 16/181 [00:17<03:08,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-      9%|█████████████████▊                                                                                                                                                                           | 17/181 [00:18<03:07,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     10%|██████████████████▊                                                                                                                                                                          | 18/181 [00:19<03:06,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     10%|███████████████████▊                                                                                                                                                                         | 19/181 [00:20<03:05,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     11%|████████████████████▉                                                                                                                                                                        | 20/181 [00:21<03:05,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     12%|█████████████████████▉                                                                                                                                                                       | 21/181 [00:22<03:03,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     12%|██████████████████████▉                                                                                                                                                                      | 22/181 [00:24<03:02,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     13%|████████████████████████                                                                                                                                                                     | 23/181 [00:25<03:02,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     13%|█████████████████████████                                                                                                                                                                    | 24/181 [00:26<03:00,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     14%|██████████████████████████                                                                                                                                                                   | 25/181 [00:27<02:59,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     14%|███████████████████████████▏                                                                                                                                                                 | 26/181 [00:28<02:58,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     15%|████████████████████████████▏                                                                                                                                                                | 27/181 [00:29<02:57,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     15%|█████████████████████████████▏                                                                                                                                                               | 28/181 [00:31<02:55,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     16%|██████████████████████████████▎                                                                                                                                                              | 29/181 [00:32<02:54,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     17%|███████████████████████████████▎                                                                                                                                                             | 30/181 [00:33<02:52,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     17%|████████████████████████████████▎                                                                                                                                                            | 31/181 [00:34<02:52,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     18%|█████████████████████████████████▍                                                                                                                                                           | 32/181 [00:35<02:51,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     18%|██████████████████████████████████▍                                                                                                                                                          | 33/181 [00:36<02:49,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     19%|███████████████████████████████████▌                                                                                                                                                         | 34/181 [00:37<02:49,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     19%|████████████████████████████████████▌                                                                                                                                                        | 35/181 [00:39<02:47,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     20%|█████████████████████████████████████▌                                                                                                                                                       | 36/181 [00:40<02:46,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     20%|██████████████████████████████████████▋                                                                                                                                                      | 37/181 [00:41<02:45,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     21%|███████████████████████████████████████▋                                                                                                                                                     | 38/181 [00:42<02:44,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     22%|████████████████████████████████████████▋                                                                                                                                                    | 39/181 [00:43<02:42,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     22%|█████████████████████████████████████████▊                                                                                                                                                   | 40/181 [00:44<02:41,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     23%|██████████████████████████████████████████▊                                                                                                                                                  | 41/181 [00:45<02:40,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     23%|███████████████████████████████████████████▊                                                                                                                                                 | 42/181 [00:47<02:39,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     24%|████████████████████████████████████████████▉                                                                                                                                                | 43/181 [00:48<02:38,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     24%|█████████████████████████████████████████████▉                                                                                                                                               | 44/181 [00:49<02:37,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     25%|██████████████████████████████████████████████▉                                                                                                                                              | 45/181 [00:50<02:36,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     25%|████████████████████████████████████████████████                                                                                                                                             | 46/181 [00:51<02:35,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     26%|█████████████████████████████████████████████████                                                                                                                                            | 47/181 [00:52<02:34,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     27%|██████████████████████████████████████████████████                                                                                                                                           | 48/181 [00:53<02:32,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     27%|███████████████████████████████████████████████████▏                                                                                                                                         | 49/181 [00:55<02:31,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     28%|████████████████████████████████████████████████████▏                                                                                                                                        | 50/181 [00:56<02:30,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     28%|█████████████████████████████████████████████████████▎                                                                                                                                       | 51/181 [00:57<02:28,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     29%|██████████████████████████████████████████████████████▎                                                                                                                                      | 52/181 [00:58<02:27,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     29%|███████████████████████████████████████████████████████▎                                                                                                                                     | 53/181 [00:59<02:26,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     30%|████████████████████████████████████████████████████████▍                                                                                                                                    | 54/181 [01:00<02:25,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     30%|█████████████████████████████████████████████████████████▍                                                                                                                                   | 55/181 [01:02<02:24,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     31%|██████████████████████████████████████████████████████████▍                                                                                                                                  | 56/181 [01:03<02:23,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     31%|███████████████████████████████████████████████████████████▌                                                                                                                                 | 57/181 [01:04<02:21,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     32%|████████████████████████████████████████████████████████████▌                                                                                                                                | 58/181 [01:05<02:21,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     33%|█████████████████████████████████████████████████████████████▌                                                                                                                               | 59/181 [01:06<02:20,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     33%|██████████████████████████████████████████████████████████████▋                                                                                                                              | 60/181 [01:07<02:20,  1.16s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     34%|███████████████████████████████████████████████████████████████▋                                                                                                                             | 61/181 [01:08<02:19,  1.16s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     34%|████████████████████████████████████████████████████████████████▋                                                                                                                            | 62/181 [01:10<02:18,  1.16s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     35%|█████████████████████████████████████████████████████████████████▊                                                                                                                           | 63/181 [01:11<02:16,  1.16s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     35%|██████████████████████████████████████████████████████████████████▊                                                                                                                          | 64/181 [01:12<02:14,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     36%|███████████████████████████████████████████████████████████████████▊                                                                                                                         | 65/181 [01:13<02:13,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     36%|████████████████████████████████████████████████████████████████████▉                                                                                                                        | 66/181 [01:14<02:12,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     37%|█████████████████████████████████████████████████████████████████████▉                                                                                                                       | 67/181 [01:15<02:11,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     38%|███████████████████████████████████████████████████████████████████████                                                                                                                      | 68/181 [01:17<02:09,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     38%|████████████████████████████████████████████████████████████████████████                                                                                                                     | 69/181 [01:18<02:08,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     39%|█████████████████████████████████████████████████████████████████████████                                                                                                                    | 70/181 [01:19<02:07,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     39%|██████████████████████████████████████████████████████████████████████████▏                                                                                                                  | 71/181 [01:20<02:06,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     40%|███████████████████████████████████████████████████████████████████████████▏                                                                                                                 | 72/181 [01:21<02:05,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     40%|████████████████████████████████████████████████████████████████████████████▏                                                                                                                | 73/181 [01:22<02:03,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     41%|█████████████████████████████████████████████████████████████████████████████▎                                                                                                               | 74/181 [01:23<02:02,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     41%|██████████████████████████████████████████████████████████████████████████████▎                                                                                                              | 75/181 [01:25<02:01,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     42%|███████████████████████████████████████████████████████████████████████████████▎                                                                                                             | 76/181 [01:26<02:00,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     43%|████████████████████████████████████████████████████████████████████████████████▍                                                                                                            | 77/181 [01:27<01:59,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     43%|█████████████████████████████████████████████████████████████████████████████████▍                                                                                                           | 78/181 [01:28<01:58,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     44%|██████████████████████████████████████████████████████████████████████████████████▍                                                                                                          | 79/181 [01:29<01:57,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     44%|███████████████████████████████████████████████████████████████████████████████████▌                                                                                                         | 80/181 [01:30<01:56,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     45%|████████████████████████████████████████████████████████████████████████████████████▌                                                                                                        | 81/181 [01:31<01:55,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     45%|█████████████████████████████████████████████████████████████████████████████████████▌                                                                                                       | 82/181 [01:33<01:54,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     46%|██████████████████████████████████████████████████████████████████████████████████████▋                                                                                                      | 83/181 [01:34<01:52,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     46%|███████████████████████████████████████████████████████████████████████████████████████▋                                                                                                     | 84/181 [01:35<01:51,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     47%|████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                    | 85/181 [01:36<01:50,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     48%|█████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                   | 86/181 [01:37<01:48,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     48%|██████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                  | 87/181 [01:38<01:47,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     49%|███████████████████████████████████████████████████████████████████████████████████████████▉                                                                                                 | 88/181 [01:39<01:46,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     49%|████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                                | 89/181 [01:41<01:45,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     50%|█████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                               | 90/181 [01:42<01:44,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     50%|███████████████████████████████████████████████████████████████████████████████████████████████                                                                                              | 91/181 [01:43<01:43,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     51%|████████████████████████████████████████████████████████████████████████████████████████████████                                                                                             | 92/181 [01:44<01:41,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     51%|█████████████████████████████████████████████████████████████████████████████████████████████████                                                                                            | 93/181 [01:45<01:40,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     52%|██████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                          | 94/181 [01:46<01:39,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     52%|███████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                         | 95/181 [01:47<01:38,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     53%|████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                        | 96/181 [01:49<01:37,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     54%|█████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                       | 97/181 [01:50<01:36,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     54%|██████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                      | 98/181 [01:51<01:34,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     55%|███████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                                     | 99/181 [01:52<01:33,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     55%|███████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                    | 100/181 [01:53<01:32,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     56%|████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                   | 101/181 [01:54<01:31,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     56%|█████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                  | 102/181 [01:55<01:30,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     57%|██████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                 | 103/181 [01:57<01:29,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     57%|████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                                                | 104/181 [01:58<01:28,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     58%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                                               | 105/181 [01:59<01:27,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     59%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                                              | 106/181 [02:00<01:26,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     59%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                            | 107/181 [02:01<01:24,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     60%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                           | 108/181 [02:02<01:23,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     60%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                          | 109/181 [02:04<01:22,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     61%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                         | 110/181 [02:05<01:21,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     61%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                        | 111/181 [02:06<01:20,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     62%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                       | 112/181 [02:07<01:19,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     62%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                      | 113/181 [02:08<01:17,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     63%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                     | 114/181 [02:09<01:16,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     64%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                    | 115/181 [02:10<01:15,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     64%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                   | 116/181 [02:12<01:14,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     65%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                  | 117/181 [02:13<01:13,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     65%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                 | 118/181 [02:14<01:12,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     66%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                | 119/181 [02:15<01:10,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     66%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                               | 120/181 [02:16<01:09,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     67%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                              | 121/181 [02:17<01:08,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                             | 122/181 [02:18<01:07,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     68%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                            | 123/181 [02:20<01:06,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     69%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                           | 124/181 [02:21<01:05,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     69%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                          | 125/181 [02:22<01:04,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     70%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                         | 126/181 [02:23<01:03,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     70%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                        | 127/181 [02:24<01:01,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     71%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                       | 128/181 [02:25<01:00,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     71%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                      | 129/181 [02:26<00:59,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     72%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                     | 130/181 [02:28<00:58,  1.16s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     72%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                    | 131/181 [02:29<00:57,  1.16s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     73%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                   | 132/181 [02:30<00:56,  1.16s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     73%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                 | 133/181 [02:31<00:55,  1.16s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     74%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                | 134/181 [02:32<00:54,  1.16s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     75%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                               | 135/181 [02:33<00:53,  1.17s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     75%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                              | 136/181 [02:35<00:52,  1.17s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     76%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                             | 137/181 [02:36<00:51,  1.16s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     76%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                            | 138/181 [02:37<00:49,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     77%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                           | 139/181 [02:38<00:48,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     77%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                          | 140/181 [02:39<00:47,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     78%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                         | 141/181 [02:40<00:46,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     78%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                        | 142/181 [02:42<00:44,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     79%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                       | 143/181 [02:43<00:43,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                      | 144/181 [02:44<00:42,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     80%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                     | 145/181 [02:45<00:41,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     81%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                    | 146/181 [02:46<00:40,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     81%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                   | 147/181 [02:47<00:38,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     82%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                  | 148/181 [02:48<00:37,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     82%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                 | 149/181 [02:50<00:36,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     83%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                | 150/181 [02:51<00:35,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     83%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                               | 151/181 [02:52<00:34,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     84%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                              | 152/181 [02:53<00:33,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     85%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                             | 153/181 [02:54<00:32,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     85%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                            | 154/181 [02:55<00:31,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     86%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                           | 155/181 [02:56<00:29,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     86%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                          | 156/181 [02:58<00:28,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     87%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                         | 157/181 [02:59<00:27,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     87%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                        | 158/181 [03:00<00:26,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     88%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                      | 159/181 [03:01<00:25,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     88%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                     | 160/181 [03:02<00:24,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     89%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                    | 161/181 [03:03<00:22,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     90%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                   | 162/181 [03:04<00:21,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     90%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                  | 163/181 [03:06<00:20,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     91%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                 | 164/181 [03:07<00:19,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     91%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                | 165/181 [03:08<00:18,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     92%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍               | 166/181 [03:09<00:17,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     92%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍              | 167/181 [03:10<00:16,  1.14s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     93%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍             | 168/181 [03:11<00:14,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     93%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌            | 169/181 [03:12<00:13,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     94%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌           | 170/181 [03:14<00:12,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     94%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌          | 171/181 [03:15<00:11,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     95%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋         | 172/181 [03:16<00:10,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     96%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋        | 173/181 [03:17<00:09,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     96%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋       | 174/181 [03:18<00:08,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     97%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊      | 175/181 [03:19<00:06,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     97%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊     | 176/181 [03:21<00:05,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     98%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊    | 177/181 [03:22<00:04,  1.15s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     98%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉   | 178/181 [03:23<00:03,  1.16s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     99%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉  | 179/181 [03:24<00:02,  1.08s/it]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-     99%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉ | 180/181 [03:24<00:00,  1.10it/s]hi from here {}
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    sources shape (49, 3)
-    sinks shape (49, 3)
-    environment_points shape (1024, 3)
-    100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 181/181 [03:24<00:00,  1.43it/s]    100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 181/181 [03:24<00:00,  1.13s/it]
+      0%|                                                                                                                                                                                                      | 0/181 [00:00<?, ?it/s]C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 107 will likely result in GPU under-utilization due to low occupancy.
+      warn(NumbaPerformanceWarning(msg))
+      1%|█                                                                                                                                                                                             | 1/181 [00:00<01:04,  2.79it/s]      1%|██                                                                                                                                                                                            | 2/181 [00:00<00:55,  3.25it/s]      2%|███▏                                                                                                                                                                                          | 3/181 [00:00<00:51,  3.46it/s]      2%|████▏                                                                                                                                                                                         | 4/181 [00:01<00:50,  3.52it/s]      3%|█████▏                                                                                                                                                                                        | 5/181 [00:01<00:48,  3.62it/s]      3%|██████▎                                                                                                                                                                                       | 6/181 [00:01<00:47,  3.67it/s]      4%|███████▎                                                                                                                                                                                      | 7/181 [00:01<00:46,  3.78it/s]      4%|████████▍                                                                                                                                                                                     | 8/181 [00:02<00:44,  3.86it/s]      5%|█████████▍                                                                                                                                                                                    | 9/181 [00:02<00:44,  3.90it/s]      6%|██████████▍                                                                                                                                                                                  | 10/181 [00:02<00:43,  3.94it/s]      6%|███████████▍                                                                                                                                                                                 | 11/181 [00:02<00:42,  4.02it/s]      7%|████████████▌                                                                                                                                                                                | 12/181 [00:03<00:41,  4.03it/s]      7%|█████████████▌                                                                                                                                                                               | 13/181 [00:03<00:41,  4.07it/s]      8%|██████████████▌                                                                                                                                                                              | 14/181 [00:03<00:40,  4.09it/s]      8%|███████████████▋                                                                                                                                                                             | 15/181 [00:03<00:40,  4.06it/s]      9%|████████████████▋                                                                                                                                                                            | 16/181 [00:04<00:40,  4.06it/s]      9%|█████████████████▊                                                                                                                                                                           | 17/181 [00:04<00:41,  3.96it/s]     10%|██████████████████▊                                                                                                                                                                          | 18/181 [00:04<00:43,  3.78it/s]     10%|███████████████████▊                                                                                                                                                                         | 19/181 [00:05<00:44,  3.60it/s]     11%|████████████████████▉                                                                                                                                                                        | 20/181 [00:05<00:47,  3.41it/s]     12%|█████████████████████▉                                                                                                                                                                       | 21/181 [00:05<00:47,  3.37it/s]     12%|██████████████████████▉                                                                                                                                                                      | 22/181 [00:05<00:46,  3.42it/s]     13%|████████████████████████                                                                                                                                                                     | 23/181 [00:06<00:43,  3.62it/s]     13%|█████████████████████████                                                                                                                                                                    | 24/181 [00:06<00:43,  3.57it/s]     14%|██████████████████████████                                                                                                                                                                   | 25/181 [00:06<00:44,  3.51it/s]     14%|███████████████████████████▏                                                                                                                                                                 | 26/181 [00:07<00:46,  3.35it/s]     15%|████████████████████████████▏                                                                                                                                                                | 27/181 [00:07<00:46,  3.33it/s]     15%|█████████████████████████████▏                                                                                                                                                               | 28/181 [00:07<00:46,  3.27it/s]     16%|██████████████████████████████▎                                                                                                                                                              | 29/181 [00:08<00:47,  3.20it/s]     17%|███████████████████████████████▎                                                                                                                                                             | 30/181 [00:08<00:46,  3.24it/s]     17%|████████████████████████████████▎                                                                                                                                                            | 31/181 [00:08<00:46,  3.21it/s]     18%|█████████████████████████████████▍                                                                                                                                                           | 32/181 [00:08<00:46,  3.20it/s]     18%|██████████████████████████████████▍                                                                                                                                                          | 33/181 [00:09<00:46,  3.20it/s]     19%|███████████████████████████████████▌                                                                                                                                                         | 34/181 [00:09<00:46,  3.19it/s]     19%|████████████████████████████████████▌                                                                                                                                                        | 35/181 [00:09<00:46,  3.13it/s]     20%|█████████████████████████████████████▌                                                                                                                                                       | 36/181 [00:10<00:46,  3.14it/s]     20%|██████████████████████████████████████▋                                                                                                                                                      | 37/181 [00:10<00:45,  3.15it/s]     21%|███████████████████████████████████████▋                                                                                                                                                     | 38/181 [00:10<00:46,  3.10it/s]     22%|████████████████████████████████████████▋                                                                                                                                                    | 39/181 [00:11<00:45,  3.10it/s]     22%|█████████████████████████████████████████▊                                                                                                                                                   | 40/181 [00:11<00:44,  3.17it/s]     23%|██████████████████████████████████████████▊                                                                                                                                                  | 41/181 [00:11<00:44,  3.12it/s]     23%|███████████████████████████████████████████▊                                                                                                                                                 | 42/181 [00:12<00:45,  3.07it/s]     24%|████████████████████████████████████████████▉                                                                                                                                                | 43/181 [00:12<00:44,  3.11it/s]     24%|█████████████████████████████████████████████▉                                                                                                                                               | 44/181 [00:12<00:44,  3.11it/s]     25%|██████████████████████████████████████████████▉                                                                                                                                              | 45/181 [00:13<00:44,  3.09it/s]     25%|████████████████████████████████████████████████                                                                                                                                             | 46/181 [00:13<00:42,  3.19it/s]     26%|█████████████████████████████████████████████████                                                                                                                                            | 47/181 [00:13<00:41,  3.23it/s]     27%|██████████████████████████████████████████████████                                                                                                                                           | 48/181 [00:14<00:40,  3.29it/s]     27%|███████████████████████████████████████████████████▏                                                                                                                                         | 49/181 [00:14<00:40,  3.25it/s]     28%|████████████████████████████████████████████████████▏                                                                                                                                        | 50/181 [00:14<00:39,  3.31it/s]     28%|█████████████████████████████████████████████████████▎                                                                                                                                       | 51/181 [00:14<00:39,  3.26it/s]     29%|██████████████████████████████████████████████████████▎                                                                                                                                      | 52/181 [00:15<00:40,  3.17it/s]     29%|███████████████████████████████████████████████████████▎                                                                                                                                     | 53/181 [00:15<00:39,  3.21it/s]     30%|████████████████████████████████████████████████████████▍                                                                                                                                    | 54/181 [00:15<00:37,  3.42it/s]     30%|█████████████████████████████████████████████████████████▍                                                                                                                                   | 55/181 [00:16<00:35,  3.59it/s]     31%|██████████████████████████████████████████████████████████▍                                                                                                                                  | 56/181 [00:16<00:36,  3.47it/s]     31%|███████████████████████████████████████████████████████████▌                                                                                                                                 | 57/181 [00:16<00:36,  3.35it/s]     32%|████████████████████████████████████████████████████████████▌                                                                                                                                | 58/181 [00:17<00:36,  3.37it/s]     33%|█████████████████████████████████████████████████████████████▌                                                                                                                               | 59/181 [00:17<00:36,  3.39it/s]     33%|██████████████████████████████████████████████████████████████▋                                                                                                                              | 60/181 [00:17<00:36,  3.29it/s]     34%|███████████████████████████████████████████████████████████████▋                                                                                                                             | 61/181 [00:17<00:36,  3.28it/s]     34%|████████████████████████████████████████████████████████████████▋                                                                                                                            | 62/181 [00:18<00:37,  3.18it/s]     35%|█████████████████████████████████████████████████████████████████▊                                                                                                                           | 63/181 [00:18<00:38,  3.10it/s]     35%|██████████████████████████████████████████████████████████████████▊                                                                                                                          | 64/181 [00:18<00:37,  3.09it/s]     36%|███████████████████████████████████████████████████████████████████▊                                                                                                                         | 65/181 [00:19<00:37,  3.09it/s]     36%|████████████████████████████████████████████████████████████████████▉                                                                                                                        | 66/181 [00:19<00:37,  3.05it/s]     37%|█████████████████████████████████████████████████████████████████████▉                                                                                                                       | 67/181 [00:19<00:38,  2.98it/s]     38%|███████████████████████████████████████████████████████████████████████                                                                                                                      | 68/181 [00:20<00:38,  2.92it/s]     38%|████████████████████████████████████████████████████████████████████████                                                                                                                     | 69/181 [00:20<00:37,  2.97it/s]     39%|█████████████████████████████████████████████████████████████████████████                                                                                                                    | 70/181 [00:20<00:36,  3.01it/s]     39%|██████████████████████████████████████████████████████████████████████████▏                                                                                                                  | 71/181 [00:21<00:36,  2.99it/s]     40%|███████████████████████████████████████████████████████████████████████████▏                                                                                                                 | 72/181 [00:21<00:36,  3.02it/s]     40%|████████████████████████████████████████████████████████████████████████████▏                                                                                                                | 73/181 [00:21<00:35,  3.04it/s]     41%|█████████████████████████████████████████████████████████████████████████████▎                                                                                                               | 74/181 [00:22<00:34,  3.12it/s]     41%|██████████████████████████████████████████████████████████████████████████████▎                                                                                                              | 75/181 [00:22<00:33,  3.16it/s]     42%|███████████████████████████████████████████████████████████████████████████████▎                                                                                                             | 76/181 [00:22<00:30,  3.39it/s]     43%|████████████████████████████████████████████████████████████████████████████████▍                                                                                                            | 77/181 [00:23<00:28,  3.59it/s]     43%|█████████████████████████████████████████████████████████████████████████████████▍                                                                                                           | 78/181 [00:23<00:28,  3.60it/s]     44%|██████████████████████████████████████████████████████████████████████████████████▍                                                                                                          | 79/181 [00:23<00:27,  3.67it/s]     44%|███████████████████████████████████████████████████████████████████████████████████▌                                                                                                         | 80/181 [00:23<00:27,  3.63it/s]     45%|████████████████████████████████████████████████████████████████████████████████████▌                                                                                                        | 81/181 [00:24<00:28,  3.49it/s]     45%|█████████████████████████████████████████████████████████████████████████████████████▌                                                                                                       | 82/181 [00:24<00:29,  3.35it/s]     46%|██████████████████████████████████████████████████████████████████████████████████████▋                                                                                                      | 83/181 [00:24<00:29,  3.31it/s]     46%|███████████████████████████████████████████████████████████████████████████████████████▋                                                                                                     | 84/181 [00:25<00:29,  3.25it/s]     47%|████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                    | 85/181 [00:25<00:30,  3.14it/s]     48%|█████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                   | 86/181 [00:25<00:30,  3.09it/s]     48%|██████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                  | 87/181 [00:26<00:30,  3.06it/s]     49%|███████████████████████████████████████████████████████████████████████████████████████████▉                                                                                                 | 88/181 [00:26<00:30,  3.00it/s]     49%|████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                                | 89/181 [00:26<00:30,  3.06it/s]     50%|█████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                               | 90/181 [00:27<00:29,  3.08it/s]     50%|███████████████████████████████████████████████████████████████████████████████████████████████                                                                                              | 91/181 [00:27<00:29,  3.09it/s]     51%|████████████████████████████████████████████████████████████████████████████████████████████████                                                                                             | 92/181 [00:27<00:29,  3.05it/s]     51%|█████████████████████████████████████████████████████████████████████████████████████████████████                                                                                            | 93/181 [00:28<00:28,  3.12it/s]     52%|██████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                          | 94/181 [00:28<00:27,  3.18it/s]     52%|███████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                         | 95/181 [00:28<00:27,  3.12it/s]     53%|████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                        | 96/181 [00:29<00:27,  3.12it/s]     54%|█████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                       | 97/181 [00:29<00:26,  3.15it/s]     54%|██████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                      | 98/181 [00:29<00:26,  3.17it/s]     55%|███████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                                     | 99/181 [00:29<00:25,  3.24it/s]     55%|███████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                    | 100/181 [00:30<00:25,  3.20it/s]     56%|████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                   | 101/181 [00:30<00:24,  3.23it/s]     56%|█████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                  | 102/181 [00:30<00:24,  3.27it/s]     57%|██████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                 | 103/181 [00:31<00:23,  3.27it/s]     57%|████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                                                | 104/181 [00:31<00:23,  3.30it/s]     58%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                                               | 105/181 [00:31<00:22,  3.36it/s]     59%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                                              | 106/181 [00:32<00:22,  3.31it/s]     59%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                            | 107/181 [00:32<00:22,  3.34it/s]     60%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                           | 108/181 [00:32<00:21,  3.40it/s]     60%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                          | 109/181 [00:32<00:20,  3.43it/s]     61%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                         | 110/181 [00:33<00:20,  3.41it/s]     61%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                        | 111/181 [00:33<00:21,  3.27it/s]     62%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                       | 112/181 [00:33<00:22,  3.13it/s]     62%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                      | 113/181 [00:34<00:21,  3.15it/s]     63%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                     | 114/181 [00:34<00:21,  3.13it/s]     64%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                    | 115/181 [00:34<00:21,  3.13it/s]     64%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                   | 116/181 [00:35<00:20,  3.17it/s]     65%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                  | 117/181 [00:35<00:19,  3.25it/s]     65%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                 | 118/181 [00:35<00:19,  3.22it/s]     66%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                | 119/181 [00:36<00:19,  3.24it/s]     66%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                               | 120/181 [00:36<00:18,  3.25it/s]     67%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                              | 121/181 [00:36<00:18,  3.26it/s]     67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                             | 122/181 [00:36<00:17,  3.45it/s]     68%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                            | 123/181 [00:37<00:16,  3.62it/s]     69%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                           | 124/181 [00:37<00:15,  3.72it/s]     69%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                          | 125/181 [00:37<00:14,  3.81it/s]     70%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                         | 126/181 [00:37<00:14,  3.80it/s]     70%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                        | 127/181 [00:38<00:14,  3.83it/s]     71%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                       | 128/181 [00:38<00:13,  3.90it/s]     71%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                      | 129/181 [00:38<00:13,  3.95it/s]     72%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                     | 130/181 [00:38<00:12,  4.00it/s]     72%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                    | 131/181 [00:39<00:12,  4.02it/s]     73%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                   | 132/181 [00:39<00:12,  3.98it/s]     73%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                 | 133/181 [00:39<00:12,  3.93it/s]     74%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                | 134/181 [00:39<00:12,  3.88it/s]     75%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                               | 135/181 [00:40<00:12,  3.83it/s]     75%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                              | 136/181 [00:40<00:11,  3.82it/s]     76%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                             | 137/181 [00:40<00:11,  3.79it/s]     76%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                            | 138/181 [00:41<00:11,  3.79it/s]     77%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                           | 139/181 [00:41<00:11,  3.81it/s]     77%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                          | 140/181 [00:41<00:10,  3.85it/s]     78%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                         | 141/181 [00:41<00:10,  3.88it/s]     78%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                        | 142/181 [00:42<00:09,  3.94it/s]     79%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                       | 143/181 [00:42<00:09,  3.98it/s]     80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                      | 144/181 [00:42<00:09,  3.98it/s]     80%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                     | 145/181 [00:42<00:08,  4.08it/s]     81%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                    | 146/181 [00:43<00:08,  4.16it/s]     81%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                   | 147/181 [00:43<00:08,  4.20it/s]     82%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                  | 148/181 [00:43<00:07,  4.20it/s]     82%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                 | 149/181 [00:43<00:07,  4.23it/s]     83%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                | 150/181 [00:43<00:07,  4.25it/s]     83%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                               | 151/181 [00:44<00:07,  4.21it/s]     84%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                              | 152/181 [00:44<00:06,  4.20it/s]     85%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                             | 153/181 [00:44<00:06,  4.17it/s]     85%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                            | 154/181 [00:44<00:06,  4.15it/s]     86%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                           | 155/181 [00:45<00:06,  4.09it/s]     86%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                          | 156/181 [00:45<00:06,  4.10it/s]     87%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                         | 157/181 [00:45<00:05,  4.08it/s]     87%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                        | 158/181 [00:45<00:05,  4.08it/s]     88%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                      | 159/181 [00:46<00:05,  3.99it/s]     88%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                     | 160/181 [00:46<00:05,  4.04it/s]     89%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                    | 161/181 [00:46<00:04,  4.08it/s]     90%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                   | 162/181 [00:46<00:04,  4.11it/s]     90%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                  | 163/181 [00:47<00:04,  4.11it/s]     91%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                 | 164/181 [00:47<00:04,  4.14it/s]     91%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                | 165/181 [00:47<00:03,  4.15it/s]     92%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍               | 166/181 [00:47<00:03,  4.15it/s]     92%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍              | 167/181 [00:48<00:03,  4.14it/s]     93%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍             | 168/181 [00:48<00:03,  4.16it/s]     93%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌            | 169/181 [00:48<00:02,  4.18it/s]     94%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌           | 170/181 [00:48<00:02,  4.17it/s]     94%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌          | 171/181 [00:49<00:02,  4.16it/s]     95%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋         | 172/181 [00:49<00:02,  4.17it/s]     96%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋        | 173/181 [00:49<00:01,  4.17it/s]     96%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋       | 174/181 [00:49<00:01,  4.17it/s]     97%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊      | 175/181 [00:50<00:01,  4.14it/s]     97%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊     | 176/181 [00:50<00:01,  4.15it/s]     98%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊    | 177/181 [00:50<00:00,  4.16it/s]     98%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉   | 178/181 [00:50<00:00,  4.18it/s]     99%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉  | 179/181 [00:50<00:00,  4.25it/s]     99%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉ | 180/181 [00:51<00:00,  4.33it/s]    100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 181/181 [00:51<00:00,  4.46it/s]    100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 181/181 [00:51<00:00,  3.52it/s]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 235-238
+.. GENERATED FROM PYTHON SOURCE LINES 263-266
 
 Plot Normalised Response
 ----------------------------
 Using matplotlib, plot the results
 
-.. GENERATED FROM PYTHON SOURCE LINES 238-267
+.. GENERATED FROM PYTHON SOURCE LINES 266-295
 
 .. code-block:: Python
 
@@ -1720,10 +473,10 @@ Using matplotlib, plot the results
     ax.plot(angle_values - 45, EzdB, label="Ez")
     plt.xlabel("$\\theta_{N}$ (degrees)")
     plt.ylabel("Normalised Level (dB)")
-    ax.set_ylim(-60.0, 0)
+    ax.set_ylim(-40.0, 0)
     ax.set_xlim(np.min(angle_values) - 45, np.max(angle_values) - 45)
     ax.set_xticks(np.linspace(np.min(angle_values) - 45, np.max(angle_values) - 45, 19))
-    ax.set_yticks(np.linspace(-60, 0.0, 21))
+    ax.set_yticks(np.linspace(-40, 0.0, 21))
     legend = ax.legend(loc="upper right", shadow=True)
     plt.grid()
     plt.show()
@@ -1742,7 +495,7 @@ Using matplotlib, plot the results
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (3 minutes 43.421 seconds)
+   **Total running time of the script:** (0 minutes 52.210 seconds)
 
 
 .. _sphx_glr_download_auto_examples_03_frequency_domain_channel_modelling.py:
@@ -1758,6 +511,10 @@ Using matplotlib, plot the results
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: 03_frequency_domain_channel_modelling.py <03_frequency_domain_channel_modelling.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: 03_frequency_domain_channel_modelling.zip <03_frequency_domain_channel_modelling.zip>`
 
 
 .. only:: html

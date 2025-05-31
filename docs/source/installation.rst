@@ -2,21 +2,10 @@
 Installation
 =====
 
-LyceanEM can be install via pip, the reccommended method is to create a virtual environment using conda, install cudatoolkit and cupy using conda, and then lyceanem using pip
+The recommended method to install lyceanem is via conda, as this provides the best support for CUDA acceleration. Create a virtual environment, and install from the lyceanem channel for the most up to date version.
 
 .. code-block:: console
 
-   $ conda install -c conda-forge cudatoolkit
-   $ conda install -c conda-forge cupy
-   $ pip install lyceanem
-
-Alternatively the codebase can be downloaded from git directly and built from source
-
-
-.. code-block:: console
-
-    $ git clone 'https://github.com/LyceanEM/LyceanEM-Python.git'
-    $ cd LyceanEM
-    $ pip install -e .
+   $ conda install -c lyceanem lyceanem
 
 

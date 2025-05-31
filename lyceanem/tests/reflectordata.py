@@ -3,18 +3,15 @@
 
 import copy
 import math
-
-import numpy as np
-import meshio
-import scipy.io as io
 from importlib.resources import files
-import pyvista as pv
+
+import meshio
+import numpy as np
 
 import lyceanem.geometry.geometryfunctions as GF
-import lyceanem.geometry.targets as tl
 import lyceanem.raycasting.rayfunctions as RF
 import lyceanem.tests.data
-
+import lyceanem.utility.mesh_functions as MF
 
 # freq=24e9
 # wavelength=3e8/freq
@@ -32,9 +29,111 @@ import lyceanem.tests.data
 # reference_point=np.asarray([[np.min(temp[:,0]),np.min(temp[:,1]),np.min(temp[:,2])]])/1000
 
 
-# downsampled_reflector=medium_reference_reflector.voxel_down_sample(voxel_size=wavelength*0.5)
-# downsampled_reflector.translate(-reference_point.ravel(),relative=True)
-# downsampled_reflector.translate([-0.15,-0.15,0],relative=True)
+def UAV_Demo(mesh_resolution, file_name="DemoUAV.stl"):
+    """
+    Creates a meshed UAV as a demonstrator for the examples, with the mesh resolution set by the user.
+    Parameters
+    -----------
+    mesh_resolution : float
+        The target separation between mesh points in the final mesh.
+    file_name : str
+        The file name of the exported mesh file.
+
+    Returns
+    --------
+    mesh : :class:`meshio.Mesh`
+        The resultant mesh with areas and normal vectors as point data.
+
+    """
+    import gmsh
+    import meshio
+
+    uav_path = files(lyceanem.tests.data).joinpath("Demo UAV.step")
+    gmsh.initialize()
+    gmsh.option.setNumber("Mesh.CharacteristicLengthMax", mesh_resolution)
+    gmsh.model.add("Demo UAV")
+
+    gmsh.merge(uav_path.as_posix())
+    # scale from mm to m
+    all_entities = gmsh.model.occ.getEntities()
+    gmsh.model.occ.dilate(all_entities, 0, 0, 0, 1 / 1000, 1 / 1000, 1 / 1000)
+    gmsh.model.occ.synchronize()
+    aperture_surfaces = [(2, 6), (2, 7), (2, 13)]
+    gmsh.model.occ.remove(aperture_surfaces)
+    gmsh.model.occ.fuse([(3, 1)], [(3, 2)])
+
+    gmsh.model.mesh.generate(dim=2)
+    gmsh.write(file_name)
+    gmsh.finalize()
+    mesh = meshio.read(file_name)
+
+    mesh = GF.compute_normals(GF.compute_areas(mesh))
+    rotation_vector1 = np.asarray([0.0, np.deg2rad(90), 0.0])
+    rotation_vector2 = np.asarray([np.deg2rad(90), 0.0, 0.0])
+    mesh=GF.mesh_rotate(mesh, rotation_vector1)
+    mesh=GF.mesh_rotate(mesh, rotation_vector2)
+    return mesh
+
+
+def UAV_Demo_Aperture(mesh_resolution, file_name="DemoAperture.stl"):
+    """
+    Creates a meshed conformal antenna array as a demonstrator for the examples, with the mesh resolution set by the user.
+    Parameters
+    -----------
+    mesh_resolution : float
+        The target separation between mesh points in the final mesh.
+    file_name : str
+        The file name of the exported mesh file.
+
+    Returns
+    --------
+    mesh : :class:`meshio.Mesh`
+        The resultant mesh with areas and normal vectors as point data.
+
+    """
+    import gmsh
+    import meshio
+
+    uav_path = files(lyceanem.tests.data).joinpath("Demo UAV.step")
+    gmsh.initialize()
+    gmsh.option.setNumber("Mesh.CharacteristicLengthMax", mesh_resolution)
+    gmsh.model.add("UAV Conformal Array")
+
+    gmsh.merge(uav_path.as_posix())
+    # scale from mm to m
+    all_entities = gmsh.model.occ.getEntities()
+    gmsh.model.occ.dilate(all_entities, 0, 0, 0, 1 / 1000, 1 / 1000, 1 / 1000)
+    gmsh.model.occ.synchronize()
+    surfaces = all_entities[370:455]
+    volumes = all_entities[455:]
+
+    # Only want surfaces 6,7,13 for the array face.
+    wanted = [6 - 1, 7 - 2, 13 - 3]  # adjust index for removal of items in list.
+    for i in wanted:
+        surfaces.pop(i)
+
+    # delete all volumes
+    gmsh.model.occ.remove(volumes)
+    gmsh.model.occ.synchronize()
+    # delete all but wanted surfaces
+    gmsh.model.occ.remove(surfaces, recursive=True)
+    gmsh.model.occ.synchronize()
+    remaining_entities = gmsh.model.occ.getEntities()
+
+    gmsh.model.occ.fuse([(2, 6)], [(2, 7), (2, 13)])
+
+    gmsh.model.mesh.generate(dim=2)
+    gmsh.write(file_name)
+    gmsh.finalize()
+    mesh = meshio.read(file_name)
+    mesh = GF.compute_normals(GF.compute_areas(mesh))
+    rotation_vector1 = np.asarray([0.0, np.deg2rad(90), 0.0])
+    rotation_vector2 = np.asarray([np.deg2rad(90), 0.0, 0.0])
+    mesh=GF.mesh_rotate(mesh, rotation_vector1)
+    mesh=GF.mesh_rotate(mesh, rotation_vector2)
+    return mesh
+
+
 def exampleUAV(frequency):
     bodystream = files(lyceanem.tests.data).joinpath("UAV.stl")
     arraystream = files(lyceanem.tests.data).joinpath("UAVarray.stl")
@@ -47,25 +146,25 @@ def exampleUAV(frequency):
     array = GF.mesh_rotate(array, rotation_vector1)
     array = GF.mesh_rotate(array, rotation_vector2)
 
-    body = GF.translate_mesh(
+    body = GF.mesh_translate(
         body, np.array([0.25, 0, 0]) + np.array([-0.18, 0, 0.0125])
     )
-    array = GF.translate_mesh(
+    array = GF.mesh_translate(
         array, np.array([0.25, 0, 0]) + np.array([-0.18, 0, 0.0125])
     )
 
-    #def structure_cells(array):
-        ## add collumn of 3s to beggining of each row
+    # def structure_cells(array):
+    ## add collumn of 3s to beggining of each row
     #    array = np.append(
     #        np.ones((array.shape[0], 1), dtype=np.int32) * 3, array, axis=1
     #    )
     #    return array
 
-    #pyvista_array = pv.PolyData(array.points, structure_cells(array.cells[0].data))
-    #pyvista_body = pv.PolyData(body.points, structure_cells(body.cells[0].data))
-    #pyvista_array.compute_normals(inplace=True)
-    #pyvista_body.compute_normals(inplace=True)
-    
+    # pyvista_array = pv.PolyData(array.points, structure_cells(array.cells[0].data))
+    # pyvista_body = pv.PolyData(body.points, structure_cells(body.cells[0].data))
+    # pyvista_array.compute_normals(inplace=True)
+    # pyvista_body.compute_normals(inplace=True)
+
     array = GF.compute_normals(array)
     body = GF.compute_normals(body)
 
@@ -196,8 +295,8 @@ def exampleUAV(frequency):
         nose_side2_normals,
         axis=0,
     ) + np.array([0.1025, 0, -0.025])
-    source_pcd = RF.points2pointcloud(total_array)
+    source_pcd = MF.points2pointcloud(total_array)
     source_pcd.point_data["Normals"] = total_array_normals
-    source_pcd = GF.translate_mesh(source_pcd, np.array([-0.18, 0, 0.0125]))
+    source_pcd = GF.mesh_translate(source_pcd, np.array([-0.18, 0, 0.0125]))
 
     return body, array, source_pcd

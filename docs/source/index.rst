@@ -14,36 +14,26 @@ performance to channel modelling. The model is built upon a ray tracing approach
 large, low density spaces.
 
 .. note::
-   This project is under active development, but can be installed via pip or by cloning the git repository, as described in the :ref:`install <installation>` documentation.
+   This project is under active development, the recommended installation method is to use conda for either Windows or Linux as per the :ref:`install <installation>` documentation.
 
 Installation
 -------------
-To install LyceanEM from pip
+To install LyceanEM using conda
 
 .. code-block:: console
 
-   $  pip install LyceanEM
+    $ conda install -c lyceanem lyceanem
 
 
 Development
 -----------
-To install LyceanEM for development, clone the repository using git
+To download LyceanEM for development, clone the repository using git
 
 .. code-block:: console
 
     $ git clone 'https://github.com/LyceanEM/LyceanEM-Python.git'
 
-The module can then be installed using pip by navigating to the git folder.
 
-.. code-block:: console
-
-    $ pip3 install -e .
-
-If you are interesting in developing LyceanEM, you should clone from Github and install with the editable flag set.
-
-.. code-block:: console
-
-    $ pip3 install -e .
 
 Contents
 ========
@@ -58,6 +48,7 @@ Contents
    electromagnetics
    raycasting
    geometry
+   utility
    auto_examples/index
    contributing
    copyright

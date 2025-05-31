@@ -1,12 +1,13 @@
+import meshio
 import numpy as np
-import lyceanem
 import pytest
+from importlib_resources import files
 from numpy.testing import assert_allclose
 from scipy.spatial.transform import Rotation as R
-import meshio
-from importlib_resources import files
-from ..geometry import geometryfunctions as GF
+
+import lyceanem
 import lyceanem.tests.data
+from ..geometry import geometryfunctions as GF
 
 
 @pytest.fixture

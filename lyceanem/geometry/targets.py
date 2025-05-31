@@ -1,24 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import copy
 
-import numpy as np
-import meshio
-import pyvista as pv
-import pygmsh
 from importlib.resources import files
-from scipy.spatial.transform import Rotation as R
 
-from ..base_classes import antenna_structures, structures, points
+import meshio
+import sys
+import numpy as np
+import gmsh
+import pyvista as pv
 from ..geometry import geometryfunctions as GF
-from ..raycasting import rayfunctions as RF
-from ..utility import math_functions as math_functions
 
 EPSILON = 1e-6  # how close to zero do we consider zero?
 
 
 def NasaAlmond(resolution="quarter"):
     """
+    :meta private:
+
     NASA Almond is imported and then converted into the appropriate types for modelling
     This depends on the appropriate stl files in the working folder
     Parameters
@@ -66,7 +64,8 @@ def NasaAlmond(resolution="quarter"):
 
 def converttostl():
     """
-    This function is a convinence to allow the repeatable used of openscad to generate watertight stl files for use within LyceanEM. This function assumes that all openscad files are saved as temp.scad in the current working directory, and the output will be saved as temp.stl, ready for the home function to import it.
+    :meta private:
+    This function is a convenience to allow the repeatable used of openscad to generate watertight stl files for use within LyceanEM. This function assumes that all openscad files are saved as temp.scad in the current working directory, and the output will be saved as temp.stl, ready for the home function to import it.
 
     Returns
     -------
@@ -101,6 +100,7 @@ def converttostl():
 
 def rectReflector(majorsize, minorsize, thickness):
     """
+    :meta private:
     create a primative of the right size, assuming always orientated
     with normal aligned with zenith, and major axis with x,
     adjust position so the face is centred on (0,0,0)
@@ -116,13 +116,17 @@ def rectReflector(majorsize, minorsize, thickness):
     )
     pv_mesh = pv_mesh.triangulate()
     pv_mesh.compute_normals(inplace=True, consistent_normals=False)
+    from ..utility.mesh_functions import pyvista_to_meshio
+
     triangles = np.reshape(np.array(pv_mesh.faces), (12, 4))
     triangles = triangles[:, 1:]
 
-    mesh = meshio.Mesh(pv_mesh.points, {"triangle": triangles})
+    # mesh = meshio.Mesh(pv_mesh.points, {"triangle": triangles})
+    mesh = pyvista_to_meshio(pv_mesh)
 
-    mesh.point_data["Normals"] = pv_mesh.point_normals
-    mesh.cell_data["Normals"] = pv_mesh.cell_normals
+    from .geometryfunctions import compute_normals
+
+    mesh = compute_normals(mesh)
     red = np.zeros((8, 1), dtype=np.float32)
     green = np.ones((8, 1), dtype=np.float32) * 0.259
     blue = np.ones((8, 1), dtype=np.float32) * 0.145
@@ -135,6 +139,7 @@ def rectReflector(majorsize, minorsize, thickness):
 
 def shapeTrapezoid(x_size, y_size, length, flare_angle):
     """
+    :meta private:
     create a trapazoid to represent a simple horn of the right size, assuming always orientated
     with normal aligned with zenith, and major axis with x,
     adjust position so the face is centred on (0,0,0)
@@ -198,7 +203,9 @@ def shapeTrapezoid(x_size, y_size, length, flare_angle):
 
     mesh.point_data["Normals"] = np.asarray(pv_mesh.point_normals)
     mesh.cell_data["Normals"] = [np.asarray(pv_mesh.cell_normals)]
+    from .geometryfunctions import compute_areas
 
+    mesh = compute_areas(mesh)
     red = np.zeros((8, 1), dtype=np.float32)
     green = np.ones((8, 1), dtype=np.float32) * 0.259
     blue = np.ones((8, 1), dtype=np.float32) * 0.145
@@ -206,6 +213,7 @@ def shapeTrapezoid(x_size, y_size, length, flare_angle):
     mesh.point_data["red"] = red
     mesh.point_data["green"] = green
     mesh.point_data["blue"] = blue
+
     return mesh
 
 
@@ -231,9 +239,9 @@ def meshedReflector(majorsize, minorsize, thickness, grid_resolution, sides="all
 
     Returns
     -------
-    reflector : meshio object
+    reflector : :type:`meshio.Mesh`
         the defined cuboid
-    mesh_points : meshio object
+    mesh_points : :type:`meshio.Mesh`
         the scattering points, spaced at grid_resolution seperation between each point, and with normal vectors from
         the populating surfaces
 
@@ -270,7 +278,7 @@ def meshedHorn(
         the length of the horn structure
     edge_width : float
         the width of the physical structure around the horn
-    flare_angle :
+    flare_angle : float
         the taper angle of the horn
     grid_resolution : float
         the spacing between the aperture points, should be half a wavelength at the frequency of interest
@@ -279,9 +287,9 @@ def meshedHorn(
 
     Returns
     -------
-    structure : meshio object
+    structure : :type:`meshio.Mesh`
         the physical structure of the horn
-    mesh_points : meshio object
+    mesh_points : :type:`meshio.Mesh`
         the source points for the horn aperture
     """
     # print("HIHIH")
@@ -292,233 +300,561 @@ def meshedHorn(
         majorsize, minorsize, 1e-6, grid_resolution, sides
     )
 
-    mesh_points = GF.translate_mesh(mesh_points, [0, 0, EPSILON * 2])
+    mesh_points = GF.mesh_translate(mesh_points, [0, 0, EPSILON * 2])
 
     return structure, mesh_points
 
 
-def parabolic_aperture(
+def parabolic_reflector(
     diameter,
     focal_length,
     thickness,
     mesh_size,
-    sides="front",
     lip=False,
     lip_height=1e-3,
     lip_width=1e-3,
+    file_name="Parabolic_Reflector.stl",
+    ONELAB=False,
 ):
-    # Define function for parabola equation (y^2 = 4*focal_length*x)
-    import lyceanem.geometry.geometryfunctions as GF
-    import lyceanem.utility.math_functions as math_functions
+    """
+    Create a parabolic reflector with a specified diameter and focal length, and generate a mesh of points on the surface. If only the points on the front surface are required, then :func:`parabolic_surface` can be used instead.
+    Alternatively if scattering points on all sides are desired, then the points from the reflector mesh may be used.
+
+    Parameters
+    ----------
+    diameter : float
+        Diameter of the parabolic reflector.
+    focal_length : float
+        Focal length of the parabolic reflector.
+    thickness : float
+        Thickness of the reflector.
+    mesh_size : float
+        Desired separation of the mesh points.
+    lip : bool, optional
+        If True, adds a flat lip to the reflector. Default is False.
+    lip_height : float, optional
+        Height of the reflector lip if `lip` is True. Default is 1e-3.
+    lip_width : float, optional
+        Width of the reflector lip if `lip` is True. Default is 1e-3.
+    file_name : str, optional
+        Name of the file to save the mesh. Default is "Parabolic_Reflector.stl".
+    ONELAB : bool, optional
+        If True, enables ONELAB for interactive geometry manipulation. Default is False.
+
+    Returns
+    -------
+    mesh : :type:`meshio.Mesh`
+        A mesh object containing the parabolic reflector.
+    aperture_points : :type:`meshio.Mesh`
+        A mesh object containing the points on the front surface of the parabolic reflector.
+
+    """
 
     def parabola(x):
         return (1 / (4 * focal_length)) * x**2
 
-    with pygmsh.occ.Geometry() as geom:
-        geom.characteristic_length_max = mesh_size * 0.8
-        # Define points
-        point_num = 15
-        x_pos = np.linspace(-0.5 * diameter, 0.5 * diameter, point_num)
-        z_pos = parabola(x_pos)
-        coords = np.array([x_pos.ravel(), np.zeros((point_num)), z_pos.ravel()]).transpose()
-        points_list = []
-        for inc in range(point_num):
-            points_list.append(geom.add_point(coords[inc, :].tolist()))
+    gmsh.initialize()
+    gmsh.option.setNumber("Mesh.CharacteristicLengthMax", mesh_size)
+    # gmsh.option.setNumber("Geometry.OCCImportLabels", 1) # import colors from STEP
+    # Create a new geometry object
+    geo = gmsh.model.add("Parabolic Reflector")
+    # Define points
+    point_num = 15
+    x_pos = np.linspace(0, 0.5 * diameter, point_num)
+    z_pos = parabola(x_pos)
+    coords = np.array([x_pos.ravel(), np.zeros((point_num)), z_pos.ravel()]).transpose()
+    points_list = []
+    for inc in range(point_num):
+        points_list.append(gmsh.model.occ.add_point(*coords[inc, :].tolist()))
 
-        # Define top line based on points
-        line = geom.add_bspline(points_list)
+    # Define top line based on points
+    line = gmsh.model.occ.add_bspline(points_list)
 
-        _, surface, _ = geom.extrude(line, translation_axis=[0.0, 0.0, -thickness])
+    temp = gmsh.model.occ.extrude([(1, line)], 0.0, 0.0, -thickness)
+    surface = temp[1]
 
-        # Revolve line to create revolution surface
-        volume_list = []
-        _, b, _ = geom.revolve(
-            surface,
-            rotation_axis=[0.0, 0.0, 1.0],
-            point_on_axis=[0.0, 0.0, 0.0],
-            angle=0.25 * np.pi,
+    # Revolve line to create revolution surface
+    volume_list = []
+
+    temp2 = gmsh.model.occ.revolve(
+        [surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.25 * np.pi
+    )
+    volume_list.append(temp2[1])
+    for inc in range(7):
+        gmsh.model.occ.rotate([surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, (1 / 4) * np.pi)
+
+        temp3 = gmsh.model.occ.revolve(
+            [surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.25 * np.pi
         )
-        volume_list.append(b)
-        for inc in range(7):
-            geom.rotate(
-                surface,
-                point=[0.0, 0.0, 0.0],
-                angle=(1 / 4) * np.pi,
-                axis=[0.0, 0.0, 1.0],
-            )
-            _, b2, _ = geom.revolve(
-                surface,
-                rotation_axis=[0.0, 0.0, 1.0],
-                point_on_axis=[0.0, 0.0, 0.0],
-                angle=0.25 * np.pi,
-            )
-            volume_list.append(b2)
+        volume_list.append(temp3[1])
 
-        if lip:
-            axis1 = np.array([0.0, 0.0, -lip_height])
+    if lip:
+        axis1 = np.array([0.0, 0.0, -lip_height])
 
-            start_point = np.array([0.0, 0.0, parabola(diameter * 0.5)])
-            cylinder1 = geom.add_cylinder(start_point.ravel(), axis1, diameter / 2)
-            cylinder2 = geom.add_cylinder(
-                start_point.ravel(), axis1, diameter / 2 + lip_width
-            )
-            final = geom.boolean_difference([cylinder2], [cylinder1])
-            volume_list.append(final)
+        start_point = np.array([0.0, 0.0, parabola(diameter * 0.5)])
+        cylinder1 = gmsh.model.occ.addCylinder(
+            *start_point.ravel(), *axis1, diameter / 2
+        )
+        cylinder2 = gmsh.model.occ.addCylinder(
+            *start_point.ravel(), *axis1, diameter / 2 + lip_width
+        )
+        final = gmsh.model.occ.cut([(3, cylinder2)], [(3, cylinder1)])[0]
+        volume_list.append(final[0])
 
-        full_reflector = geom.boolean_union(volume_list)
+    full_reflector = gmsh.model.occ.fuse(volume_list[0:-1], [volume_list[-1]])
 
-        mesh_temp = geom.generate_mesh(dim=2)
-    for inc, cell in enumerate(mesh_temp.cells):
-        if cell.type == "triangle":
-            triangle_index = inc
+    gmsh.model.occ.synchronize()
+    if "-nopopup" not in sys.argv and ONELAB:
+        gmsh.fltk.run()
 
-    import meshio
+    gmsh.model.mesh.generate(dim=2)
+    gmsh.write(file_name)
+    gmsh.finalize()
+    mesh = meshio.read(file_name)
 
-    triangle_cells = [("triangle", mesh_temp.cells[triangle_index].data)]
-    mesh = meshio.Mesh(mesh_temp.points, triangle_cells)
-    mesh = GF.compute_normals(mesh)
-    x_space = np.linspace(
+    aperture_points = parabolic_surface(
+        diameter,
+        focal_length,
         mesh_size,
-        (diameter / 2),
-        int(np.max(np.asarray([2, np.ceil((diameter * 0.5) / (mesh_size))]))),
+        lip=lip,
+        lip_width=lip_width,
+        file_name="Parabolic_Surface.stl",
+        ONELAB=ONELAB,
     )
-    z_space = (1 / (4 * focal_length)) * x_space**2
-    c_space = np.ceil((2 * np.pi * x_space) / mesh_size).astype(int)
-    normal_gradiant_vector = np.array(
-        [
-            np.ones((len(x_space))),
-            np.zeros((len(x_space))),
-            -1 / (1 / (2 * focal_length) * x_space),
-        ]
-    )
-    source = np.array([x_space, np.zeros((len(x_space))), z_space]).transpose()
-    target = (normal_gradiant_vector * -x_space).transpose()
-    base_directions = np.zeros((x_space.shape[0], 3), dtype=np.float32)
-    norm_length = np.zeros((x_space.shape[0], 1), dtype=np.float32)
-    base_directions, norm_length = math_functions.calc_dv_norm(
-        source, target, base_directions, norm_length
-    )
-    source_coords = np.empty(((1, 3)), dtype=np.float32)
-    source_coords[0, :] = 0
-    source_normals = np.empty(((1, 3)), dtype=np.float32)
-    source_normals[0, :] = 0
-    source_normals[0, 2] = 1
-    for r_index in range(x_space.shape[0]):
-        source_coords = np.append(
-            source_coords,
-            np.array(
-                [
-                    x_space[r_index]
-                    * np.cos(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
-                    x_space[r_index]
-                    * np.sin(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
-                    z_space[r_index] * np.ones(c_space[r_index] - 1),
-                ]
-            ).transpose(),
-            axis=0,
-        )
-        source_normals = np.append(
-            source_normals,
-            np.array(
-                [
-                    base_directions[r_index, 0]
-                    * np.cos(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
-                    base_directions[r_index, 0]
-                    * np.sin(np.linspace(0, (2 * np.pi), c_space[r_index])[0:-1]),
-                    base_directions[r_index, 2] * np.ones(c_space[r_index] - 1),
-                ]
-            ).transpose(),
-            axis=0,
-        )
-
-    mesh_vertices = source_coords + np.array([0, 0, 1e-6])
-    mesh_normals = source_normals
-    aperture_points = meshio.Mesh(
-        points=mesh_vertices,
-        cells=[
-            (
-                "vertex",
-                np.array(
-                    [
-                        [
-                            i,
-                        ]
-                        for i in range(len(mesh_vertices))
-                    ]
-                ),
-            )
-        ],
-        point_data={"Normals": mesh_normals},
-    )
-
     return mesh, aperture_points
 
 
-def linear_parabolic_aperture(diameter, focal_length, height, thickness, mesh_size, lip=False, lip_width=1e-3):
-    # Define function for parabola equation (y^2 = 4*focal_length*x)
+def parabolic_surface(
+    diameter,
+    focal_length,
+    mesh_size,
+    lip=False,
+    lip_width=1e-3,
+    file_name="Parabolic_Surface.stl",
+    ONELAB=False,
+):
+    """
+    Create a parabolic surface with a specified diameter and focal length, and generate a mesh of points on the surface. This function is useful for generating the front surface of a parabolic reflector.
+
+    Parameters
+    ----------
+    diameter : float
+        Diameter of the parabolic surface.
+    focal_length : float
+        Focal length of the parabolic surface.
+    mesh_size : float
+        Desired separation of the mesh points.
+    lip : bool, optional
+        If True, adds a flat lip to the surface. Default is False.
+    lip_width : float, optional
+        Width of the surface lip if `lip` is True. Default is 1e-3.
+    file_name : str, optional
+        Name of the file to save the mesh. Default is "Parabolic_Surface.stl".
+    ONELAB : bool, optional
+        If True, enables ONELAB for interactive geometry manipulation. Default is False.
+
+    Returns
+    -------
+    mesh : :type:`meshio.Mesh`
+        A mesh object containing the parabolic surface.
+
+
+    """
 
     def parabola(x):
-        return (1 / (4 * focal_length)) * x ** 2
+        return (1 / (4 * focal_length)) * x**2
 
-    with pygmsh.occ.Geometry() as geom:
-        geom.characteristic_length_max = mesh_size * 0.8
-        # Define points
-        point_num = 15
-        x_pos = np.linspace(-0.5 * diameter, 0.5 * diameter, point_num)
-        z_pos = parabola(x_pos)
-        coords = np.array([x_pos.ravel(), np.zeros((point_num)), z_pos.ravel()]).transpose()
-        points_list = []
-        for inc in range(point_num):
-            points_list.append(geom.add_point(coords[inc, :].tolist()))
+    gmsh.initialize()
+    gmsh.option.setNumber("Mesh.CharacteristicLengthMax", mesh_size)
+    # gmsh.option.setNumber("Geometry.OCCImportLabels", 1) # import colors from STEP
+    # Create a new geometry object
+    geo = gmsh.model.add("Parabolic Surface")
+    # Define points
+    point_num = 15
+    x_pos = np.linspace(0, 0.5 * diameter, point_num)
+    z_pos = parabola(x_pos)
+    coords = np.array([x_pos.ravel(), np.zeros((point_num)), z_pos.ravel()]).transpose()
+    points_list = []
+    for inc in range(point_num):
+        points_list.append(gmsh.model.occ.add_point(*coords[inc, :].tolist()))
 
-        # Define top line based on points
-        line = geom.add_bspline(points_list)
+    # Define top line based on points
+    line = gmsh.model.occ.add_bspline(points_list)
 
-        _, surface, _ = geom.extrude(line, translation_axis=[0.0, 0.0, -thickness])
+    # temp = gmsh.model.occ.extrude([(1,line)], 0.0, 0.0, -thickness)
+    surface = (1, line)
 
-        # Extrude surface to create volume
-        volume_list = []
-        _, b, _ = geom.extrude(surface, translation_axis=[0.0, height, 0.0])
-        volume_list.append(b)
+    # Revolve line to create revolution surface
+    volume_list = []
 
-        # for inc in range(7):
+    temp2 = gmsh.model.occ.revolve(
+        [surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.25 * np.pi
+    )
+    volume_list.append(temp2[1])
+    for inc in range(7):
+        gmsh.model.occ.rotate([surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, (1 / 4) * np.pi)
 
-        #    geom.extrude(surface, translation_axis=[0.0,height,0.0])
-        #    _, b2, _ = geom.extrude(surface, translation_axis=[0.0,height,0.0])
-        #    volume_list.append(b2)
+        temp3 = gmsh.model.occ.revolve(
+            [surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.25 * np.pi
+        )
+        volume_list.append(temp3[1])
 
-        if lip:
-            start_point = np.array([0.5 * diameter, 0.0, parabola(diameter * 0.5) - thickness])
-            r1 = geom.add_box(start_point, [lip_width, height, thickness])
-            start_point2 = np.array([-0.5 * diameter - lip_width, 0.0, parabola(diameter * 0.5) - thickness])
-            r2 = geom.add_box(start_point2, [lip_width, height, thickness])
+    if lip:
 
-            volume_list.append(r1)
-            volume_list.append(r2)
+        start_point = np.array([0.0, 0.0, parabola(diameter * 0.5)])
+        cylinder1 = gmsh.model.occ.addDisk(
+            *start_point.ravel(), diameter / 2, diameter / 2
+        )
+        cylinder2 = gmsh.model.occ.addDisk(
+            *start_point.ravel(), diameter / 2 + lip_width, diameter / 2 + lip_width
+        )
+        final = gmsh.model.occ.cut([(2, cylinder2)], [(2, cylinder1)])[0]
+        volume_list.append(final[0])
 
-        if len(volume_list) > 1:
-            full_reflector = geom.boolean_union(volume_list)
+    full_reflector = gmsh.model.occ.fuse(volume_list[0:-1], [volume_list[-1]])
 
-        mesh_temp = geom.generate_mesh(dim=2)
-    for inc, cell in enumerate(mesh_temp.cells):
-        if cell.type == 'triangle':
-            triangle_index = inc
+    gmsh.model.occ.synchronize()
+    if "-nopopup" not in sys.argv and ONELAB:
+        gmsh.fltk.run()
 
-    import meshio
-    triangle_cells = [("triangle", mesh_temp.cells[triangle_index].data)]
-    mesh = meshio.Mesh(mesh_temp.points, triangle_cells)
-    mesh = GF.compute_normals(mesh)
-    mesh = GF.compute_areas(mesh)
-    aperture_points = GF.cell_centroids(mesh)
+    gmsh.model.mesh.generate(dim=2)
+    gmsh.write(file_name)
+    gmsh.finalize()
+    mesh = meshio.read(file_name)
+    return mesh
+
+
+def spherical_field(az_range, elev_range, outward_normals=False, field_radius=1.0):
+    """
+    Create a spherical field of points, with normals, a triangle mesh, and areas calculated for each triangle and adjusted for each field point.
+
+    Parameters
+    ----------
+    az_range : numpy.ndarray of float
+        Azimuthal angle in degrees ``[0, 360]``.
+    elev_range : numpy.ndarray of float
+        Elevation angle in degrees ``[-90, 90]``.
+    outward_normals : bool, optional
+        If outward pointing normals are required, set as True
+    field_radius : float, optional
+        The radius of the field, default is 1.0 m
+
+    Returns
+    -------
+    mesh : :type:`meshio.Mesh`
+        spherical field of points at specified azimuth and elevation angles, with meshed triangles
+    """
+    # vista_pattern = pv.Sphere(
+    #    radius=field_radius,
+    #    theta_resolution=az_range.shape[0],
+    #    phi_resolution=elev_range.shape[0],
+    #    start_theta=az_range[0],
+    #    end_theta=az_range[-1],
+    #    start_phi=elev_range[0],
+    #    end_phi=elev_range[-1],
+    # ).extract_surface()
+    vista_pattern = pv.grid_from_sph_coords(
+        az_range, (90 - elev_range), field_radius
+    ).extract_surface()
+    if outward_normals:
+        vista_pattern.point_data["Normals"] = vista_pattern.points / (
+            np.linalg.norm(vista_pattern.points, axis=1).reshape(-1, 1)
+        )
+    else:
+        vista_pattern.point_data["Normals"] = (
+            vista_pattern.points
+            / (np.linalg.norm(vista_pattern.points, axis=1).reshape(-1, 1))
+        ) * -1.0
+
+    from ..utility.mesh_functions import pyvista_to_meshio
+
+    mesh = pyvista_to_meshio(vista_pattern.triangulate())
+    from ..geometry.geometryfunctions import compute_areas, theta_phi_r
+
+    mesh = theta_phi_r(compute_areas(mesh))
+
+    return mesh
+
+
+def linear_parabolic_reflector(
+    diameter,
+    focal_length,
+    height,
+    thickness,
+    mesh_size,
+    lip=False,
+    lip_height=1e-3,
+    lip_width=1e-3,
+    file_name="Linear_Parabolic_Reflector.stl",
+    ONELAB=True,
+):
+    """
+    Create a parabolic reflector with a specified diameter and focal length, and generate a mesh of points on the surface. If only the points on the front surface are required, then :func:`parabolic_surface` can be used instead.
+    Alternatively if scattering points on all sides are desired, then the points from the reflector mesh may be used.
+
+    Parameters
+    ----------
+    diameter : float
+        Diameter of the parabolic reflector.
+    focal_length : float
+        Focal length of the parabolic reflector.
+    height : float
+        Height of the parabolic reflector. This is the height of the rectangular section which is used to intersect the parabolic reflector and create the final shape.
+    thickness : float
+        Thickness of the reflector.
+    mesh_size : float
+        Desired separation of the mesh points.
+    lip : bool, optional
+        If True, adds a flat lip to the reflector. Default is False.
+    lip_height : float, optional
+        Height of the reflector lip if `lip` is True. Default is 1e-3.
+    lip_width : float, optional
+        Width of the reflector lip if `lip` is True. Default is 1e-3.
+    file_name : str, optional
+        Name of the file to save the mesh. Default is "Parabolic_Reflector.stl".
+    ONELAB : bool, optional
+        If True, enables ONELAB for interactive geometry manipulation. Default is False.
+
+    Returns
+    -------
+    mesh : :type:`meshio.Mesh`
+        A mesh object containing the parabolic reflector.
+    aperture_points : :type:`meshio.Mesh`
+        A mesh object containing the points on the front surface of the parabolic reflector.
+
+    """
+
+    def parabola(x):
+        return (1 / (4 * focal_length)) * x**2
+
+    gmsh.initialize()
+    gmsh.option.setNumber("Mesh.CharacteristicLengthMax", mesh_size)
+    # gmsh.option.setNumber("Geometry.OCCImportLabels", 1) # import colors from STEP
+    # Create a new geometry object
+    geo = gmsh.model.add("Parabolic Reflector")
+    # Define points
+    point_num = 15
+    x_pos = np.linspace(0, 0.5 * diameter, point_num)
+    z_pos = parabola(x_pos)
+    coords = np.array([x_pos.ravel(), np.zeros((point_num)), z_pos.ravel()]).transpose()
+    points_list = []
+    for inc in range(point_num):
+        points_list.append(gmsh.model.occ.add_point(*coords[inc, :].tolist()))
+
+    # Define top line based on points
+    line = gmsh.model.occ.add_bspline(points_list)
+
+    temp = gmsh.model.occ.extrude([(1, line)], 0.0, 0.0, -thickness)
+    surface = temp[1]
+
+    # Revolve line to create revolution surface
+    volume_list = []
+
+    temp2 = gmsh.model.occ.revolve(
+        [surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.25 * np.pi
+    )
+    volume_list.append(temp2[1])
+    for inc in range(7):
+        gmsh.model.occ.rotate([surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, (1 / 4) * np.pi)
+
+        temp3 = gmsh.model.occ.revolve(
+            [surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.25 * np.pi
+        )
+        volume_list.append(temp3[1])
+
+    if lip:
+        axis1 = np.array([0.0, 0.0, -lip_height])
+
+        start_point = np.array([0.0, 0.0, parabola(diameter * 0.5)])
+        cylinder1 = gmsh.model.occ.addCylinder(
+            *start_point.ravel(), *axis1, diameter / 2
+        )
+        cylinder2 = gmsh.model.occ.addCylinder(
+            *start_point.ravel(), *axis1, diameter / 2 + lip_width
+        )
+        final = gmsh.model.occ.cut([(3, cylinder2)], [(3, cylinder1)])[0]
+        volume_list.append(final[0])
+
+    full_reflector = gmsh.model.occ.fuse(volume_list[0:-1], [volume_list[-1]])
+
+    gmsh.model.occ.synchronize()
+
+    # define box for intersection
+    box1 = gmsh.model.occ.addBox(
+        -(diameter / 2 + lip_width * 2),
+        -height / 2,
+        parabola(diameter / 2) * 1.5,
+        diameter + lip_width * 4,
+        height,
+        -parabola(diameter / 2) * 2.0,
+    )
+
+    truncated_reflector = gmsh.model.occ.intersect(full_reflector[0], [(3, box1)])
+    gmsh.model.occ.synchronize()
+    if "-nopopup" not in sys.argv and ONELAB:
+        gmsh.fltk.run()
+
+    gmsh.model.mesh.generate(dim=2)
+    gmsh.write(file_name)
+    gmsh.finalize()
+    mesh = meshio.read(file_name)
+
+    aperture_points = gmsh_linear_parabolic_surface(
+        diameter,
+        focal_length,
+        height,
+        mesh_size,
+        lip=lip,
+        lip_width=lip_width,
+        file_name="Linear_Parabolic_Surface.stl",
+        ONELAB=ONELAB,
+    )
     return mesh, aperture_points
+
+
+def linear_parabolic_surface(
+    diameter,
+    focal_length,
+    height,
+    mesh_size,
+    lip=False,
+    lip_width=1e-3,
+    file_name="Linear_Parabolic_Surface.stl",
+    ONELAB=True,
+):
+    """
+    Create a linear parabolic surface with a specified diameter, focal length and height, and generate a mesh of points on the surface. This function is useful for generating the front surface of a parabolic reflector.
+
+    Parameters
+    ----------
+    diameter : float
+        Diameter of the parabolic surface.
+    focal_length : float
+        Focal length of the parabolic surface.
+    height : float
+        Height of the parabolic surface. This creates a rectangular section of the full parabolic surface.
+    mesh_size : float
+        Desired separation of the mesh points.
+    lip : bool, optional
+        If True, adds a flat lip to the surface. Default is False.
+    lip_width : float, optional
+        Width of the surface lip if `lip` is True. Default is 1e-3.
+    file_name : str, optional
+        Name of the file to save the mesh. Default is "Parabolic_Surface.stl".
+    ONELAB : bool, optional
+        If True, enables ONELAB for interactive geometry manipulation. Default is False.
+
+    Returns
+    -------
+    mesh : :type:`meshio.Mesh`
+        A mesh object containing the parabolic surface.
+
+
+    """
+
+    def parabola(x):
+        return (1 / (4 * focal_length)) * x**2
+
+    gmsh.initialize()
+    gmsh.option.setNumber("Mesh.CharacteristicLengthMax", mesh_size)
+    # gmsh.option.setNumber("Geometry.OCCImportLabels", 1) # import colors from STEP
+    # Create a new geometry object
+    geo = gmsh.model.add("Parabolic Reflector")
+    # Define points
+    point_num = 15
+    x_pos = np.linspace(0, 0.5 * diameter, point_num)
+    z_pos = parabola(x_pos)
+    coords = np.array([x_pos.ravel(), np.zeros((point_num)), z_pos.ravel()]).transpose()
+    points_list = []
+    for inc in range(point_num):
+        points_list.append(gmsh.model.occ.add_point(*coords[inc, :].tolist()))
+
+    # Define top line based on points
+    line = gmsh.model.occ.add_bspline(points_list)
+
+    # temp = gmsh.model.occ.extrude([(1,line)], 0.0, 0.0, -thickness)
+    surface = (1, line)
+
+    # Revolve line to create revolution surface
+    volume_list = []
+
+    temp2 = gmsh.model.occ.revolve(
+        [surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.25 * np.pi
+    )
+    volume_list.append(temp2[1])
+    for inc in range(7):
+        gmsh.model.occ.rotate([surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, (1 / 4) * np.pi)
+
+        temp3 = gmsh.model.occ.revolve(
+            [surface], 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.25 * np.pi
+        )
+        volume_list.append(temp3[1])
+
+    if lip:
+
+        start_point = np.array([0.0, 0.0, parabola(diameter * 0.5)])
+        cylinder1 = gmsh.model.occ.addDisk(
+            *start_point.ravel(), diameter / 2, diameter / 2
+        )
+        cylinder2 = gmsh.model.occ.addDisk(
+            *start_point.ravel(), diameter / 2 + lip_width, diameter / 2 + lip_width
+        )
+        final = gmsh.model.occ.cut([(2, cylinder2)], [(2, cylinder1)])[0]
+        volume_list.append(final[0])
+
+    full_reflector = gmsh.model.occ.fuse(volume_list[0:-1], [volume_list[-1]])
+
+    gmsh.model.occ.synchronize()
+    # define box for intersection
+    box1 = gmsh.model.occ.addBox(
+        -(diameter / 2 + lip_width * 2),
+        -height / 2,
+        parabola(diameter / 2) * 1.5,
+        diameter + lip_width * 4,
+        height,
+        -parabola(diameter / 2) * 2.0,
+    )
+
+    truncated_reflector = gmsh.model.occ.intersect(full_reflector[0], [(3, box1)])
+    gmsh.model.occ.synchronize()
+    if "-nopopup" not in sys.argv and ONELAB:
+        gmsh.fltk.run()
+
+    gmsh.model.mesh.generate(dim=2)
+    gmsh.write(file_name)
+    gmsh.finalize()
+    mesh = meshio.read(file_name)
+    return mesh
+
 
 def gridedReflectorPoints(
     majorsize, minorsize, thickness, grid_resolution, sides="all"
 ):
     """
+    :meta private:
     create a primative of the right size, assuming always orientated
     with normal aligned with zenith, and major axis with x,
     adjust position so the face is centred on (0,0,1)
+
+    Parameters
+    ----------
+    majorsize : float
+        size in the x direction of the reflector
+    minorsize : float
+        size in the y direction of the reflector
+    thickness : float
+        thickness of the reflector
+    grid_resolution : float
+        Desired spacing between the points on the reflector surface, should be half a wavelength at the frequency of interest
+    sides : str, optional
+        Specifies which sides to mesh. Default is 'all', which creates a mesh of surface points on all sides of the cuboid.
+        Other options are 'front', which only creates points for the side aligned with the positive z direction, or 'centres',
+        which creates a point for the centre of each side.
+    Returns
+    -------
+    mesh_points : :type:`meshio.Mesh`
+        the source points for the reflector surface, with normals
+
     """
     if sides == "all":
         x = np.linspace(
@@ -675,6 +1011,12 @@ def gridedReflectorPoints(
             )
         ],
         point_data={"Normals": mesh_normals},
+    )
+    from ..utility.mesh_functions import pyvista_to_meshio
+    from .geometryfunctions import compute_areas
+
+    mesh_points = compute_areas(
+        pyvista_to_meshio(pv.from_meshio(mesh_points).delaunay_2d())
     )
 
     return mesh_points

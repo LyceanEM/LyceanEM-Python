@@ -3,9 +3,9 @@ import copy
 import math
 from timeit import default_timer as timer
 
+import meshio
 import numba as nb
 import numpy as np
-import meshio
 import scipy.stats
 from matplotlib import cm
 from numba import cuda, float32, jit, njit, guvectorize, prange
@@ -13,8 +13,8 @@ from scipy.spatial import distance
 
 import lyceanem.base_types as base_types
 import lyceanem.electromagnetics.empropagation as EM
+import lyceanem.geometry.targets as TG
 from ..utility import math_functions as math_functions
-import meshio
 
 EPSILON = 1e-7  # how close to zero do we consider zero? example used 1e-7
 
@@ -61,7 +61,7 @@ def hit(ray, triangle):
 
     # if A is less than zero, then the ray is coming from behind the triangle
     # don't cull backface triangles
-    #if A < 0:
+    # if A < 0:
     #    return False, math.inf
     # calculate distance from vertice 0 to ray origin
     tvecx = ray.ox - triangle.v0x  # s
@@ -260,8 +260,8 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
         (ray_index.shape[0], ray_index.shape[1]), dtype=np.int32
     )
     d_ray_index = cuda.to_device(ray_index)
-    ray_flags = np.full(ray_index.shape[0], False, dtype=np.bool)
-    d_ray_flag = cuda.device_array(ray_index.shape[0], dtype=np.bool)
+    ray_flags = np.full(ray_index.shape[0], False, dtype=bool)
+    d_ray_flag = cuda.device_array(ray_index.shape[0], dtype=bool)
     d_ray_flag = cuda.to_device(ray_flags)
     cuda.to_device(environment_local, to=d_environment)
     d_point_information = cuda.device_array(
@@ -296,16 +296,19 @@ def integratedRaycaster(ray_index, scattering_points, environment_local):
 
 # @njit
 def patterntocloud(pattern_data, shell_coords, maxarea):
-    # takes the pattern_data and shell_coordinates, and creates an open3d point cloud based upon the data.
-    point_cloud = points2pointcloud(shell_coords)
+    # takes the pattern_data and shell_coordinates, and creates a point cloud based upon the data.
+    import lyceanem.utility.mesh_functions as MF
+
+    point_cloud = MF.points2pointcloud(shell_coords)
     points, elements = np.shape(pattern_data)
     # normdata
-    viridis = cm.get_cmap("viridis", 40)
+    # viridis = cm.get_cmap("viridis", 40)
     visible_elements = np.sum(pattern_data / maxarea, axis=1)
-    np_colors = viridis(visible_elements)
-    point_cloud.point_data["red"] = np_colors[:, 0]
-    point_cloud.point_data["green"] = np_colors[:, 1]
-    point_cloud.point_data["blue"] = np_colors[:, 2]
+    # np_colors = viridis(visible_elements)
+    # point_cloud.point_data["red"] = np_colors[:, 0]
+    # point_cloud.point_data["green"] = np_colors[:, 1]
+    # point_cloud.point_data["blue"] = np_colors[:, 2]
+    point_cloud.point_data["Projected Area"] = pattern_data
 
     return point_cloud
 
@@ -315,8 +318,8 @@ def visiblespace(
     source_normals,
     environment,
     vertex_area=0,
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-90.0, 90.0, 19),
+    az_range=None,
+    elev_range=None,
     shell_range=0.5,
 ):
     """
@@ -324,36 +327,39 @@ def visiblespace(
 
     Parameters
     --------------
-    source_coords : n by 3 numpy array of floats
-        xyz coordinates of the sources
-    source_normals : n by 3 numpy array of floats
-        normal vectors for each source point
+    source_coords : numpy.ndarray of float
+        xyz coordinates of the sources with shape (n,3)
+    source_normals : numpy.ndarray of float
+        normal vectors for each source point with shape (n,3)
     environment : :class:`lyceanem.base_classes.triangles`
         blocking environment
-    vertex_area : float or array of floats
+    vertex_area : numpy.ndarray of float
         the area associated with each source point, defaults to 0, but can also be specified for each source
-    az_range : array of float
+    az_range : numpy.ndarray of float
         array of azimuth planes in degrees
-    elev_range : array of float
+    elev_range : numpy.ndarray of float
         array of elevation points in degrees
     shell_range: float
         radius of point cloud shell
 
     Returns
     -------------------
-    visible_patterns : m by l by n array of floats
+    visible_patterns : numpy.ndarray of float
         3D antenna patterns
-    resultant_pcd : meshio pointcloud
+    resultant_pcd : :type:`meshio.Mesh`
         colour data to scale the points fractional visibility from the source aperture
     """
+    if az_range is None:
+        az_range = np.linspace(-180.0, 180.0, 19)
 
+    if elev_range is None:
+        elev_range = np.linspace(-90.0, 90.0, 19)
     azaz, elel = np.meshgrid(az_range, elev_range)
     sourcenum = source_coords.points.shape[0]
-
-    sinks = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
-    sinks[:, 0], sinks[:, 1], sinks[:, 2] = azeltocart(
-        np.ravel(azaz), np.ravel(elel), 1e9
+    sample_shell = TG.spherical_field(
+        az_range, elev_range, outward_normals=True, field_radius=shell_range
     )
+    sinks = sample_shell.points
     sinknum = len(sinks)
     #
     # initial_index=np.full((len(source_coords),2),np.nan,dtype=np.int32)
@@ -386,7 +392,7 @@ def visiblespace(
     )
 
     # angles[np.isnan(angles)]=0
-    vertex_area[np.isnan(vertex_area)]=0
+    vertex_area[np.isnan(vertex_area)] = 0
     # visible_patterns=quickpatterncreator(az_range,elev_range,source_coords,angles,vertex_area,hit_index)
     if len(vertex_area) == 1:
         if vertex_area == 0:
@@ -406,18 +412,19 @@ def visiblespace(
     visible_patterns = patternsort(
         visible_patterns, sourcenum, sinknum, portion, hit_index
     ).reshape(len(elev_range), len(az_range))
-    shell_coords = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
-    shell_coords[:, 0], shell_coords[:, 1], shell_coords[:, 2] = azeltocart(
-        np.ravel(azaz), np.ravel(elel), shell_range
-    )
-    maxarea = np.nanmax(np.nanmax(visible_patterns))
-    resultant_pcd = patterntocloud(
-        np.reshape(visible_patterns, (len(az_range) * len(elev_range), 1)),
-        shell_coords,
-        maxarea,
-    )
+    # shell_coords = np.zeros((len(np.ravel(azaz)), 3), dtype=np.float32)
+    # shell_coords[:, 0], shell_coords[:, 1], shell_coords[:, 2] = azeltocart(
+    #    np.ravel(azaz), np.ravel(elel), shell_range
+    # )
 
-    return visible_patterns, resultant_pcd
+    maxarea = np.nanmax(np.nanmax(visible_patterns))
+    # resultant_pcd = patterntocloud(
+    #    np.reshape(visible_patterns, (len(az_range) * len(elev_range), 1)),
+    #    shell_coords,
+    #    maxarea,
+    # )
+    sample_shell.point_data["Projected Area"] = visible_patterns.reshape(-1, 1)
+    return visible_patterns, sample_shell
 
 
 @njit(cache=True, nogil=True)
@@ -525,7 +532,7 @@ def convertTriangles(triangle_object):
     """
     convert meshio.Mesh triangle object to ray tracer triangle class
     """
-    if triangle_object == None:
+    if triangle_object is None:
         triangles = np.empty(0, dtype=base_types.triangle_t)
     else:
         # assert triangle_object.cells[1].type == "triangle", "Not a triangle mesh"
@@ -548,29 +555,6 @@ def convertTriangles(triangle_object):
             triangles[idx]["v2z"] = np.single(vertices[tri_index[idx, 2], 2])
 
     return triangles
-
-
-def points2pointcloud(xyz):
-    """
-    turns numpy array of xyz data into a meshio format point cloud
-    Parameters
-    ----------
-    xyz : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    pcd : point cloud format
-
-    """
-    if xyz.shape[1] == 3:
-        new_point_cloud = meshio.Mesh(points=xyz, cells=[])
-
-    else:
-        reshaped = xyz.reshape((int(len(xyz.ravel()) / 3), 3))
-        new_point_cloud = meshio.Mesh(points=reshaped, cells=[])
-
-    return new_point_cloud
 
 
 @guvectorize([(float32[:, :], float32[:])], "(m,n)->(m)", target="parallel")
@@ -1842,9 +1826,9 @@ def charge_rays_environment1Dv2(sources, sinks, environment_points, point_indexi
         ray payload to be sent to GPU
 
     """
-    #print("sources shape", sources.shape)
-    #print("sinks shape", sinks.shape)
-    #print("environment_points shape", environment_points.shape)
+    # print("sources shape", sources.shape)
+    # print("sinks shape", sinks.shape)
+    # print("environment_points shape", environment_points.shape)
 
     unified_model = np.append(
         np.append(sources, sinks, axis=0), environment_points, axis=0
@@ -2140,10 +2124,12 @@ def chunkingRaycaster1Dv3(
 ):
     start = timer()
     cuda.current_context().memory_manager.deallocations.clear()
-    
+
     free_mem, total_mem = cuda.current_context().get_memory_info()
     max_mem = np.ceil(free_mem * 0.5).astype(np.int64)
-    ray_limit = np.floor(((max_mem - environment_local.nbytes) / base_types.ray_t.size)).astype(np.int64)
+    ray_limit = np.floor(
+        ((max_mem - environment_local.nbytes) / base_types.ray_t.size)
+    ).astype(np.int64)
     sink_index = np.arange(
         sources.shape[0] + 1, sources.shape[0] + 1 + sinks.shape[0]
     ).reshape(sinks.shape[0], 1)
@@ -2545,7 +2531,7 @@ def shadowRaycaster(filtered_network, sinks, filtered_index, environment_local):
             chunk_ray_size = len(chunk_payload)
             distance_temp = np.empty((chunk_ray_size), dtype=np.float32)
             distance_temp[:] = math.inf
-            ray_temp = np.empty((chunk_ray_size), dtype=np.bool)
+            ray_temp = np.empty((chunk_ray_size), dtype=bool)
             ray_temp[:] = False
             dist_list = cuda.to_device(distance_temp)
             d_ray_flag = cuda.to_device(ray_temp)
@@ -2716,6 +2702,7 @@ def workchunkingv2(
     sources, sinks, scattering_points, environment, max_scatter, line_of_sight=True
 ):
     """
+    :meta private:
     Raycasting index creation and assignment to raycaster, upper bound is around 4.7e8 rays at a time, there is already chunking to prevent overflow of the GPU memory and timeouts
 
     Parameters
@@ -2770,7 +2757,7 @@ def workchunkingv2(
         )
         if io_indexing.shape[0] >= ray_limit:
             # need to split the array and process seperatly
-            
+
             sub_io = np.array_split(
                 io_indexing, np.ceil(io_indexing.shape[0] / ray_limit).astype(int)
             )
@@ -2926,8 +2913,10 @@ def workchunkingv2(
                 sources, sinks, scattering_points, filtered_index, environment, False
             )
             if filtered_index2.shape[0] * sinks.shape[0] > 2e8:
-                temp_chunks = np.ceil((filtered_index2.shape[0] * sinks.shape[0]) / 2e8).astype(int)
-                
+                temp_chunks = np.ceil(
+                    (filtered_index2.shape[0] * sinks.shape[0]) / 2e8
+                ).astype(int)
+
                 temp_chunking = np.linspace(
                     0, filtered_index2.shape[0], temp_chunks, dtype=np.int32
                 )

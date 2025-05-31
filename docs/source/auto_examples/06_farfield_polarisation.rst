@@ -71,7 +71,7 @@ an X band aperture.
 Generating consistent point source to explore farfield polarisations, and rotating the source
 ----------------------------------------------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 33-49
+.. GENERATED FROM PYTHON SOURCE LINES 33-50
 
 .. code-block:: Python
 
@@ -79,13 +79,14 @@ Generating consistent point source to explore farfield polarisations, and rotati
     from lyceanem.base_classes import points,structures,antenna_structures
     import meshio
 
-    point1=np.asarray([0.0,0,0]).reshape(1,3)
-    normal1=np.asarray([0.00,0.0,1.0]).reshape(1,3)
-    aperture_coords = meshio.Mesh(points=point1, cells=[], point_data={"Normals": normal1})
-    #aperture_coords.points=o3d.utility.Vector3dVector(point1)
-    #aperture_coords.normals=o3d.utility.Vector3dVector(normal1)
-    aperture=points([aperture_coords])
-    blockers=structures([None])
+    import lyceanem.geometry.targets as TL
+    import lyceanem.geometry.geometryfunctions as GF
+
+    transmit_horn_structure, transmitting_antenna_surface_coords = TL.meshedHorn(
+        58e-3, 58e-3, 128e-3, 2e-3, 0.21, wavelength*0.5
+    )
+    aperture=points([transmitting_antenna_surface_coords])
+    blockers=structures([transmit_horn_structure])
     point_antenna=antenna_structures(blockers, aperture)
 
 
@@ -98,11 +99,11 @@ Generating consistent point source to explore farfield polarisations, and rotati
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 50-51
+.. GENERATED FROM PYTHON SOURCE LINES 51-52
 
 The first source polarisation is based upon the u-vector of the source point. When the excitation_function method of the antenna structure class is used, it will calculate the appropriate polarisation vectors based upon the local normal vectors.
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-66
+.. GENERATED FROM PYTHON SOURCE LINES 52-68
 
 .. code-block:: Python
 
@@ -110,7 +111,7 @@ The first source polarisation is based upon the u-vector of the source point. Wh
     desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
     desired_E_axis[0, 0] = 1.0
     Etheta, Ephi = calculate_farfield(
-        aperture_coords,
+        point_antenna.export_all_points(),
         point_antenna.export_all_structures(),
         point_antenna.excitation_function(desired_e_vector=desired_E_axis),
         az_range=np.linspace(-180, 180, az_res),
@@ -119,6 +120,7 @@ The first source polarisation is based upon the u-vector of the source point. Wh
         farfield_distance=20,
         elements=False,
         project_vectors=False,
+        beta=(2*np.pi)/wavelength
     )
 
 
@@ -129,22 +131,20 @@ The first source polarisation is based upon the u-vector of the source point. Wh
 
  .. code-block:: none
 
-    Structure does not exist
-    sources shape (1, 3)
-    sinks shape (1369, 3)
-    environment_points shape (0, 3)
-    C:\Users\lycea\.conda\envs\SpaceBasedSolar\lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 6 will likely result in GPU under-utilization due to low occupancy.
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 86 will likely result in GPU under-utilization due to low occupancy.
+      warn(NumbaPerformanceWarning(msg))
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 44 will likely result in GPU under-utilization due to low occupancy.
       warn(NumbaPerformanceWarning(msg))
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-69
+.. GENERATED FROM PYTHON SOURCE LINES 69-71
 
 Antenna Pattern class is used to manipulate and record antenna patterns
 ------------------------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-80
+.. GENERATED FROM PYTHON SOURCE LINES 71-82
 
 .. code-block:: Python
 
@@ -155,8 +155,8 @@ Antenna Pattern class is used to manipulate and record antenna patterns
     u_pattern = antenna_pattern(
         azimuth_resolution=az_res, elevation_resolution=elev_res
     )
-    u_pattern.pattern[:, :, 0] = Etheta
-    u_pattern.pattern[:, :, 1] = Ephi
+    u_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    u_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
     u_pattern.display_pattern(desired_pattern='Power')
 
 
@@ -168,14 +168,21 @@ Antenna Pattern class is used to manipulate and record antenna patterns
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-82
+
+.. GENERATED FROM PYTHON SOURCE LINES 83-84
 
 The second source polarisation is based upon the v-vector of the source point.
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-105
+.. GENERATED FROM PYTHON SOURCE LINES 84-108
 
 .. code-block:: Python
 
@@ -192,14 +199,15 @@ The second source polarisation is based upon the v-vector of the source point.
         farfield_distance=20,
         elements=False,
         project_vectors=False,
+        beta=(2*np.pi)/wavelength
     )
 
 
     v_pattern = antenna_pattern(
         azimuth_resolution=az_res, elevation_resolution=elev_res
     )
-    v_pattern.pattern[:, :, 0] = Etheta
-    v_pattern.pattern[:, :, 1] = Ephi
+    v_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    v_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
     v_pattern.display_pattern(desired_pattern='Power')
 
 
@@ -215,21 +223,17 @@ The second source polarisation is based upon the v-vector of the source point.
 
  .. code-block:: none
 
-    Structure does not exist
-    sources shape (1, 3)
-    sinks shape (1369, 3)
-    environment_points shape (0, 3)
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\lyceanem\electromagnetics\beamforming.py:1097: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
       logdata = 10 * np.log10(data)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-107
+.. GENERATED FROM PYTHON SOURCE LINES 109-110
 
 The third source polarisation is based upon the n-vector of the source point. Aligned with the source point normal.
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-129
+.. GENERATED FROM PYTHON SOURCE LINES 110-133
 
 .. code-block:: Python
 
@@ -246,13 +250,14 @@ The third source polarisation is based upon the n-vector of the source point. Al
         farfield_distance=20,
         elements=False,
         project_vectors=False,
+        beta=(2*np.pi)/wavelength
     )
 
     n_pattern = antenna_pattern(
         azimuth_resolution=az_res, elevation_resolution=elev_res
     )
-    n_pattern.pattern[:, :, 0] = Etheta
-    n_pattern.pattern[:, :, 1] = Ephi
+    n_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    n_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
     n_pattern.display_pattern(desired_pattern='Power')
 
 
@@ -268,79 +273,119 @@ The third source polarisation is based upon the n-vector of the source point. Al
 
  .. code-block:: none
 
-    Structure does not exist
-    sources shape (1, 3)
-    sinks shape (1369, 3)
-    environment_points shape (0, 3)
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-131
+.. GENERATED FROM PYTHON SOURCE LINES 134-135
 
 The point source can then be rotated, by providing a rotation matrix, and the u,v,n directions are moved with it in a consistent way.
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-185
+.. GENERATED FROM PYTHON SOURCE LINES 135-194
 
 .. code-block:: Python
 
+    from scipy.spatial.transform import Rotation as R
 
-    # point_antenna.rotate_antenna(o3d.geometry.get_rotation_matrix_from_axis_angle(np.radians(np.asarray([90.0,0.0,0.0]))))
+    r=R.from_euler('xyz', np.radians(np.asarray([90.0,0.0,0.0])))
+    point_antenna.rotate_antenna(r.as_matrix())
 
-    # desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
-    # desired_E_axis[0, 0] = 1.0
-    # Etheta, Ephi = calculate_farfield(
-    #     point_antenna.export_all_points(),
-    #     point_antenna.export_all_structures(),
-    #     point_antenna.excitation_function(desired_e_vector=desired_E_axis),
-    #     az_range=np.linspace(-180, 180, az_res),
-    #     el_range=np.linspace(-90, 90, elev_res),
-    #     wavelength=wavelength,
-    #     farfield_distance=20,
-    #     elements=False,
-    #     project_vectors=False,
-    # )
-    # u_pattern.pattern[:, :, 0] = Etheta
-    # u_pattern.pattern[:, :, 1] = Ephi
-    # u_pattern.display_pattern(desired_pattern='Power')
-
-
-    # desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
-    # desired_E_axis[0, 1] = 1.0
-    # Etheta, Ephi = calculate_farfield(
-    #     point_antenna.export_all_points(),
-    #     point_antenna.export_all_structures(),
-    #     point_antenna.excitation_function(desired_e_vector=desired_E_axis),
-    #     az_range=np.linspace(-180, 180, az_res),
-    #     el_range=np.linspace(-90, 90, elev_res),
-    #     wavelength=wavelength,
-    #     farfield_distance=20,
-    #     elements=False,
-    #     project_vectors=False,
-    # )
-    # v_pattern.pattern[:, :, 0] = Etheta
-    # v_pattern.pattern[:, :, 1] = Ephi
-    # v_pattern.display_pattern(desired_pattern='Power')
+    desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
+    desired_E_axis[0, 0] = 1.0
+    Etheta, Ephi = calculate_farfield(
+        point_antenna.export_all_points(),
+        point_antenna.export_all_structures(),
+        point_antenna.excitation_function(desired_e_vector=desired_E_axis),
+        az_range=np.linspace(-180, 180, az_res),
+        el_range=np.linspace(-90, 90, elev_res),
+        wavelength=wavelength,
+        farfield_distance=20,
+        elements=False,
+        project_vectors=False,
+        beta=(2*np.pi)/wavelength
+    )
+    u_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    u_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
+    u_pattern.display_pattern(desired_pattern='Power')
 
 
-    # desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
-    # desired_E_axis[0, 2] = 1.0
-    # Etheta, Ephi = calculate_farfield(
-    #     point_antenna.export_all_points(),
-    #     point_antenna.export_all_structures(),
-    #     point_antenna.excitation_function(desired_e_vector=desired_E_axis),
-    #     az_range=np.linspace(-180, 180, az_res),
-    #     el_range=np.linspace(-90, 90, elev_res),
-    #     wavelength=wavelength,
-    #     farfield_distance=20,
-    #     elements=False,
-    #     project_vectors=False,
-    # )
-    # n_pattern.pattern[:, :, 0] = Etheta
-    # n_pattern.pattern[:, :, 1] = Ephi
-    # n_pattern.display_pattern(desired_pattern='Power')
+    desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
+    desired_E_axis[0, 1] = 1.0
+    Etheta, Ephi = calculate_farfield(
+        point_antenna.export_all_points(),
+        point_antenna.export_all_structures(),
+        point_antenna.excitation_function(desired_e_vector=desired_E_axis),
+        az_range=np.linspace(-180, 180, az_res),
+        el_range=np.linspace(-90, 90, elev_res),
+        wavelength=wavelength,
+        farfield_distance=20,
+        elements=False,
+        project_vectors=False,
+        beta=(2*np.pi)/wavelength
+    )
+    v_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    v_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
+    v_pattern.display_pattern(desired_pattern='Power')
 
 
+    desired_E_axis = np.zeros((1, 3), dtype=np.complex64)
+    desired_E_axis[0, 2] = 1.0
+    Etheta, Ephi = calculate_farfield(
+        point_antenna.export_all_points(),
+        point_antenna.export_all_structures(),
+        point_antenna.excitation_function(desired_e_vector=desired_E_axis),
+        az_range=np.linspace(-180, 180, az_res),
+        el_range=np.linspace(-90, 90, elev_res),
+        wavelength=wavelength,
+        farfield_distance=20,
+        elements=False,
+        project_vectors=False,
+        beta=(2*np.pi)/wavelength
+    )
+    n_pattern.pattern[:, :, 0] = Etheta.reshape(elev_res,az_res)
+    n_pattern.pattern[:, :, 1] = Ephi.reshape(elev_res,az_res)
+    n_pattern.display_pattern(desired_pattern='Power')
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_06_farfield_polarisation_004.png
+         :alt: Power Pattern
+         :srcset: /auto_examples/images/sphx_glr_06_farfield_polarisation_004.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_06_farfield_polarisation_005.png
+         :alt: Power Pattern
+         :srcset: /auto_examples/images/sphx_glr_06_farfield_polarisation_005.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_06_farfield_polarisation_006.png
+         :alt: Power Pattern
+         :srcset: /auto_examples/images/sphx_glr_06_farfield_polarisation_006.png
+         :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 49 will likely result in GPU under-utilization due to low occupancy.
+      warn(NumbaPerformanceWarning(msg))
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
 
 
 
@@ -348,7 +393,7 @@ The point source can then be rotated, by providing a rotation matrix, and the u,
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.565 seconds)
+   **Total running time of the script:** (0 minutes 2.777 seconds)
 
 
 .. _sphx_glr_download_auto_examples_06_farfield_polarisation.py:
@@ -364,6 +409,10 @@ The point source can then be rotated, by providing a rotation matrix, and the u,
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: 06_farfield_polarisation.py <06_farfield_polarisation.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: 06_farfield_polarisation.zip <06_farfield_polarisation.zip>`
 
 
 .. only:: html

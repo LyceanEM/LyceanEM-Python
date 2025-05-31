@@ -1,11 +1,12 @@
 import cmath
 import copy
-import pyvista as pv
+
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.art3d as art3d
 import numpy as np
 import pylab as pl
+import pyvista as pv
 import scipy.stats
 from matplotlib import cm
 from matplotlib.patches import Wedge
@@ -24,14 +25,18 @@ def Steering_Efficiency(
 
     Parameters
     ----------
-    Dtheta : numpy 2D array of floats or complex
-        DESCRIPTION.
-    Dphi : numpy 2D array of floats or complex
-        DESCRIPTION.
-    Dtot : numpy 2D array of floats or complex
-        DESCRIPTION.
-    angular coverage : float
-        the total angular coverage to be considered, should be $4\pi$ steradians
+    Dtheta : numpy.ndarray of complex or float
+        Directivity for the :math:`E\\theta` polarisation.
+    Dphi : numpy.ndarray of complex or float
+        Directivity for the :math:`E\\phi` polarisation.
+    Dtot : numpy.ndarray of complex or float
+        Total Directivity pattern
+    first_dimension_angle : float
+        the angle in radians of the first dimension, should be :math:`2\\pi` for a full azimuth sweep
+    second_dimension_angle : float
+        the angle in radians of the second dimension, should be :math:`\\pi` for a full elevation sweep
+    angular_coverage : float
+        the total angular coverage to be considered, should be :math:`4\\pi` steradians for a full sphere.
 
     Returns
     -------
@@ -78,6 +83,20 @@ def WavefrontWeights(source_coords, steering_vector, wavelength):
 
     calculate the weights for a given set of element coordinates, wavelength, and steering vector (cartesian)
 
+    Parameters
+    ----------
+    source_coords : numpy.ndarray of float
+        The coordinates of the elements, arranged in terms of x, y, and z coordinates
+    steering_vector : numpy.ndarray of float
+        The steering vector for the beamforming, arranged in terms of x, y, and z coordinates
+    wavelength : float
+        The wavelength of interest, used to calculate the phase delays
+
+    Returns
+    -------
+    weights : numpy.ndarray of complex
+        The wavefront weights for the specified steering vector, arranged as a 1D array of complex numbers
+
     """
     weights = np.zeros((source_coords.shape[0]), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
@@ -106,6 +125,20 @@ def ArbitaryCoherenceWeights(source_coords, target_coord, wavelength):
 
     Generate Wavefront coherence weights based upon the desired wavelength and the coordinates of the target point
 
+    Parameters
+    ----------
+    source_coords : numpy.ndarray of float
+        The coordinates of the elements, arranged in terms of x, y, and z coordinates
+    target_coord : numpy.ndarray of float
+        The target coordinate for the beamforming, arranged in terms of x, y, and z coordinates
+    wavelength : float
+        The wavelength of interest, used to calculate the phase delays
+
+    Returns
+    -------
+    weights : numpy.ndarray of complex
+        The wavefront coherence weights for the specified target coordinate, arranged as a 1D array of complex numbers
+
     """
     weights = np.zeros((len(source_coords), 1), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
@@ -122,6 +155,23 @@ def ArbitaryCoherenceWeights(source_coords, target_coord, wavelength):
 def TimeDelayWeights(source_coords, steering_vector, magnitude=1.0, maximum_delay=10):
     """
     Generate time delay weights to focus on a target coordinate, with delays in nanoseconds
+
+    Parameters
+    ----------
+    source_coords : numpy.ndarray of float
+        The coordinates of the elements, arranged in terms of x, y, and z coordinates
+    steering_vector : numpy.ndarray of float
+        The steering vector for the beamforming, arranged in terms of x, y, and z coordinates
+    magnitude : numpy.ndarray of float
+        The magnitude of the weights, default is 1.0 but can be set to any value to allow for both calibrated transmit power, and amplitude weighting.
+    maximum_delay : float
+        The maximum delay to be applied to the weights, in nanoseconds. This is used to ensure that no delay is less than 0ns.
+
+    Returns
+    -------
+    weights : numpy.ndarray of complex
+        The time delay weights for the specified steering vector, arranged as a 1D array of complex numbers. For these weights for convineince the magnitude is the real part, while the time delay is the imaginary part.
+
     """
     weights = np.zeros((len(source_coords)), dtype=np.complex64)
     # calculate distances of coords from steering_vector by using it to calculate arbitarily distant point
@@ -150,16 +200,17 @@ def TimeDelayBeamform(excitation_function, weights, sampling_rate):
 
     Parameters
     ----------
-    excitation_function : float
+    excitation_function : numpy.ndarray of float
         excitation function for time domain antenna array
-    weights : complex
-        magnitude is the real part, while the complex part is the time_delay in ns
+    weights : numpy.ndarray of complex
+        magnitude is the real part, while the imaginary part is the time_delay in ns
     sampling_rate : float
         sampling rate in Hz, used to calculate the shifts to align the excitation function.
 
     Returns
     -------
-    beamformed_function
+    beamformed_function : numpy.ndarray of float
+        The beamformed excitation function, with the time delays applied.
 
     """
     # extract delays and convert to seconds, then integrer shifts
@@ -181,6 +232,8 @@ def TimeDelayBeamform(excitation_function, weights, sampling_rate):
 
 def shift_slice(array, row, shift):
     """
+    :meta private:
+    Shift a slice of a 2D, 3D, or 4D array by a specified number of elements, filling the shifted elements with zeros.
 
     Parameters
     ----------
@@ -227,14 +280,40 @@ def EGCWeights(
     Ephi,
     command_angles,
     polarization_switch="Etheta",
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-90.0, 90.0, 19),
+    az_range=None,
+    elev_range=None,
 ):
     """
 
     calculate the equal gain combining weights for a given set of element coordinates, wavelength, and command angles (az,elev)
 
+    Parameters
+    ----------
+    Etheta : numpy.ndarray of complex
+        The Etheta polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    Ephi : numpy.ndarray of complex
+        The Ephi polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    command_angles : numpy.ndarray of float
+        The command angles for the beamfroming, arranged as [azimuth,elevation]
+    polarization_switch : str
+        The polarisation to be used for the beamforming, either [Etheta] or [Ephi]. Default is [Etheta]
+    az_range : numpy.ndarray of float
+        The azimuth values for the farfield mesh, arranged from smallest to largest
+    elev_range : numpy.ndarray of float
+        The elevation values for the farfield mesh, arranged from smallest to largest
+
+    Returns
+    -------
+    weights : numpy.ndarray of complex
+        The equal gain combining weights for the specified command angles, arranged as a 1D array of complex numbers
+
+
     """
+    if az_range is None:
+        az_range = np.linspace(-180.0, 180.0, 19)
+
+    if elev_range is None:
+        elev_range = np.linspace(-90.0, 90.0, 19)
     weights = np.zeros((Etheta.shape[0]), dtype=np.complex64)
     az_index = np.argmin(np.abs(az_range - command_angles[0]))
     elev_index = np.argmin(np.abs(elev_range - command_angles[1]))
@@ -250,7 +329,21 @@ def EGCWeights(
 def OAMWeights(x, y, mode):
     """
 
-    generate OAM mode weights, based upon the radial angle of each element.
+    Generate Orbital Angular Momentum (OAM) mode weights, based upon the radial angle of each element.
+
+    Parameters
+    ----------
+    x : numpy.ndarray of float
+        The x coordinates of the elements
+    y : numpy.ndarray of float
+        The y coordinates of the elements
+    mode : int
+        The OAM mode to be used for the weights, should be an integer value
+
+    Returns
+    -------
+    weights : numpy.ndarray of complex
+        The OAM weights for the specified mode, arranged as a 1D array of complex numbers
 
     """
     # assumed array is x directed
@@ -265,21 +358,49 @@ def OAMFourier(
     Ey,
     Ez,
     coordinates,
-    prime_vector,
     mode_limit,
     first_dimension,
     second_dimension,
     coord_format="AzEl",
 ):
     """
+    Compute the mode index, mode coefficients, and mode probabilities with the co and crosspolar (Etheta,Ephi), tentatively also supports for Ex,Ey,Ez
 
-    producing mode index, mode coefficiencts, and mode probabilities with the co and crosspolar (Etheta,Ephi), but can probably be done the same for Ex,Ey,Ez
+    Parameters
+    ----------
+    Ex : numpy.ndarray of complex
+        The Ex component of the electric field, arranged in terms of azimuth resolution and elevation resolution
+    Ey : numpy.ndarray of complex
+        The Ey component of the electric field, arranged in terms of azimuth resolution and elevation resolution
+    Ez : numpy.ndarray of complex
+        The Ez component of the electric field, arranged in terms of azimuth resolution and elevation resolution
+    coordinates : numpy.ndarray of float
+        The coordinates of the elements, arranged in terms of x, y, and z coordinates
+    mode_limit : int
+        The maximum OAM mode to be considered for the calculation, should be an integer value
+    first_dimension : numpy.ndarray of float
+        if the coordinate system is spherical, this should be the azimuth range
+    second_dimension : numpy.ndarray of float
+        if the coordinate system is spherical, this should be the elevation range
+    coord_format : str
+        The coordinate system to be used for the calculation, either [xyz] or [AzEl]. Default is [AzEl]
+
+    Returns
+    -------
+    mode_index : numpy.ndarray of int
+        The OAM mode index, arranged as a 1D array of integers
+
+    mode_coefficients : numpy.ndarray of float
+        The OAM mode coefficients, arranged in terms of the number of modes and the number of polarisation components
+
+    mode_probabilites : numpy.ndarray of float
+        The OAM mode probabilities, arranged in terms of the number of modes and the number of polarisation components
 
     """
     # establish coordinate set, in this case theta and phi, but would work just as well with elevation and azimuth, assume that array is propagating in the z+ direction.
     if coord_format == "xyz":
         mode_index, mode_coefficients, mode_probabilites = OAMFourierCartesian(
-            Ex, Ey, Ez, coordinates, mode_limit, first_dimension, second_dimension
+            Ex, Ey, Ez, coordinates, mode_limit
         )
     elif coord_format == "AzEl":
         mode_index, mode_coefficients, mode_probabilites = OAMFourierSpherical(
@@ -294,6 +415,7 @@ def OAMFourierCartesian(Ex, Ey, Ez, coordinates, mode_limit):
 
     assume propagation is in the Ez dimension
 
+    :meta private:
     """
     mode_index = np.linspace(-mode_limit, mode_limit, mode_limit * 2 + 1)
     mode_coefficients = np.zeros((mode_index.shape[0], 3), dtype=np.complex64)
@@ -332,7 +454,9 @@ def OAMFourierCartesian(Ex, Ey, Ez, coordinates, mode_limit):
 def OAMFourierSpherical(Ex, Ey, Ez, coordinates, mode_limit, az_range, elev_range):
     """
 
-    assume probagation is in the Ez dimension
+    assume propagation is in the Ez dimension
+
+    :meta private:
 
     """
     mode_index = np.linspace(-mode_limit, mode_limit, mode_limit * 2 + 1)
@@ -362,8 +486,8 @@ def MaximumDirectivityMap(
     Ephi,
     source_coords,
     wavelength,
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-90.0, 90.0, 19),
+    az_range=None,
+    elev_range=None,
     az_index=None,
     elev_index=None,
     forming="Total",
@@ -378,28 +502,28 @@ def MaximumDirectivityMap(
 
     Parameters
     ----------
-    Etheta : 3D numpy array
-        The Etheta polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
-    Ephi : 3D numpy array
-        The Ephi polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
-    source_coords : :class:`open3d.geometry.PointCloud`
-        The source coordinates of each element, corresponding to the order of element patterns in Etheta and Ephi. Units should be m
+    Etheta : numpy.ndarray of complex
+        The :math:`E\\theta` polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    Ephi : numpy.ndarray of complex
+        The :math:`E\\phi` polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    source_coords : :class:`meshio.Mesh`
+        The source coordinates of each element, corresponding to the order of element patterns in :math:`E\\theta` or :math:`E\\phi`. Units should be m
     wavelength : float
         The wavelength of interest
-    az_range : 1D numpy array of float
+    az_range : numpy.ndarray of float
         The azimuth values for the farfield mesh, arranged from smallest to largest
-    elev_range : 1D numpy array of float
+    elev_range : numpy.ndarray of float
         The elevation values for the farfield mesh, arranged from smallest to largest
-    az_index : 1D array of int
+    az_index : numpy.ndarray of int
         optional parameter, can be specified as an index of the azimuth values of interest via indexing, defaults to [None], which ensures all values are covered
-    elev_index : 1D array of int
+    elev_index : numpy.ndarray of int
         optional parameter, can be specified as an index of the elevation values of interest via indexing, defaults to [None], which ensures all values are covered
     forming : str
         Which polarisation should be beamformed, the default is [Total], beamforming the total directivity pattern,
-        avoiding issues with elements which have a strongly $E\\theta$ or $E\\phi$ pattern. This can also be set
+        avoiding issues with elements which have a strongly :math:`E\\theta` or :math:`E\\phi` pattern. This can also be set
         to [Etheta] or [Ephi]
     total_solid_angle : float
-        the total solid angle covered by the farfield patterns, this defaults to $4\\pi$ for a full spherical pattern
+        the total solid angle covered by the farfield patterns, this defaults to :math:`4\\pi` for a full spherical pattern
     phase_resolution : int
         the desired phase resolution of the beamforming architecture in bits. Default is [24], which means no practical
         truncation will occur. If beam mapping at a single resolution is required, then this can be set
@@ -409,17 +533,20 @@ def MaximumDirectivityMap(
 
     Returns
     -------
-    directivity_map : 3D numpy array of float
+    directivity_map : numpy.ndarray of float
         The achieved maximum directivity map. At each point the directivity corresponds to the achieved directivity at
         that command angle. Arranged as elev axis, azimuth axis, Dtheta,Dphi,Dtot
 
     """
-
-    if elev_index == None:
+    if az_range is None:
+        az_range = np.linspace(-180.0, 180.0, 19)
+    if elev_range is None:
+        elev_range = np.linspace(-90.0, 90.0, 19)
+    if elev_index is None:
         # if no elev index is provided then generate for all possible values (assumes every elevation point is of interest)
         elev_index = np.linspace(0, len(elev_range) - 1, len(elev_range)).astype(int)
 
-    if az_index == None:
+    if az_index is None:
         # if no az index is provided then generate for all possible values (assumes every azimuth point is of interest)
         az_index = np.linspace(0, len(az_range) - 1, len(az_range)).astype(int)
 
@@ -443,7 +570,11 @@ def MaximumDirectivityMap(
             )
             WS_weights = WavefrontWeights(source_points, steering_vector, wavelength)
             EGC_weights = EGCWeights(
-                Etheta.astype(np.complex64), Ephi.astype(np.complex64), command_angles, az_range=az_range, elev_range=elev_range
+                Etheta.astype(np.complex64),
+                Ephi.astype(np.complex64),
+                command_angles,
+                az_range=az_range,
+                elev_range=elev_range,
             )
             EGC_weights2 = EGCWeights(
                 Etheta.astype(np.complex64),
@@ -547,8 +678,8 @@ def MaximumDirectivityMapDiscrete(
     Ephi,
     source_coords,
     wavelength,
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-180.0, 180.0, 19),
+    az_range=None,
+    elev_range=None,
     az_index=None,
     elev_index=None,
     forming="Total",
@@ -564,29 +695,29 @@ def MaximumDirectivityMapDiscrete(
 
     Parameters
     ----------
-    Etheta : 3D numpy array
-        The $E\theta$ polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
-    Ephi : 3D numpy array
-        The $E\phi$ polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
-    source_coords : :class:`open3d.geometry.PointCloud`
-        The source coordinates of each element, corresponding to the order of element patterns in $E\theta$ and $E\phi$. Units should be m
+    Etheta : numpy.ndarray of complex
+        The :math:`E\\theta` polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    Ephi : numpy.ndarray of complex
+        The :math:`E\\phi` polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    source_coords : :class:`meshio.Mesh`
+        The source coordinates of each element, corresponding to the order of element patterns in :math:`E\theta` and :math:`E\phi`. Units should be m
     wavelength : float
         The wavelength of interest
     az_res : int
         Azimuth resolution
     elev_res : int
         Elevation resolution
-    az_range : 1D numpy array of float
+    az_range : numpy.ndarray of float
         The azimuth values for the farfield mesh, arranged from smallest to largest
-    elev_range : 1D numpy array of float
+    elev_range : numpy.ndarray of float
         The elevation values for the farfield mesh, arranged from smallest to largest
     forming : str
         Which polarisation should be beamformed, the default is [Total], beamforming the total directivity pattern,
         avoiding issues with elements which have a strongly $E\theta$ or $E\phi$ pattern. This can also be set
         to [Etheta] or [Ephi]
     total_solid_angle : float
-        the total solid angle covered by the farfield patterns, this defaults to $4\pi$ for a full spherical pattern
-    phase_resolution : 1D numpy array of int
+        the total solid angle covered by the farfield patterns, this defaults to :math:`4\pi` for a full spherical pattern
+    phase_resolution : numpy.ndarray of int
         the desired phase resolution of the beamforming architecture in bits. Default is [24], which means no practical
         truncation will occur. If beam mapping is desired at a single resolution is required, then this can be set
         between 2 and 24, if more than one resolution value is required, then a 1D array of values can be specified.
@@ -594,16 +725,21 @@ def MaximumDirectivityMapDiscrete(
 
     Returns
     -------
-    directivity_map : 4D numpy array of float
+    directivity_map : numpy.ndarray of float
         The achieved maximum directivity map (a 3D numpy array for each phase resolution) . For each phase resolution for each point the directivity corresponds to the achieved directivity at
         that command angle.
 
     """
-    if elev_index == None:
+    if az_range is None:
+        az_range = np.linspace(-180.0, 180.0, 19)
+    if elev_range is None:
+        elev_range = np.linspace(-90.0, 90.0, 19)
+
+    if elev_index is None:
         # if no elev index is provided then generate for all possible values (assumes every elevation point is of interest)
         elev_index = np.linspace(0, len(elev_range) - 1, len(elev_range)).astype(int)
 
-    if az_index == None:
+    if az_index is None:
         # if no az index is provided then generate for all possible values (assumes every azimuth point is of interest)
         az_index = np.linspace(0, len(az_range) - 1, len(az_range)).astype(int)
 
@@ -763,12 +899,16 @@ def MaximumfieldMapDiscrete(
     wavelength,
     az_res,
     elev_res,
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-180.0, 180.0, 19),
+    az_range=None,
+    elev_range=None,
     forming="Total",
     total_solid_angle=(4 * np.pi),
     phase_resolution=[24],
 ):
+    if az_range is None:
+        az_range = np.linspace(-180.0, 180.0, 19)
+    if elev_range is None:
+        elev_range = np.linspace(-90.0, 90.0, 19)
     efield_map = np.zeros(
         (elev_res, az_res, 3, len(phase_resolution)), dtype=np.complex64
     )
@@ -897,10 +1037,44 @@ def MaximumfieldMapDiscrete(
 def directivity_transform(
     Etheta,
     Ephi,
-    az_range=np.linspace(-180.0, 180.0, 19),
-    elev_range=np.linspace(-90.0, 90.0, 19),
+    az_range=None,
+    elev_range=None,
     total_solid_angle=(4 * np.pi),
 ):
+    """
+    Transform the Etheta and Ephi field vectors into antenna directivity.
+    The directivity is defined in terms of the power radiated in a specific direction, over the average radiated power
+
+    Parameters
+    ----------
+    Etheta : numpy.ndarray of complex
+        The :math:`E\\theta` polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    Ephi : numpy.ndarray of complex
+        The :math:`E\\phi` polarisation farfield patterns, arranged in terms of the number of elements, azimuth resolution, and elevation resolution
+    az_range : numpy.ndarray of float
+        The azimuth values for the farfield mesh, arranged from smallest to largest
+    elev_range : numpy.ndarray of float
+        The elevation values for the farfield mesh, arranged from smallest to largest
+    total_solid_angle : float
+        the total solid angle covered by the farfield patterns, this defaults to $4\pi$ for a full spherical pattern
+
+    Returns
+    -------
+    Dtheta : numpy.ndarray of float
+        Directivity for the :math:`E\\theta` polarisation.
+    Dphi : numpy.ndarray of float
+        Directivity for the :math:`E\\phi` polarisation.
+    Dtot : numpy.ndarray of float
+        The achieved directivity map for the total polarisation.
+    Dmax : numpy.ndarray of float
+        The maximum directivity for each polarisation.
+
+
+    """
+    if az_range is None:
+        az_range = np.linspace(-180.0, 180.0, 19)
+    if elev_range is None:
+        elev_range = np.linspace(-90.0, 90.0, 19)
     # transform Etheta and Ephi data into antenna directivity
     # directivity is defined in terms of the power radiated in a specific direction, over the average radiated power
     # power per unit solid angle
@@ -957,6 +1131,12 @@ def directivity_transform(
 
 @njit(cache=True, nogil=True)
 def WeightTruncation(weights, resolution):
+    """
+    :meta private:
+
+    Truncates the phase of the weights to a specified resolution in bits.
+
+    """
     quant = 2**resolution
     levels = np.zeros((weights.shape), dtype=np.complex64)
     # shift numpy complex angles from -pi to pi, into 0 to 2pi, then quantise for `quant' levels
@@ -1062,16 +1242,16 @@ def PatternPlot(
 ):
     """
 
-    Plot the relavent 3D data in relative power (dB) or normalised directivity (dBi)
+    Plot the relevant 3D data in relative power (dB) or normalised directivity (dBi)
 
 
     Parameters
     -----------
-    data : 2D array of floats or complex
+    data : numpy.ndarray of float
         the data to plot
-    az : 2D array of floats
+    az : numpy.ndarray of float
         the azimuth angles for each datapoint in [data] in degrees
-    elev : 2D array of floats
+    elev : numpy.ndarray of float
         the elevation angles for each datapoint in [data] in degrees
     pattern_min : float
         the desired scale minimum in dB, default is [-40]
@@ -1251,6 +1431,35 @@ def PatternPlot2D(
     title_text=None,
     fontsize=16,
 ):
+    """
+    Plot the relevant 2D data in relative power (dB) or normalised directivity (dBi) in a polar plot.
+
+    Parameters
+    ----------
+    data : numpy.ndarray of float
+        The data to plot, should be a 1D array for a single line or a 2D array for multiple lines.
+    az : numpy.ndarray of float
+        The azimuth angles for each datapoint in [data] in degrees.
+    pattern_min : float
+        The desired scale minimum in dB, default is [-40].
+    plot_max : float
+        The desired scale maximum in dB, default is [0].
+    logtype : str
+        The type of data being considered, either "amplitude" or "power", to ensure the correct logarithm is used, default is "amplitude".
+    ticknum : int
+        The number of ticks on the radial axis, default is [6].
+    line_labels : list of str, optional
+        Labels for each line in the plot, if provided, will be used in the legend.
+    title_text : str, optional
+        The graph title, defaults to [None].
+    fontsize : int, optional
+        The font size for the plot, default is [16].
+
+    Returns
+    -------
+    None
+
+    """
     # condition data
     data = np.abs(data)
 
@@ -1281,7 +1490,7 @@ def PatternPlot2D(
     fig, ax = plt.subplots(subplot_kw={"projection": "polar"})
     if multiline == True:
         for line in range(num_lines):
-            if not (line_labels == None):
+            if not (line_labels is None):
                 ax.plot(az_rad, logdata[:, line], label=line_labels[line])
             else:
                 ax.plot(az_rad, logdata[:, line])
@@ -1292,7 +1501,7 @@ def PatternPlot2D(
     ax.set_rticks(tick_marks, fontsize=fontsize)  # Less radial ticks
     ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
     ax.grid(True)
-    if not (line_labels == None):
+    if not (line_labels is None):
         # legend position
         legend_angle = np.deg2rad(30)
         ax.legend(
@@ -1304,7 +1513,7 @@ def PatternPlot2D(
             fontsize=fontsize,
         )
 
-    if not (title_text == None):
+    if not (title_text is None):
         ax.set_title(title_text, va="bottom", fontsize=fontsize)
 
     label_angle = np.deg2rad(280)
@@ -1319,6 +1528,8 @@ def point_directivity(Ea, Eb, az_range, el_range, interest_index):
 
     compute the directivity at the point of interest in the farfield pattern
 
+    :meta private:
+
     """
 
     average_power = 0.0
@@ -1329,6 +1540,7 @@ def point_directivity(Ea, Eb, az_range, el_range, interest_index):
 @cuda.jit(device=True)
 def EqualGainCombiningGPU(SteeringPattern, CommandIndex, weights):
     """
+    :meta private:
 
     equal gain combining algorithm based on the provided steering pattern and command index
 
@@ -1340,7 +1552,11 @@ def EqualGainCombiningGPU(SteeringPattern, CommandIndex, weights):
 
 @cuda.jit
 def GPUBeamformingMap(Etheta, Ephi, DirectivityMap, az_range, el_range, wavelength):
-    """ """
+    """
+    :meta private:
+
+    Unfinished GPU beamforming map function.
+    """
     az_inc, el_inc = cuda.grid(2)
     if az_inc < az_range.shape[0] and el_inc < el_range.shape[0]:
         DirectivityMap[az_inc, el_inc] = 0
@@ -1349,11 +1565,36 @@ def GPUBeamformingMap(Etheta, Ephi, DirectivityMap, az_range, el_range, waveleng
 def create_display_mesh(
     field_data,
     field_radius=1.0,
-    label="Poynting Vector (Magnitude)",
-    log_type="amplitude",
+    label="Poynting_Vector_(Magnitude_(W/m2))",
+    log_type="power",
     plot_max=None,
+    dynamic_range=40
 ):
-    pattern_mesh = copy.deepcopy(field_data).clean(tolerance=1e-6)
+    """
+    Create a display mesh for the field data, with normals and scaled points based on the field radius.
+
+    Parameters
+    ----------
+    field_data : :type:`meshio.Mesh`
+        The field data to create the display mesh
+    field_radius : float
+        The radius of the field, used to scale the normals and points in the mesh, the maximum of the selected data will be scaled to this value.
+    label : str
+        The label for the data to be plotted, this should be a key in the point_data of the field_data mesh.
+    log_type : str
+        The type of logarithm to use for the data, either "amplitude" or "power". Defaults to "power".
+    plot_max : float, optional
+        The maximum value for the plot, if None, it will be calculated as the maximum of the log data rounded up to the nearest 5. Defaults to None.
+    dynamic_range : float
+        The desired maximum plot range in decibels. The default is 40dB.
+
+    Returns
+    -------
+    :type:`pyvista.PolyData`
+        A PyVista PolyData object containing the display mesh with normals and scaled points.
+
+    """
+    pattern_mesh = pv.from_meshio(field_data).copy().clean(tolerance=1e-6)
     # pattern_mesh=pv.PolyData(normals).delaunay_2d(inplace=True)
     # pattern_mesh.compute_normals(inplace=True,flip_normals=False) # for some reason the computed normals are all inwards unless I set flip_normals to True
 
@@ -1375,12 +1616,12 @@ def create_display_mesh(
     if np.nanmax(logdata) <= 0.0:
         logdata -= np.nanmax(logdata)
 
-    if plot_max == None:
+    if plot_max is None:
         pattern_max = np.ceil(np.nanmax(logdata) / 5) * 5.0
     else:
         pattern_max = plot_max
 
-    pattern_min = pattern_max - 40
+    pattern_min = pattern_max - dynamic_range
 
     normed_logdata = copy.deepcopy(logdata)
     normed_logdata -= np.max(logdata)
@@ -1399,11 +1640,37 @@ def AnimatedPatterns(
     pattern_list,
     command_vectors,
     field_radius=1.0,
-    plot_scalar="Poynting Vector (Magnitude)",
-    log_type="amplitude",
+    plot_scalar="Poynting_Vector_(Magnitude_(W/m2))",
+    log_type="power",
     plot_max=None,
     filename="BeamformingExport.mp4",
 ):
+    """
+    Create an animated plot of the beamforming patterns, with a command vector overlay.
+
+    Parameters
+    ----------
+    pattern_list : list
+        A list of :type:`meshio.Mesh` objects, each containing the field data for a different beamformed response.
+    command_vectors : numpy.ndarray of float
+        The (N,Azimuth,Elevation) command vectors for each pattern in the pattern_list, where N is the number of patterns.
+    field_radius : float
+        The radius of the field, used to scale the normals and points in the mesh, the maximum of the selected data will be scaled to this value.
+    plot_scalar : str, optional
+        The label for the data to be plotted, this should be a key in the point_data of the field_data mesh. Defaults to "Poynting_Vector_(Magnitude_(W/m2))".
+    log_type : str, optional
+        The type of logarithm to use for the data, either "amplitude" or "power". Defaults to "power".
+    plot_max : float, optional
+        The maximum value for the plot, if None, it will be calculated as the maximum of the log data rounded up to the nearest 5. Defaults to None.
+    filename : str, optional
+        The filename for the output video file, defaults to "BeamformingExport.mp4".
+
+    Returns
+    -------
+    None
+        This function creates an animated video file of the beamforming patterns, which will be saved to the specified filename.
+
+    """
     pattern_max = plot_max
 
     pattern_min = pattern_max - 40

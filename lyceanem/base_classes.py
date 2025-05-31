@@ -1,14 +1,11 @@
-import copy
-
-import numpy as np
 import meshio
+import numpy as np
+import pyvista as pv
 from scipy import interpolate as sp
 from scipy.spatial.transform import Rotation as R
-import pyvista as pv
 
 from . import base_types as base_types
 from .electromagnetics import beamforming as BM
-from .electromagnetics import empropagation as EM
 from .geometry import geometryfunctions as GF
 from .raycasting import rayfunctions as RF
 from .utility import math_functions as MF
@@ -47,7 +44,7 @@ class object3d:
 class points(object3d):
     """
     Structure class to store information about the geometry and materials in the environment, holding the seperate
-    shapes as :class:`open3d.geometry.TriangleMesh` data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
+    shapes as :class:`meshio.Mesh` data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
     This class will be developed to include material parameters to enable more complex modelling.
 
     Units should be SI, metres
@@ -57,8 +54,8 @@ class points(object3d):
 
     def __init__(self, points=None):
         super().__init__()
-        # solids is a list of open3D :class:`open3d.geometry.TriangleMesh` structures
-        if points == None:
+        # solids is a list of meshio :class:`meshio.Mesh` structures
+        if points is None:
             # no points provided at creation,
             print("Empty Object Created, please add points")
             self.points = []
@@ -94,7 +91,7 @@ class points(object3d):
 
         Parameters
         -----------
-        new_points : :class:`open3d.geometry.PointCloud`
+        new_points : :class:`meshio.Mesh`
             the point cloud to be added to the point cloud collection
 
         Returns
@@ -105,26 +102,28 @@ class points(object3d):
         self.points.append(new_points)
         # self.materials.append(new_materials)
 
-        def create_points(self, points, normals):
-            """
-            create points within the class based upon the provided numpy arrays of floats in local coordinates
+    def create_points(self, points, normals):
+        """
+        create points within the class based upon the provided numpy arrays of floats in local coordinates
 
-            Parameters
-            points : numpy 2d array
-                the coordinates of all the poitns
-            normals : numpy 2d array
-                the normal vectors of each point
+        Parameters
+        ----------
+        points : numpy.ndarray
+            the coordinates of all the points
+        normals : numpy.ndarray
+            the normal vectors of each point
 
-            Returns
-            None
-            """
-            mesh_vertices = points.reshape(-1, 3)
-            mesh_normals = normals.reshape(-1, 3)
-            new_point_cloud = meshio.Mesh(
-                points=mesh_vertices, cells=[], point_data={"Normals": mesh_normals}
-            )
+        Returns
+        --------
+        None
+        """
+        mesh_vertices = points.reshape(-1, 3)
+        mesh_normals = normals.reshape(-1, 3)
+        new_point_cloud = meshio.Mesh(
+            points=mesh_vertices, cells=[], point_data={"Normals": mesh_normals}
+        )
 
-            self.add_points(new_point_cloud)
+        self.add_points(new_point_cloud)
 
     def rotate_points(
         self, rotation_vector, rotation_centre=np.zeros((3, 1), dtype=np.float32)
@@ -134,17 +133,16 @@ class points(object3d):
 
         Parameters
         ----------
-        rotation_matrix : open3d rotation vector
-            3,1numpy array
-        rotation_centre : 1*3 numpy float array
-            centre of rotation for the structures
+        rotation_matrix : numpy.ndarray of floats
+            [3,1] numpy array
+        rotation_centre : numpy.ndarray of floats
+            [3,1] centre of rotation for the structures
 
         Returns
         --------
         None
         """
-        # warning, current commond just rotates around the origin, and until Open3D can be brought up to the
-        # latest version without breaking BlueCrystal reqruiements, this will require additional code.
+
         assert (
             rotation_vector.shape == (3,)
             or rotation_vector.shape == (3, 1)
@@ -162,7 +160,7 @@ class points(object3d):
 
         Parameters
         -----------
-        vector : 1*3 numpy array of floats
+        vector : numpy.ndarray array of floats
             The desired translation vector for the structures
 
         Returns
@@ -170,7 +168,7 @@ class points(object3d):
         None
         """
         for item in range(len(self.points)):
-            self.points[item] = GF.translate_mesh(self.points[item], vector)
+            self.points[item] = GF.mesh_translate(self.points[item], vector)
 
     def export_points(self, point_index=None):
         """
@@ -180,7 +178,7 @@ class points(object3d):
         -------
         combined points
         """
-        if point_index == None:
+        if point_index is None:
             points = np.empty((0, 3))
             for item in range(len(self.points)):
                 if item == 0:
@@ -274,7 +272,7 @@ class points(object3d):
 class structures(object3d):
     """
     Structure class to store information about the geometry and materials in the environment, holding the seperate
-    shapes as :class:`open3d.geometry.TriangleMesh` data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
+    shapes as :class:`meshio.Mesh` data structures. Everything in the class will be considered an integrated unit, rotating and moving together.
     This class will be developed to include material parameters to enable more complex modelling.
 
     Units should be SI, metres
@@ -284,8 +282,8 @@ class structures(object3d):
 
     def __init__(self, solids=None):
         super().__init__()
-        # solids is a list of open3D :class:`open3d.geometry.TriangleMesh` structures
-        if solids == None:
+        # solids is a list of meshio :class:`meshio.Mesh` structures
+        if solids is None:
             # no points provided at creation,
             print("Empty Object Created, please add solids")
             self.solids = []
@@ -321,7 +319,7 @@ class structures(object3d):
 
         Parameters
         -----------
-        new_solids : :class:`open3d.geometry.TriangleMesh`
+        new_solids : :class:`meshio.Mesh`
             the solid to be added to the structure
 
         Returns
@@ -340,10 +338,10 @@ class structures(object3d):
 
         Parameters
         ----------
-        rotation_matrix : numpy array of appropriate shape (4,4)
-
-        rotation_centre : 1*3 numpy float array
-            centre of rotation for the structures
+        rotation_matrix : numpy.ndarray of floats
+            [4,4] numpy array
+        rotation_centre : numpy.ndarray of floats
+            [3,1] centre of rotation for the structures
 
         Returns
         --------
@@ -362,7 +360,7 @@ class structures(object3d):
 
         Parameters
         -----------
-        vector : 1*3 numpy array of floats
+        vector : numpy.ndarray of floats
             The desired translation vector for the structures
 
         Returns
@@ -371,12 +369,12 @@ class structures(object3d):
         """
         for item in range(len(self.solids)):
             if self.solids[item] is not None:
-                self.solids[item] = GF.translate_mesh(self.solids[item], vector)
+                self.solids[item] = GF.mesh_translate(self.solids[item], vector)
 
     def triangles_base_raycaster(self):
         """
-        generates the triangles for all the :class:`open3d.geometry.TriangleMesh` objects in the structure, and outputs them as a continuous array of
-        triangle_t format triangles
+        generates the triangles for all the :class:`meshio.Mesh` objects in the structure, and outputs them as a continuous array of
+        :type:`base_types.triangle_t` triangles
 
         Parameters
         -----------
@@ -384,43 +382,87 @@ class structures(object3d):
 
         Returns
         --------
-        triangles : N by 1 numpy array of triangle_t triangles
+        triangles : numpy.ndarray of :type:`base_types.triangle_t` triangles
             a continuous array of all the triangles in the structure
         """
         triangles = np.empty((0), dtype=base_types.triangle_t)
         for item in range(len(self.solids)):
-            temp_object = copy.deepcopy(self.solids[item])
-            temp_object = GF.mesh_transform(temp_object, self.pose, False)
+            # temp_object = copy.deepcopy(self.solids[item])
+            temp_object = GF.mesh_transform(self.solids[item], self.pose, False)
 
             triangles = np.append(triangles, RF.convertTriangles(temp_object))
 
         return triangles
 
+    def export_combined_meshio(self):
+        """
+        Combines all the structures in the collection as a combined mesh for modelling
+
+        Returns
+        -------
+        combined mesh : :type:`meshio.Mesh`
+            A combined mesh of all the structures in the collection, with normals if available.
+        """
+
+        mesh_points = np.empty((0, 3), dtype=np.float32)
+        mesh_triangles = np.empty((0, 3), dtype=np.int32)
+        mesh_point_normals = np.empty((0, 3), dtype=np.float32)
+        mesh_cell_normals = np.empty((0, 3), dtype=np.float32)
+
+        for i in range(len(self.solids)):
+            copy_mesh = self.solids[i]
+            copy_mesh = GF.mesh_transform(copy_mesh, self.pose, False)
+            mesh_points = np.append(mesh_points, copy_mesh.points, axis=0)
+            mesh_triangles = np.append(mesh_triangles, copy_mesh.cells[0].data, axis=0)
+            if "Normals" in copy_mesh.point_data:
+                mesh_point_normals = np.append(
+                    mesh_point_normals, copy_mesh.point_data["Normals"].data, axis=0
+                )
+            if "Normals" in copy_mesh.cell_data:
+                mesh_cell_normals = np.append(
+                    mesh_cell_normals, copy_mesh.cell_data["Normals"][0], axis=0
+                )
+
+        combined_mesh = meshio.Mesh(
+            points=mesh_points,
+            cells=[("triangle", mesh_triangles)],
+            point_data={"Normals": mesh_point_normals},
+        )
+        combined_mesh.cell_data["Normals"] = [mesh_cell_normals]
+        return combined_mesh
+
 
 class antenna_structures(object3d):
     """
     Dedicated class to store information on a specific antenna, including aperture points
-    as :class:`open3d.geometry.PointCloud` data structures, and structure shapes
-    as :class:`open3d.geometry.TriangleMesh` data structures. Everything in the class will be considered an integrated
+    as :class:`meshio.Mesh` data structures, and structure shapes
+    as :class:`meshio.Mesh` data structures. Everything in the class will be considered an integrated
     unit, rotating and moving together. This inherits functions from the structures and points classes.
 
     This class will be developed to include material parameters to enable more complex modelling.
 
     Units should be SI, metres
 
+    Attributes
+    ----------
+    structures : :class:`structures`
+        The structures associated with the antenna, which can be used to calculate the antenna's properties and behaviour.
+    points : :class:`points`
+        The points associated with the antenna, which can be used to calculate the antenna's properties and behaviour.
     """
 
     def __init__(self, structures, points):
         super().__init__()
         self.structures = structures
         self.points = points
-        # self.antenna_xyz = o3d.geometry.TriangleMesh.create_coordinate_frame(
-        # size=1, origin=self.pose[:3, 3]
 
     # )
 
     def export_all_points(self, point_index=None):
-        if point_index == None:
+        """
+        Exports all the points in the antenna structure as a :type:`meshio.Mesh` point cloud, transforming them to the global coordinate system
+        """
+        if point_index is None:
             point_cloud = self.points.export_points()
         else:
             point_cloud = self.points.export_points(point_index=point_index)
@@ -437,65 +479,100 @@ class antenna_structures(object3d):
         wavelength=1.0,
         steering_vector=np.zeros((1, 3)),
         transmit_power=1.0,
-        local_projection=True
+        local_projection=True,
     ):
-        # generate the local excitation function and then convert into the global coordinate frame.
-        if point_index == None:
+        """
+        Calculate the excitation weights for the antenna aperture points based upon the desired electric field vector.
+
+        Parameters
+        ----------
+        desired_e_vector : numpy.ndarray of float
+            The desired electric field vector to be achieved at the aperture points, in the form of a 3D vector.
+        point_index : list, optional
+            A list of indices for the aperture points meshes to be used. If None, all points will be used.
+        phase_shift : str, optional
+            The phase shift to be applied to the excitation weights. Default is "none", which applies no beamforming.
+        wavelength : float, optional
+            The wavelength of interest in metres. Default is 1.0.
+        steering_vector : numpy.ndarray of float, optional
+            A 3D vector representing the command direction, if phase_shift is not "none". Default is a zero vector.
+        transmit_power : float, optional
+            The total power to be transmitted by the antenna aperture in watts. Default is 1.0.
+        local_projection : bool, optional
+            If True, the excitation weights will be projected onto the local coordinate system of the antenna. Default is True.
+
+        Returns
+        -------
+        excitation_weights : numpy.ndarray of complex
+
+        """
+        if point_index is None:
             aperture_points = self.export_all_points()
         else:
             aperture_points = self.export_all_points(point_index=point_index)
 
-        if local_projection:
-        # as export all points imposes the transformation from local to global frame on the points and associated normal vectors, no rotation is required within calculate_conformalVectors
-            aperture_weights = EM.calculate_conformalVectors(
-                desired_e_vector, aperture_points.point_data["Normals"], np.eye(3)
-            )
-        else:
-            aperture_weights=np.repeat(desired_e_vector,aperture_points.points.shape[0],axis=0)
-            
-        if phase_shift == "wavefront":
-            source_points = np.asarray(aperture_points.points)
-            phase_weights = BM.WavefrontWeights(
-                source_points, steering_vector, wavelength
-            )
-            aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
-        if phase_shift == "coherence":
-            source_points = np.asarray(aperture_points.points)
-            phase_weights = BM.ArbitaryCoherenceWeights(
-                source_points, steering_vector, wavelength
-            )
-            aperture_weights = aperture_weights * phase_weights.reshape(-1, 1)
+        from .electromagnetics.emfunctions import excitation_function
 
-        from .utility.math_functions import discrete_transmit_power
-
-        if "Area" in aperture_points.point_data.keys():
-            areas = aperture_points.point_data["Area"]
-        else:
-            areas = np.zeros((aperture_points.points.shape[0]))
-            areas[:] = (wavelength * 0.5) ** 2
-
-        calibrated_amplitude_weights = discrete_transmit_power(
-            aperture_weights, areas, transmit_power
+        excitation_weights = excitation_function(
+            aperture_points,
+            desired_e_vector,
+            phase_shift=phase_shift,
+            wavelength=wavelength,
+            steering_vector=steering_vector,
+            transmit_power=transmit_power,
+            local_projection=local_projection,
         )
-        return calibrated_amplitude_weights
+
+        return excitation_weights
 
     def export_all_structures(self):
-        #objects = copy.deepcopy(self.structures.solids)
+        """
+        Exports all structures
+        """
         for item in range(len(self.structures.solids)):
             if self.structures.solids[item] is None:
                 print("Structure does not exist")
             else:
-                self.structures.solids[item] = GF.mesh_transform(self.structures.solids[item], self.pose, False)
+                self.structures.solids[item] = GF.mesh_transform(
+                    self.structures.solids[item], self.pose, False
+                )
 
         return self.structures.solids
 
     def rotate_antenna(
         self, rotation_vector, rotation_centre=np.zeros((3, 1), dtype=np.float32)
     ):
+        """
+        Rotates the antenna structures and points around a common point, default is the origin.
+
+        Parameters
+        ----------
+        rotation_vector : numpy.ndarray of float
+            The rotation vector to be applied to the structures and points.
+            This can be a 3x1 or 3x3 array, or a single 3D vector.
+        rotation_centre : numpy.ndarray of float, optional
+            The centre of rotation for the structures and points. Default is the origin (0, 0, 0).
+        Returns
+        -------
+        None
+
+        """
         self.structures.rotate_structures(rotation_vector, rotation_centre)
         self.points.rotate_points(rotation_vector, rotation_centre)
 
     def translate_antenna(self, translation_vector):
+        """
+        Translates the antenna structures and points by the given cartesian vector (x,y,z).
+        Parameters
+        ----------
+        translation_vector : numpy.ndarray of float
+            The desired translation vector for the structures and points.
+
+        Returns
+        -------
+        None
+
+        """
         self.structures.translate_structures(translation_vector)
         self.points.translate_points(translation_vector)
 
@@ -550,6 +627,23 @@ class antenna_pattern(object3d):
     Antenna Pattern Frequency is in Hz
     Rotation Offset is Specified in terms of rotations around the x, y, and z axes as roll,pitch/elevation, and azimuth
     in radians.
+
+    Attributes
+    ----------
+    azimuth_resolution : int
+        The number of azimuth angles in the antenna pattern.
+    elevation_resolution : int
+        The number of elevation angles in the antenna pattern.
+    pattern_frequency : float
+        The frequency of the antenna pattern in Hz.
+    arbitary_pattern : bool
+        If True, the antenna pattern is an arbitrary pattern defined by the arbitary_pattern_type options
+    arbitary_pattern_type : str
+        The type of arbitrary antenna pattern, options include "isotropic", "xhalfspace", "yhalfspace", and "zhalfspace".
+    arbitary_pattern_format : str
+        The format of the arbitrary antenna pattern, options include "Etheta/Ephi" and "ExEyEz".
+    file_location : str, optional
+        The file location of the antenna pattern file to be imported. If None, an arbitrary pattern will be created.
     """
 
     def __init__(
@@ -637,7 +731,7 @@ class antenna_pattern(object3d):
 
             Parameters
             ----------
-            points: numpy.ndarray
+            points: numpy.ndarray of float
                 One-dimensional array of uniformly spaced values of shape (M,).
 
             bound_position: bool, optional
@@ -712,16 +806,37 @@ class antenna_pattern(object3d):
         return vista_pattern
 
     def pattern_mesh(self):
+        """
+        Create pyvista structured grid mesh from the antenna pattern data.
+
+        Returns
+        -------
+        mesh : pyvista.StructuredGrid
+            A structured grid mesh representing the antenna pattern.
+
+        """
         points = self.cartesian_points()
-        mesh = pv.StructuredGrid(points[:, 0], points[:, 1], points[:, 2])
-        mesh.dimensions = [self.azimuth_resolution, self.elevation_resolution, 1]
+        # mesh = pv.StructuredGrid(points[:, 0], points[:, 1], points[:, 2])
+        # mesh.dimensions = [self.azimuth_resolution, self.elevation_resolution, 1]
+        from lyceanem.geometry.targets import spherical_field
+
+        mesh = spherical_field(
+            self.az_mesh[0, :], self.elev_mesh[:, 0], self.field_radius
+        )
         if self.arbitary_pattern_format == "Etheta/Ephi":
-            mesh.point_data["Etheta"] = self.pattern[:, :, 0]
-            mesh.point_data["Ephi"] = self.pattern[:, :, 1]
-        elif self.arbitary_pattern_format == "ExEyEz":
-            mesh.point_data["Ex"] = self.pattern[:, :, 0]
-            mesh.point_data["Ey"] = self.pattern[:, :, 1]
-            mesh.point_data["Ez"] = self.pattern[:, :, 2]
+            self.transmute_pattern("ExEyEz")
+
+        mesh.point_data["Ex-Real"] = np.real(self.pattern[:, :, 0]).ravel()
+        mesh.point_data["Ex-Imag"] = np.imag(self.pattern[:, :, 0]).ravel()
+        mesh.point_data["Ey-Real"] = np.real(self.pattern[:, :, 1]).ravel()
+        mesh.point_data["Ey-Imag"] = np.imag(self.pattern[:, :, 1]).ravel()
+        mesh.point_data["Ez-Real"] = np.real(self.pattern[:, :, 2]).ravel()
+        mesh.point_data["Ez-Imag"] = np.imag(self.pattern[:, :, 2]).ravel()
+
+        from lyceanem.electromagnetics.emfunctions import PoyntingVector, Directivity
+
+        # pattern_mesh=pv.to_meshio(mesh.extract_surface().triangulate())
+        pattern_mesh = Directivity(PoyntingVector(mesh))
 
         return mesh
 
@@ -997,7 +1112,7 @@ class antenna_pattern(object3d):
 
         Parameters
         ----------
-        new_axes : 3x3 numpy float array
+        new_axes : numpy.ndarray of float
             the new vectors for the antenna x,y,z axes
 
         Returns
@@ -1071,12 +1186,13 @@ class antenna_pattern(object3d):
 
         Parameters
         ----------
-        old_points : float xyz
+        old_points : numpy.ndarray of float
             xyz coordinates that the pattern has been sampled at
-        old_pattern : 2 or 3 by n complex array of the antenna pattern at the old_poitns
-            DESCRIPTION.
-        new_points : desired_grid points in xyz float array
-            DESCRIPTION.
+        old_pattern : numpy.ndarray of complex
+            2 or 3 by n complex array of the antenna pattern at the old_points
+        new_points : numpy.ndarray of complex
+            desired_grid points in xyz float array
+
 
         Returns
         -------
@@ -1116,13 +1232,13 @@ class antenna_pattern(object3d):
 
         Returns
         -------
-        Dtheta : numpy array
+        Dtheta : numpy.ndarray of float
             directivity for Etheta farfield
-        Dphi : numpy array
+        Dphi : numpy.ndarray of float
             directivity for Ephi farfield
-        Dtotal : numpy array
+        Dtotal : numpy.ndarray of float
             overall directivity pattern
-        Dmax : numpy array
+        Dmax : numpy.ndarray of float
             the maximum directivity for each pattern
 
         """
@@ -1190,13 +1306,13 @@ class array_pattern:
             self.initilise_pattern()
 
     def _rotation_matrix(self):
-        """_rotation_matrix getter method
+        """
 
         Calculates and returns the (3D) axis rotation matrix.
 
         Returns
         -------
-        : :class:`numpy.ndarray` of shape (3, 3)
+        : numpy.ndarray of float of shape (3, 3)
             The model (3D) rotation matrix.
         """
         x_rot = R.from_euler("X", self.rotation_offset[0], degrees=True).as_matrix()
@@ -1372,13 +1488,13 @@ class array_pattern:
 
         Returns
         -------
-        Dtheta : numpy array
+        Dtheta : numpy.ndarray of float
             directivity for Etheta farfield
-        Dphi : numpy array
+        Dphi : numpy.ndarray of float
             directivity for Ephi farfield
-        Dtotal : numpy array
+        Dtotal : numpy.ndarray of float
             overall directivity pattern
-        Dmax : numpy array
+        Dmax : numpy.ndarray of float
             the maximum directivity for each pattern
 
         """

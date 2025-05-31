@@ -4,4 +4,4 @@ Sources
 ---------
 
 .. automodule:: lyceanem.electromagnetics.sources
-    :members: electriccurrentsource
+    :members:
