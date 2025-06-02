@@ -93,7 +93,7 @@ triangle structures can be accessed by importing the data subpackage
 
  .. code-block:: none
 
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\meshio\stl\_stl.py:40: RuntimeWarning: overflow encountered in scalar multiply
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\meshio\stl\_stl.py:40: RuntimeWarning: overflow encountered in scalar multiply
       if 84 + num_triangles * 50 == filesize_bytes:
 
 
@@ -174,11 +174,11 @@ triangle structures can be accessed by importing the data subpackage
 
  .. code-block:: none
 
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3719: ComplexWarning: Casting complex values to real discards the imaginary part
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\empropagation.py:3719: ComplexWarning: Casting complex values to real discards the imaginary part
       uvn_axes[2, :] = point_vector
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3736: ComplexWarning: Casting complex values to real discards the imaginary part
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\empropagation.py:3736: ComplexWarning: Casting complex values to real discards the imaginary part
       uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3758: ComplexWarning: Casting complex values to real discards the imaginary part
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\empropagation.py:3758: ComplexWarning: Casting complex values to real discards the imaginary part
       uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
 
 
@@ -285,17 +285,17 @@ plottype='Contour' to the function.
 
  .. code-block:: none
 
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
       logdata = 10 * np.log10(data)
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1280: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\beamforming.py:1280: RuntimeWarning: divide by zero encountered in log10
       logdata = 20 * np.log10(data)
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1280: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\beamforming.py:1280: RuntimeWarning: divide by zero encountered in log10
       logdata = 20 * np.log10(data)
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\emfunctions.py:539: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\emfunctions.py:539: RuntimeWarning: divide by zero encountered in log10
       field_data.point_data["Poynting_Vector_(Magnitude_(dBW/m2))"] = 10 * np.log10(
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1615: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\beamforming.py:1615: RuntimeWarning: divide by zero encountered in log10
       logdata = log_multiplier * np.log10(pattern_mesh.point_data[label])
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\02_coherently_polarised_array.py:107: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\02_coherently_polarised_array.py:107: RuntimeWarning: divide by zero encountered in log10
       display_mesh.point_data['D(Total - dBi)']=10*np.log10(display_mesh.point_data['D(Total)'])
 
 
@@ -304,7 +304,7 @@ plottype='Contour' to the function.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 46.954 seconds)
+   **Total running time of the script:** (2 minutes 8.098 seconds)
 
 
 .. _sphx_glr_download_auto_examples_02_coherently_polarised_array.py:

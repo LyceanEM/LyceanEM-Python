@@ -142,7 +142,7 @@ sphinx_gallery_conf = {
     # directory where function granular galleries are stored
     "backreferences_dir": None,
     # dont run examples that have already been built
-    "run_stale_examples": False,
+    "run_stale_examples": True,
     "image_scrapers": (DynamicScraper(), "matplotlib"),
     "first_notebook_cell": (
         "%matplotlib inline\n"
@@ -151,7 +151,7 @@ sphinx_gallery_conf = {
     ),
     # "reset_modules": (reset_pyvista,),
     "reset_modules_order": "both",
-    "plot_gallery": False,  # documentation examples require cuda on build machine, so much be fully built before being passed to readthedocs
+    "plot_gallery": True,  # documentation examples require cuda on build machine, so much be fully built before being passed to readthedocs
 }
 
 # -- Options for HTML output -------------------------------------------------

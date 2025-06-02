@@ -131,9 +131,9 @@ The first source polarisation is based upon the u-vector of the source point. Wh
 
  .. code-block:: none
 
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 86 will likely result in GPU under-utilization due to low occupancy.
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 86 will likely result in GPU under-utilization due to low occupancy.
       warn(NumbaPerformanceWarning(msg))
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 44 will likely result in GPU under-utilization due to low occupancy.
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 44 will likely result in GPU under-utilization due to low occupancy.
       warn(NumbaPerformanceWarning(msg))
 
 
@@ -172,7 +172,7 @@ Antenna Pattern class is used to manipulate and record antenna patterns
 
  .. code-block:: none
 
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
       logdata = 10 * np.log10(data)
 
 
@@ -223,7 +223,7 @@ The second source polarisation is based upon the v-vector of the source point.
 
  .. code-block:: none
 
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
       logdata = 10 * np.log10(data)
 
 
@@ -273,7 +273,7 @@ The third source polarisation is based upon the n-vector of the source point. Al
 
  .. code-block:: none
 
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
       logdata = 10 * np.log10(data)
 
 
@@ -378,13 +378,13 @@ The point source can then be rotated, by providing a rotation matrix, and the u,
 
  .. code-block:: none
 
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 49 will likely result in GPU under-utilization due to low occupancy.
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 49 will likely result in GPU under-utilization due to low occupancy.
       warn(NumbaPerformanceWarning(msg))
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
       logdata = 10 * np.log10(data)
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
       logdata = 10 * np.log10(data)
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\miniconda3\envs\lyceanem-docs\lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
       logdata = 10 * np.log10(data)
 
 
@@ -393,7 +393,7 @@ The point source can then be rotated, by providing a rotation matrix, and the u,
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.089 seconds)
+   **Total running time of the script:** (0 minutes 2.267 seconds)
 
 
 .. _sphx_glr_download_auto_examples_06_farfield_polarisation.py:

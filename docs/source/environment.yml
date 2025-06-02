@@ -24,4 +24,5 @@ dependencies:
     - sphinxcontrib-asciinema
     - sphinxcontrib.bibtex
     - trame_vtk
-    - pyvista[all]
+    - pyvista[all]>=0.42.0
+    - tqdm

@@ -147,11 +147,30 @@ The UAV is shown in green, and the antenna array in aqua.
 
 
 
-.. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
-   :alt: 01 aperture projection
-   :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
-   :class: sphx-glr-single-img
 
+
+
+.. tab-set::
+
+
+
+   .. tab-item:: Static Scene
+
+
+
+            
+     .. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
+        :alt: 01 aperture projection
+        :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
+        :class: sphx-glr-single-img
+     
+
+
+   .. tab-item:: Interactive Scene
+
+
+
+       .. offlineviewer:: C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\auto_examples\images\sphx_glr_01_aperture_projection_001.vtksz
 
 
 
@@ -247,7 +266,7 @@ Maximum Directivity
 
  .. code-block:: none
 
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:108: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:108: RuntimeWarning: divide by zero encountered in log10
       np.max(10 * np.log10(directivity_envelope))
     Maximum Directivity of 17.4 dBi
 
@@ -327,15 +346,15 @@ maximum directivity envelope.
 
  .. code-block:: none
 
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:123: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:123: RuntimeWarning: divide by zero encountered in log10
       plot_max = ((np.ceil(np.nanmax(10 * np.log10(directivity_envelope))) // 5.0) + 1) * 5
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:134: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:134: RuntimeWarning: divide by zero encountered in log10
       10 * np.log10(directivity_envelope),
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:144: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:144: RuntimeWarning: divide by zero encountered in log10
       np.nanmax(10 * np.log10(directivity_envelope)) - 60,
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:145: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:145: RuntimeWarning: divide by zero encountered in log10
       np.nanmax(10 * np.log10(directivity_envelope)),
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\examples\01_aperture_projection.py:151: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:151: RuntimeWarning: divide by zero encountered in log10
       10 * np.log10(directivity_envelope),
 
 
@@ -367,11 +386,30 @@ The pyvista library is used to visualise the geometry of the UAV and the antenna
 
 
 
-.. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_003.png
-   :alt: 01 aperture projection
-   :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_003.png
-   :class: sphx-glr-single-img
 
+
+
+.. tab-set::
+
+
+
+   .. tab-item:: Static Scene
+
+
+
+            
+     .. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_003.png
+        :alt: 01 aperture projection
+        :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_003.png
+        :class: sphx-glr-single-img
+     
+
+
+   .. tab-item:: Interactive Scene
+
+
+
+       .. offlineviewer:: \images\sphx_glr_01_aperture_projection_003.vtksz
 
 
 
@@ -381,7 +419,7 @@ The pyvista library is used to visualise the geometry of the UAV and the antenna
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 57.936 seconds)
+   **Total running time of the script:** (0 minutes 45.723 seconds)
 
 
 .. _sphx_glr_download_auto_examples_01_aperture_projection.py:
