@@ -122,10 +122,32 @@ mesh structures can be accessed by importing the data subpackage
 
 
 
-.. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_001.png
-   :alt: 05 array beamforming
-   :srcset: /auto_examples/images/sphx_glr_05_array_beamforming_001.png
-   :class: sphx-glr-single-img
+
+
+
+
+.. tab-set::
+
+
+
+   .. tab-item:: Static Scene
+
+
+
+            
+     .. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_001.png
+        :alt: 05 array beamforming
+        :srcset: /auto_examples/images/sphx_glr_05_array_beamforming_001.png
+        :class: sphx-glr-single-img
+     
+
+
+   .. tab-item:: Interactive Scene
+
+
+
+       .. offlineviewer:: C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\auto_examples\images\sphx_glr_05_array_beamforming_001.vtksz
+
 
 
 
@@ -232,10 +254,32 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
 
 
-.. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_002.png
-   :alt: 05 array beamforming
-   :srcset: /auto_examples/images/sphx_glr_05_array_beamforming_002.png
-   :class: sphx-glr-single-img
+
+
+
+
+.. tab-set::
+
+
+
+   .. tab-item:: Static Scene
+
+
+
+            
+     .. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_002.png
+        :alt: 05 array beamforming
+        :srcset: /auto_examples/images/sphx_glr_05_array_beamforming_002.png
+        :class: sphx-glr-single-img
+     
+
+
+   .. tab-item:: Interactive Scene
+
+
+
+       .. offlineviewer:: C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\auto_examples\images\sphx_glr_05_array_beamforming_002.vtksz
+
 
 .. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_003.png
    :alt: 05 array beamforming
@@ -270,7 +314,7 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (4 minutes 6.442 seconds)
+   **Total running time of the script:** (3 minutes 49.198 seconds)
 
 
 .. _sphx_glr_download_auto_examples_05_array_beamforming.py:
