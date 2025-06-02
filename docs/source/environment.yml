@@ -17,6 +17,7 @@ dependencies:
   - pyvista
   - pypandoc
   - typed-ast
+  - jupyterlab
   - pip:
     - black==20.8b1
     - sphinx-rtd-theme
