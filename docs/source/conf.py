@@ -95,7 +95,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx_gallery.gen_gallery",
-    "sphinx_gallery.gen_gallery",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
     "sphinx_design",
