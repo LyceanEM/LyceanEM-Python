@@ -128,25 +128,33 @@ intersphinx_mapping = {
 sphinx_gallery_conf = {
     # convert rst to md for ipynb
     "pypandoc": True,
-    "examples_dirs": ["../examples"],
+    # path to your examples scripts
+    "examples_dirs": ["../examples/"],
+    # path where to save gallery generated examples
     "gallery_dirs": ["auto_examples"],
-    "filename_pattern": re.escape(os.sep),
-    "image_scrapers": (DynamicScraper(), "matplotlib"),
-    "matplotlib_animations": True,
+    # Pattern to search for example files
+    "filename_pattern": r"\.py",
+    # Remove the "Download all examples" button from the top level gallery
+    "download_all_examples": False,
+    # Remove sphinx configuration comments from code blocks
+    "remove_config_comments": True,
+    # Sort gallery example by file name instead of number of lines (default)
+    # "within_subsection_order": FileNameSortKey,
+    # directory where function granular galleries are stored
+    "backreferences_dir": None,
+    # Modules for which function level galleries are created.  In
+    "doc_module": "lyceanem",
+    # dont run examples that have already been built
     "run_stale_examples": False,
+    "image_scrapers": (DynamicScraper(), "matplotlib"),
     "first_notebook_cell": (
         "%matplotlib inline\n"
         "from pyvista import set_plot_theme\n"
         "set_plot_theme('document')\n"
     ),
-    "last_notebook_cell": "# This is the last cell",
-    "notebook_images": f'https://stonesoup.rtfd.io/en/{os.environ.get("READTHEDOCS_VERSION", "latest")}/',
-    "reference_url": {
-        # The module you locally document uses None
-        "sphinx_gallery": None,
-    },
-    "plot_gallery": False,  # documentation examples require cuda on build machine, so much be fully built before being passed to readthedocs
+    # "reset_modules": (reset_pyvista,),
     "reset_modules_order": "both",
+    "plot_gallery": False,  # documentation examples require cuda on build machine, so much be fully built before being passed to readthedocs
 }
 
 # -- Options for HTML output -------------------------------------------------
