@@ -2,7 +2,6 @@ name: lyceanem-docs
 channels:
   - conda-forge
   - lyceanem
-  - defaults
 dependencies:
   - lyceanem
   - python=3.10
