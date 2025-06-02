@@ -14,7 +14,7 @@ dependencies:
   - sphinx-toolbox
   - sphinxcontrib-websupport
   - sphinxcontrib-napoleon
-  - pyvista
+  - pyvista[all]
   - pypandoc
   - typed-ast
   - jupyterlab
