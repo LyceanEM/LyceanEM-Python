@@ -21,3 +21,4 @@ dependencies:
     - sphinx-rtd-theme
     - pytest-sphinx
     - sphinxcontrib-asciinema
+    - sphinxcontrib.bibtex
