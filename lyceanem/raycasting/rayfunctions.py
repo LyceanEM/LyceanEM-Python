@@ -308,7 +308,7 @@ def patterntocloud(pattern_data, shell_coords, maxarea):
     # point_cloud.point_data["red"] = np_colors[:, 0]
     # point_cloud.point_data["green"] = np_colors[:, 1]
     # point_cloud.point_data["blue"] = np_colors[:, 2]
-    point_cloud.point_data["Projected Area"] = pattern_data
+    point_cloud.point_data["Projected_Area"] = pattern_data
 
     return point_cloud
 
@@ -423,7 +423,7 @@ def visiblespace(
     #    shell_coords,
     #    maxarea,
     # )
-    sample_shell.point_data["Projected Area"] = visible_patterns.reshape(-1, 1)
+    sample_shell.point_data["Projected_Area"] = visible_patterns.reshape(-1, 1)
     return visible_patterns, sample_shell
 
 
