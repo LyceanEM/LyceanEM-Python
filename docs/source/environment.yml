@@ -13,6 +13,7 @@ dependencies:
   - sphinx-gallery
   - sphinx-toolbox
   - sphinxcontrib-websupport
+  - sphinxcontrib-napoleon
   - pyvista
   - pypandoc
   - typed-ast
