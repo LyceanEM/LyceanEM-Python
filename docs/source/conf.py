@@ -87,9 +87,6 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.imgmath",
-    "pyvista.ext.plot_directive",
-    "pyvista.ext.viewer_directive",
-    "sphinx_design",
 ]
 bibtex_bibfiles = ["_static/lyceanemrefs.bib"]
 # Add any paths that contain templates here, relative to this directory.
