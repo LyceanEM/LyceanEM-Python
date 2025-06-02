@@ -1,0 +1,815 @@
+{
+ "Ephi": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core.pyvista_ndarray",
+   "module_short": "pyvista",
+   "name": "pyvista_ndarray"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core",
+   "module_short": "pyvista",
+   "name": "pyvista_ndarray"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "pyvista_ndarray"
+  }
+ ],
+ "Ephi.reshape": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "Etheta": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core.pyvista_ndarray",
+   "module_short": "pyvista",
+   "name": "pyvista_ndarray"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core",
+   "module_short": "pyvista",
+   "name": "pyvista_ndarray"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "pyvista_ndarray"
+  }
+ ],
+ "Etheta.reshape": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "R.from_euler": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "scipy.spatial.transform._rotation",
+   "module_short": "scipy.spatial.transform",
+   "name": "Rotation.from_euler"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "scipy.spatial.transform",
+   "module_short": "scipy.spatial.transform",
+   "name": "Rotation.from_euler"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "scipy.spatial",
+   "module_short": "scipy.spatial",
+   "name": "Rotation.from_euler"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "scipy",
+   "module_short": "scipy",
+   "name": "Rotation.from_euler"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "scipy.spatial.transform.Rotation",
+   "module_short": "scipy.spatial.transform.Rotation",
+   "name": "from_euler"
+  }
+ ],
+ "antenna_pattern": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_pattern"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_pattern"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_pattern"
+  }
+ ],
+ "antenna_structures": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_structures"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_structures"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_structures"
+  }
+ ],
+ "array_points": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio._mesh",
+   "module_short": "meshio",
+   "name": "Mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio",
+   "module_short": "meshio",
+   "name": "Mesh"
+  }
+ ],
+ "az_res": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "int"
+  }
+ ],
+ "calculate_farfield": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.models.frequency_domain",
+   "module_short": "lyceanem.models.frequency_domain",
+   "name": "calculate_farfield"
+  }
+ ],
+ "desired_E_axis": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "elev_res": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "int"
+  }
+ ],
+ "horn_antenna": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_structures"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_structures"
+  }
+ ],
+ "horn_antenna.excitation_function": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_structures.excitation_function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_structures.excitation_function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d.excitation_function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d.excitation_function"
+  }
+ ],
+ "horn_antenna.export_all_points": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_structures.export_all_points"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_structures.export_all_points"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d.export_all_points"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d.export_all_points"
+  }
+ ],
+ "horn_antenna.rotate_antenna": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_structures.rotate_antenna"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_structures.rotate_antenna"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d.rotate_antenna"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d.rotate_antenna"
+  }
+ ],
+ "lyceanem.models.frequency_domain.calculate_farfield": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "lyceanem.models.frequency_domain",
+   "module_short": "lyceanem.models.frequency_domain",
+   "name": "calculate_farfield"
+  }
+ ],
+ "meshedHorn": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.geometry.targets",
+   "module_short": "lyceanem.geometry.targets",
+   "name": "meshedHorn"
+  }
+ ],
+ "n_pattern": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_pattern"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_pattern"
+  }
+ ],
+ "n_pattern.display_pattern": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_pattern.display_pattern"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_pattern.display_pattern"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d.display_pattern"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d.display_pattern"
+  }
+ ],
+ "n_pattern.pattern": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "np.asarray": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "asarray"
+  }
+ ],
+ "np.complex64": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "complex64"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "complexfloating"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "inexact"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "number"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "generic"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "complex64"
+  }
+ ],
+ "np.linspace": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "linspace"
+  }
+ ],
+ "np.pi": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "float"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "pi"
+  }
+ ],
+ "np.radians": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ufunc"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "radians"
+  }
+ ],
+ "np.zeros": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "zeros"
+  }
+ ],
+ "points": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "points"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "points"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "points"
+  }
+ ],
+ "r": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "scipy.spatial.transform._rotation",
+   "module_short": "scipy.spatial.transform",
+   "name": "Rotation"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "scipy.spatial.transform",
+   "module_short": "scipy.spatial.transform",
+   "name": "Rotation"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "scipy.spatial",
+   "module_short": "scipy.spatial",
+   "name": "Rotation"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "scipy",
+   "module_short": "scipy",
+   "name": "Rotation"
+  }
+ ],
+ "r.as_matrix": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "scipy.spatial.transform._rotation",
+   "module_short": "scipy.spatial.transform",
+   "name": "Rotation.as_matrix"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "scipy.spatial.transform",
+   "module_short": "scipy.spatial.transform",
+   "name": "Rotation.as_matrix"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "scipy.spatial",
+   "module_short": "scipy.spatial",
+   "name": "Rotation.as_matrix"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "scipy",
+   "module_short": "scipy",
+   "name": "Rotation.as_matrix"
+  }
+ ],
+ "structure": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio._mesh",
+   "module_short": "meshio",
+   "name": "Mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio",
+   "module_short": "meshio",
+   "name": "Mesh"
+  }
+ ],
+ "structures": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "structures"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "structures"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "structures"
+  }
+ ],
+ "u_pattern": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_pattern"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_pattern"
+  }
+ ],
+ "u_pattern.display_pattern": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_pattern.display_pattern"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_pattern.display_pattern"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d.display_pattern"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d.display_pattern"
+  }
+ ],
+ "u_pattern.pattern": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "v_pattern": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_pattern"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_pattern"
+  }
+ ],
+ "v_pattern.display_pattern": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_pattern.display_pattern"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_pattern.display_pattern"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d.display_pattern"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d.display_pattern"
+  }
+ ],
+ "v_pattern.pattern": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "wavelength": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "float"
+  }
+ ]
+}

@@ -130,9 +130,9 @@ sphinx_gallery_conf = {
     # convert rst to md for ipynb
     "pypandoc": True,
     # path to your examples scripts
-    "examples_dirs": ["examples"],
+    "examples_dirs": ["./examples"],
     # path where to save gallery generated examples
-    "gallery_dirs": ["auto_examples"],
+    "gallery_dirs": ["./auto_examples"],
     # Pattern to search for example files
     "filename_pattern": r"\.py",
     # Remove the "Download all examples" button from the top level gallery
@@ -178,7 +178,7 @@ html_context = {
     "github_repo": "LyceanEM-Python",
     "github_version": "master",
     "doc_path": "docs/source",
-    "examples_path": "docs/examples",
+    "examples_path": "docs/source/examples",
 }
 source_suffix = ".rst"
 master_doc = "index"
