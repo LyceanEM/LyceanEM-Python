@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**08:17.900** total execution time for 7 files **from all galleries**:
+**08:02.495** total execution time for 7 files **from all galleries**:
 
 .. container::
 
@@ -33,23 +33,23 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_auto_examples_05_array_beamforming.py` (``examples\05_array_beamforming.py``)
-     - 03:55.165
+     - 03:59.014
      - 0.0
    * - :ref:`sphx_glr_auto_examples_02_coherently_polarised_array.py` (``examples\02_coherently_polarised_array.py``)
-     - 02:08.098
+     - 01:57.420
      - 0.0
    * - :ref:`sphx_glr_auto_examples_03_frequency_domain_channel_modelling.py` (``examples\03_frequency_domain_channel_modelling.py``)
-     - 00:47.891
+     - 00:44.048
      - 0.0
    * - :ref:`sphx_glr_auto_examples_01_aperture_projection.py` (``examples\01_aperture_projection.py``)
-     - 00:45.723
+     - 00:41.473
      - 0.0
    * - :ref:`sphx_glr_auto_examples_07_aperture_farfield_polarisation.py` (``examples\07_aperture_farfield_polarisation.py``)
-     - 00:23.104
+     - 00:23.945
      - 0.0
    * - :ref:`sphx_glr_auto_examples_04_time_domain_channel_modelling.py` (``examples\04_time_domain_channel_modelling.py``)
-     - 00:15.652
+     - 00:14.381
      - 0.0
    * - :ref:`sphx_glr_auto_examples_06_farfield_polarisation.py` (``examples\06_farfield_polarisation.py``)
-     - 00:02.267
+     - 00:02.214
      - 0.0

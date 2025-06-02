@@ -61,7 +61,6 @@ import pyvista as pv
 # ------------------------
 # The pyvista library is used to visualise the geometry of the UAV and the antenna array.
 # The UAV is shown in green, and the antenna array in aqua.
-
 pl = pv.Plotter()
 pl.add_mesh(pv.from_meshio(body), color="green")
 pl.add_mesh(pv.from_meshio(array), color="aqua")
@@ -108,7 +107,6 @@ print(
         np.max(10 * np.log10(directivity_envelope))
     )
 )
-
 # %%
 # Plotting the Output
 # ------------------------
