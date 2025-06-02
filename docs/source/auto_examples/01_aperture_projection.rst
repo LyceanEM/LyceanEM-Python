@@ -163,7 +163,7 @@ meshio trianglemesh structures can be accessed by importing the data subpackage
 
 
 
-       .. offlineviewer:: C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\auto_examples\images\sphx_glr_01_aperture_projection_001.vtksz
+       .. offlineviewer:: /auto_examples/images/sphx_glr_01_aperture_projection_001.vtksz
 
 
 
