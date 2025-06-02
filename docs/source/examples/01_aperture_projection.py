@@ -171,9 +171,9 @@ pl.add_mesh(pv.from_meshio(body), color="green")
 pl.add_mesh(pv.from_meshio(array), color="aqua")
 pl.add_mesh(
     pv.from_meshio(pcd),
-    scalars="Directivity Envelope (dBi)",
+    scalars="Directivity_Envelope_(dBi)",
     style="points",
-    clim=[0, np.nanmax(pcd.point_data["Directivity Envelope (dBi)"])],
+    clim=[0, np.nanmax(pcd.point_data["Directivity_Envelope_(dBi)"])],
 )
 pl.add_axes()
 pl.show()

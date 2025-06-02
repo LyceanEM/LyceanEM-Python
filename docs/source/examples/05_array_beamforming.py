@@ -131,10 +131,10 @@ from lyceanem.electromagnetics.beamforming import create_display_mesh
 pattern_mesh = spherical_field(az_range, el_range, outward_normals=True)
 pattern_mesh.point_data["D(Total)"] = directivity_map[:, :, 2].ravel()
 display_mesh = create_display_mesh(pattern_mesh, label="D(Total)", dynamic_range=60)
-display_mesh.point_data["D(Total - dBi)"] = 10 * np.log10(
+display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
     display_mesh.point_data["D(Total)"]
 )
-plot_max = 5 * np.ceil(np.nanmax(display_mesh.point_data["D(Total - dBi)"]) / 5)
+plot_max = 5 * np.ceil(np.nanmax(display_mesh.point_data["D(Total-dBi)"]) / 5)
 
 
 pl = pv.Plotter()
@@ -142,7 +142,7 @@ pl.add_mesh(pv.from_meshio(body), color="green")
 pl.add_mesh(pv.from_meshio(array), color="aqua")
 pl.add_mesh(
     display_mesh,
-    scalars="D(Total - dBi)",
+    scalars="D(Total-dBi)",
     style="points",
     clim=[plot_max - 60, plot_max],
 )
