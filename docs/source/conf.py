@@ -29,12 +29,7 @@ pyvista.OFF_SCREEN = True  # Not necessary - simply an insurance policy
 # Preferred plotting style for documentation
 pyvista.set_plot_theme("document")
 pyvista.set_jupyter_backend(None)
-# Save figures in specified directory
-pyvista.FIGURE_PATH = str(Path("./images/").resolve())
-# Ensure the figure path exists
-path_exists = Path(pyvista.FIGURE_PATH).exists()
-if not (path_exists):
-    Path(pyvista.FIGURE_PATH).mkdir()
+
 
 # necessary when building the sphinx gallery
 pyvista.BUILDING_GALLERY = True
