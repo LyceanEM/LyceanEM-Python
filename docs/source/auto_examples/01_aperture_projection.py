@@ -57,7 +57,11 @@ array = data.UAV_Demo_Aperture(wavelength * 0.5)
 import pyvista as pv
 
 # %%
-PYVISTA_GALLERY_FORCE_STATIC = False
+# Visualisation
+# ------------------------
+# The pyvista library is used to visualise the geometry of the UAV and the antenna array.
+# The UAV is shown in green, and the antenna array in aqua.
+
 pl = pv.Plotter()
 pl.add_mesh(pv.from_meshio(body), color="green")
 pl.add_mesh(pv.from_meshio(array), color="aqua")
@@ -158,6 +162,11 @@ ax.set_xlabel("Azimuth (degrees)")
 ax.set_ylabel("Elevation (degrees)")
 ax.set_title("Maximum Directivity Envelope")
 fig.show()
+
+# %%
+# Visualising the Output
+# ------------------------
+# The pyvista library is used to visualise the geometry of the UAV and the antenna array, as well as the resultant aperture directivity envelope.
 
 pl = pv.Plotter()
 pl.add_mesh(pv.from_meshio(body), color="green")
