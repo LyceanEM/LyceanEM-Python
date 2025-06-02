@@ -128,21 +128,19 @@ sphinx_gallery_conf = {
     # convert rst to md for ipynb
     "pypandoc": True,
     # path to your examples scripts
-    "examples_dirs": ["../examples/"],
+    "examples_dirs": ["examples"],
     # path where to save gallery generated examples
     "gallery_dirs": ["auto_examples"],
     # Pattern to search for example files
     "filename_pattern": r"\.py",
     # Remove the "Download all examples" button from the top level gallery
-    "download_all_examples": False,
+    "download_all_examples": True,
     # Remove sphinx configuration comments from code blocks
     "remove_config_comments": True,
     # Sort gallery example by file name instead of number of lines (default)
     # "within_subsection_order": FileNameSortKey,
     # directory where function granular galleries are stored
     "backreferences_dir": None,
-    # Modules for which function level galleries are created.  In
-    "doc_module": "lyceanem",
     # dont run examples that have already been built
     "run_stale_examples": False,
     "image_scrapers": (DynamicScraper(), "matplotlib"),
