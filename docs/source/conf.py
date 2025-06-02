@@ -159,13 +159,20 @@ html_theme = "sphinx_rtd_theme"
 html_logo = "_static/LY_logo_RGB_2000px.jpg"
 html_theme_options = {
     "logo_only": True,
-    "display_version": False,
 }
-
+# If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
+html_show_sphinx = False
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+html_context = {
+    "github_user": "LyceanEM",
+    "github_repo": "LyceanEM-Python",
+    "github_version": "master",
+    "doc_path": "docs/source",
+    "examples_path": "docs/examples",
+}
 source_suffix = ".rst"
 master_doc = "index"
 
