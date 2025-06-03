@@ -20,6 +20,7 @@ from sphinx_gallery.scrapers import figure_rst
 
 import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
+from pathlib import Path
 
 # Manage errors
 pyvista.set_error_output_file("errors.txt")
@@ -27,6 +28,7 @@ pyvista.set_error_output_file("errors.txt")
 pyvista.OFF_SCREEN = True  # Not necessary - simply an insurance policy
 # Preferred plotting style for documentation
 pyvista.set_plot_theme("document")
+pyvista.set_jupyter_backend(None)
 
 
 # necessary when building the sphinx gallery
@@ -128,21 +130,19 @@ sphinx_gallery_conf = {
     # convert rst to md for ipynb
     "pypandoc": True,
     # path to your examples scripts
-    "examples_dirs": ["../examples/"],
+    "examples_dirs": ["./examples"],
     # path where to save gallery generated examples
-    "gallery_dirs": ["auto_examples"],
+    "gallery_dirs": ["./auto_examples"],
     # Pattern to search for example files
     "filename_pattern": r"\.py",
     # Remove the "Download all examples" button from the top level gallery
-    "download_all_examples": False,
+    "download_all_examples": True,
     # Remove sphinx configuration comments from code blocks
     "remove_config_comments": True,
     # Sort gallery example by file name instead of number of lines (default)
     # "within_subsection_order": FileNameSortKey,
     # directory where function granular galleries are stored
     "backreferences_dir": None,
-    # Modules for which function level galleries are created.  In
-    "doc_module": "lyceanem",
     # dont run examples that have already been built
     "run_stale_examples": False,
     "image_scrapers": (DynamicScraper(), "matplotlib"),
@@ -178,7 +178,7 @@ html_context = {
     "github_repo": "LyceanEM-Python",
     "github_version": "master",
     "doc_path": "docs/source",
-    "examples_path": "docs/examples",
+    "examples_path": "docs/source/examples",
 }
 source_suffix = ".rst"
 master_doc = "index"

@@ -5,6 +5,7 @@ channels:
 dependencies:
   - lyceanem
   - python=3.10
+  - pyvista
   - pip>=20.1  # pip is needed as dependency
   - sphinx
   - sphinx-autobuild
@@ -24,4 +25,4 @@ dependencies:
     - sphinxcontrib-asciinema
     - sphinxcontrib.bibtex
     - trame_vtk
-    - pyvista[all]
+    - tqdm

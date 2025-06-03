@@ -772,9 +772,7 @@ def calculate_scattering(
             "Area"
         ].reshape(-1, 1)
         # set all sources as magnetic current sources, and permittivity and permeability as free space
-        aperture_coords.point_data["is_electric"] = np.ones(
-            (num_sources), dtype=bool
-        )
+        aperture_coords.point_data["is_electric"] = np.ones((num_sources), dtype=bool)
         aperture_coords.point_data["permittivity"] = (
             np.ones((num_sources), dtype=np.complex64) * permittivity
         )
