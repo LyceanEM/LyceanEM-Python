@@ -15,7 +15,6 @@ from ..geometry import geometryfunctions as GF
 EPSILON = 1e-6  # how close to zero do we consider zero?
 
 
-
 def rectReflector(majorsize, minorsize, thickness):
     """
     :meta private:
