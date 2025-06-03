@@ -139,10 +139,32 @@ meshio trianglemesh structures can be accessed by importing the data subpackage
 
 
 
-.. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
-   :alt: 01 aperture projection
-   :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
-   :class: sphx-glr-single-img
+
+
+
+
+.. tab-set::
+
+
+
+   .. tab-item:: Static Scene
+
+
+
+            
+     .. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
+        :alt: 01 aperture projection
+        :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_001.png
+        :class: sphx-glr-single-img
+     
+
+
+   .. tab-item:: Interactive Scene
+
+
+
+       .. offlineviewer:: /auto_examples/images/sphx_glr_01_aperture_projection_001.vtksz
+
 
 
 
@@ -318,13 +340,35 @@ maximum directivity envelope.
 
 
 
-.. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_002.png
-   :alt: Maximum Directivity Envelope
-   :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_002.png
-   :class: sphx-glr-single-img
+
+
+
+
+.. tab-set::
+
+
+
+   .. tab-item:: Static Scene
+
+
+
+            
+     .. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_002.png
+        :alt: 01 aperture projection
+        :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_002.png
+        :class: sphx-glr-single-img
+     
+
+
+   .. tab-item:: Interactive Scene
+
+
+
+       .. offlineviewer:: C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\auto_examples\images\sphx_glr_01_aperture_projection_002.vtksz
+
 
 .. image-sg:: /auto_examples/images/sphx_glr_01_aperture_projection_003.png
-   :alt: 01 aperture projection
+   :alt: Maximum Directivity Envelope
    :srcset: /auto_examples/images/sphx_glr_01_aperture_projection_003.png
    :class: sphx-glr-single-img
 
@@ -350,7 +394,7 @@ maximum directivity envelope.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 41.129 seconds)
+   **Total running time of the script:** (0 minutes 42.356 seconds)
 
 
 .. _sphx_glr_download_auto_examples_01_aperture_projection.py:

@@ -1,0 +1,27 @@
+name: lyceanem-docs
+channels:
+  - conda-forge
+  - lyceanem
+dependencies:
+  - lyceanem
+  - python=3.10
+  - pip>=20.1  # pip is needed as dependency
+  - sphinx
+  - sphinx-autobuild
+  - sphinx-copybutton
+  - sphinx-design
+  - sphinx-gallery
+  - sphinx-toolbox
+  - sphinxcontrib-websupport
+  - sphinxcontrib-napoleon
+  - pypandoc
+  - typed-ast
+  - jupyterlab
+  - pip:
+    - black==20.8b1
+    - sphinx-rtd-theme
+    - pytest-sphinx
+    - sphinxcontrib-asciinema
+    - sphinxcontrib.bibtex
+    - trame_vtk
+    - pyvista[all]

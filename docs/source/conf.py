@@ -21,6 +21,15 @@ from sphinx_gallery.scrapers import figure_rst
 import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 
+# Manage errors
+pyvista.set_error_output_file("errors.txt")
+# Ensure that offscreen rendering is used for docs generation
+pyvista.OFF_SCREEN = True  # Not necessary - simply an insurance policy
+# Preferred plotting style for documentation
+pyvista.set_plot_theme("document")
+
+
+# necessary when building the sphinx gallery
 pyvista.BUILDING_GALLERY = True
 os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
 try:
@@ -86,10 +95,10 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx_gallery.gen_gallery",
-    "sphinx.ext.imgmath",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
     "sphinx_design",
+    "sphinx.ext.imgmath",
 ]
 bibtex_bibfiles = ["_static/lyceanemrefs.bib"]
 # Add any paths that contain templates here, relative to this directory.
@@ -116,23 +125,34 @@ intersphinx_mapping = {
 
 # Sphinx Gallery Configuration
 sphinx_gallery_conf = {
-    "examples_dirs": ["../examples"],
+    # convert rst to md for ipynb
+    "pypandoc": True,
+    # path to your examples scripts
+    "examples_dirs": ["../examples/"],
+    # path where to save gallery generated examples
     "gallery_dirs": ["auto_examples"],
-    "filename_pattern": re.escape(os.sep),
-    "image_scrapers": ("matplotlib", "pyvista"),
-    "matplotlib_animations": True,
+    # Pattern to search for example files
+    "filename_pattern": r"\.py",
+    # Remove the "Download all examples" button from the top level gallery
+    "download_all_examples": False,
+    # Remove sphinx configuration comments from code blocks
+    "remove_config_comments": True,
+    # Sort gallery example by file name instead of number of lines (default)
+    # "within_subsection_order": FileNameSortKey,
+    # directory where function granular galleries are stored
+    "backreferences_dir": None,
+    # Modules for which function level galleries are created.  In
+    "doc_module": "lyceanem",
+    # dont run examples that have already been built
     "run_stale_examples": False,
+    "image_scrapers": (DynamicScraper(), "matplotlib"),
     "first_notebook_cell": (
-        "# This cell is added by sphinx-gallery\n"
-        "# It can be customized to whatever you like\n"
-        "%matplotlib inline"
+        "%matplotlib inline\n"
+        "from pyvista import set_plot_theme\n"
+        "set_plot_theme('document')\n"
     ),
-    "last_notebook_cell": "# This is the last cell",
-    "notebook_images": f'https://stonesoup.rtfd.io/en/{os.environ.get("READTHEDOCS_VERSION", "latest")}/',
-    "reference_url": {
-        # The module you locally document uses None
-        "sphinx_gallery": None,
-    },
+    # "reset_modules": (reset_pyvista,),
+    "reset_modules_order": "both",
     "plot_gallery": False,  # documentation examples require cuda on build machine, so much be fully built before being passed to readthedocs
 }
 
@@ -146,13 +166,20 @@ html_theme = "sphinx_rtd_theme"
 html_logo = "_static/LY_logo_RGB_2000px.jpg"
 html_theme_options = {
     "logo_only": True,
-    "display_version": False,
 }
-
+# If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
+html_show_sphinx = False
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+html_context = {
+    "github_user": "LyceanEM",
+    "github_repo": "LyceanEM-Python",
+    "github_version": "master",
+    "doc_path": "docs/source",
+    "examples_path": "docs/examples",
+}
 source_suffix = ".rst"
 master_doc = "index"
 

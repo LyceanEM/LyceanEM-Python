@@ -82,11 +82,11 @@ def aperture_projection(
         shell_range=farfield_distance,
     )
     directivity_envelope[:, :] = (4 * np.pi * visible_patterns) / (wavelength**2)
-    pcd.point_data["Directivity Envelope"] = (
-        4 * np.pi * pcd.point_data["Projected Area"]
+    pcd.point_data["Directivity_Envelope"] = (
+        4 * np.pi * pcd.point_data["Projected_Area"]
     ) / (wavelength**2)
-    pcd.point_data["Directivity Envelope (dBi)"] = 10 * np.log10(
-        pcd.point_data["Directivity Envelope"]
+    pcd.point_data["Directivity_Envelope_(dBi)"] = 10 * np.log10(
+        pcd.point_data["Directivity_Envelope"]
     )
     return directivity_envelope, pcd
 

@@ -5,11 +5,14 @@
 # Required
 version: 2
 
+# Build all formats
+formats: all
+
 # Set the version of Python and other tools you might need
 build:
-  os: ubuntu-20.04
+  os: "ubuntu-lts-latest"
   tools:
-    python: "3.8"
+    python: "mambaforge-23.11"
     # You can also specify other tool versions:
     # nodejs: "16"
     # rust: "1.55"
@@ -24,6 +27,5 @@ sphinx:
 #    - pdf
 
 # Optionally declare the Python requirements required to build your docs
-python:
-  install:
-    - requirements: docs/source/requirements.txt
+conda:
+  environment: docs/source/environment.yml
