@@ -282,7 +282,7 @@ Visualise the Scene Geometry
 
 
 
-       .. offlineviewer:: /auto_examples/images/sphx_glr_04_time_domain_channel_modelling_001.vtksz
+       .. offlineviewer:: C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\auto_examples\images\sphx_glr_04_time_domain_channel_modelling_001.vtksz
 
 
 
@@ -316,7 +316,7 @@ Time Domain Scattering
 ----------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 149-228
+.. GENERATED FROM PYTHON SOURCE LINES 149-226
 
 .. code-block:: Python
 
@@ -339,14 +339,12 @@ Time Domain Scattering
     scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
     reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
 
-    from tqdm import tqdm
-
     wake_times = np.zeros((len(angle_values)))
     Ex = np.zeros((len(angle_values), num_samples))
     Ey = np.zeros((len(angle_values), num_samples))
     Ez = np.zeros((len(angle_values), num_samples))
 
-    for angle_inc in tqdm(range(len(angle_values))):
+    for angle_inc in range(len(angle_values)):
         rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_increment]))
         scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
         reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
@@ -407,8 +405,7 @@ Time Domain Scattering
 
  .. code-block:: none
 
-
-      0%|                                                                                                                                                                                                       | 0/91 [00:00<?, ?it/s]C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3719: ComplexWarning: Casting complex values to real discards the imaginary part
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3719: ComplexWarning: Casting complex values to real discards the imaginary part
       uvn_axes[2, :] = point_vector
     C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3736: ComplexWarning: Casting complex values to real discards the imaginary part
       uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
@@ -416,88 +413,27 @@ Time Domain Scattering
       uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
     C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 25 will likely result in GPU under-utilization due to low occupancy.
       warn(NumbaPerformanceWarning(msg))
-
-      1%|██                                                                                                                                                                                             | 1/91 [00:04<06:24,  4.27s/it]C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3719: ComplexWarning: Casting complex values to real discards the imaginary part
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3719: ComplexWarning: Casting complex values to real discards the imaginary part
       uvn_axes[2, :] = point_vector
     C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3736: ComplexWarning: Casting complex values to real discards the imaginary part
       uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
     C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3758: ComplexWarning: Casting complex values to real discards the imaginary part
       uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
-
-      2%|████▏                                                                                                                                                                                          | 2/91 [00:04<02:48,  1.89s/it]
-      3%|██████▎                                                                                                                                                                                        | 3/91 [00:04<01:36,  1.09s/it]
-      4%|████████▍                                                                                                                                                                                      | 4/91 [00:04<01:01,  1.42it/s]
-      5%|██████████▍                                                                                                                                                                                    | 5/91 [00:04<00:42,  2.03it/s]
-      7%|████████████▌                                                                                                                                                                                  | 6/91 [00:04<00:30,  2.75it/s]
-      8%|██████████████▋                                                                                                                                                                                | 7/91 [00:05<00:23,  3.57it/s]
-      9%|████████████████▊                                                                                                                                                                              | 8/91 [00:05<00:18,  4.43it/s]
-     10%|██████████████████▉                                                                                                                                                                            | 9/91 [00:05<00:15,  5.30it/s]
-     11%|████████████████████▉                                                                                                                                                                         | 10/91 [00:05<00:13,  5.90it/s]
-     12%|██████████████████████▉                                                                                                                                                                       | 11/91 [00:05<00:12,  6.60it/s]
-     13%|█████████████████████████                                                                                                                                                                     | 12/91 [00:05<00:11,  7.09it/s]
-     14%|███████████████████████████▏                                                                                                                                                                  | 13/91 [00:05<00:10,  7.54it/s]
-     15%|█████████████████████████████▏                                                                                                                                                                | 14/91 [00:05<00:09,  8.04it/s]
-     18%|█████████████████████████████████▍                                                                                                                                                            | 16/91 [00:06<00:08,  8.90it/s]
-     19%|███████████████████████████████████▍                                                                                                                                                          | 17/91 [00:06<00:08,  9.14it/s]
-     21%|███████████████████████████████████████▋                                                                                                                                                      | 19/91 [00:06<00:07,  9.57it/s]
-     23%|███████████████████████████████████████████▊                                                                                                                                                  | 21/91 [00:06<00:07,  9.77it/s]
-     24%|█████████████████████████████████████████████▉                                                                                                                                                | 22/91 [00:06<00:07,  9.80it/s]
-     26%|██████████████████████████████████████████████████                                                                                                                                            | 24/91 [00:06<00:06,  9.89it/s]
-     29%|██████████████████████████████████████████████████████▎                                                                                                                                       | 26/91 [00:07<00:06,  9.98it/s]
-     31%|██████████████████████████████████████████████████████████▍                                                                                                                                   | 28/91 [00:07<00:06, 10.03it/s]
-     33%|██████████████████████████████████████████████████████████████▋                                                                                                                               | 30/91 [00:07<00:06, 10.00it/s]
-     35%|██████████████████████████████████████████████████████████████████▊                                                                                                                           | 32/91 [00:07<00:06,  9.59it/s]
-     36%|████████████████████████████████████████████████████████████████████▉                                                                                                                         | 33/91 [00:07<00:06,  9.43it/s]
-     37%|██████████████████████████████████████████████████████████████████████▉                                                                                                                       | 34/91 [00:07<00:06,  9.42it/s]
-     40%|███████████████████████████████████████████████████████████████████████████▏                                                                                                                  | 36/91 [00:08<00:05,  9.59it/s]
-     42%|███████████████████████████████████████████████████████████████████████████████▎                                                                                                              | 38/91 [00:08<00:05,  9.61it/s]
-     44%|███████████████████████████████████████████████████████████████████████████████████▌                                                                                                          | 40/91 [00:08<00:05,  9.79it/s]
-     45%|█████████████████████████████████████████████████████████████████████████████████████▌                                                                                                        | 41/91 [00:08<00:05,  9.67it/s]
-     47%|█████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                    | 43/91 [00:08<00:04,  9.89it/s]
-     49%|█████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                                | 45/91 [00:09<00:04,  9.99it/s]
-     52%|██████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                           | 47/91 [00:09<00:04,  9.95it/s]
-     54%|██████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                       | 49/91 [00:09<00:04,  9.99it/s]
-     55%|████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                                     | 50/91 [00:09<00:04,  9.94it/s]
-     56%|██████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                                   | 51/91 [00:09<00:04,  9.64it/s]
-     57%|████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                                 | 52/91 [00:09<00:04,  9.48it/s]
-     58%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                               | 53/91 [00:09<00:04,  9.32it/s]
-     59%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                             | 54/91 [00:09<00:04,  9.12it/s]
-     62%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                                         | 56/91 [00:10<00:03,  9.48it/s]
-     64%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                                     | 58/91 [00:10<00:03,  9.76it/s]
-     66%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                | 60/91 [00:10<00:03,  9.86it/s]
-     67%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                              | 61/91 [00:10<00:03,  9.82it/s]
-     69%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                          | 63/91 [00:10<00:02, 10.03it/s]
-     71%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                      | 65/91 [00:11<00:02, 10.13it/s]
-     74%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                  | 67/91 [00:11<00:02, 10.18it/s]
-     76%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                              | 69/91 [00:11<00:02, 10.23it/s]
-     78%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                         | 71/91 [00:11<00:01, 10.22it/s]
-     80%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                     | 73/91 [00:11<00:01, 10.10it/s]
-     82%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                 | 75/91 [00:12<00:01,  9.81it/s]
-     84%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                               | 76/91 [00:12<00:01,  9.70it/s]
-     85%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                             | 77/91 [00:12<00:01,  9.60it/s]
-     86%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                           | 78/91 [00:12<00:01,  9.39it/s]
-     88%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                       | 80/91 [00:12<00:01,  9.70it/s]
-     90%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                  | 82/91 [00:12<00:00,  9.89it/s]
-     92%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍              | 84/91 [00:12<00:00, 10.04it/s]
-     95%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌          | 86/91 [00:13<00:00, 10.04it/s]
-     97%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋      | 88/91 [00:13<00:00, 10.42it/s]C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 115 will likely result in GPU under-utilization due to low occupancy.
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 115 will likely result in GPU under-utilization due to low occupancy.
       warn(NumbaPerformanceWarning(msg))
     C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\numba\cuda\dispatcher.py:536: NumbaPerformanceWarning: Grid size 20 will likely result in GPU under-utilization due to low occupancy.
       warn(NumbaPerformanceWarning(msg))
 
-    100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 91/91 [00:13<00:00, 13.78it/s]
-    100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 91/91 [00:13<00:00,  6.76it/s]
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 229-232
+.. GENERATED FROM PYTHON SOURCE LINES 227-230
 
 Plot Normalised Response
 ----------------------------
 Using matplotlib, plot the results
 
-.. GENERATED FROM PYTHON SOURCE LINES 232-292
+.. GENERATED FROM PYTHON SOURCE LINES 230-290
 
 .. code-block:: Python
 
@@ -573,7 +509,7 @@ Using matplotlib, plot the results
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 293-298
+.. GENERATED FROM PYTHON SOURCE LINES 291-296
 
 Frequency Specific Results
 -------------------------------
@@ -581,7 +517,7 @@ The time of flight plot is useful to displaying the output of the model, giving 
 physically happening in the channel, but to get an idea of the behaviour in the frequency domain we need to use a
 fourier transform to move from time and voltages to frequency.
 
-.. GENERATED FROM PYTHON SOURCE LINES 298-317
+.. GENERATED FROM PYTHON SOURCE LINES 296-315
 
 .. code-block:: Python
 
@@ -619,7 +555,7 @@ fourier transform to move from time and voltages to frequency.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 14.163 seconds)
+   **Total running time of the script:** (0 minutes 14.742 seconds)
 
 
 .. _sphx_glr_download_auto_examples_04_time_domain_channel_modelling.py:

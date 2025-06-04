@@ -1940,43 +1940,6 @@
    "name": "structures"
   }
  ],
- "tqdm": [
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "tqdm.std",
-   "module_short": "tqdm",
-   "name": "tqdm"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "tqdm",
-   "module_short": "tqdm",
-   "name": "tqdm"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "tqdm.utils",
-   "module_short": "tqdm.utils",
-   "name": "Comparable"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "tqdm",
-   "module_short": "tqdm",
-   "name": "Comparable"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "tqdm",
-   "module_short": "tqdm",
-   "name": "tqdm"
-  }
- ],
  "transmit_horn": [
   {
    "is_class": false,

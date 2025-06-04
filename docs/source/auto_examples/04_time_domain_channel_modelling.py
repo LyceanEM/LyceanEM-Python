@@ -165,14 +165,12 @@ rotation_vector = np.radians(
 scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
 reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
 
-from tqdm import tqdm
-
 wake_times = np.zeros((len(angle_values)))
 Ex = np.zeros((len(angle_values), num_samples))
 Ey = np.zeros((len(angle_values), num_samples))
 Ez = np.zeros((len(angle_values), num_samples))
 
-for angle_inc in tqdm(range(len(angle_values))):
+for angle_inc in range(len(angle_values)):
     rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_increment]))
     scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
     reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)

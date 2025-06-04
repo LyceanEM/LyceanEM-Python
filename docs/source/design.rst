@@ -13,9 +13,11 @@ we would like to encourage you to cite the following papers `LyceanEM: a python 
 
 The version 0.1.0 release marks the completion of the first stage of the development roadmap.
 
+
 * Computational efficiency and scalability: The computational efficiency of `LyceanEM` has been improved, and it can now be used on a wider range of hardware platforms, including desktop computers and high-performance computing (HPC) clusters. This will make `LyceanEM` more accessible to a wider range of users. This has been developed with the support of the Net Zero Innovation Portfolio to support antenna arrays with multiple billon antenna elements, `Giga-scale` antenna arrays suitable for space-based solar power and other applications.
 * Core propagation engine: The core propagation engine of `LyceanEM` has been upgraded to include more realistic models of lossy propagation and atmospheric effects for each layer of the atmosphere. This will make `LyceanEM` more accurate and versatile for a wider range of applications.
 * Modelling fidelity: New features and functions have been added to `LyceanEM` that will allow users to model electromagnetic systems with greater fidelity. This includes support for importing antenna patterns and time domain sources, as well as the development of open source standards for antenna array designs, antenna patterns and field sources, and wireless power transfer.
+
 
 The basic class of LyceanEM for farfield patterns is the `antenna pattern`. This class provides a useful container for individual antenna patterns, with builtin functions to generate simple patterns, import, rotate, and display them.
 

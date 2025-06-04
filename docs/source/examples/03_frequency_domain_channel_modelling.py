@@ -204,9 +204,8 @@ rotation_vector = np.radians(np.asarray([0.0, 0.0, plate_orientation_angle + 0.0
 scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
 reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
 
-from tqdm import tqdm
 
-for angle_inc in tqdm(range(len(angle_values))):
+for angle_inc in range(len(angle_values)):
     rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_values[angle_inc]]))
     scatter_points_temp = GF.mesh_rotate(scatter_points, rotation_vector)
     reflectorplate_temp = GF.mesh_rotate(reflectorplate, rotation_vector)
