@@ -12,6 +12,7 @@ requirements:
   build:
   - python                    # from defaults or conda-forge
   - pip                       # from defaults or conda-forge
+  - git
   - conda-forge::numpy
   - conda-forge::pybind11
   - conda-forge::cmake
