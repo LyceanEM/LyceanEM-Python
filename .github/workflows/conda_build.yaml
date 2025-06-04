@@ -45,7 +45,7 @@ jobs:
           miniforge-version: latest
 
       - name: Clone the master branch
-        run: git clone --branch master https://github.com/${{ env.REPO }}
+        run: git clone --branch Development https://github.com/${{ env.REPO }}
 #
       - name: Setup Conda
         run: conda install -y -c conda-forge boa anaconda-client ninja
