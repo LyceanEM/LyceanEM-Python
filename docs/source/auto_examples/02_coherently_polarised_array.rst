@@ -101,10 +101,13 @@ triangle structures can be accessed by importing the data subpackage
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-80
+.. GENERATED FROM PYTHON SOURCE LINES 44-45
+
+----------
+
+.. GENERATED FROM PYTHON SOURCE LINES 45-56
 
 .. code-block:: Python
-
 
 
     from lyceanem.base_classes import structures, points, antenna_structures
@@ -117,29 +120,28 @@ triangle structures can be accessed by importing the data subpackage
 
     import pyvista as pv
 
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 57-59
+
+Visualising the Platform and Array
+----------
+
+.. GENERATED FROM PYTHON SOURCE LINES 59-66
+
+.. code-block:: Python
+
+
     pl = pv.Plotter()
     pl.add_mesh(pv.from_meshio(body), color="green")
     pl.add_mesh(pv.from_meshio(array))
     pl.add_axes()
     pl.show()
-
-
-    desired_E_axis = np.zeros((1, 3), dtype=np.float32)
-    desired_E_axis[0, 1] = 1.0
-
-    Etheta, Ephi = calculate_farfield(
-        array_on_platform.export_all_points(),
-        array_on_platform.export_all_structures(),
-        array_on_platform.excitation_function(
-            desired_e_vector=desired_E_axis, wavelength=wavelength, transmit_power=1.0
-        ),
-        az_range=np.linspace(-180, 180, az_res),
-        el_range=np.linspace(-90, 90, elev_res),
-        wavelength=wavelength,
-        farfield_distance=20,
-        project_vectors=False,
-        beta=(2 * np.pi) / wavelength,
-    )
 
 
 
@@ -172,6 +174,39 @@ triangle structures can be accessed by importing the data subpackage
 
 
 
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 67-68
+
+----------
+
+.. GENERATED FROM PYTHON SOURCE LINES 68-86
+
+.. code-block:: Python
+
+
+    desired_E_axis = np.zeros((1, 3), dtype=np.float32)
+    desired_E_axis[0, 1] = 1.0
+
+    Etheta, Ephi = calculate_farfield(
+        array_on_platform.export_all_points(),
+        array_on_platform.export_all_structures(),
+        array_on_platform.excitation_function(
+            desired_e_vector=desired_E_axis, wavelength=wavelength, transmit_power=1.0
+        ),
+        az_range=np.linspace(-180, 180, az_res),
+        el_range=np.linspace(-90, 90, elev_res),
+        wavelength=wavelength,
+        farfield_distance=20,
+        project_vectors=False,
+        beta=(2 * np.pi) / wavelength,
+    )
+
+
+
+
+
 .. rst-class:: sphx-glr-script-out
 
  .. code-block:: none
@@ -186,7 +221,7 @@ triangle structures can be accessed by importing the data subpackage
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-89
+.. GENERATED FROM PYTHON SOURCE LINES 87-95
 
 Storing and Manipulating Antenna Patterns
 ---------------------------------------------
@@ -197,7 +232,7 @@ to :func:`lyceanem.base.antenna_pattern.display_pattern`. This produces 3D polar
 give a better view of the whole pattern, but if contour plots are required, then this can also be produced by passing
 plottype='Contour' to the function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-121
+.. GENERATED FROM PYTHON SOURCE LINES 95-119
 
 .. code-block:: Python
 
@@ -222,45 +257,10 @@ plottype='Contour' to the function.
     display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
         display_mesh.point_data["D(Total)"]
     )
+    display_mesh.point_data["D(Total-dBi)"][np.isinf(display_mesh.point_data["D(Total-dBi)"])]=-200
     plot_max = 5 * np.ceil(np.nanmax(display_mesh.point_data["D(Total-dBi)"]) / 5)
 
 
-    pl = pv.Plotter()
-    pl.add_mesh(pv.from_meshio(body), color="green")
-    pl.add_mesh(pv.from_meshio(array), color="aqua")
-    pl.add_mesh(
-        display_mesh, scalars="D(Total-dBi)", style="points", clim=[plot_max - 60, plot_max]
-    )
-    pl.add_axes()
-    pl.show()
-
-
-
-
-
-
-
-.. tab-set::
-
-
-
-   .. tab-item:: Static Scene
-
-
-
-            
-     .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
-        :alt: 02 coherently polarised array
-        :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
-        :class: sphx-glr-single-img
-     
-
-
-   .. tab-item:: Interactive Scene
-
-
-
-       .. offlineviewer:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.vtksz
 
 
 .. rst-class:: sphx-glr-horizontal
@@ -268,23 +268,23 @@ plottype='Contour' to the function.
 
     *
 
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
+      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
          :alt: Power Pattern
+         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
+         :alt: Etheta
          :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
          :class: sphx-glr-multi-img
 
     *
 
       .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
-         :alt: Etheta
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
          :alt: Ephi
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
+         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
          :class: sphx-glr-multi-img
 
 
@@ -302,8 +302,62 @@ plottype='Contour' to the function.
       field_data.point_data["Poynting_Vector_(Magnitude_(dBW/m2))"] = 10 * np.log10(
     C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1615: RuntimeWarning: divide by zero encountered in log10
       logdata = log_multiplier * np.log10(pattern_mesh.point_data[label])
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\02_coherently_polarised_array.py:107: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\02_coherently_polarised_array.py:113: RuntimeWarning: divide by zero encountered in log10
       display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 120-122
+
+Visualise the Platform and the resultant Pattern
+----------
+
+.. GENERATED FROM PYTHON SOURCE LINES 122-133
+
+.. code-block:: Python
+
+
+
+    pl = pv.Plotter()
+    pl.add_mesh(pv.from_meshio(body), color="green")
+    pl.add_mesh(pv.from_meshio(array), color="aqua")
+    pl.add_mesh(
+        display_mesh, scalars="D(Total-dBi)", clim=[plot_max - 60, plot_max],opacity=0.5
+    )
+    pl.add_axes()
+    pl.show()
+
+
+
+
+
+
+
+
+.. tab-set::
+
+
+
+   .. tab-item:: Static Scene
+
+
+
+            
+     .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
+        :alt: 02 coherently polarised array
+        :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
+        :class: sphx-glr-single-img
+     
+
+
+   .. tab-item:: Interactive Scene
+
+
+
+       .. offlineviewer:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.vtksz
+
+
 
 
 
@@ -311,7 +365,7 @@ plottype='Contour' to the function.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 52.473 seconds)
+   **Total running time of the script:** (1 minutes 59.102 seconds)
 
 
 .. _sphx_glr_download_auto_examples_02_coherently_polarised_array.py:

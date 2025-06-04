@@ -134,8 +134,12 @@ display_mesh = create_display_mesh(pattern_mesh, label="D(Total)", dynamic_range
 display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
     display_mesh.point_data["D(Total)"]
 )
+display_mesh.point_data["D(Total-dBi)"][np.isinf(display_mesh.point_data["D(Total-dBi)"])]=-200
 plot_max = 5 * np.ceil(np.nanmax(display_mesh.point_data["D(Total-dBi)"]) / 5)
 
+# %%
+# Visualise the Platform and the Beamformed Pattern
+# ----------
 
 pl = pv.Plotter()
 pl.add_mesh(pv.from_meshio(body), color="green")

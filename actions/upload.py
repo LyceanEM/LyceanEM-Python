@@ -1,9 +1,9 @@
 import glob
 import os
 import sys
-
+from pathlib import Path
 script = os.path.abspath(sys.argv[0])
-
+script_path=Path(script)
 # go up one directories to get the source directory
 # (this script is in Sire/actions/)
 srcdir = os.path.dirname(os.path.dirname(script))
@@ -50,7 +50,7 @@ def run_cmd(cmd):
 gitdir = os.path.join(srcdir, ".git")
 
 tag = run_cmd(f"git --git-dir={gitdir} --work-tree={srcdir} tag --contains")
-branch = run_cmd(f"git branch --show-current")
+branch = run_cmd(f"git --git-dir={gitdir} branch --show-current")
 # if the branch is master, then this is a main release
 #if tag is not None and tag.lstrip().rstrip() != "":
 #    print(f"\nTag {tag} is set. This is a 'main' release.")

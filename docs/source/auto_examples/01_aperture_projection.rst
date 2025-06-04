@@ -264,7 +264,7 @@ Maximum Directivity
 
  .. code-block:: none
 
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:107: RuntimeWarning: divide by zero encountered in log10
+    /auto_examples/images/examples\01_aperture_projection.py:107: RuntimeWarning: divide by zero encountered in log10
       np.nanmax(10 * np.log10(directivity_envelope))
     Maximum Directivity of 17.4 dBi
 
@@ -344,15 +344,15 @@ maximum directivity envelope.
 
  .. code-block:: none
 
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:121: RuntimeWarning: divide by zero encountered in log10
+    /examples/01_aperture_projection.py:121: RuntimeWarning: divide by zero encountered in log10
       plot_max = ((np.ceil(np.nanmax(10 * np.log10(directivity_envelope))) // 5.0) + 1) * 5
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:132: RuntimeWarning: divide by zero encountered in log10
+    /examples/01_aperture_projection.py:132: RuntimeWarning: divide by zero encountered in log10
       10 * np.log10(directivity_envelope),
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:142: RuntimeWarning: divide by zero encountered in log10
+    /examples/01_aperture_projection.py:142: RuntimeWarning: divide by zero encountered in log10
       np.nanmax(10 * np.log10(directivity_envelope)) - 60,
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:143: RuntimeWarning: divide by zero encountered in log10
+    /examples/01_aperture_projection.py:143: RuntimeWarning: divide by zero encountered in log10
       np.nanmax(10 * np.log10(directivity_envelope)),
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:149: RuntimeWarning: divide by zero encountered in log10
+    examples/01_aperture_projection.py:149: RuntimeWarning: divide by zero encountered in log10
       10 * np.log10(directivity_envelope),
 
 
@@ -368,7 +368,7 @@ The pyvista library is used to visualise the geometry of the UAV and the antenna
 
 .. code-block:: Python
 
-
+    pcd.point_data["Directivity_Envelope_(dBi)"][np.isinf(pcd.point_data["Directivity_Envelope_(dBi)"])]=-200
     pl = pv.Plotter()
     pl.add_mesh(pv.from_meshio(body), color="green")
     pl.add_mesh(pv.from_meshio(array), color="aqua")
@@ -417,7 +417,7 @@ The pyvista library is used to visualise the geometry of the UAV and the antenna
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 40.950 seconds)
+   **Total running time of the script:** (0 minutes 42.518 seconds)
 
 
 .. _sphx_glr_download_auto_examples_01_aperture_projection.py:

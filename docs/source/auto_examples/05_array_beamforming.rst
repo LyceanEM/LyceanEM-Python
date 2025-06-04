@@ -163,7 +163,7 @@ elevation points, and azimuth points. These can then be beamformed using the des
 currently includes two open loop algorithms for phase weights :func:`lyceanem.electromagnetics.beamforming.EGCWeights`,
 and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-151
+.. GENERATED FROM PYTHON SOURCE LINES 67-140
 
 .. code-block:: Python
 
@@ -237,7 +237,50 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
     display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
         display_mesh.point_data["D(Total)"]
     )
+    display_mesh.point_data["D(Total-dBi)"][np.isinf(display_mesh.point_data["D(Total-dBi)"])]=-200
     plot_max = 5 * np.ceil(np.nanmax(display_mesh.point_data["D(Total-dBi)"]) / 5)
+
+
+
+
+.. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_002.png
+   :alt: 05 array beamforming
+   :srcset: /auto_examples/images/sphx_glr_05_array_beamforming_002.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3719: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[2, :] = point_vector
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3736: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3758: ComplexWarning: Casting complex values to real discards the imaginary part
+      uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+    Steering Effciency of 3.8%
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\05_array_beamforming.py:125: RuntimeWarning: divide by zero encountered in log10
+      np.nanmax(10 * np.log10(directivity_map[:, :, 2]))
+    Maximum Directivity of 22.8 dBi
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1615: RuntimeWarning: divide by zero encountered in log10
+      logdata = log_multiplier * np.log10(pattern_mesh.point_data[label])
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\05_array_beamforming.py:134: RuntimeWarning: divide by zero encountered in log10
+      display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 141-143
+
+Visualise the Platform and the Beamformed Pattern
+----------
+
+.. GENERATED FROM PYTHON SOURCE LINES 143-155
+
+.. code-block:: Python
 
 
     pl = pv.Plotter()
@@ -267,9 +310,9 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
 
             
-     .. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_002.png
+     .. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_003.png
         :alt: 05 array beamforming
-        :srcset: /auto_examples/images/sphx_glr_05_array_beamforming_002.png
+        :srcset: /auto_examples/images/sphx_glr_05_array_beamforming_003.png
         :class: sphx-glr-single-img
      
 
@@ -278,35 +321,9 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
 
 
-       .. offlineviewer:: /auto_examples/images/sphx_glr_05_array_beamforming_002.vtksz
+       .. offlineviewer:: /auto_examples/images/sphx_glr_05_array_beamforming_003.vtksz
 
 
-.. image-sg:: /auto_examples/images/sphx_glr_05_array_beamforming_003.png
-   :alt: 05 array beamforming
-   :srcset: /auto_examples/images/sphx_glr_05_array_beamforming_003.png
-   :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3719: ComplexWarning: Casting complex values to real discards the imaginary part
-      uvn_axes[2, :] = point_vector
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3736: ComplexWarning: Casting complex values to real discards the imaginary part
-      uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3758: ComplexWarning: Casting complex values to real discards the imaginary part
-      uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
-      logdata = 10 * np.log10(data)
-    Steering Effciency of 3.8%
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\05_array_beamforming.py:125: RuntimeWarning: divide by zero encountered in log10
-      np.nanmax(10 * np.log10(directivity_map[:, :, 2]))
-    Maximum Directivity of 22.8 dBi
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1615: RuntimeWarning: divide by zero encountered in log10
-      logdata = log_multiplier * np.log10(pattern_mesh.point_data[label])
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\05_array_beamforming.py:134: RuntimeWarning: divide by zero encountered in log10
-      display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
 
 
 
@@ -314,7 +331,7 @@ and :func:`lyceanem.electromagnetics.beamforming.WavefrontWeights`
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (3 minutes 44.061 seconds)
+   **Total running time of the script:** (4 minutes 2.904 seconds)
 
 
 .. _sphx_glr_download_auto_examples_05_array_beamforming.py:

@@ -924,6 +924,22 @@
    "name": "float32"
   }
  ],
+ "np.isinf": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ufunc"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "isinf"
+  }
+ ],
  "np.linspace": [
   {
    "is_class": false,
