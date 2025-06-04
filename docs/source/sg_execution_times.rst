@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**05:25.357** total execution time for 7 files **from all galleries**:
+**07:35.856** total execution time for 7 files **from all galleries**:
 
 .. container::
 
@@ -32,24 +32,24 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_02_coherently_polarised_array.py` (``examples/02_coherently_polarised_array.py``)
-     - 01:48.023
+   * - :ref:`sphx_glr_auto_examples_05_array_beamforming.py` (``examples\05_array_beamforming.py``)
+     - 03:44.061
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_05_array_beamforming.py` (``examples/05_array_beamforming.py``)
-     - 01:47.766
+   * - :ref:`sphx_glr_auto_examples_02_coherently_polarised_array.py` (``examples\02_coherently_polarised_array.py``)
+     - 01:52.473
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_01_aperture_projection.py` (``examples/01_aperture_projection.py``)
-     - 00:38.115
+   * - :ref:`sphx_glr_auto_examples_03_frequency_domain_channel_modelling.py` (``examples\03_frequency_domain_channel_modelling.py``)
+     - 00:41.013
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_03_frequency_domain_channel_modelling.py` (``examples/03_frequency_domain_channel_modelling.py``)
-     - 00:37.870
+   * - :ref:`sphx_glr_auto_examples_01_aperture_projection.py` (``examples\01_aperture_projection.py``)
+     - 00:40.950
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_07_aperture_farfield_polarisation.py` (``examples/07_aperture_farfield_polarisation.py``)
-     - 00:20.433
+   * - :ref:`sphx_glr_auto_examples_07_aperture_farfield_polarisation.py` (``examples\07_aperture_farfield_polarisation.py``)
+     - 00:21.538
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_04_time_domain_channel_modelling.py` (``examples/04_time_domain_channel_modelling.py``)
-     - 00:11.554
+   * - :ref:`sphx_glr_auto_examples_04_time_domain_channel_modelling.py` (``examples\04_time_domain_channel_modelling.py``)
+     - 00:13.653
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_06_farfield_polarisation.py` (``examples/06_farfield_polarisation.py``)
-     - 00:01.596
+   * - :ref:`sphx_glr_auto_examples_06_farfield_polarisation.py` (``examples\06_farfield_polarisation.py``)
+     - 00:02.167
      - 0.0

@@ -1,0 +1,2067 @@
+{
+ "Ex": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "Ex2": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "Ex3": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "Excuda": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "ExdB": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "Ey": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "Ey2": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "Ey3": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "Eycuda": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "EydB": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "Ez": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "Ez2": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "Ez3": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "Ezcuda": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "EzdB": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "FD.calculate_scattering": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.models.frequency_domain",
+   "module_short": "lyceanem.models.frequency_domain",
+   "name": "calculate_scattering"
+  }
+ ],
+ "GF.mesh_rotate": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.geometry.geometryfunctions",
+   "module_short": "lyceanem.geometry.geometryfunctions",
+   "name": "mesh_rotate"
+  }
+ ],
+ "GF.mesh_translate": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.geometry.geometryfunctions",
+   "module_short": "lyceanem.geometry.geometryfunctions",
+   "name": "mesh_translate"
+  }
+ ],
+ "TL.meshedHorn": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.geometry.targets",
+   "module_short": "lyceanem.geometry.targets",
+   "name": "meshedHorn"
+  }
+ ],
+ "TL.meshedReflector": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.geometry.targets",
+   "module_short": "lyceanem.geometry.targets",
+   "name": "meshedReflector"
+  }
+ ],
+ "angle_inc": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "int"
+  }
+ ],
+ "angle_increment": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "float64"
+  }
+ ],
+ "angle_values": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "antenna_structures": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_structures"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_structures"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_structures"
+  }
+ ],
+ "ax": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes"
+  }
+ ],
+ "ax.legend": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.legend"
+  }
+ ],
+ "ax.plot": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.plot"
+  }
+ ],
+ "ax.set_xlim": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.set_xlim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.set_xlim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.set_xlim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.set_xlim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.set_xlim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.set_xlim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.set_xlim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.set_xlim"
+  }
+ ],
+ "ax.set_xticks": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.set_xticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.set_xticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.set_xticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.set_xticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.set_xticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.set_xticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.set_xticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.set_xticks"
+  }
+ ],
+ "ax.set_ylim": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.set_ylim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.set_ylim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.set_ylim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.set_ylim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.set_ylim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.set_ylim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.set_ylim"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.set_ylim"
+  }
+ ],
+ "ax.set_yticks": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.set_yticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.set_yticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.set_yticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.set_yticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.set_yticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.set_yticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.set_yticks"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.set_yticks"
+  }
+ ],
+ "blockers": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "structures"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "structures"
+  }
+ ],
+ "desired_E_axis": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "fig": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.figure",
+   "module_short": "matplotlib.figure",
+   "name": "Figure"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Figure"
+  }
+ ],
+ "freq": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "legend": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.legend",
+   "module_short": "matplotlib.legend",
+   "name": "Legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Legend"
+  }
+ ],
+ "lyceanem.geometryfunctions.mesh_rotate": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "lyceanem.geometryfunctions",
+   "module_short": "lyceanem.geometryfunctions",
+   "name": "mesh_rotate"
+  }
+ ],
+ "lyceanem.geometryfunctions.mesh_translate": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "lyceanem.geometryfunctions",
+   "module_short": "lyceanem.geometryfunctions",
+   "name": "mesh_translate"
+  }
+ ],
+ "lyceanem.models.frequency_domain.calculate_scattering": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "lyceanem.models.frequency_domain",
+   "module_short": "lyceanem.models.frequency_domain",
+   "name": "calculate_scattering"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "lyceanem.models.frequency_domain",
+   "module_short": "lyceanem.models.frequency_domain",
+   "name": "calculate_scattering"
+  }
+ ],
+ "mesh_resolution": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "float64"
+  }
+ ],
+ "normalised_max": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "float64"
+  }
+ ],
+ "np.abs": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ufunc"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "abs"
+  }
+ ],
+ "np.array": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "array"
+  }
+ ],
+ "np.asarray": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "asarray"
+  }
+ ],
+ "np.diff": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "diff"
+  }
+ ],
+ "np.float32": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "float32"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "floating"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "inexact"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "number"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "generic"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "float32"
+  }
+ ],
+ "np.linspace": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "linspace"
+  }
+ ],
+ "np.log10": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ufunc"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "log10"
+  }
+ ],
+ "np.max": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "max"
+  }
+ ],
+ "np.min": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "min"
+  }
+ ],
+ "np.nanmax": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "nanmax"
+  }
+ ],
+ "np.pi": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "float"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "pi"
+  }
+ ],
+ "np.radians": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ufunc"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "radians"
+  }
+ ],
+ "np.sum": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "sum"
+  }
+ ],
+ "np.zeros": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "zeros"
+  }
+ ],
+ "pl": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.plotter",
+   "module_short": "pyvista",
+   "name": "Plotter"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista",
+   "name": "Plotter"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "Plotter"
+  }
+ ],
+ "pl.add_axes": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.plotter",
+   "module_short": "pyvista",
+   "name": "Plotter.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista",
+   "name": "Plotter.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "Plotter.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.plotter",
+   "module_short": "pyvista",
+   "name": "BasePlotter.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista",
+   "name": "BasePlotter.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "BasePlotter.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.picking",
+   "module_short": "pyvista.plotting.picking",
+   "name": "PickingHelper.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "PickingHelper.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PickingHelper.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.widgets",
+   "module_short": "pyvista.plotting.widgets",
+   "name": "WidgetHelper.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "WidgetHelper.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "WidgetHelper.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.picking",
+   "module_short": "pyvista.plotting.picking",
+   "name": "PickingMethods.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "PickingMethods.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PickingMethods.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.picking",
+   "module_short": "pyvista.plotting.picking",
+   "name": "PickingInterface.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "PickingInterface.add_axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PickingInterface.add_axes"
+  }
+ ],
+ "pl.add_mesh": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.plotter",
+   "module_short": "pyvista",
+   "name": "Plotter.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista",
+   "name": "Plotter.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "Plotter.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.plotter",
+   "module_short": "pyvista",
+   "name": "BasePlotter.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista",
+   "name": "BasePlotter.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "BasePlotter.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.picking",
+   "module_short": "pyvista.plotting.picking",
+   "name": "PickingHelper.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "PickingHelper.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PickingHelper.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.widgets",
+   "module_short": "pyvista.plotting.widgets",
+   "name": "WidgetHelper.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "WidgetHelper.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "WidgetHelper.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.picking",
+   "module_short": "pyvista.plotting.picking",
+   "name": "PickingMethods.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "PickingMethods.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PickingMethods.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.picking",
+   "module_short": "pyvista.plotting.picking",
+   "name": "PickingInterface.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "PickingInterface.add_mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PickingInterface.add_mesh"
+  }
+ ],
+ "pl.show": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.plotter",
+   "module_short": "pyvista",
+   "name": "Plotter.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista",
+   "name": "Plotter.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "Plotter.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.plotter",
+   "module_short": "pyvista.plotting.plotter",
+   "name": "BasePlotter.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "BasePlotter.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "BasePlotter.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.picking",
+   "module_short": "pyvista.plotting.picking",
+   "name": "PickingHelper.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "PickingHelper.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PickingHelper.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.widgets",
+   "module_short": "pyvista.plotting.widgets",
+   "name": "WidgetHelper.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "WidgetHelper.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "WidgetHelper.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.picking",
+   "module_short": "pyvista.plotting.picking",
+   "name": "PickingMethods.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "PickingMethods.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PickingMethods.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting.picking",
+   "module_short": "pyvista.plotting.picking",
+   "name": "PickingInterface.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "PickingInterface.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PickingInterface.show"
+  }
+ ],
+ "plate_orientation_angle": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "float"
+  }
+ ],
+ "plt.grid": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.pyplot",
+   "module_short": "matplotlib.pyplot",
+   "name": "grid"
+  }
+ ],
+ "plt.show": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.pyplot",
+   "module_short": "matplotlib.pyplot",
+   "name": "show"
+  }
+ ],
+ "plt.subplots": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.pyplot",
+   "module_short": "matplotlib.pyplot",
+   "name": "subplots"
+  }
+ ],
+ "plt.xlabel": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.pyplot",
+   "module_short": "matplotlib.pyplot",
+   "name": "xlabel"
+  }
+ ],
+ "plt.ylabel": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.pyplot",
+   "module_short": "matplotlib.pyplot",
+   "name": "ylabel"
+  }
+ ],
+ "points": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "points"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "points"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "points"
+  }
+ ],
+ "position_vector": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "pv.Plotter": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista.plotting.plotter",
+   "module_short": "pyvista",
+   "name": "Plotter"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista",
+   "name": "Plotter"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "Plotter"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista.plotting.plotter",
+   "module_short": "pyvista",
+   "name": "BasePlotter"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista",
+   "name": "BasePlotter"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "BasePlotter"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista.plotting.picking",
+   "module_short": "pyvista",
+   "name": "PickingHelper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista",
+   "name": "PickingHelper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PickingHelper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista.plotting.widgets",
+   "module_short": "pyvista",
+   "name": "WidgetHelper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista",
+   "name": "WidgetHelper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "WidgetHelper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista.plotting.picking",
+   "module_short": "pyvista.plotting.picking",
+   "name": "PickingMethods"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "PickingMethods"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PickingMethods"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista.plotting.picking",
+   "module_short": "pyvista.plotting.picking",
+   "name": "PickingInterface"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista.plotting",
+   "module_short": "pyvista.plotting",
+   "name": "PickingInterface"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PickingInterface"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "Plotter"
+  }
+ ],
+ "pv.from_meshio": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "from_meshio"
+  }
+ ],
+ "receive_horn_structure": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio._mesh",
+   "module_short": "meshio",
+   "name": "Mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio",
+   "module_short": "meshio",
+   "name": "Mesh"
+  }
+ ],
+ "receiving_antenna_surface_coords": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio._mesh",
+   "module_short": "meshio",
+   "name": "Mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio",
+   "module_short": "meshio",
+   "name": "Mesh"
+  }
+ ],
+ "receiving_antenna_surface_coords.point_data": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core.datasetattributes",
+   "module_short": "pyvista",
+   "name": "DataSetAttributes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core",
+   "module_short": "pyvista",
+   "name": "DataSetAttributes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "DataSetAttributes"
+  }
+ ],
+ "reflectorplate": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio._mesh",
+   "module_short": "meshio",
+   "name": "Mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio",
+   "module_short": "meshio",
+   "name": "Mesh"
+  }
+ ],
+ "reflectorplate_temp": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio._mesh",
+   "module_short": "meshio",
+   "name": "Mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio",
+   "module_short": "meshio",
+   "name": "Mesh"
+  }
+ ],
+ "responsex": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "responsey": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "responsez": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "rotation_vector": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "rotation_vector1": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "rotation_vector2": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "rotation_vector3": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "scatter_points": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio._mesh",
+   "module_short": "meshio",
+   "name": "Mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio",
+   "module_short": "meshio",
+   "name": "Mesh"
+  }
+ ],
+ "scatter_points_temp": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio._mesh",
+   "module_short": "meshio",
+   "name": "Mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio",
+   "module_short": "meshio",
+   "name": "Mesh"
+  }
+ ],
+ "scattered_field": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "structures": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "structures"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "structures"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "structures"
+  }
+ ],
+ "tqdm": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tqdm.std",
+   "module_short": "tqdm",
+   "name": "tqdm"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tqdm",
+   "module_short": "tqdm",
+   "name": "tqdm"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tqdm.utils",
+   "module_short": "tqdm.utils",
+   "name": "Comparable"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tqdm",
+   "module_short": "tqdm",
+   "name": "Comparable"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tqdm",
+   "module_short": "tqdm",
+   "name": "tqdm"
+  }
+ ],
+ "transmit_horn": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_structures"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_structures"
+  }
+ ],
+ "transmit_horn.excitation_function": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "antenna_structures.excitation_function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "antenna_structures.excitation_function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.base_classes",
+   "module_short": "lyceanem.base_classes",
+   "name": "object3d.excitation_function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem",
+   "module_short": "lyceanem",
+   "name": "object3d.excitation_function"
+  }
+ ],
+ "transmit_horn_structure": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio._mesh",
+   "module_short": "meshio",
+   "name": "Mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio",
+   "module_short": "meshio",
+   "name": "Mesh"
+  }
+ ],
+ "transmitting_antenna_surface_coords": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio._mesh",
+   "module_short": "meshio",
+   "name": "Mesh"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "meshio",
+   "module_short": "meshio",
+   "name": "Mesh"
+  }
+ ],
+ "wavelength": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "float64"
+  }
+ ]
+}

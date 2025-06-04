@@ -2,9 +2,11 @@ name: Build
 
 
 on:
-  release:
-    types: [ published ]
   workflow_dispatch:
+  push:
+    branches: [ master,Development ]
+  pull_request:
+    branches: [ master,Development ]
 
 jobs:
   build:
@@ -26,7 +28,7 @@ jobs:
               name: "windows",
               os: "windows-latest",
               shell: "powershell {0}"
-              
+
           }
 
     environment:
@@ -43,9 +45,14 @@ jobs:
           python-version: ${{ matrix.python-version }}
           activate-environment: build_env
           miniforge-version: latest
-
-      - name: Clone the master branch
-        run: git clone --branch master https://github.com/${{ env.REPO }}
+#
+      - name: Clone the devel branch (push to devel)
+        run: git clone --branch Development https://github.com/${{ env.REPO }}
+        if: github.event_name != 'pull_request'
+#
+      - name: Clone the feature branch (pull request to devel)
+        run: git clone --branch Development https://github.com/${{ env.REPO }}
+        if: github.event_name == 'pull_request'
 #
       - name: Setup Conda
         run: conda install -y -c conda-forge boa anaconda-client ninja

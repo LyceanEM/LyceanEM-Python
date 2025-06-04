@@ -9,8 +9,6 @@ import numpy as np
 import gmsh
 import pyvista as pv
 
-from .geometryfunctions import compute_areas
-from ..geometry import geometryfunctions as GF
 
 EPSILON = 1e-6  # how close to zero do we consider zero?
 
@@ -216,8 +214,9 @@ def meshedHorn(
     mesh_points = gridedReflectorPoints(
         majorsize, minorsize, 1e-6, grid_resolution, sides
     )
+    from .geometryfunctions import mesh_translate
 
-    mesh_points = GF.mesh_translate(mesh_points, [0, 0, EPSILON * 2])
+    mesh_points = mesh_translate(mesh_points, [0, 0, EPSILON * 2])
 
     return structure, mesh_points
 
