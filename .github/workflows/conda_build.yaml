@@ -2,9 +2,11 @@ name: Build
 
 
 on:
-  release:
-    types: [ published ]
   workflow_dispatch:
+  push:
+    branches: [ Development ]
+  pull_request:
+    branches: [ Development ]
 
 jobs:
   build:
@@ -44,7 +46,7 @@ jobs:
           activate-environment: build_env
           miniforge-version: latest
 
-      - name: Clone the master branch
+      - name: Clone the Development branch
         run: git clone --branch Development https://github.com/${{ env.REPO }}
 #
       - name: Setup Conda
