@@ -144,7 +144,7 @@ sphinx_gallery_conf = {
     # directory where function granular galleries are stored
     "backreferences_dir": None,
     # dont run examples that have already been built
-    "run_stale_examples": False,
+    "run_stale_examples": True,
     "image_scrapers": (DynamicScraper(), "matplotlib"),
     "first_notebook_cell": (
         "%matplotlib inline\n"
