@@ -47,11 +47,11 @@ jobs:
           miniforge-version: latest
 #
       - name: Clone the devel branch (push to devel)
-        run:   run: git clone --branch ${{ github.head_ref || github.ref_name }} https://github.com/${{ env.REPO }}
+        run:  git clone --branch ${{ github.head_ref || github.ref_name }} https://github.com/${{ env.REPO }}
         if: github.event_name != 'pull_request'
 #
       - name: Clone the feature branch (pull request to devel)
-        run:   run: git clone --branch ${{ github.head_ref || github.ref_name }} https://github.com/${{ env.REPO }}
+        run:  git clone --branch ${{ github.head_ref || github.ref_name }} https://github.com/${{ env.REPO }}
         if: github.event_name == 'pull_request'
 #
       - name: Setup Conda
