@@ -59,6 +59,7 @@ branch = run_cmd(f"git branch --show-current")
 #    # this is a development release
 #    print("\nNo tag is set. This is a 'devel' release.")
 #    label = "--label dev"
+print( "branch is ", branch"
 if branch=="master":
     print(f"\nBranch {branch} is set. This is a 'main' release.")
     label = "--label main"
