@@ -269,8 +269,8 @@ def compute_areas(field_data):
     """
     import pyvista as pv
     temp_pv=pv.from_meshio(field_data).extract_surface()
-    temp_pv.compute_cell_sizes(length=False,volume=False)
-    field_data=pv.to_meshio(temp_pv)
+    field_data=pv.to_meshio(temp_pv.compute_cell_sizes(length=False,volume=False))
+
     # cell_areas = []
     # for inc, cell in enumerate(field_data.cells):
     #
@@ -362,8 +362,8 @@ def compute_normals(mesh):
     """
     import pyvista as pv
     temp_pv=pv.from_meshio(mesh).extract_surface()
-    temp_pv.compute_normals()
-    mesh=pv.to_meshio(temp_pv)
+    mesh=pv.to_meshio(temp_pv.compute_normals())
+
     # cell_normal_list = []
     # for inc, cell in enumerate(mesh.cells):
     #     # print(cell.type, cell.data.shape[0])
