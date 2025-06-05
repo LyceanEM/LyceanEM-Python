@@ -54,7 +54,7 @@ requirements:
     - conda-forge::cupy
     - conda-forge::importlib_resources
     - conda-forge::meshio
-    - conda-forge::pyvista
+    - conda-forge::pyvista>=0.45
     - conda-forge::python-gmsh
 
 

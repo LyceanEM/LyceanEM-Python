@@ -268,7 +268,7 @@ def compute_areas(field_data):
         The meshio mesh object with the computed areas added to the cell data and point data.
     """
     import pyvista as pv
-    temp_pv=pv.from_meshio(field_data)
+    temp_pv=pv.from_meshio(field_data).extract_surface()
     temp_pv.compute_cell_sizes(length=False,volume=False)
     field_data=pv.to_meshio(temp_pv)
     # cell_areas = []
@@ -361,7 +361,7 @@ def compute_normals(mesh):
 
     """
     import pyvista as pv
-    temp_pv=pv.from_meshio(mesh)
+    temp_pv=pv.from_meshio(mesh).extract_surface()
     temp_pv.compute_normals()
     mesh=pv.to_meshio(temp_pv)
     # cell_normal_list = []
