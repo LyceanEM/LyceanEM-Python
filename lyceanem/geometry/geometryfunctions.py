@@ -268,8 +268,9 @@ def compute_areas(field_data):
         The meshio mesh object with the computed areas added to the cell data and point data.
     """
     import pyvista as pv
-    temp_pv=pv.from_meshio(field_data).extract_surface()
-    field_data=pv.to_meshio(temp_pv.compute_cell_sizes(length=False,volume=False))
+
+    temp_pv = pv.from_meshio(field_data).extract_surface()
+    field_data = pv.to_meshio(temp_pv.compute_cell_sizes(length=False, volume=False))
 
     # cell_areas = []
     # for inc, cell in enumerate(field_data.cells):
@@ -330,16 +331,16 @@ def compute_areas(field_data):
     #         cell_areas.append(areas)
     #
     # field_data.cell_data["Area"] = cell_areas
-    # field_data.point_data["Area"] = np.zeros((field_data.points.shape[0]))
-    # for inc, cell in enumerate(field_data.cells):
-    #     if field_data.cells[inc].type == "triangle":
-    #         for point_inc in range(field_data.points.shape[0]):
-    #             field_data.point_data["Area"][point_inc] = np.sum(
-    #                 field_data.cell_data["Area"][inc][
-    #                     np.where(field_data.cells[inc].data == point_inc)[0]
-    #                 ]
-    #                 / 3
-    #             )
+    field_data.point_data["Area"] = np.zeros((field_data.points.shape[0]))
+    for inc, cell in enumerate(field_data.cells):
+        if field_data.cells[inc].type == "triangle":
+            for point_inc in range(field_data.points.shape[0]):
+                field_data.point_data["Area"][point_inc] = np.sum(
+                    field_data.cell_data["Area"][inc][
+                        np.where(field_data.cells[inc].data == point_inc)[0]
+                    ]
+                    / 3
+                )
 
     return field_data
 
@@ -361,8 +362,9 @@ def compute_normals(mesh):
 
     """
     import pyvista as pv
-    temp_pv=pv.from_meshio(mesh).extract_surface()
-    mesh=pv.to_meshio(temp_pv.compute_normals())
+
+    temp_pv = pv.from_meshio(mesh).extract_surface()
+    mesh = pv.to_meshio(temp_pv.compute_normals())
 
     # cell_normal_list = []
     # for inc, cell in enumerate(mesh.cells):
