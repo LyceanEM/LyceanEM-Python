@@ -237,11 +237,11 @@ class points(object3d):
                     points = np.append(points, self.points[item].points, axis=0)
             point_data = {}
             for key in self.points[point_index[0]].point_data.keys():
-                if len(self.points[0].point_data[key].shape) < 2:
+                if len(self.points[point_index[0]].point_data[key].shape) < 2:
                     point_data[key] = np.empty((0, 1))
                 else:
                     point_data[key] = np.empty(
-                        (0, self.points[0].point_data[key].shape[1])
+                        (0, self.points[point_index[0]].point_data[key].shape[1])
                     )
                 for item in point_index:
                     point_data_element = np.array(self.points[item].point_data[key])
