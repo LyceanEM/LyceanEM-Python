@@ -335,12 +335,22 @@ def compute_areas(field_data):
     for inc, cell in enumerate(field_data.cells):
         if field_data.cells[inc].type == "triangle":
             for point_inc in range(field_data.points.shape[0]):
-                field_data.point_data["Area"][point_inc] = np.sum(
-                    field_data.cell_data["Area"][inc][
-                        np.where(field_data.cells[inc].data == point_inc)[0]
-                    ]
-                    / 3
+                valid_triangles = np.any(
+                    field_data.cells[inc].data == point_inc, axis=1
+                ).nonzero()[0]
+                field_data.point_data["Area"][point_inc] = (
+                    np.sum(field_data.cell_data["Area"][inc][valid_triangles]) / 3
                 )
+
+        elif field_data.cells[inc].type == "quad":
+            for point_inc in range(field_data.points.shape[0]):
+                for point_inc in range(field_data.points.shape[0]):
+                    valid_quads = np.any(
+                        field_data.cells[inc].data == point_inc, axis=1
+                    ).nonzero()[0]
+                    field_data.point_data["Area"][point_inc] = (
+                        np.sum(field_data.cell_data["Area"][inc][valid_quads]) / 4
+                    )
 
     return field_data
 
