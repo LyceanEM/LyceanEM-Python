@@ -269,7 +269,7 @@ def compute_areas(field_data):
     """
     import pyvista as pv
 
-    temp_pv = pv.from_meshio(field_data).extract_surface()
+    temp_pv = pv.from_meshio(field_data)
     field_data = pv.to_meshio(temp_pv.compute_cell_sizes(length=False, volume=False))
 
     # cell_areas = []
