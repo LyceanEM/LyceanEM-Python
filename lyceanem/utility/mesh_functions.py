@@ -58,7 +58,7 @@ def meshio_to_pyvista(meshio_object):
         polydata_object.point_data[key] = meshio_object.point_data[key]
 
     for key in meshio_object.cell_data.keys():
-        polydata_object.cell_data[key] = meshio_object.cell_data[key]
+        polydata_object.cell_data[key] = meshio_object.cell_data[key][0]
     return polydata_object
 
 
