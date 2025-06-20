@@ -16,16 +16,19 @@ def pyvista_to_meshio(polydata_object):
     meshio_object : :type:`meshio.Mesh`
         The converted meshio object.
     """
-    # extract only the triangles
-    if type(polydata_object) == pv.core.pointset.UnstructuredGrid:
-        cells = id_cells(polydata_object.cells)
+    from packaging.version import parse as parse_version
+    if parse_version(pv.__version__)>=parse_version("0.45.0"):
+        meshio_object=pv.from_meshio(polydata_object)
     else:
-        cells = id_cells(polydata_object.faces)
-    meshio_object = meshio.Mesh(
-        points=polydata_object.points,
-        cells=cells,
-        point_data=polydata_object.point_data,
-    )
+        if type(polydata_object) == pv.core.pointset.UnstructuredGrid:
+            cells = id_cells(polydata_object.cells)
+        else:
+            cells = id_cells(polydata_object.faces)
+        meshio_object = meshio.Mesh(
+            points=polydata_object.points,
+            cells=cells,
+            point_data=polydata_object.point_data,
+        )
     return meshio_object
 
 
