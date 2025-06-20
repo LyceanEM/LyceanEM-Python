@@ -1568,7 +1568,7 @@ def create_display_mesh(
     label="Poynting_Vector_(Magnitude_(W/m2))",
     log_type="power",
     plot_max=None,
-    dynamic_range=40
+    dynamic_range=40,
 ):
     """
     Create a display mesh for the field data, with normals and scaled points based on the field radius.
@@ -1594,7 +1594,9 @@ def create_display_mesh(
         A PyVista PolyData object containing the display mesh with normals and scaled points.
 
     """
-    pattern_mesh = pv.from_meshio(field_data).copy().clean(tolerance=1e-6)
+    from ..utility.mesh_functions import meshio_to_pyvista
+
+    pattern_mesh = meshio_to_pyvista(field_data).copy().clean(tolerance=1e-6)
     # pattern_mesh=pv.PolyData(normals).delaunay_2d(inplace=True)
     # pattern_mesh.compute_normals(inplace=True,flip_normals=False) # for some reason the computed normals are all inwards unless I set flip_normals to True
 
