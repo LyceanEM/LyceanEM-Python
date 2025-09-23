@@ -1724,3 +1724,28 @@ def AnimatedPatterns(
         pl.write_frame()
 
     pl.close()
+
+def Beamform(Antennas,weights):
+    field_shape=Antennas[0].point_data['Ex-Real'].shape
+    beamformed_map=np.zeros((field_shape[0],3),dtype=np.complex64)
+    
+    for element in range(len(Antennas)):
+        beamformed_map[:,0]+=((Antennas[element].point_data['Ex-Real'] + 1j * Antennas[element].point_data['Ex-Imag'])*weights[element].reshape(1,-1)).ravel()
+        beamformed_map[:,1]+=((Antennas[element].point_data['Ey-Real'] + 1j * Antennas[element].point_data['Ey-Imag'])*weights[element].reshape(1,-1)).ravel()
+        beamformed_map[:,2]+=((Antennas[element].point_data['Ez-Real'] + 1j * Antennas[element].point_data['Ez-Imag'])*weights[element].reshape(1,-1)).ravel()
+
+    
+    
+    beamformed_pattern=meshio.Mesh(points=Antennas[0].points,
+                                  cells=[("triangle",Antennas[0].cells[0].data)],
+                                  point_data={'Normals': Antennas[0].point_data['Normals'],
+                                              'Ex-Real': np.real(beamformed_map[:,0]),
+                                              'Ex-Imag': np.imag(beamformed_map[:,0]),
+                                              'Ey-Real': np.real(beamformed_map[:,1]),
+                                              'Ey-Imag': np.imag(beamformed_map[:,1]),
+                                              'Ez-Real': np.real(beamformed_map[:,2]),
+                                              'Ez-Imag': np.imag(beamformed_map[:,2])
+                                              })
+    
+    
+    return beamformed_pattern
