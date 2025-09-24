@@ -18,7 +18,7 @@ requirements:
   - conda-forge::cmake
   - conda-forge::ninja
   - conda-forge::scikit-build
-  - conda-forge::cxx-compiler
+  - {{ compiler('cxx') }}
 
   # NVIDIA components to build CUDA code (no full runtime)
   - nvidia::cuda-nvcc
