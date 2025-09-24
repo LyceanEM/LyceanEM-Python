@@ -862,11 +862,6 @@ def Meshio_Pattern(azimuth, elevation, Ea, Eb, field_radius=1.0):
         DESCRIPTION.
 
     """
-    from ...geometry.geometryfunctions import (
-        thetatoelevation,
-        compute_areas,
-        compute_normals,
-    )
     from ...geometry.targets import spherical_field
 
     field_data = spherical_field(
