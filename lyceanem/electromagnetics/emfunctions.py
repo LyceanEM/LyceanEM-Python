@@ -740,11 +740,9 @@ def calculate_total_gaseous_attenuation(frequency, pressure, temperature):
     oxygen_lines_temp = oxygen_lines()
     water_vapor_lines_temp = water_vapour_lines()
     # Calculate specific attenuation
-    oxygen_attenuation = calculate_oxygen_attenuation(
-        frequency, pressure, temperature, oxygen_lines_temp
-    )
+    oxygen_attenuation = calculate_oxygen_attenuation(frequency, pressure, temperature)
     water_vapor_attenuation = calculate_water_vapor_attenuation(
-        frequency, pressure, temperature, water_vapor_lines_temp
+        frequency, pressure, temperature
     )
     specific_attenuation = (
         0.1820 * frequency * (oxygen_attenuation + water_vapor_attenuation)
