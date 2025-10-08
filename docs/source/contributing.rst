@@ -11,9 +11,11 @@ Development Roadmap
 ---------------------
 `LyceanEM` is electromagnetics simulation software that is used by researchers and engineers in a variety of fields. The software is currently under development, and the developers have outlined a roadmap for future changes. The roadmap includes three key areas:
 
-* Computational efficiency and scalability: The developers plan to improve the computational efficiency of `LyceanEM` so that it can be used on a wider range of hardware platforms, including desktop computers and high-performance computing (HPC) clusters. This will make `LyceanEM` more accessible to a wider range of users. It is the intention of the developers to support antenna arrays with multiple billon antenna elements, `Giga-scale` antenna arrays.
-* Core propagation engine: The developers plan to improve the core propagation engine of `LyceanEM` to include more realistic models of lossy propagation, atmospheric effects for each layer of the atmosphere, and dynamic environments. This will make `LyceanEM` more accurate and versatile for a wider range of applications.
-* Modelling fidelity: The developers plan to add new features to `LyceanEM` that will allow users to model electromagnetic systems with greater fidelity. This includes support for importing antenna patterns and time domain sources, as well as the development of open source standards for antenna array designs, antenna patterns and field sources, and wireless power transfer.
+* Computational Efficiency and Scalability: The inclusion of the new CUDA propagation engine has significantly improved the computational efficiency of `LyceanEM`, future development will focus on the inclusion of chunking algorithms that will allow `LyceanEM` models to be distributed across multiple GPUs, enabling the simulation of larger and more complex models. New modelling approaches will also be developed to take advantage of the improved computational speed of tensor-cores.
+
+* Time Domain Model: The time domain model will be developed to include it's own variant of the CUDA propagation engine, together with support for dynamic environments allowing the simulation of doppler effects.
+
+
 
 Here are some specific ways that users can contribute to the development of `LyceanEM`:
 

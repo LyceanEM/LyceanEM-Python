@@ -104,7 +104,7 @@ directivity_envelope, pcd = aperture_projection(
 # Maximum Directivity
 print(
     "Maximum Directivity of {:3.1f} dBi".format(
-        np.max(10 * np.log10(directivity_envelope))
+        np.nanmax(10 * np.log10(directivity_envelope))
     )
 )
 # %%
@@ -165,7 +165,7 @@ fig.show()
 # Visualising the Output
 # ------------------------
 # The pyvista library is used to visualise the geometry of the UAV and the antenna array, as well as the resultant aperture directivity envelope.
-
+pcd.point_data["Directivity_Envelope_(dBi)"][np.isinf(pcd.point_data["Directivity_Envelope_(dBi)"])]=-200
 pl = pv.Plotter()
 pl.add_mesh(pv.from_meshio(body), color="green")
 pl.add_mesh(pv.from_meshio(array), color="aqua")

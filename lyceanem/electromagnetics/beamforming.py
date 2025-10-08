@@ -1568,7 +1568,7 @@ def create_display_mesh(
     label="Poynting_Vector_(Magnitude_(W/m2))",
     log_type="power",
     plot_max=None,
-    dynamic_range=40
+    dynamic_range=40,
 ):
     """
     Create a display mesh for the field data, with normals and scaled points based on the field radius.
@@ -1594,7 +1594,9 @@ def create_display_mesh(
         A PyVista PolyData object containing the display mesh with normals and scaled points.
 
     """
-    pattern_mesh = pv.from_meshio(field_data).copy().clean(tolerance=1e-6)
+    from ..utility.mesh_functions import meshio_to_pyvista
+
+    pattern_mesh = meshio_to_pyvista(field_data).copy().clean(tolerance=1e-6)
     # pattern_mesh=pv.PolyData(normals).delaunay_2d(inplace=True)
     # pattern_mesh.compute_normals(inplace=True,flip_normals=False) # for some reason the computed normals are all inwards unless I set flip_normals to True
 
@@ -1722,3 +1724,28 @@ def AnimatedPatterns(
         pl.write_frame()
 
     pl.close()
+
+def Beamform(Antennas,weights):
+    field_shape=Antennas[0].point_data['Ex-Real'].shape
+    beamformed_map=np.zeros((field_shape[0],3),dtype=np.complex64)
+    
+    for element in range(len(Antennas)):
+        beamformed_map[:,0]+=((Antennas[element].point_data['Ex-Real'] + 1j * Antennas[element].point_data['Ex-Imag'])*weights[element].reshape(1,-1)).ravel()
+        beamformed_map[:,1]+=((Antennas[element].point_data['Ey-Real'] + 1j * Antennas[element].point_data['Ey-Imag'])*weights[element].reshape(1,-1)).ravel()
+        beamformed_map[:,2]+=((Antennas[element].point_data['Ez-Real'] + 1j * Antennas[element].point_data['Ez-Imag'])*weights[element].reshape(1,-1)).ravel()
+
+    
+    
+    beamformed_pattern=meshio.Mesh(points=Antennas[0].points,
+                                  cells=[("triangle",Antennas[0].cells[0].data)],
+                                  point_data={'Normals': Antennas[0].point_data['Normals'],
+                                              'Ex-Real': np.real(beamformed_map[:,0]),
+                                              'Ex-Imag': np.imag(beamformed_map[:,0]),
+                                              'Ey-Real': np.real(beamformed_map[:,1]),
+                                              'Ey-Imag': np.imag(beamformed_map[:,1]),
+                                              'Ez-Real': np.real(beamformed_map[:,2]),
+                                              'Ez-Imag': np.imag(beamformed_map[:,2])
+                                              })
+    
+    
+    return beamformed_pattern

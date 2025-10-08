@@ -16,7 +16,10 @@ def pyvista_to_meshio(polydata_object):
     meshio_object : :type:`meshio.Mesh`
         The converted meshio object.
     """
-    # extract only the triangles
+    # from packaging.version import parse as parse_version
+    # if parse_version(pv.__version__)>=parse_version("0.45.0"):
+    #    meshio_object=pv.from_meshio(polydata_object)
+    # else:
     if type(polydata_object) == pv.core.pointset.UnstructuredGrid:
         cells = id_cells(polydata_object.cells)
     else:
@@ -27,6 +30,36 @@ def pyvista_to_meshio(polydata_object):
         point_data=polydata_object.point_data,
     )
     return meshio_object
+
+
+def meshio_to_pyvista(meshio_object):
+    """
+    Convert a meshio object to a pyvista object.
+
+    Parameters
+    ----------
+    meshio_object : :type:`meshio.Mesh`
+        The meshio object to convert.
+
+    Returns
+    -------
+    pyvista_object : :type:`pyvista.PolyData` or :type:`pyvista.UnstructuredGrid`
+        The converted pyvista object.
+    """
+    import numpy as np
+
+    for cell in meshio_object.cells:
+        if cell.type == "triangle":
+            tris = cell.data
+            faces = np.hstack((np.ones((tris.shape[0], 1), dtype=int) * 3, tris))
+
+    polydata_object = pv.PolyData(meshio_object.points, faces=faces)
+    for key in meshio_object.point_data.keys():
+        polydata_object.point_data[key] = meshio_object.point_data[key]
+
+    for key in meshio_object.cell_data.keys():
+        polydata_object.cell_data[key] = meshio_object.cell_data[key][0]
+    return polydata_object
 
 
 def id_cells(faces):

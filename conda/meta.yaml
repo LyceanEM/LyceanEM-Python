@@ -1,6 +1,6 @@
 package:
   name: lyceanem
-  version: 0.1.0
+  version: {{ GIT_DESCRIBE_TAG }}
 source:
   path: ..
 
@@ -12,12 +12,13 @@ requirements:
   build:
   - python                    # from defaults or conda-forge
   - pip                       # from defaults or conda-forge
+  - git
   - conda-forge::numpy
   - conda-forge::pybind11
   - conda-forge::cmake
   - conda-forge::ninja
   - conda-forge::scikit-build
-  - conda-forge::cxx-compiler
+  - {{ compiler('cxx') }}
 
   # NVIDIA components to build CUDA code (no full runtime)
   - nvidia::cuda-nvcc
@@ -54,7 +55,7 @@ requirements:
     - conda-forge::cupy
     - conda-forge::importlib_resources
     - conda-forge::meshio
-    - conda-forge::pyvista
+    - conda-forge::pyvista>=0.45
     - conda-forge::python-gmsh
 
 

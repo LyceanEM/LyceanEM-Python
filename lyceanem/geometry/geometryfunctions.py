@@ -267,75 +267,91 @@ def compute_areas(field_data):
     field_data : :type:`meshio.Mesh`
         The meshio mesh object with the computed areas added to the cell data and point data.
     """
-    cell_areas = []
-    for inc, cell in enumerate(field_data.cells):
+    import pyvista as pv
+    from ..utility.mesh_functions import meshio_to_pyvista
 
-        if cell.type == "triangle":
-            # Heron's Formula
-            edge1 = np.linalg.norm(
-                field_data.points[cell.data[:, 0], :]
-                - field_data.points[cell.data[:, 1], :],
-                axis=1,
-            )
-            edge2 = np.linalg.norm(
-                field_data.points[cell.data[:, 1], :]
-                - field_data.points[cell.data[:, 2], :],
-                axis=1,
-            )
-            edge3 = np.linalg.norm(
-                field_data.points[cell.data[:, 2], :]
-                - field_data.points[cell.data[:, 0], :],
-                axis=1,
-            )
-            s = (edge1 + edge2 + edge3) / 2.0
-            areas = (s * (s - edge1) * (s - edge2) * (s - edge3)) ** 0.5
-            cell_areas.append(areas)
-        if cell.type == "quad":
-            # Heron's Formula twice
-            edge1 = np.linalg.norm(
-                field_data.points[cell.data[:, 0], :]
-                - field_data.points[cell.data[:, 1], :],
-                axis=1,
-            )
-            edge2 = np.linalg.norm(
-                field_data.points[cell.data[:, 1], :]
-                - field_data.points[cell.data[:, 2], :],
-                axis=1,
-            )
-            edge3 = np.linalg.norm(
-                field_data.points[cell.data[:, 2], :]
-                - field_data.points[cell.data[:, 0], :],
-                axis=1,
-            )
-            edge4 = np.linalg.norm(
-                field_data.points[cell.data[:, 2], :]
-                - field_data.points[cell.data[:, 3], :],
-                axis=1,
-            )
-            edge5 = np.linalg.norm(
-                field_data.points[cell.data[:, 3], :]
-                - field_data.points[cell.data[:, 0], :],
-                axis=1,
-            )
+    temp_pv = meshio_to_pyvista(field_data)
+    field_data = pv.to_meshio(temp_pv.compute_cell_sizes(length=False, volume=False))
 
-            s1 = (edge1 + edge2 + edge3) / 2.0
-            s2 = (edge3 + edge4 + edge5) / 2.0
-            areas = (s1 * ((s1 - edge1) * (s1 - edge2) * (s1 - edge3))) ** 0.5 + (
-                s2 * (s2 - edge3) * (s2 - edge4) * (s2 - edge5)
-            ) ** 0.5
-            cell_areas.append(areas)
-
-    field_data.cell_data["Area"] = cell_areas
+    # cell_areas = []
+    # for inc, cell in enumerate(field_data.cells):
+    #
+    #     if cell.type == "triangle":
+    #         # Heron's Formula
+    #         edge1 = np.linalg.norm(
+    #             field_data.points[cell.data[:, 0], :]
+    #             - field_data.points[cell.data[:, 1], :],
+    #             axis=1,
+    #         )
+    #         edge2 = np.linalg.norm(
+    #             field_data.points[cell.data[:, 1], :]
+    #             - field_data.points[cell.data[:, 2], :],
+    #             axis=1,
+    #         )
+    #         edge3 = np.linalg.norm(
+    #             field_data.points[cell.data[:, 2], :]
+    #             - field_data.points[cell.data[:, 0], :],
+    #             axis=1,
+    #         )
+    #         s = (edge1 + edge2 + edge3) / 2.0
+    #         areas = (s * (s - edge1) * (s - edge2) * (s - edge3)) ** 0.5
+    #         cell_areas.append(areas)
+    #     if cell.type == "quad":
+    #         # Heron's Formula twice
+    #         edge1 = np.linalg.norm(
+    #             field_data.points[cell.data[:, 0], :]
+    #             - field_data.points[cell.data[:, 1], :],
+    #             axis=1,
+    #         )
+    #         edge2 = np.linalg.norm(
+    #             field_data.points[cell.data[:, 1], :]
+    #             - field_data.points[cell.data[:, 2], :],
+    #             axis=1,
+    #         )
+    #         edge3 = np.linalg.norm(
+    #             field_data.points[cell.data[:, 2], :]
+    #             - field_data.points[cell.data[:, 0], :],
+    #             axis=1,
+    #         )
+    #         edge4 = np.linalg.norm(
+    #             field_data.points[cell.data[:, 2], :]
+    #             - field_data.points[cell.data[:, 3], :],
+    #             axis=1,
+    #         )
+    #         edge5 = np.linalg.norm(
+    #             field_data.points[cell.data[:, 3], :]
+    #             - field_data.points[cell.data[:, 0], :],
+    #             axis=1,
+    #         )
+    #
+    #         s1 = (edge1 + edge2 + edge3) / 2.0
+    #         s2 = (edge3 + edge4 + edge5) / 2.0
+    #         areas = (s1 * ((s1 - edge1) * (s1 - edge2) * (s1 - edge3))) ** 0.5 + (
+    #             s2 * (s2 - edge3) * (s2 - edge4) * (s2 - edge5)
+    #         ) ** 0.5
+    #         cell_areas.append(areas)
+    #
+    # field_data.cell_data["Area"] = cell_areas
     field_data.point_data["Area"] = np.zeros((field_data.points.shape[0]))
     for inc, cell in enumerate(field_data.cells):
         if field_data.cells[inc].type == "triangle":
             for point_inc in range(field_data.points.shape[0]):
-                field_data.point_data["Area"][point_inc] = np.sum(
-                    field_data.cell_data["Area"][inc][
-                        np.where(field_data.cells[inc].data == point_inc)[0]
-                    ]
-                    / 3
+                valid_triangles = np.any(
+                    field_data.cells[inc].data == point_inc, axis=1
+                ).nonzero()[0]
+                field_data.point_data["Area"][point_inc] = (
+                    np.sum(field_data.cell_data["Area"][inc][valid_triangles]) / 3
                 )
+
+        elif field_data.cells[inc].type == "quad":
+            for point_inc in range(field_data.points.shape[0]):
+                for point_inc in range(field_data.points.shape[0]):
+                    valid_quads = np.any(
+                        field_data.cells[inc].data == point_inc, axis=1
+                    ).nonzero()[0]
+                    field_data.point_data["Area"][point_inc] = (
+                        np.sum(field_data.cell_data["Area"][inc][valid_quads]) / 4
+                    )
 
     return field_data
 
@@ -356,68 +372,74 @@ def compute_normals(mesh):
         The meshio mesh object with the computed normals added to the cell data and point data.
 
     """
-    cell_normal_list = []
-    for inc, cell in enumerate(mesh.cells):
-        # print(cell.type, cell.data.shape[0])
-        if cell.type == "vertex":
-            # assume outward pointing normals from centroid
-            vertex_normals = mesh.points[cell.data[:, 0], :] / np.linalg.norm(
-                mesh.points[cell.data[:, 0], :], axis=1
-            ).reshape(-1, 1)
-            cell_normal_list.append(vertex_normals)
-        if cell.type == "line":
-            line_normals = np.zeros((cell.data.shape[0], 3))
-            cell_normal_list.append(line_normals)
-        if cell.type == "triangle":
-            # print(inc)
-            edge1 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 1], :]
-            edge2 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 2], :]
-            tri_cell_normals = np.cross(edge1, edge2)
-            tri_cell_normals *= (1 / np.linalg.norm(tri_cell_normals, axis=1)).reshape(
-                -1, 1
-            )
-            cell_normal_list.append(tri_cell_normals)
-        if cell.type == "tetra":
-            # print(inc)
-            edge1 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 1], :]
-            edge2 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 2], :]
-            tetra_cell_normals = np.cross(edge1, edge2)
-            tetra_cell_normals *= (
-                1 / np.linalg.norm(tetra_cell_normals, axis=1)
-            ).reshape(-1, 1)
-            cell_normal_list.append(tetra_cell_normals)
+    import pyvista as pv
+    from ..utility.mesh_functions import meshio_to_pyvista
 
-    mesh.cell_data["Normals"] = cell_normal_list
+    temp_pv = meshio_to_pyvista(mesh)
+    mesh = pv.to_meshio(temp_pv.compute_normals())
 
-    # calculate vertex normals
-    point_normals = np.empty((0, 3))
-    for inc, cell in enumerate(mesh.cells):
-        if cell.type == "triangle":
-            for inc_b in range(mesh.points.shape[0]):
-                associated_cells = np.where(inc_b == cell.data)[0]
-                # print(associated_cells)
-                point_normals = np.append(
-                    point_normals,
-                    np.mean(
-                        mesh.cell_data["Normals"][0][associated_cells, :], axis=0
-                    ).reshape(1, 3),
-                    axis=0,
-                )
-        if cell.type == "vertex":
-            for inc_b in range(mesh.points.shape[0]):
-                associated_cells = np.where(inc_b == cell.data)[0]
-                # print(associated_cells)
-                point_normals = np.append(
-                    point_normals,
-                    np.mean(
-                        mesh.cell_data["Normals"][0][associated_cells, :], axis=0
-                    ).reshape(1, 3),
-                    axis=0,
-                )
-
-    mesh.point_data["Normals"] = point_normals / np.linalg.norm(
-        point_normals, axis=1
-    ).reshape(-1, 1)
+    # cell_normal_list = []
+    # for inc, cell in enumerate(mesh.cells):
+    #     # print(cell.type, cell.data.shape[0])
+    #     if cell.type == "vertex":
+    #         # assume outward pointing normals from centroid
+    #         vertex_normals = mesh.points[cell.data[:, 0], :] / np.linalg.norm(
+    #             mesh.points[cell.data[:, 0], :], axis=1
+    #         ).reshape(-1, 1)
+    #         cell_normal_list.append(vertex_normals)
+    #     if cell.type == "line":
+    #         line_normals = np.zeros((cell.data.shape[0], 3))
+    #         cell_normal_list.append(line_normals)
+    #     if cell.type == "triangle":
+    #         # print(inc)
+    #         edge1 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 1], :]
+    #         edge2 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 2], :]
+    #         tri_cell_normals = np.cross(edge1, edge2)
+    #         tri_cell_normals *= (1 / np.linalg.norm(tri_cell_normals, axis=1)).reshape(
+    #             -1, 1
+    #         )
+    #         cell_normal_list.append(tri_cell_normals)
+    #     if cell.type == "tetra":
+    #         # print(inc)
+    #         edge1 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 1], :]
+    #         edge2 = mesh.points[cell.data[:, 0], :] - mesh.points[cell.data[:, 2], :]
+    #         tetra_cell_normals = np.cross(edge1, edge2)
+    #         tetra_cell_normals *= (
+    #             1 / np.linalg.norm(tetra_cell_normals, axis=1)
+    #         ).reshape(-1, 1)
+    #         cell_normal_list.append(tetra_cell_normals)
+    #
+    # mesh.cell_data["Normals"] = cell_normal_list
+    #
+    # # calculate vertex normals
+    # point_normals = np.empty((0, 3))
+    # for inc, cell in enumerate(mesh.cells):
+    #     if cell.type == "triangle":
+    #         for inc_b in range(mesh.points.shape[0]):
+    #             associated_cells = np.where(inc_b == cell.data)[0]
+    #             # print(associated_cells)
+    #             point_normals = np.append(
+    #                 point_normals,
+    #                 np.mean(
+    #                     mesh.cell_data["Normals"][0][associated_cells, :], axis=0
+    #                 ).reshape(1, 3),
+    #                 axis=0,
+    #             )
+    #     if cell.type == "vertex":
+    #         for inc_b in range(mesh.points.shape[0]):
+    #             associated_cells = np.where(inc_b == cell.data)[0]
+    #             # print(associated_cells)
+    #             point_normals = np.append(
+    #                 point_normals,
+    #                 np.mean(
+    #                     mesh.cell_data["Normals"][0][associated_cells, :], axis=0
+    #                 ).reshape(1, 3),
+    #                 axis=0,
+    #             )
+    #
+    # mesh.point_data["Normals"] = point_normals / np.linalg.norm(
+    #     point_normals, axis=1
+    # ).reshape(-1, 1)
 
     return mesh
 

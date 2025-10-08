@@ -740,11 +740,9 @@ def calculate_total_gaseous_attenuation(frequency, pressure, temperature):
     oxygen_lines_temp = oxygen_lines()
     water_vapor_lines_temp = water_vapour_lines()
     # Calculate specific attenuation
-    oxygen_attenuation = calculate_oxygen_attenuation(
-        frequency, pressure, temperature, oxygen_lines_temp
-    )
+    oxygen_attenuation = calculate_oxygen_attenuation(frequency, pressure, temperature)
     water_vapor_attenuation = calculate_water_vapor_attenuation(
-        frequency, pressure, temperature, water_vapor_lines_temp
+        frequency, pressure, temperature
     )
     specific_attenuation = (
         0.1820 * frequency * (oxygen_attenuation + water_vapor_attenuation)
@@ -831,11 +829,53 @@ def calculate_atmospheric_propagation_constant(
         The propagation constant in Np/m, which includes both attenuation (:math:`\\alpha`) and phase shift (:math:`\\beta`).
 
     """
-    alpha = calculate_total_gaseous_attenuation(
-        frequency, temperature, pressure, water_vapor_density
-    )
+    alpha = calculate_total_gaseous_attenuation(frequency, temperature, pressure)
     beta = calculate_phase_constant(
         frequency, temperature, pressure, water_vapor_density
     )
     gamma = alpha + 1j * beta
     return gamma
+
+
+def Meshio_Pattern(azimuth, elevation, Ea, Eb, field_radius=1.0):
+    """
+    Generate a Meshio Antenna pattern
+
+    Parameters
+    ----------
+    azimuth : TYPE
+        DESCRIPTION.
+    elevation : TYPE
+        DESCRIPTION.
+    Ea : TYPE
+        DESCRIPTION.
+    Eb : TYPE
+        DESCRIPTION.
+    field_radius : TYPE, optional
+        DESCRIPTION. The default is 1.0.
+
+    Returns
+    -------
+    field_data : TYPE
+        DESCRIPTION.
+
+    """
+    from ...geometry.targets import spherical_field
+
+    field_data = spherical_field(
+        azimuth, elevation, outward_normals=True, field_radius=field_radius
+    )
+    field_data.point_data["E(theta)-Real"] = np.array(
+        [np.real(Ea.transpose().ravel())]
+    ).transpose()
+    field_data.point_data["E(theta)-Imag"] = np.array(
+        [np.imag(Ea.transpose().ravel())]
+    ).transpose()
+    field_data.point_data["E(phi)-Real"] = np.array(
+        [np.real(Eb.transpose().ravel())]
+    ).transpose()
+    field_data.point_data["E(phi)-Imag"] = np.array(
+        [np.imag(Eb.transpose().ravel())]
+    ).transpose()
+
+    return field_data

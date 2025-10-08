@@ -1117,495 +1117,475 @@ def Angular_distance(center_vector, pointing_vectors):
     return angle_lists
 
 
-@jit(nopython=True)
-def weighted_avg_and_std(values, weights):
-    """
-    Return the weighted average and standard deviation
-    Parameters
-    ----------
-    values : TYPE
-        DESCRIPTION.
-    weights : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    average = np.average(values, weights=weights)
-    # Fast and numerically precise:
-    variance = np.average((values - average) ** 2, weights=weights)
-    return (average, math.sqrt(variance))
-
-
-# @jit
-def VectorNetworkProcessEM(
-    sourcenum,
-    sinknum,
-    unified_points,
-    unified_normals,
-    unified_weights,
-    point_information,
-    scattering_index,
-    scattering_coefficient,
-    wavelength,
-):
-    """
-    A more efficienct version of BaseNetworkProcess, using the vectorised path length function to process the total_network array more efficienctly.
-    #
-    Parameters
-    ----------
-    total_network : array of n*(m*3) tuples, the coordinates of each interaction point
-    wavelength : scaler
-        wavelength of interest, currently a single value (SI units)
-    scattering_index : n*2 array of integers, the source and sink index of each ray
-    #
-    Returns
-    -------
-    scatter_map : source_size*sink_size array
-    #
-    """
-    if scattering_index.shape[0] == 0:
-        scatter_map = np.zeros((sourcenum, sinknum, 3), dtype="complex")
-    else:
-        wave_vector = (2 * np.pi) / wavelength
-        scatterdepth = scattering_index.shape[1] - 1
-        scatter_map = np.zeros((sourcenum, sinknum, 3, scatterdepth), dtype="complex")
-        for idx in range(scatterdepth):
-            if idx == (scatterdepth - 1):
-                ray_analysis_index = scattering_index[
-                    ~np.equal(scattering_index[:, idx + 1], 0), :
-                ]
-                ray_components = np.zeros(
-                    (ray_analysis_index.shape[0], 3), dtype=np.complex64
-                )
-                ray_components = ScatteringNetworkGenerator(
-                    ray_analysis_index,
-                    unified_points,
-                    unified_normals,
-                    unified_weights,
-                    point_information,
-                    scattering_coefficient,
-                    wavelength,
-                    ray_components,
-                )
-                # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
-                depth_slice = ray_analysis_index[:, [0, -1]]
-
-            elif idx == 0:
-                ray_analysis_index = scattering_index[
-                    np.equal(scattering_index[:, idx + 2], 0), 0 : idx + 2
-                ]
-                ray_components = np.zeros(
-                    (ray_analysis_index.shape[0], 3), dtype=np.complex64
-                )
-                ray_components = ScatteringNetworkGenerator(
-                    ray_analysis_index,
-                    unified_points,
-                    unified_normals,
-                    unified_weights,
-                    point_information,
-                    scattering_coefficient,
-                    wavelength,
-                    ray_components,
-                )
-                # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
-                depth_slice = ray_analysis_index
-
-            else:
-                ray_analysis_index = scattering_index[
-                    ~np.equal(scattering_index[:, idx + 1], 0), 0 : idx + 2
-                ]
-                ray_components = np.zeros(
-                    (ray_analysis_index.shape[0], 3), dtype=np.complex64
-                )
-                ray_components = ScatteringNetworkGenerator(
-                    ray_analysis_index,
-                    unified_points,
-                    unified_normals,
-                    unified_weights,
-                    point_information,
-                    scattering_coefficient,
-                    wavelength,
-                    ray_components,
-                )
-                # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
-                depth_slice = ray_analysis_index[:, [0, -1]]
-            #
-            # scatter_map indexing
-            # for source_index in range(sourcenum):
-            #    for sink_index in range(sinknum):
-            #        scatter_map[source_index,sink_index,idx]=np.sum(ray_components[(depth_slice[:,0]-1==0)&(depth_slice[:,1]-sourcenum-1==0)])
-
-            scatter_map = scatter_net_sortEMtest(
-                sourcenum, sinknum, scatter_map, depth_slice, ray_components, idx
-            )
-
-    return scatter_map
-
-
-def VectorNetworkProcessTimeEM(
-    sourcenum,
-    sinknum,
-    unified_points,
-    unified_normals,
-    unified_weights,
-    point_information,
-    scattering_index,
-    wavelength,
-):
-    """
-    A more efficienct version of BaseNetworkProcess, using the vectorised path length function to process the total_network array more efficienctly.
-    #
-    Parameters
-    ----------
-    total_network : array of n*(m*3) tuples, the coordinates of each interaction point
-    wavelength : scaler
-        wavelength of interest, currently a single value (SI units)
-    scattering_index : n*2 array of integers, the source and sink index of each ray
-    #
-    Returns
-    -------
-    scatter_map : source_size*sink_size array
-    #
-    """
-    if scattering_index.shape[0] == 0:
-        scatter_map = np.zeros((sourcenum, sinknum, 3), dtype="complex")
-    else:
-        time_index = np.linspace(1e-8, 2e-6, 100000)
-        wave_vector = (2 * np.pi) / wavelength
-        scatterdepth = scattering_index.shape[1] - 1
-        scatter_map = np.zeros(
-            (sourcenum, sinknum, 3, len(time_index), scatterdepth), dtype="complex"
-        )
-        for idx in range(scatterdepth):
-            if idx == (scatterdepth - 1):
-                ray_analysis_index = scattering_index[
-                    ~np.equal(scattering_index[:, idx + 1], 0), :
-                ]
-                ray_components = np.zeros(
-                    (ray_analysis_index.shape[0], 3), dtype=np.complex64
-                )
-                time_components = np.zeros(
-                    (ray_analysis_index.shape[0]), dtype=np.float32
-                )
-                ray_components, time_components = ScatteringNetworkGeneratorTime(
-                    ray_analysis_index,
-                    unified_points,
-                    unified_normals,
-                    unified_weights,
-                    point_information,
-                    wavelength,
-                    ray_components,
-                    time_components,
-                )
-                # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
-                depth_slice = ray_analysis_index[:, [0, -1]]
-
-            elif idx == 0:
-                ray_analysis_index = scattering_index[
-                    np.equal(scattering_index[:, idx + 2], 0), 0 : idx + 2
-                ]
-                ray_components = np.zeros(
-                    (ray_analysis_index.shape[0], 3), dtype=np.complex64
-                )
-                time_components = np.zeros(
-                    (ray_analysis_index.shape[0]), dtype=np.float32
-                )
-                ray_components, time_components = ScatteringNetworkGeneratorTime(
-                    ray_analysis_index,
-                    unified_points,
-                    unified_normals,
-                    unified_weights,
-                    point_information,
-                    wavelength,
-                    ray_components,
-                    time_components,
-                )
-                # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
-                depth_slice = ray_analysis_index
-
-            else:
-                ray_analysis_index = scattering_index[
-                    ~np.equal(scattering_index[:, idx + 1], 0), 0 : idx + 2
-                ]
-                ray_components = np.zeros(
-                    (ray_analysis_index.shape[0], 3), dtype=np.complex64
-                )
-                time_components = np.zeros(
-                    (ray_analysis_index.shape[0]), dtype=np.float32
-                )
-                ray_components, time_components = ScatteringNetworkGeneratorTime(
-                    ray_analysis_index,
-                    unified_points,
-                    unified_normals,
-                    unified_weights,
-                    point_information,
-                    wavelength,
-                    ray_components,
-                    time_components,
-                )
-                # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
-                depth_slice = ray_analysis_index[:, [0, -1]]
-            #
-            # scatter_map indexing
-            # for source_index in range(sourcenum):
-            #    for sink_index in range(sinknum):
-            #        scatter_map[source_index,sink_index,idx]=np.sum(ray_components[(depth_slice[:,0]-1==0)&(depth_slice[:,1]-sourcenum-1==0)])
-
-            scatter_map = scatter_net_sortTimeEM(
-                sourcenum,
-                sinknum,
-                scatter_map,
-                depth_slice,
-                ray_components,
-                time_components,
-                time_index,
-                idx,
-            )
-
-    return scatter_map
-
-
-def VectorNetworkProcessEMv2(
-    sourcenum,
-    sinknum,
-    unified_points,
-    unified_normals,
-    unified_weights,
-    point_information,
-    scattering_index,
-    wavelength,
-):
-    """
-    A more efficienct version of BaseNetworkProcess, using the vectorised path length function to process the total_network array more efficienctly.
-    #
-    Parameters
-    ----------
-    total_network : array of n*(m*3) tuples, the coordinates of each interaction point
-    wavelength : scaler
-        wavelength of interest, currently a single value (SI units)
-    scattering_index : n*2 array of integers, the source and sink index of each ray
-    #
-    Returns
-    -------
-    scatter_map : source_size*sink_size array
-    #
-    """
-    if scattering_index.shape[0] == 0:
-        scatter_map = np.zeros((sourcenum, sinknum, 3), dtype="complex")
-    else:
-        wave_vector = (2 * np.pi) / wavelength
-        scatterdepth = scattering_index.shape[1] - 1
-        scatter_map = np.zeros((sourcenum, sinknum, 3, scatterdepth), dtype="complex")
-        ray_components = np.zeros((scattering_index.shape[0], 3), dtype=np.complex64)
-        ray_components = EM.EMGPUWrapper(
-            scattering_index, point_information, wavelength
-        )
-        for idx in range(scatterdepth):
-            if idx == (scatterdepth - 1):
-                ray_analysis_index = scattering_index[
-                    ~np.equal(scattering_index[:, idx + 1], 0), :
-                ]
-                temp_components = ray_components[
-                    ~np.equal(scattering_index[:, idx + 1], 0), :
-                ]
-                # ray_components=ScatteringNetworkGenerator(ray_analysis_index,unified_points,unified_normals,unified_weights,point_information,wavelength,ray_components)
-                # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
-                depth_slice = ray_analysis_index[:, [0, -1]]
-
-            elif idx == 0:
-                ray_analysis_index = scattering_index[
-                    np.equal(scattering_index[:, idx + 2], 0), 0 : idx + 2
-                ]
-                temp_components = ray_components[
-                    ~np.equal(scattering_index[:, idx + 2], 0), :
-                ]
-                # ray_components=np.zeros((ray_analysis_index.shape[0],3),dtype=np.complex64)
-                # ray_components=EM.EMGPUWrapper(ray_analysis_index,point_information,wavelength)
-                # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
-                depth_slice = ray_analysis_index
-
-            else:
-                ray_analysis_index = scattering_index[
-                    ~np.equal(scattering_index[:, idx + 1], 0), 0 : idx + 2
-                ]
-                temp_components = ray_components[
-                    ~np.equal(scattering_index[:, idx + 1], 0), :
-                ]
-                # ray_components=EM.EMGPUWrapper(ray_analysis_index,point_information,wavelength)
-                # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
-                depth_slice = ray_analysis_index[:, [0, -1]]
-            #
-            # scatter_map indexing
-            # for source_index in range(sourcenum):
-            #    for sink_index in range(sinknum):
-            #        scatter_map[source_index,sink_index,idx]=np.sum(ray_components[(depth_slice[:,0]-1==0)&(depth_slice[:,1]-sourcenum-1==0)])
-
-            scatter_map = scatter_net_sortEM(
-                sourcenum, sinknum, scatter_map, depth_slice, temp_components, idx
-            )
-
-    return scatter_map
-
-
-# @jit
-def VectorNetworkProcessv2(
-    sources, sinks, scattering_points, scattering_index, wavelength
-):
-    """
-    A more efficienct version of BaseNetworkProcess, using the vectorised path length function to process the total_network array more efficienctly.
-    #
-    Parameters
-    ----------
-    total_network : array of n*(m*3) tuples, the coordinates of each interaction point
-    wavelength : scaler
-        wavelength of interest, currently a single value (SI units)
-    scattering_index : n*2 array of integers, the source and sink index of each ray
-    #
-    Returns
-    -------
-    scatter_map : source_size*sink_size array
-    #
-    """
-    if scattering_index.shape[0] == 0:
-        sourcenum = np.nanmax(scattering_index[:, 0]).astype(int) + 1
-        sinknum = np.nanmax(scattering_index[:, 1]).astype(int) + 1
-        scatter_map = np.zeros((sourcenum, sinknum, 1), dtype="complex")
-    else:
-        unified_model = np.append(
-            np.append(sources.astype(np.float32), sinks.astype(np.float32), axis=0),
-            scattering_points.astype(np.float32),
-            axis=0,
-        )
-        wave_vector = (2 * np.pi) / wavelength
-        sourcenum = sources.shape[0]
-        sinknum = sinks.shape[0]
-        scatterdepth = scattering_index.shape[1] - 1
-        scatter_map = np.zeros((sourcenum, sinknum, scatterdepth), dtype="complex")
-        for idx in range(scatterdepth):
-            if idx == (scatterdepth - 1):
-                ray_analysis_index = scattering_index[
-                    ~np.equal(scattering_index[:, idx + 1], 0), :
-                ]
-                if idx == 0:
-                    paths = PathLength(
-                        np.append(
-                            unified_model[ray_analysis_index[:, 0], :] - 1,
-                            unified_model[ray_analysis_index[:, 1] - 1, :],
-                            axis=1,
-                        )
-                    )
-                elif idx == 1:
-                    paths = PathLength(
-                        np.append(
-                            np.append(
-                                unified_model[ray_analysis_index[:, 0] - 1, :],
-                                unified_model[ray_analysis_index[:, 1] - 1, :],
-                                axis=1,
-                            ),
-                            unified_model[ray_analysis_index[:, 2] - 1, :],
-                            axis=1,
-                        )
-                    )
-                elif idx == 2:
-                    paths = PathLength(
-                        np.append(
-                            np.append(
-                                np.append(
-                                    unified_model[ray_analysis_index[:, 0] - 1, :],
-                                    unified_model[ray_analysis_index[:, 1] - 1, :],
-                                    axis=1,
-                                ),
-                                unified_model[ray_analysis_index[:, 2] - 1, :],
-                                axis=1,
-                            ),
-                            unified_model[ray_analysis_index[:, 3] - 1, :],
-                            axis=1,
-                        )
-                    )
-
-                # path_loss=((wavelength/(4*np.pi*paths))**2)*np.exp(paths*wave_vector*1j)
-                path_loss = wavelength / (4 * np.pi * paths)
-                ray_components = path_loss * (np.exp(paths * wave_vector * 1j))
-                # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
-                depth_slice = ray_analysis_index[:, [0, -1]]
-
-            elif idx == 0:
-                ray_analysis_index = scattering_index[
-                    np.equal(scattering_index[:, idx + 2], 0), 0 : idx + 2
-                ]
-                paths = PathLength(
-                    np.append(
-                        unified_model[ray_analysis_index[:, 0] - 1, :],
-                        unified_model[ray_analysis_index[:, 1] - 1, :],
-                        axis=1,
-                    )
-                )
-                # path_loss=((wavelength/(4*np.pi*paths))**2)*np.exp(paths*wave_vector*1j)
-                path_loss = wavelength / (4 * np.pi * paths)
-                ray_components = path_loss * (np.exp(paths * wave_vector * 1j))
-                # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
-                depth_slice = ray_analysis_index
-
-            else:
-                ray_analysis_index = scattering_index[
-                    ~np.equal(scattering_index[:, idx + 1], 0), :
-                ]
-                if idx == 0:
-                    paths = PathLength(
-                        np.append(
-                            unified_model[ray_analysis_index[:, 0], :] - 1,
-                            unified_model[ray_analysis_index[:, 1] - 1, :],
-                            axis=1,
-                        )
-                    )
-                elif idx == 1:
-                    paths = PathLength(
-                        np.append(
-                            np.append(
-                                unified_model[ray_analysis_index[:, 0] - 1, :],
-                                unified_model[ray_analysis_index[:, 1] - 1, :],
-                                axis=1,
-                            ),
-                            unified_model[ray_analysis_index[:, 2] - 1, :],
-                            axis=1,
-                        )
-                    )
-                elif idx == 2:
-                    paths = PathLength(
-                        np.append(
-                            np.append(
-                                np.append(
-                                    unified_model[ray_analysis_index[:, 0] - 1, :],
-                                    unified_model[ray_analysis_index[:, 1] - 1, :],
-                                    axis=1,
-                                ),
-                                unified_model[ray_analysis_index[:, 2] - 1, :],
-                                axis=1,
-                            ),
-                            unified_model[ray_analysis_index[:, 3] - 1, :],
-                            axis=1,
-                        )
-                    )
-
-                # path_loss=((wavelength/(4*np.pi*paths))**2)*np.exp(paths*wave_vector*1j)
-                path_loss = wavelength / (4 * np.pi * paths)
-                ray_components = path_loss * (np.exp(paths * wave_vector * 1j))
-                # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
-                depth_slice = ray_analysis_index[:, [0, -1]]
-            #
-            # scatter_map indexing
-            # for source_index in range(sourcenum):
-            #    for sink_index in range(sinknum):
-            #        scatter_map[source_index,sink_index,idx]=np.sum(ray_components[(depth_slice[:,0]-1==0)&(depth_slice[:,1]-sourcenum-1==0)])
-
-            scatter_map = scatter_net_sorttest(
-                sourcenum, sinknum, scatter_map, depth_slice, ray_components, idx
-            )
-
-    return scatter_map
+#
+#
+# # @jit
+# def VectorNetworkProcessEM(
+#     sourcenum,
+#     sinknum,
+#     unified_points,
+#     unified_normals,
+#     unified_weights,
+#     point_information,
+#     scattering_index,
+#     scattering_coefficient,
+#     wavelength,
+# ):
+#     """
+#     A more efficienct version of BaseNetworkProcess, using the vectorised path length function to process the total_network array more efficienctly.
+#     #
+#     Parameters
+#     ----------
+#     total_network : array of n*(m*3) tuples, the coordinates of each interaction point
+#     wavelength : scaler
+#         wavelength of interest, currently a single value (SI units)
+#     scattering_index : n*2 array of integers, the source and sink index of each ray
+#     #
+#     Returns
+#     -------
+#     scatter_map : source_size*sink_size array
+#     #
+#     """
+#     if scattering_index.shape[0] == 0:
+#         scatter_map = np.zeros((sourcenum, sinknum, 3), dtype="complex")
+#     else:
+#         wave_vector = (2 * np.pi) / wavelength
+#         scatterdepth = scattering_index.shape[1] - 1
+#         scatter_map = np.zeros((sourcenum, sinknum, 3, scatterdepth), dtype="complex")
+#         for idx in range(scatterdepth):
+#             if idx == (scatterdepth - 1):
+#                 ray_analysis_index = scattering_index[
+#                     ~np.equal(scattering_index[:, idx + 1], 0), :
+#                 ]
+#                 ray_components = np.zeros(
+#                     (ray_analysis_index.shape[0], 3), dtype=np.complex64
+#                 )
+#                 ray_components = ScatteringNetworkGenerator(
+#                     ray_analysis_index,
+#                     unified_points,
+#                     unified_normals,
+#                     unified_weights,
+#                     point_information,
+#                     scattering_coefficient,
+#                     wavelength,
+#                     ray_components,
+#                 )
+#                 # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
+#                 depth_slice = ray_analysis_index[:, [0, -1]]
+#
+#             elif idx == 0:
+#                 ray_analysis_index = scattering_index[
+#                     np.equal(scattering_index[:, idx + 2], 0), 0 : idx + 2
+#                 ]
+#                 ray_components = np.zeros(
+#                     (ray_analysis_index.shape[0], 3), dtype=np.complex64
+#                 )
+#                 ray_components = ScatteringNetworkGenerator(
+#                     ray_analysis_index,
+#                     unified_points,
+#                     unified_normals,
+#                     unified_weights,
+#                     point_information,
+#                     scattering_coefficient,
+#                     wavelength,
+#                     ray_components,
+#                 )
+#                 # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
+#                 depth_slice = ray_analysis_index
+#
+#             else:
+#                 ray_analysis_index = scattering_index[
+#                     ~np.equal(scattering_index[:, idx + 1], 0), 0 : idx + 2
+#                 ]
+#                 ray_components = np.zeros(
+#                     (ray_analysis_index.shape[0], 3), dtype=np.complex64
+#                 )
+#                 ray_components = ScatteringNetworkGenerator(
+#                     ray_analysis_index,
+#                     unified_points,
+#                     unified_normals,
+#                     unified_weights,
+#                     point_information,
+#                     scattering_coefficient,
+#                     wavelength,
+#                     ray_components,
+#                 )
+#                 # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
+#                 depth_slice = ray_analysis_index[:, [0, -1]]
+#             #
+#             # scatter_map indexing
+#             # for source_index in range(sourcenum):
+#             #    for sink_index in range(sinknum):
+#             #        scatter_map[source_index,sink_index,idx]=np.sum(ray_components[(depth_slice[:,0]-1==0)&(depth_slice[:,1]-sourcenum-1==0)])
+#
+#             scatter_map = scatter_net_sortEMtest(
+#                 sourcenum, sinknum, scatter_map, depth_slice, ray_components, idx
+#             )
+#
+#     return scatter_map
+#
+#
+# def VectorNetworkProcessTimeEM(
+#     sourcenum,
+#     sinknum,
+#     unified_points,
+#     unified_normals,
+#     unified_weights,
+#     point_information,
+#     scattering_index,
+#     wavelength,
+# ):
+#     """
+#     A more efficienct version of BaseNetworkProcess, using the vectorised path length function to process the total_network array more efficienctly.
+#     #
+#     Parameters
+#     ----------
+#     total_network : array of n*(m*3) tuples, the coordinates of each interaction point
+#     wavelength : scaler
+#         wavelength of interest, currently a single value (SI units)
+#     scattering_index : n*2 array of integers, the source and sink index of each ray
+#     #
+#     Returns
+#     -------
+#     scatter_map : source_size*sink_size array
+#     #
+#     """
+#     if scattering_index.shape[0] == 0:
+#         scatter_map = np.zeros((sourcenum, sinknum, 3), dtype="complex")
+#     else:
+#         time_index = np.linspace(1e-8, 2e-6, 100000)
+#         wave_vector = (2 * np.pi) / wavelength
+#         scatterdepth = scattering_index.shape[1] - 1
+#         scatter_map = np.zeros(
+#             (sourcenum, sinknum, 3, len(time_index), scatterdepth), dtype="complex"
+#         )
+#         for idx in range(scatterdepth):
+#             if idx == (scatterdepth - 1):
+#                 ray_analysis_index = scattering_index[
+#                     ~np.equal(scattering_index[:, idx + 1], 0), :
+#                 ]
+#                 ray_components = np.zeros(
+#                     (ray_analysis_index.shape[0], 3), dtype=np.complex64
+#                 )
+#                 time_components = np.zeros(
+#                     (ray_analysis_index.shape[0]), dtype=np.float32
+#                 )
+#                 ray_components, time_components = ScatteringNetworkGeneratorTime(
+#                     ray_analysis_index,
+#                     unified_points,
+#                     unified_normals,
+#                     unified_weights,
+#                     point_information,
+#                     wavelength,
+#                     ray_components,
+#                     time_components,
+#                 )
+#                 # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
+#                 depth_slice = ray_analysis_index[:, [0, -1]]
+#
+#             elif idx == 0:
+#                 ray_analysis_index = scattering_index[
+#                     np.equal(scattering_index[:, idx + 2], 0), 0 : idx + 2
+#                 ]
+#                 ray_components = np.zeros(
+#                     (ray_analysis_index.shape[0], 3), dtype=np.complex64
+#                 )
+#                 time_components = np.zeros(
+#                     (ray_analysis_index.shape[0]), dtype=np.float32
+#                 )
+#                 ray_components, time_components = ScatteringNetworkGeneratorTime(
+#                     ray_analysis_index,
+#                     unified_points,
+#                     unified_normals,
+#                     unified_weights,
+#                     point_information,
+#                     wavelength,
+#                     ray_components,
+#                     time_components,
+#                 )
+#                 # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
+#                 depth_slice = ray_analysis_index
+#
+#             else:
+#                 ray_analysis_index = scattering_index[
+#                     ~np.equal(scattering_index[:, idx + 1], 0), 0 : idx + 2
+#                 ]
+#                 ray_components = np.zeros(
+#                     (ray_analysis_index.shape[0], 3), dtype=np.complex64
+#                 )
+#                 time_components = np.zeros(
+#                     (ray_analysis_index.shape[0]), dtype=np.float32
+#                 )
+#                 ray_components, time_components = ScatteringNetworkGeneratorTime(
+#                     ray_analysis_index,
+#                     unified_points,
+#                     unified_normals,
+#                     unified_weights,
+#                     point_information,
+#                     wavelength,
+#                     ray_components,
+#                     time_components,
+#                 )
+#                 # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
+#                 depth_slice = ray_analysis_index[:, [0, -1]]
+#             #
+#             # scatter_map indexing
+#             # for source_index in range(sourcenum):
+#             #    for sink_index in range(sinknum):
+#             #        scatter_map[source_index,sink_index,idx]=np.sum(ray_components[(depth_slice[:,0]-1==0)&(depth_slice[:,1]-sourcenum-1==0)])
+#
+#             scatter_map = scatter_net_sortTimeEM(
+#                 sourcenum,
+#                 sinknum,
+#                 scatter_map,
+#                 depth_slice,
+#                 ray_components,
+#                 time_components,
+#                 time_index,
+#                 idx,
+#             )
+#
+#     return scatter_map
+#
+#
+# def VectorNetworkProcessEMv2(
+#     sourcenum,
+#     sinknum,
+#     unified_points,
+#     unified_normals,
+#     unified_weights,
+#     point_information,
+#     scattering_index,
+#     wavelength,
+# ):
+#     """
+#     A more efficienct version of BaseNetworkProcess, using the vectorised path length function to process the total_network array more efficienctly.
+#     #
+#     Parameters
+#     ----------
+#     total_network : array of n*(m*3) tuples, the coordinates of each interaction point
+#     wavelength : scaler
+#         wavelength of interest, currently a single value (SI units)
+#     scattering_index : n*2 array of integers, the source and sink index of each ray
+#     #
+#     Returns
+#     -------
+#     scatter_map : source_size*sink_size array
+#     #
+#     """
+#     if scattering_index.shape[0] == 0:
+#         scatter_map = np.zeros((sourcenum, sinknum, 3), dtype="complex")
+#     else:
+#         wave_vector = (2 * np.pi) / wavelength
+#         scatterdepth = scattering_index.shape[1] - 1
+#         scatter_map = np.zeros((sourcenum, sinknum, 3, scatterdepth), dtype="complex")
+#         ray_components = np.zeros((scattering_index.shape[0], 3), dtype=np.complex64)
+#         ray_components = EM.EMGPUWrapper(
+#             scattering_index, point_information, wavelength
+#         )
+#         for idx in range(scatterdepth):
+#             if idx == (scatterdepth - 1):
+#                 ray_analysis_index = scattering_index[
+#                     ~np.equal(scattering_index[:, idx + 1], 0), :
+#                 ]
+#                 temp_components = ray_components[
+#                     ~np.equal(scattering_index[:, idx + 1], 0), :
+#                 ]
+#                 # ray_components=ScatteringNetworkGenerator(ray_analysis_index,unified_points,unified_normals,unified_weights,point_information,wavelength,ray_components)
+#                 # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
+#                 depth_slice = ray_analysis_index[:, [0, -1]]
+#
+#             elif idx == 0:
+#                 ray_analysis_index = scattering_index[
+#                     np.equal(scattering_index[:, idx + 2], 0), 0 : idx + 2
+#                 ]
+#                 temp_components = ray_components[
+#                     ~np.equal(scattering_index[:, idx + 2], 0), :
+#                 ]
+#                 # ray_components=np.zeros((ray_analysis_index.shape[0],3),dtype=np.complex64)
+#                 # ray_components=EM.EMGPUWrapper(ray_analysis_index,point_information,wavelength)
+#                 # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
+#                 depth_slice = ray_analysis_index
+#
+#             else:
+#                 ray_analysis_index = scattering_index[
+#                     ~np.equal(scattering_index[:, idx + 1], 0), 0 : idx + 2
+#                 ]
+#                 temp_components = ray_components[
+#                     ~np.equal(scattering_index[:, idx + 1], 0), :
+#                 ]
+#                 # ray_components=EM.EMGPUWrapper(ray_analysis_index,point_information,wavelength)
+#                 # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
+#                 depth_slice = ray_analysis_index[:, [0, -1]]
+#             #
+#             # scatter_map indexing
+#             # for source_index in range(sourcenum):
+#             #    for sink_index in range(sinknum):
+#             #        scatter_map[source_index,sink_index,idx]=np.sum(ray_components[(depth_slice[:,0]-1==0)&(depth_slice[:,1]-sourcenum-1==0)])
+#
+#             scatter_map = scatter_net_sortEM(
+#                 sourcenum, sinknum, scatter_map, depth_slice, temp_components, idx
+#             )
+#
+#     return scatter_map
+#
+#
+# # @jit
+# def VectorNetworkProcessv2(
+#     sources, sinks, scattering_points, scattering_index, wavelength
+# ):
+#     """
+#     A more efficienct version of BaseNetworkProcess, using the vectorised path length function to process the total_network array more efficienctly.
+#     #
+#     Parameters
+#     ----------
+#     total_network : array of n*(m*3) tuples, the coordinates of each interaction point
+#     wavelength : scaler
+#         wavelength of interest, currently a single value (SI units)
+#     scattering_index : n*2 array of integers, the source and sink index of each ray
+#     #
+#     Returns
+#     -------
+#     scatter_map : source_size*sink_size array
+#     #
+#     """
+#     if scattering_index.shape[0] == 0:
+#         sourcenum = np.nanmax(scattering_index[:, 0]).astype(int) + 1
+#         sinknum = np.nanmax(scattering_index[:, 1]).astype(int) + 1
+#         scatter_map = np.zeros((sourcenum, sinknum, 1), dtype="complex")
+#     else:
+#         unified_model = np.append(
+#             np.append(sources.astype(np.float32), sinks.astype(np.float32), axis=0),
+#             scattering_points.astype(np.float32),
+#             axis=0,
+#         )
+#         wave_vector = (2 * np.pi) / wavelength
+#         sourcenum = sources.shape[0]
+#         sinknum = sinks.shape[0]
+#         scatterdepth = scattering_index.shape[1] - 1
+#         scatter_map = np.zeros((sourcenum, sinknum, scatterdepth), dtype="complex")
+#         for idx in range(scatterdepth):
+#             if idx == (scatterdepth - 1):
+#                 ray_analysis_index = scattering_index[
+#                     ~np.equal(scattering_index[:, idx + 1], 0), :
+#                 ]
+#                 if idx == 0:
+#                     paths = PathLength(
+#                         np.append(
+#                             unified_model[ray_analysis_index[:, 0], :] - 1,
+#                             unified_model[ray_analysis_index[:, 1] - 1, :],
+#                             axis=1,
+#                         )
+#                     )
+#                 elif idx == 1:
+#                     paths = PathLength(
+#                         np.append(
+#                             np.append(
+#                                 unified_model[ray_analysis_index[:, 0] - 1, :],
+#                                 unified_model[ray_analysis_index[:, 1] - 1, :],
+#                                 axis=1,
+#                             ),
+#                             unified_model[ray_analysis_index[:, 2] - 1, :],
+#                             axis=1,
+#                         )
+#                     )
+#                 elif idx == 2:
+#                     paths = PathLength(
+#                         np.append(
+#                             np.append(
+#                                 np.append(
+#                                     unified_model[ray_analysis_index[:, 0] - 1, :],
+#                                     unified_model[ray_analysis_index[:, 1] - 1, :],
+#                                     axis=1,
+#                                 ),
+#                                 unified_model[ray_analysis_index[:, 2] - 1, :],
+#                                 axis=1,
+#                             ),
+#                             unified_model[ray_analysis_index[:, 3] - 1, :],
+#                             axis=1,
+#                         )
+#                     )
+#
+#                 # path_loss=((wavelength/(4*np.pi*paths))**2)*np.exp(paths*wave_vector*1j)
+#                 path_loss = wavelength / (4 * np.pi * paths)
+#                 ray_components = path_loss * (np.exp(paths * wave_vector * 1j))
+#                 # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
+#                 depth_slice = ray_analysis_index[:, [0, -1]]
+#
+#             elif idx == 0:
+#                 ray_analysis_index = scattering_index[
+#                     np.equal(scattering_index[:, idx + 2], 0), 0 : idx + 2
+#                 ]
+#                 paths = PathLength(
+#                     np.append(
+#                         unified_model[ray_analysis_index[:, 0] - 1, :],
+#                         unified_model[ray_analysis_index[:, 1] - 1, :],
+#                         axis=1,
+#                     )
+#                 )
+#                 # path_loss=((wavelength/(4*np.pi*paths))**2)*np.exp(paths*wave_vector*1j)
+#                 path_loss = wavelength / (4 * np.pi * paths)
+#                 ray_components = path_loss * (np.exp(paths * wave_vector * 1j))
+#                 # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
+#                 depth_slice = ray_analysis_index
+#
+#             else:
+#                 ray_analysis_index = scattering_index[
+#                     ~np.equal(scattering_index[:, idx + 1], 0), :
+#                 ]
+#                 if idx == 0:
+#                     paths = PathLength(
+#                         np.append(
+#                             unified_model[ray_analysis_index[:, 0], :] - 1,
+#                             unified_model[ray_analysis_index[:, 1] - 1, :],
+#                             axis=1,
+#                         )
+#                     )
+#                 elif idx == 1:
+#                     paths = PathLength(
+#                         np.append(
+#                             np.append(
+#                                 unified_model[ray_analysis_index[:, 0] - 1, :],
+#                                 unified_model[ray_analysis_index[:, 1] - 1, :],
+#                                 axis=1,
+#                             ),
+#                             unified_model[ray_analysis_index[:, 2] - 1, :],
+#                             axis=1,
+#                         )
+#                     )
+#                 elif idx == 2:
+#                     paths = PathLength(
+#                         np.append(
+#                             np.append(
+#                                 np.append(
+#                                     unified_model[ray_analysis_index[:, 0] - 1, :],
+#                                     unified_model[ray_analysis_index[:, 1] - 1, :],
+#                                     axis=1,
+#                                 ),
+#                                 unified_model[ray_analysis_index[:, 2] - 1, :],
+#                                 axis=1,
+#                             ),
+#                             unified_model[ray_analysis_index[:, 3] - 1, :],
+#                             axis=1,
+#                         )
+#                     )
+#
+#                 # path_loss=((wavelength/(4*np.pi*paths))**2)*np.exp(paths*wave_vector*1j)
+#                 path_loss = wavelength / (4 * np.pi * paths)
+#                 ray_components = path_loss * (np.exp(paths * wave_vector * 1j))
+#                 # path_loss=((1j*wave_vector)/(4*np.pi))*(np.exp(paths*wave_vector*1j)/paths)
+#                 depth_slice = ray_analysis_index[:, [0, -1]]
+#             #
+#             # scatter_map indexing
+#             # for source_index in range(sourcenum):
+#             #    for sink_index in range(sinknum):
+#             #        scatter_map[source_index,sink_index,idx]=np.sum(ray_components[(depth_slice[:,0]-1==0)&(depth_slice[:,1]-sourcenum-1==0)])
+#
+#             scatter_map = scatter_net_sorttest(
+#                 sourcenum, sinknum, scatter_map, depth_slice, ray_components, idx
+#             )
+#
+#     return scatter_map
 
 
 @njit(parallel=True)
