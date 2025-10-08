@@ -122,7 +122,7 @@ print("Steering Effciency of {:3.1f}%".format(setot))
 
 print(
     "Maximum Directivity of {:3.1f} dBi".format(
-        np.nanmax(10 * np.log10(directivity_map[:, :, 2]))
+        np.max(10 * np.log10(directivity_map[:, :, 2]))
     )
 )
 from lyceanem.geometry.targets import spherical_field
@@ -134,12 +134,8 @@ display_mesh = create_display_mesh(pattern_mesh, label="D(Total)", dynamic_range
 display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
     display_mesh.point_data["D(Total)"]
 )
-display_mesh.point_data["D(Total-dBi)"][np.isinf(display_mesh.point_data["D(Total-dBi)"])]=-200
 plot_max = 5 * np.ceil(np.nanmax(display_mesh.point_data["D(Total-dBi)"]) / 5)
 
-# %%
-# Visualise the Platform and the Beamformed Pattern
-# ----------
 
 pl = pv.Plotter()
 pl.add_mesh(pv.from_meshio(body), color="green")

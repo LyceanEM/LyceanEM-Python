@@ -165,12 +165,14 @@ rotation_vector = np.radians(
 scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
 reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
 
+from tqdm import tqdm
+
 wake_times = np.zeros((len(angle_values)))
 Ex = np.zeros((len(angle_values), num_samples))
 Ey = np.zeros((len(angle_values), num_samples))
 Ez = np.zeros((len(angle_values), num_samples))
 
-for angle_inc in range(len(angle_values)):
+for angle_inc in tqdm(range(len(angle_values))):
     rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_increment]))
     scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
     reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
@@ -299,9 +301,9 @@ s21y = 20 * np.log10(np.abs(Eyf[:, frequency_index] / newinput)).ravel()
 s21z = 20 * np.log10(np.abs(Ezf[:, frequency_index] / newinput)).ravel()
 tdangles = np.linspace(-45, 45, 91)
 fig, ax = plt.subplots()
-ax.plot(tdangles, s21x - np.nanmax(s21z), label="Ex")
-ax.plot(tdangles, s21y - np.nanmax(s21z), label="Ey")
-ax.plot(tdangles, s21z - np.nanmax(s21z), label="Ez")
+ax.plot(tdangles, s21x - np.max(s21z), label="Ex")
+ax.plot(tdangles, s21y - np.max(s21z), label="Ey")
+ax.plot(tdangles, s21z - np.max(s21z), label="Ez")
 plt.xlabel("$\\theta_{N}$ (degrees)")
 plt.ylabel("Normalised Level (dB)")
 ax.set_ylim(-60.0, 0)

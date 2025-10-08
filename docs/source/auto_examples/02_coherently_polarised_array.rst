@@ -101,13 +101,10 @@ triangle structures can be accessed by importing the data subpackage
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-45
-
-----------
-
-.. GENERATED FROM PYTHON SOURCE LINES 45-56
+.. GENERATED FROM PYTHON SOURCE LINES 44-80
 
 .. code-block:: Python
+
 
 
     from lyceanem.base_classes import structures, points, antenna_structures
@@ -120,28 +117,29 @@ triangle structures can be accessed by importing the data subpackage
 
     import pyvista as pv
 
-
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 57-59
-
-Visualising the Platform and Array
-----------
-
-.. GENERATED FROM PYTHON SOURCE LINES 59-66
-
-.. code-block:: Python
-
-
     pl = pv.Plotter()
     pl.add_mesh(pv.from_meshio(body), color="green")
     pl.add_mesh(pv.from_meshio(array))
     pl.add_axes()
     pl.show()
+
+
+    desired_E_axis = np.zeros((1, 3), dtype=np.float32)
+    desired_E_axis[0, 1] = 1.0
+
+    Etheta, Ephi = calculate_farfield(
+        array_on_platform.export_all_points(),
+        array_on_platform.export_all_structures(),
+        array_on_platform.excitation_function(
+            desired_e_vector=desired_E_axis, wavelength=wavelength, transmit_power=1.0
+        ),
+        az_range=np.linspace(-180, 180, az_res),
+        el_range=np.linspace(-90, 90, elev_res),
+        wavelength=wavelength,
+        farfield_distance=20,
+        project_vectors=False,
+        beta=(2 * np.pi) / wavelength,
+    )
 
 
 
@@ -170,40 +168,7 @@ Visualising the Platform and Array
 
 
 
-       .. offlineviewer:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_001.vtksz
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 67-68
-
-----------
-
-.. GENERATED FROM PYTHON SOURCE LINES 68-86
-
-.. code-block:: Python
-
-
-    desired_E_axis = np.zeros((1, 3), dtype=np.float32)
-    desired_E_axis[0, 1] = 1.0
-
-    Etheta, Ephi = calculate_farfield(
-        array_on_platform.export_all_points(),
-        array_on_platform.export_all_structures(),
-        array_on_platform.excitation_function(
-            desired_e_vector=desired_E_axis, wavelength=wavelength, transmit_power=1.0
-        ),
-        az_range=np.linspace(-180, 180, az_res),
-        el_range=np.linspace(-90, 90, elev_res),
-        wavelength=wavelength,
-        farfield_distance=20,
-        project_vectors=False,
-        beta=(2 * np.pi) / wavelength,
-    )
-
-
+       .. offlineviewer:: C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\auto_examples\images\sphx_glr_02_coherently_polarised_array_001.vtksz
 
 
 
@@ -217,11 +182,13 @@ Visualising the Platform and Array
       uvn_axes[0, :] = np.cross(local_axes[2, :], point_vector) / np.linalg.norm(
     C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\empropagation.py:3758: ComplexWarning: Casting complex values to real discards the imaginary part
       uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\cuda\core\experimental\_linker.py:189: RuntimeWarning: nvJitLink is not installed or too old (<12.3). Therefore it is not usable and the culink APIs will be used instead.
+      _lazy_init()
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-95
+.. GENERATED FROM PYTHON SOURCE LINES 81-89
 
 Storing and Manipulating Antenna Patterns
 ---------------------------------------------
@@ -232,7 +199,7 @@ to :func:`lyceanem.base.antenna_pattern.display_pattern`. This produces 3D polar
 give a better view of the whole pattern, but if contour plots are required, then this can also be produced by passing
 plottype='Contour' to the function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-119
+.. GENERATED FROM PYTHON SOURCE LINES 89-122
 
 .. code-block:: Python
 
@@ -252,82 +219,23 @@ plottype='Contour' to the function.
     pattern_mesh = UAV_Static_Pattern.pattern_mesh()
 
     from lyceanem.electromagnetics.beamforming import create_display_mesh
-
+    from lyceanem.electromagnetics.emfunctions import Directivity
+    pattern_mesh=Directivity(pattern_mesh)
     display_mesh = create_display_mesh(pattern_mesh, label="D(Total)", dynamic_range=60)
     display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
         display_mesh.point_data["D(Total)"]
     )
-    display_mesh.point_data["D(Total-dBi)"][np.isinf(display_mesh.point_data["D(Total-dBi)"])]=-200
     plot_max = 5 * np.ceil(np.nanmax(display_mesh.point_data["D(Total-dBi)"]) / 5)
-
-
-
-
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
-         :alt: Power Pattern
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
-         :alt: Etheta
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
-         :alt: Ephi
-         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
-         :class: sphx-glr-multi-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
-      logdata = 10 * np.log10(data)
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1280: RuntimeWarning: divide by zero encountered in log10
-      logdata = 20 * np.log10(data)
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1280: RuntimeWarning: divide by zero encountered in log10
-      logdata = 20 * np.log10(data)
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\emfunctions.py:539: RuntimeWarning: divide by zero encountered in log10
-      field_data.point_data["Poynting_Vector_(Magnitude_(dBW/m2))"] = 10 * np.log10(
-    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1615: RuntimeWarning: divide by zero encountered in log10
-      logdata = log_multiplier * np.log10(pattern_mesh.point_data[label])
-    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\02_coherently_polarised_array.py:113: RuntimeWarning: divide by zero encountered in log10
-      display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 120-122
-
-Visualise the Platform and the resultant Pattern
-----------
-
-.. GENERATED FROM PYTHON SOURCE LINES 122-133
-
-.. code-block:: Python
-
 
 
     pl = pv.Plotter()
     pl.add_mesh(pv.from_meshio(body), color="green")
     pl.add_mesh(pv.from_meshio(array), color="aqua")
     pl.add_mesh(
-        display_mesh, scalars="D(Total-dBi)", clim=[plot_max - 60, plot_max],opacity=0.5
+        display_mesh, scalars="D(Total-dBi)", style="points", clim=[plot_max - 60, plot_max]
     )
     pl.add_axes()
     pl.show()
-
 
 
 
@@ -344,9 +252,9 @@ Visualise the Platform and the resultant Pattern
 
 
             
-     .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
+     .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
         :alt: 02 coherently polarised array
-        :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
+        :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_002.png
         :class: sphx-glr-single-img
      
 
@@ -355,9 +263,50 @@ Visualise the Platform and the resultant Pattern
 
 
 
-       .. offlineviewer:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.vtksz
+       .. offlineviewer:: C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\auto_examples\images\sphx_glr_02_coherently_polarised_array_002.vtksz
 
 
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
+         :alt: Power Pattern
+         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_003.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
+         :alt: Etheta
+         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_004.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
+         :alt: Ephi
+         :srcset: /auto_examples/images/sphx_glr_02_coherently_polarised_array_005.png
+         :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1277: RuntimeWarning: divide by zero encountered in log10
+      logdata = 10 * np.log10(data)
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1280: RuntimeWarning: divide by zero encountered in log10
+      logdata = 20 * np.log10(data)
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1280: RuntimeWarning: divide by zero encountered in log10
+      logdata = 20 * np.log10(data)
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\emfunctions.py:539: RuntimeWarning: divide by zero encountered in log10
+      field_data.point_data["Poynting_Vector_(Magnitude_(dBW/m2))"] = 10 * np.log10(
+    C:\Users\lycea\miniconda3\envs\CudaDevelopment\Lib\site-packages\lyceanem\electromagnetics\beamforming.py:1617: RuntimeWarning: divide by zero encountered in log10
+      logdata = log_multiplier * np.log10(pattern_mesh.point_data[label])
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\02_coherently_polarised_array.py:108: RuntimeWarning: divide by zero encountered in log10
+      display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
 
 
 
@@ -365,7 +314,7 @@ Visualise the Platform and the resultant Pattern
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 59.102 seconds)
+   **Total running time of the script:** (2 minutes 33.977 seconds)
 
 
 .. _sphx_glr_download_auto_examples_02_coherently_polarised_array.py:

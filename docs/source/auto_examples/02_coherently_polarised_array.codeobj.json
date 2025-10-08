@@ -1,25 +1,27 @@
 {
+ "Directivity": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "lyceanem.electromagnetics.emfunctions",
+   "module_short": "lyceanem.electromagnetics.emfunctions",
+   "name": "Directivity"
+  }
+ ],
  "Ephi": [
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pyvista.core.pyvista_ndarray",
-   "module_short": "pyvista",
-   "name": "pyvista_ndarray"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core",
-   "module_short": "pyvista",
-   "name": "pyvista_ndarray"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista",
-   "module_short": "pyvista",
-   "name": "pyvista_ndarray"
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
   }
  ],
  "Ephi.reshape": [
@@ -35,23 +37,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pyvista.core.pyvista_ndarray",
-   "module_short": "pyvista",
-   "name": "pyvista_ndarray"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core",
-   "module_short": "pyvista",
-   "name": "pyvista_ndarray"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista",
-   "module_short": "pyvista",
-   "name": "pyvista_ndarray"
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
   }
  ],
  "Etheta.reshape": [
@@ -480,21 +468,21 @@
    "is_explicit": false,
    "module": "pyvista.core.pointset",
    "module_short": "pyvista",
-   "name": "UnstructuredGrid"
+   "name": "PolyData"
   },
   {
    "is_class": false,
    "is_explicit": false,
    "module": "pyvista.core",
    "module_short": "pyvista",
-   "name": "UnstructuredGrid"
+   "name": "PolyData"
   },
   {
    "is_class": false,
    "is_explicit": false,
    "module": "pyvista",
    "module_short": "pyvista",
-   "name": "UnstructuredGrid"
+   "name": "PolyData"
   }
  ],
  "display_mesh.point_data": [
@@ -503,84 +491,21 @@
    "is_explicit": false,
    "module": "pyvista.core.pointset",
    "module_short": "pyvista",
-   "name": "UnstructuredGrid.point_data"
+   "name": "PolyData.point_data"
   },
   {
    "is_class": false,
    "is_explicit": false,
    "module": "pyvista.core",
    "module_short": "pyvista",
-   "name": "UnstructuredGrid.point_data"
+   "name": "PolyData.point_data"
   },
   {
    "is_class": false,
    "is_explicit": false,
    "module": "pyvista",
    "module_short": "pyvista",
-   "name": "UnstructuredGrid.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core.pointset",
-   "module_short": "pyvista",
-   "name": "PointGrid.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core",
-   "module_short": "pyvista",
-   "name": "PointGrid.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista",
-   "module_short": "pyvista",
-   "name": "PointGrid.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core.filters.unstructured_grid",
-   "module_short": "pyvista.core.filters.unstructured_grid",
-   "name": "UnstructuredGridFilters.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core.filters",
-   "module_short": "pyvista.core.filters",
-   "name": "UnstructuredGridFilters.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core",
-   "module_short": "pyvista.core",
-   "name": "UnstructuredGridFilters.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista",
-   "module_short": "pyvista",
-   "name": "UnstructuredGridFilters.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "vtkmodules.vtkCommonDataModel",
-   "module_short": "vtkmodules.vtkCommonDataModel",
-   "name": "vtkUnstructuredGrid.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "vtkmodules",
-   "module_short": "vtkmodules",
-   "name": "vtkUnstructuredGrid.point_data"
+   "name": "PolyData.point_data"
   },
   {
    "is_class": false,
@@ -602,6 +527,69 @@
    "module": "pyvista",
    "module_short": "pyvista",
    "name": "_PointSet.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core.filters.poly_data",
+   "module_short": "pyvista.core.filters.poly_data",
+   "name": "PolyDataFilters.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core.filters",
+   "module_short": "pyvista.core.filters",
+   "name": "PolyDataFilters.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core",
+   "module_short": "pyvista.core",
+   "name": "PolyDataFilters.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "PolyDataFilters.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "vtkmodules.vtkCommonDataModel",
+   "module_short": "vtkmodules.vtkCommonDataModel",
+   "name": "vtkPolyData.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "vtkmodules",
+   "module_short": "vtkmodules",
+   "name": "vtkPolyData.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core.dataset",
+   "module_short": "pyvista",
+   "name": "DataSet.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core",
+   "module_short": "pyvista",
+   "name": "DataSet.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "DataSet.point_data"
   },
   {
    "is_class": false,
@@ -630,69 +618,6 @@
    "module": "pyvista",
    "module_short": "pyvista",
    "name": "DataSetFilters.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "vtkmodules.vtkCommonDataModel",
-   "module_short": "vtkmodules.vtkCommonDataModel",
-   "name": "vtkUnstructuredGridBase.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "vtkmodules",
-   "module_short": "vtkmodules",
-   "name": "vtkUnstructuredGridBase.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core.dataset",
-   "module_short": "pyvista",
-   "name": "DataSet.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core",
-   "module_short": "pyvista",
-   "name": "DataSet.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista",
-   "module_short": "pyvista",
-   "name": "DataSet.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core.filters.data_object",
-   "module_short": "pyvista.core.filters.data_object",
-   "name": "DataObjectFilters.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core.filters",
-   "module_short": "pyvista.core.filters",
-   "name": "DataObjectFilters.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core",
-   "module_short": "pyvista.core",
-   "name": "DataObjectFilters.point_data"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista",
-   "module_short": "pyvista",
-   "name": "DataObjectFilters.point_data"
   },
   {
    "is_class": false,
@@ -728,6 +653,34 @@
    "module": "pyvista",
    "module_short": "pyvista",
    "name": "DataObject.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core.filters.data_object",
+   "module_short": "pyvista.core.filters.data_object",
+   "name": "DataObjectFilters.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core.filters",
+   "module_short": "pyvista.core.filters",
+   "name": "DataObjectFilters.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista.core",
+   "module_short": "pyvista.core",
+   "name": "DataObjectFilters.point_data"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pyvista",
+   "module_short": "pyvista",
+   "name": "DataObjectFilters.point_data"
   },
   {
    "is_class": false,
@@ -922,22 +875,6 @@
    "module": "numpy",
    "module_short": "numpy",
    "name": "float32"
-  }
- ],
- "np.isinf": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "numpy",
-   "module_short": "numpy",
-   "name": "ufunc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "numpy",
-   "module_short": "numpy",
-   "name": "isinf"
   }
  ],
  "np.linspace": [

@@ -169,7 +169,7 @@ The UAV is shown in green, and the antenna array in aqua.
 
 
 
-       .. offlineviewer:: /auto_examples/images/sphx_glr_01_aperture_projection_001.vtksz
+       .. offlineviewer:: C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\auto_examples\images\sphx_glr_01_aperture_projection_001.vtksz
 
 
 
@@ -253,7 +253,7 @@ Maximum Directivity
 
     print(
         "Maximum Directivity of {:3.1f} dBi".format(
-            np.nanmax(10 * np.log10(directivity_envelope))
+            np.max(10 * np.log10(directivity_envelope))
         )
     )
 
@@ -264,8 +264,8 @@ Maximum Directivity
 
  .. code-block:: none
 
-    /auto_examples/images/examples\01_aperture_projection.py:107: RuntimeWarning: divide by zero encountered in log10
-      np.nanmax(10 * np.log10(directivity_envelope))
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:107: RuntimeWarning: divide by zero encountered in log10
+      np.max(10 * np.log10(directivity_envelope))
     Maximum Directivity of 17.4 dBi
 
 
@@ -344,15 +344,15 @@ maximum directivity envelope.
 
  .. code-block:: none
 
-    /examples/01_aperture_projection.py:121: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:121: RuntimeWarning: divide by zero encountered in log10
       plot_max = ((np.ceil(np.nanmax(10 * np.log10(directivity_envelope))) // 5.0) + 1) * 5
-    /examples/01_aperture_projection.py:132: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:132: RuntimeWarning: divide by zero encountered in log10
       10 * np.log10(directivity_envelope),
-    /examples/01_aperture_projection.py:142: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:142: RuntimeWarning: divide by zero encountered in log10
       np.nanmax(10 * np.log10(directivity_envelope)) - 60,
-    /examples/01_aperture_projection.py:143: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:143: RuntimeWarning: divide by zero encountered in log10
       np.nanmax(10 * np.log10(directivity_envelope)),
-    examples/01_aperture_projection.py:149: RuntimeWarning: divide by zero encountered in log10
+    C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:149: RuntimeWarning: divide by zero encountered in log10
       10 * np.log10(directivity_envelope),
 
 
@@ -368,7 +368,7 @@ The pyvista library is used to visualise the geometry of the UAV and the antenna
 
 .. code-block:: Python
 
-    pcd.point_data["Directivity_Envelope_(dBi)"][np.isinf(pcd.point_data["Directivity_Envelope_(dBi)"])]=-200
+
     pl = pv.Plotter()
     pl.add_mesh(pv.from_meshio(body), color="green")
     pl.add_mesh(pv.from_meshio(array), color="aqua")
@@ -407,7 +407,7 @@ The pyvista library is used to visualise the geometry of the UAV and the antenna
 
 
 
-       .. offlineviewer:: /auto_examples/images/sphx_glr_01_aperture_projection_003.vtksz
+       .. offlineviewer:: C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\auto_examples\images\sphx_glr_01_aperture_projection_003.vtksz
 
 
 
@@ -417,7 +417,7 @@ The pyvista library is used to visualise the geometry of the UAV and the antenna
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 42.518 seconds)
+   **Total running time of the script:** (0 minutes 45.053 seconds)
 
 
 .. _sphx_glr_download_auto_examples_01_aperture_projection.py:

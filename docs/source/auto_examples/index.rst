@@ -99,6 +99,23 @@ A selection of examples of LyceanEM features
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example uses some custom functions to import antenna array measurements from a 32 element antenna array panel, and simulate the same antenna array within LyceanEM. Some basic functions are included to import the hdf5 file, and demostrate a suitable method for generating an equivalent model antenna array using gmsh.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_08_array_validation_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_08_array_validation.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Antenna Array Validation</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example uses the frequency domain lyceanem.models.frequency_domain.calculate_scattering function to predict the scattering parameters for the frequency and environment included in the model. This model allows for a very wide range of antennas and antenna arrays to be considered, but for simplicity only horn antennas will be included in this example. The simplest case would be a single source point and single receive point, rather than an aperture antenna such as a horn.">
 
 .. only:: html
@@ -146,6 +163,7 @@ A selection of examples of LyceanEM features
    /auto_examples/05_array_beamforming
    /auto_examples/07_aperture_farfield_polarisation
    /auto_examples/06_farfield_polarisation
+   /auto_examples/08_array_validation
    /auto_examples/03_frequency_domain_channel_modelling
    /auto_examples/04_time_domain_channel_modelling
 

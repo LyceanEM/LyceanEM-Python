@@ -153,7 +153,7 @@ sphinx_gallery_conf = {
     ),
     # "reset_modules": (reset_pyvista,),
     "reset_modules_order": "both",
-    "plot_gallery": False,  # documentation examples require cuda on build machine, so much be fully built before being passed to readthedocs
+    "plot_gallery": True,  # documentation examples require cuda on build machine, so much be fully built before being passed to readthedocs
 }
 
 # -- Options for HTML output -------------------------------------------------

@@ -108,7 +108,8 @@ UAV_Static_Pattern.display_pattern(plottype="Contour")
 pattern_mesh = UAV_Static_Pattern.pattern_mesh()
 
 from lyceanem.electromagnetics.beamforming import create_display_mesh
-
+from lyceanem.electromagnetics.emfunctions import Directivity
+pattern_mesh=Directivity(pattern_mesh)
 display_mesh = create_display_mesh(pattern_mesh, label="D(Total)", dynamic_range=60)
 display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
     display_mesh.point_data["D(Total)"]

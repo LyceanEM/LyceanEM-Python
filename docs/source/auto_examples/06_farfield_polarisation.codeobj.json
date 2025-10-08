@@ -3,23 +3,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pyvista.core.pyvista_ndarray",
-   "module_short": "pyvista",
-   "name": "pyvista_ndarray"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core",
-   "module_short": "pyvista",
-   "name": "pyvista_ndarray"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista",
-   "module_short": "pyvista",
-   "name": "pyvista_ndarray"
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
   }
  ],
  "Ephi.reshape": [
@@ -35,23 +21,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pyvista.core.pyvista_ndarray",
-   "module_short": "pyvista",
-   "name": "pyvista_ndarray"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista.core",
-   "module_short": "pyvista",
-   "name": "pyvista_ndarray"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pyvista",
-   "module_short": "pyvista",
-   "name": "pyvista_ndarray"
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
   }
  ],
  "Etheta.reshape": [

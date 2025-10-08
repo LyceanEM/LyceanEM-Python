@@ -50,6 +50,7 @@ requirements:
     - conda-forge::numpy
     - conda-forge::scipy
     - conda-forge::numba
+    - conda-forge::numba-cuda
     - conda-forge::cudatoolkit
     - conda-forge::cupy
     - conda-forge::importlib_resources
