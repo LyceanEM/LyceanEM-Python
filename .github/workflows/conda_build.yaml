@@ -50,17 +50,18 @@ jobs:
           python-version: ${{ matrix.python-version }}
           activate-environment: build_env
           miniforge-version: latest
-     - name: set label
-       id: set_label
-       run: |
-         BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
-         CONDA_LABEL=""
-         if [ "$BRANCH_NAME" == "master" ]; then
-           CONDA_LABEL="main"
-         else
-           CONDA_LABEL="dev-${BRANCH_NAME}"
-         fi
-         echo "CONDA_LABEL=$CONDA_LABEL" >> $GITHUB_ENV
+
+      - name: set_label
+        id: set_label
+        run: |
+          BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
+          CONDA_LABEL=""
+          if [ "$BRANCH_NAME" == "master" ]; then
+            CONDA_LABEL="main"
+          else
+            CONDA_LABEL="dev-${BRANCH_NAME}"
+          fi
+          echo "CONDA_LABEL=$CONDA_LABEL" >> $GITHUB_ENV
 
       - name: Clone the devel branch (push to devel)
         run:  git clone --branch ${{ github.head_ref || github.ref_name }} https://github.com/${{ env.REPO }}
