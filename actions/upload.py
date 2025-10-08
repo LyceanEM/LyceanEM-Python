@@ -76,7 +76,7 @@ else:
 #    label = "--label dev"
 
 # Upload the packages to the michellab channel on Anaconda Cloud.
-cmd = f"anaconda --token {conda_token} upload --user LyceanEM {branch_label} --force {packages}"
+cmd = f"anaconda --token {conda_token} upload --user LyceanEM --label {branch_label} --force {packages}"
 
 print(f"\nUpload command:\n\n{cmd}\n")
 
