@@ -37,7 +37,7 @@ requirements:
   - conda-forge::scikit-build
   - nvidia::cuda-nvcc
 
-  - conda-forge::cxx-compiler
+#  - conda-forge::cxx-compiler
 
   # NVIDIA components to build CUDA code (no full runtime)
   - nvidia::cuda-nvcc
