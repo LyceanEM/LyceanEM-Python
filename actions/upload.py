@@ -67,12 +67,12 @@ if "CONDA_LABEL" in os.environ:
 else:
     branch_label = "TEST"
 print("branch is ", branch_label)
-# if branch=="master":
-#    print(f"\nBranch {branch} is set. This is a 'main' release.")
-#    label = "--label main"
-# else:
-#    # this is a development release
-#    print(f"\nBranch {branch} is set. This is a 'devel' release.")
+if branch_label == "master":
+    print(f"\nBranch {branch_label} is set. This is a 'main' release.")
+    label = "--label main"
+else:
+    # this is a development release
+    print(f"\nBranch {branch_label} is set. This is a 'devel' release.")
 #    label = "--label dev"
 
 # Upload the packages to the michellab channel on Anaconda Cloud.
