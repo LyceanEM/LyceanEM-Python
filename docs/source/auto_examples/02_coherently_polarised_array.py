@@ -41,7 +41,7 @@ array = data.UAV_Demo_Aperture(wavelength * 0.5)
 
 
 # %%
-
+# ----------
 
 from lyceanem.base_classes import structures, points, antenna_structures
 
@@ -53,12 +53,18 @@ from lyceanem.models.frequency_domain import calculate_farfield
 
 import pyvista as pv
 
+# %%
+# Visualising the Platform and Array
+# ----------
+
 pl = pv.Plotter()
 pl.add_mesh(pv.from_meshio(body), color="green")
 pl.add_mesh(pv.from_meshio(array))
 pl.add_axes()
 pl.show()
 
+# %%
+# ----------
 
 desired_E_axis = np.zeros((1, 3), dtype=np.float32)
 desired_E_axis[0, 1] = 1.0
@@ -108,14 +114,20 @@ display_mesh = create_display_mesh(pattern_mesh, label="D(Total)", dynamic_range
 display_mesh.point_data["D(Total-dBi)"] = 10 * np.log10(
     display_mesh.point_data["D(Total)"]
 )
+display_mesh.point_data["D(Total-dBi)"][np.isinf(display_mesh.point_data["D(Total-dBi)"])]=-200
 plot_max = 5 * np.ceil(np.nanmax(display_mesh.point_data["D(Total-dBi)"]) / 5)
+
+# %%
+# Visualise the Platform and the resultant Pattern
+# ----------
 
 
 pl = pv.Plotter()
 pl.add_mesh(pv.from_meshio(body), color="green")
 pl.add_mesh(pv.from_meshio(array), color="aqua")
 pl.add_mesh(
-    display_mesh, scalars="D(Total-dBi)", style="points", clim=[plot_max - 60, plot_max]
+    display_mesh, scalars="D(Total-dBi)", clim=[plot_max - 60, plot_max],opacity=0.5
 )
 pl.add_axes()
 pl.show()
+

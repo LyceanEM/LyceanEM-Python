@@ -253,7 +253,7 @@ Maximum Directivity
 
     print(
         "Maximum Directivity of {:3.1f} dBi".format(
-            np.max(10 * np.log10(directivity_envelope))
+            np.nanmax(10 * np.log10(directivity_envelope))
         )
     )
 
@@ -265,7 +265,7 @@ Maximum Directivity
  .. code-block:: none
 
     C:\Users\lycea\PycharmProjects\LyceanEM-Python\docs\source\examples\01_aperture_projection.py:107: RuntimeWarning: divide by zero encountered in log10
-      np.max(10 * np.log10(directivity_envelope))
+      np.nanmax(10 * np.log10(directivity_envelope))
     Maximum Directivity of 17.4 dBi
 
 
@@ -368,7 +368,7 @@ The pyvista library is used to visualise the geometry of the UAV and the antenna
 
 .. code-block:: Python
 
-
+    pcd.point_data["Directivity_Envelope_(dBi)"][np.isinf(pcd.point_data["Directivity_Envelope_(dBi)"])]=-200
     pl = pv.Plotter()
     pl.add_mesh(pv.from_meshio(body), color="green")
     pl.add_mesh(pv.from_meshio(array), color="aqua")
@@ -417,7 +417,7 @@ The pyvista library is used to visualise the geometry of the UAV and the antenna
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 45.053 seconds)
+   **Total running time of the script:** (0 minutes 44.071 seconds)
 
 
 .. _sphx_glr_download_auto_examples_01_aperture_projection.py:

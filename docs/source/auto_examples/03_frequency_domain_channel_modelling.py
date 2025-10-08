@@ -50,31 +50,41 @@ receive_horn_structure, receiving_antenna_surface_coords = TL.meshedHorn(
 rotation_vector1 = np.radians(np.asarray([90.0, 0.0, 0.0]))
 rotation_vector2 = np.radians(np.asarray([0.0, 0.0, -90.0]))
 rotation_vector3 = np.radians(np.asarray([0.0, 0.0, 90.0]))
-transmit_horn_structure = GF.mesh_rotate(
-    transmit_horn_structure,
-    rotation_vector1
+transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure, rotation_vector1)
+transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure, rotation_vector2)
+
+transmit_horn_structure = GF.mesh_translate(
+    transmit_horn_structure, np.asarray([2.529, 0, 0])
 )
-transmit_horn_structure = GF.mesh_rotate(transmit_horn_structure,rotation_vector2)
-
-transmit_horn_structure = GF.mesh_translate(transmit_horn_structure,np.asarray([2.529, 0, 0]))
-
-transmitting_antenna_surface_coords = GF.mesh_rotate(transmitting_antenna_surface_coords,rotation_vector1)
 
 transmitting_antenna_surface_coords = GF.mesh_rotate(
-    transmitting_antenna_surface_coords,rotation_vector2)
+    transmitting_antenna_surface_coords, rotation_vector1
+)
 
-transmitting_antenna_surface_coords = GF.mesh_translate(transmitting_antenna_surface_coords,np.asarray([2.529, 0, 0]))
+transmitting_antenna_surface_coords = GF.mesh_rotate(
+    transmitting_antenna_surface_coords, rotation_vector2
+)
+
+transmitting_antenna_surface_coords = GF.mesh_translate(
+    transmitting_antenna_surface_coords, np.asarray([2.529, 0, 0])
+)
 # %%
 # Position Receiver
 # ------------------
 # rotate the receiving horn to desired orientation and translate to final position.
 
-receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector1)
-#receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector3)
-receive_horn_structure = GF.mesh_translate(receive_horn_structure,np.asarray([0, 1.609, 0]))
-receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector1)
-#receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector3)
-receiving_antenna_surface_coords = GF.mesh_translate(receiving_antenna_surface_coords,np.asarray([0, 1.609, 0]))
+receive_horn_structure = GF.mesh_rotate(receive_horn_structure, rotation_vector1)
+# receive_horn_structure = GF.mesh_rotate(receive_horn_structure,rotation_vector3)
+receive_horn_structure = GF.mesh_translate(
+    receive_horn_structure, np.asarray([0, 1.609, 0])
+)
+receiving_antenna_surface_coords = GF.mesh_rotate(
+    receiving_antenna_surface_coords, rotation_vector1
+)
+# receiving_antenna_surface_coords = GF.mesh_rotate(receiving_antenna_surface_coords,rotation_vector3)
+receiving_antenna_surface_coords = GF.mesh_translate(
+    receiving_antenna_surface_coords, np.asarray([0, 1.609, 0])
+)
 
 # %%
 # Create Scattering Plate
@@ -87,16 +97,10 @@ reflectorplate, scatter_points = TL.meshedReflector(
 
 position_vector = np.asarray([29e-3, 0.0, 0])
 rotation_vector1 = np.radians(np.asarray([0.0, 90.0, 0.0]))
-scatter_points = GF.mesh_rotate(
-    scatter_points,
-   rotation_vector1
-)
-reflectorplate = GF.mesh_rotate(
-    reflectorplate,
-    rotation_vector1
-)
-reflectorplate = GF.mesh_translate(reflectorplate,position_vector)
-scatter_points = GF.mesh_translate(scatter_points,position_vector)
+scatter_points = GF.mesh_rotate(scatter_points, rotation_vector1)
+reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector1)
+reflectorplate = GF.mesh_translate(reflectorplate, position_vector)
+scatter_points = GF.mesh_translate(scatter_points, position_vector)
 
 # %%
 # Specify Reflection Angle
@@ -106,30 +110,28 @@ scatter_points = GF.mesh_translate(scatter_points,position_vector)
 plate_orientation_angle = 45.0
 
 rotation_vector = np.radians(np.asarray([0.0, 0.0, plate_orientation_angle]))
-scatter_points = GF.mesh_rotate(
-    scatter_points,
-    rotation_vector)
-reflectorplate = GF.mesh_rotate(
-    reflectorplate,
-    rotation_vector
-)
+scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
+reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
 
 from lyceanem.base_classes import structures, points, antenna_structures
 
 blockers = structures([reflectorplate, receive_horn_structure, transmit_horn_structure])
-transmit_horn=antenna_structures(structures([transmit_horn_structure]), points([transmitting_antenna_surface_coords]))
+transmit_horn = antenna_structures(
+    structures([transmit_horn_structure]), points([transmitting_antenna_surface_coords])
+)
 # %%
 # Visualise the Scene Geometry
 # ------------------------------
 
 import pyvista as pv
-pl=pv.Plotter()
-pl.add_mesh(pv.from_meshio(scatter_points),scalars='Area')
-pl.add_mesh(pv.from_meshio(reflectorplate),color="grey")
-pl.add_mesh(pv.from_meshio(transmitting_antenna_surface_coords),scalars='Area')
-pl.add_mesh(pv.from_meshio(receiving_antenna_surface_coords),scalars='Area')
-pl.add_mesh(pv.from_meshio(receive_horn_structure),color="green")
-pl.add_mesh(pv.from_meshio(transmit_horn_structure),color="green")
+
+pl = pv.Plotter()
+pl.add_mesh(pv.from_meshio(scatter_points), scalars="Area")
+pl.add_mesh(pv.from_meshio(reflectorplate), color="grey")
+pl.add_mesh(pv.from_meshio(transmitting_antenna_surface_coords), scalars="Area")
+pl.add_mesh(pv.from_meshio(receiving_antenna_surface_coords), scalars="Area")
+pl.add_mesh(pv.from_meshio(receive_horn_structure), color="green")
+pl.add_mesh(pv.from_meshio(transmit_horn_structure), color="green")
 pl.add_axes()
 pl.show()
 
@@ -155,29 +157,32 @@ Ex, Ey, Ez = FD.calculate_scattering(
     aperture_coords=transmitting_antenna_surface_coords,
     sink_coords=receiving_antenna_surface_coords,
     antenna_solid=blockers,
-    desired_E_axis=transmit_horn.excitation_function(desired_e_vector=desired_E_axis,transmit_power=0.25),
+    desired_E_axis=transmit_horn.excitation_function(
+        desired_e_vector=desired_E_axis, transmit_power=0.25
+    ),
     scatter_points=scatter_points,
     wavelength=wavelength,
     scattering=0,
     project_vectors=False,
-    beta=(2*np.pi)/wavelength
+    beta=(2 * np.pi) / wavelength,
 )
 Excuda, Eycuda, Ezcuda = FD.calculate_scattering(
     aperture_coords=transmitting_antenna_surface_coords,
     sink_coords=receiving_antenna_surface_coords,
     antenna_solid=blockers,
-    desired_E_axis=transmit_horn.excitation_function(desired_e_vector=desired_E_axis,transmit_power=0.25),
+    desired_E_axis=transmit_horn.excitation_function(
+        desired_e_vector=desired_E_axis, transmit_power=0.25
+    ),
     scatter_points=scatter_points,
     wavelength=wavelength,
     scattering=0,
     project_vectors=False,
-    beta=(2*np.pi)/wavelength,
-    cuda=True
-
+    beta=(2 * np.pi) / wavelength,
+    cuda=True,
 )
-print("sumdiff",(np.sum((Ex-Excuda))))
-print("sumdiff",(np.sum((Ey-Eycuda))))
-print("sumdiff",(np.sum((Ez-Ezcuda))))
+print("sumdiff", (np.sum((Ex - Excuda))))
+print("sumdiff", (np.sum((Ey - Eycuda))))
+print("sumdiff", (np.sum((Ez - Ezcuda))))
 
 # %%
 # Examine Scattering
@@ -195,37 +200,36 @@ responsez = np.zeros((len(angle_values)), dtype="complex")
 
 plate_orientation_angle = -45.0
 
-rotation_vector = np.radians(
-    np.asarray([0.0, 0.0, plate_orientation_angle + 0.0])
-)
-scatter_points = GF.mesh_rotate(scatter_points,rotation_vector)
-reflectorplate = GF.mesh_rotate(reflectorplate,rotation_vector)
+rotation_vector = np.radians(np.asarray([0.0, 0.0, plate_orientation_angle + 0.0]))
+scatter_points = GF.mesh_rotate(scatter_points, rotation_vector)
+reflectorplate = GF.mesh_rotate(reflectorplate, rotation_vector)
 
-from tqdm import tqdm
 
-for angle_inc in tqdm(range(len(angle_values))):
+for angle_inc in range(len(angle_values)):
     rotation_vector = np.radians(np.asarray([0.0, 0.0, angle_values[angle_inc]]))
-    scatter_points_temp = GF.mesh_rotate(scatter_points,rotation_vector)
-    reflectorplate_temp = GF.mesh_rotate(reflectorplate,rotation_vector)
-    blockers = structures([reflectorplate_temp, receive_horn_structure, transmit_horn_structure])
-    
-    #Scattered Path
-    
+    scatter_points_temp = GF.mesh_rotate(scatter_points, rotation_vector)
+    reflectorplate_temp = GF.mesh_rotate(reflectorplate, rotation_vector)
+    blockers = structures(
+        [reflectorplate_temp, receive_horn_structure, transmit_horn_structure]
+    )
+
+    # Scattered Path
+
     Ex, Ey, Ez = FD.calculate_scattering(
         aperture_coords=transmitting_antenna_surface_coords,
         sink_coords=scatter_points_temp,
         antenna_solid=blockers,
-        desired_E_axis=transmit_horn.excitation_function(desired_e_vector=desired_E_axis,transmit_power=0.25),
+        desired_E_axis=transmit_horn.excitation_function(
+            desired_e_vector=desired_E_axis, transmit_power=0.25
+        ),
         scatter_points=scatter_points_temp,
         wavelength=wavelength,
         scattering=0,
         project_vectors=False,
-        beta=(2*np.pi)/wavelength
+        beta=(2 * np.pi) / wavelength,
     )
-    scattered_field=np.array([Ex, 
-    Ey, 
-    Ez]).transpose()
-        
+    scattered_field = np.array([Ex, Ey, Ez]).transpose()
+
     Ex2, Ey2, Ez2 = FD.calculate_scattering(
         aperture_coords=scatter_points_temp,
         sink_coords=receiving_antenna_surface_coords,
@@ -235,28 +239,33 @@ for angle_inc in tqdm(range(len(angle_values))):
         wavelength=wavelength,
         scattering=0,
         project_vectors=False,
-        beta=(2*np.pi)/wavelength
+        beta=(2 * np.pi) / wavelength,
     )
-    
+
     # Line of Sight Path
-    
+
     Ex3, Ey3, Ez3 = FD.calculate_scattering(
         aperture_coords=transmitting_antenna_surface_coords,
         sink_coords=receiving_antenna_surface_coords,
         antenna_solid=blockers,
-        desired_E_axis=transmit_horn.excitation_function(desired_e_vector=desired_E_axis,transmit_power=0.25),
+        desired_E_axis=transmit_horn.excitation_function(
+            desired_e_vector=desired_E_axis, transmit_power=0.25
+        ),
         scatter_points=scatter_points_temp,
         wavelength=wavelength,
         scattering=0,
         project_vectors=False,
-        beta=(2*np.pi)/wavelength
+        beta=(2 * np.pi) / wavelength,
     )
-    responsex[angle_inc] = np.sum((Ex2+Ex3)*receiving_antenna_surface_coords.point_data["Area"])
-    responsey[angle_inc] = np.sum((Ey2+Ey3)*receiving_antenna_surface_coords.point_data["Area"])
-    responsez[angle_inc] = np.sum((Ez2+Ez3)*receiving_antenna_surface_coords.point_data["Area"])
-
-
-
+    responsex[angle_inc] = np.sum(
+        (Ex2 + Ex3) * receiving_antenna_surface_coords.point_data["Area"]
+    )
+    responsey[angle_inc] = np.sum(
+        (Ey2 + Ey3) * receiving_antenna_surface_coords.point_data["Area"]
+    )
+    responsez[angle_inc] = np.sum(
+        (Ez2 + Ez3) * receiving_antenna_surface_coords.point_data["Area"]
+    )
 
 
 # %%
@@ -266,12 +275,12 @@ for angle_inc in tqdm(range(len(angle_values))):
 
 import matplotlib.pyplot as plt
 
-normalised_max = np.max(
+normalised_max = np.nanmax(
     np.array(
         [
-            np.max(20 * np.log10(np.abs(responsex))),
-            np.max(20 * np.log10(np.abs(responsey))),
-            np.max(20 * np.log10(np.abs(responsez))),
+            np.nanmax(20 * np.log10(np.abs(responsex))),
+            np.nanmax(20 * np.log10(np.abs(responsey))),
+            np.nanmax(20 * np.log10(np.abs(responsez))),
         ]
     )
 )
