@@ -4,9 +4,13 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    branches: [ master,Development,Documentation-Updates ]
+    branches:
+      - master
+      - '**'
   pull_request:
-    branches: [ master,Development,Documentation-Updates ]
+    branches:
+      - master
+      - '**'
 
 jobs:
   build:
@@ -36,6 +40,7 @@ jobs:
     defaults:
       run:
         shell: ${{ matrix.platform.shell }}
+
     env:
       REPO: "${{ github.event.pull_request.head.repo.full_name || github.repository }}"
     steps:
@@ -45,7 +50,18 @@ jobs:
           python-version: ${{ matrix.python-version }}
           activate-environment: build_env
           miniforge-version: latest
-#
+     - name: set label
+       id: set_label
+       run: |
+         BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
+         CONDA_LABEL=""
+         if [ "$BRANCH_NAME" == "master" ]; then
+           CONDA_LABEL="main"
+         else
+           CONDA_LABEL="dev-${BRANCH_NAME}"
+         fi
+         echo "CONDA_LABEL=$CONDA_LABEL" >> $GITHUB_ENV
+
       - name: Clone the devel branch (push to devel)
         run:  git clone --branch ${{ github.head_ref || github.ref_name }} https://github.com/${{ env.REPO }}
         if: github.event_name != 'pull_request'
@@ -68,4 +84,5 @@ jobs:
         env:
 
           ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+          label: ${{ env.CONDA_LABEL }}
         if: github.event_name != 'pull_request'
