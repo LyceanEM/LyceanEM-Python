@@ -51,17 +51,21 @@ jobs:
           activate-environment: build_env
           miniforge-version: latest
 
-      - name: set_label
-        id: set_label
-        run: |
-          BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
-          CONDA_LABEL=""
-          if [ "$BRANCH_NAME" == "master" ]; then
-            CONDA_LABEL="main"
-          else
-            CONDA_LABEL="dev-${BRANCH_NAME}"
-          fi
-          echo "CONDA_LABEL=$CONDA_LABEL" >> $GITHUB_ENV
+#      - name: set_label
+#        id: set_label
+#        run: |
+#          BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
+#          CONDA_LABEL=""
+#          if [ "$BRANCH_NAME" == "master" ]; then
+#            CONDA_LABEL="main"
+#          else
+#            CONDA_LABEL="dev-${BRANCH_NAME}"
+#          fi
+#          echo "CONDA_LABEL=$CONDA_LABEL" >> $GITHUB_ENV
+      - name: Extract branch name
+        shell: bash
+        run: echo "CONDA_LABEL=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_ENV
+        id: extract_branch
 
       - name: Clone the devel branch (push to devel)
         run:  git clone --branch ${{ github.head_ref || github.ref_name }} https://github.com/${{ env.REPO }}
