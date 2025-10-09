@@ -13,6 +13,7 @@ requirements:
   - python                    # from defaults or conda-forge
   - pip                       # from defaults or conda-forge
   - git
+  - libboost-python-devel
   - conda-forge::numpy
   - conda-forge::pybind11
   - conda-forge::cmake
@@ -27,15 +28,13 @@ requirements:
   host:
   - python
   - libboost-python-devel
-  - nvidia::cuda-cudart-dev
-  - nvidia::cuda-cudart-static
   - pip                       # from defaults or conda-forge
+  - git
   - conda-forge::numpy
   - conda-forge::pybind11
   - conda-forge::cmake
   - conda-forge::ninja
   - conda-forge::scikit-build
-  - nvidia::cuda-nvcc
   - {{ compiler('cxx') }}
 
   # NVIDIA components to build CUDA code (no full runtime)
