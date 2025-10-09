@@ -2,8 +2,9 @@ import glob
 import os
 import sys
 from pathlib import Path
+
 script = os.path.abspath(sys.argv[0])
-script_path=Path(script)
+script_path = Path(script)
 # go up one directories to get the source directory
 # (this script is in Sire/actions/)
 srcdir = os.path.dirname(os.path.dirname(script))
@@ -50,28 +51,32 @@ def run_cmd(cmd):
 gitdir = os.path.join(srcdir, ".git")
 
 tag = run_cmd(f"git --git-dir={gitdir} --work-tree={srcdir} tag --contains")
-branch = run_cmd(f"git --git-dir={gitdir} branch --show-current")
+# branch = run_cmd(f"git --git-dir={gitdir} branch --show-current")
 # if the branch is master, then this is a main release
-#if tag is not None and tag.lstrip().rstrip() != "":
+# if tag is not None and tag.lstrip().rstrip() != "":
 #    print(f"\nTag {tag} is set. This is a 'main' release.")
 #    label = "--label main"
-#else:
+# else:
 #    # this is a development release
 #    print("\nNo tag is set. This is a 'devel' release.")
 #    label = "--label dev"
-print("branch is " , branch)
-if branch=="master":
-    print(f"\nBranch {branch} is set. This is a 'main' release.")
+
+# Get the label
+if "CONDA_LABEL" in os.environ:
+    branch_label = os.environ["CONDA_LABEL"]
+else:
+    branch_label = "TEST"
+print("branch is ", branch_label)
+if branch_label == "master":
+    print(f"\nBranch {branch_label} is set. This is a 'main' release.")
     label = "--label main"
 else:
     # this is a development release
-    print(f"\nBranch {branch} is set. This is a 'devel' release.")
-    label = "--label dev"
+    print(f"\nBranch {branch_label} is set. This is a 'devel' release.")
+#    label = "--label dev"
 
 # Upload the packages to the michellab channel on Anaconda Cloud.
-cmd = (
-    f"anaconda --token {conda_token} upload --user LyceanEM {label} --force {packages}"
-)
+cmd = f"anaconda --token {conda_token} upload --user LyceanEM --label {branch_label} --force {packages}"
 
 print(f"\nUpload command:\n\n{cmd}\n")
 
