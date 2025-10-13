@@ -28,12 +28,11 @@ requirements:
   - python
   - pip
   - libboost-python-devel
-                  # from defaults or conda-forge
   - conda-forge::numpy
   - conda-forge::pybind11
   - conda-forge::cmake
   - conda-forge::ninja
-#  - conda-forge::scikit-build
+  - conda-forge::scikit-build
 #  - {{ compiler('cxx') }}
 
   # NVIDIA components to build CUDA code (no full runtime)
