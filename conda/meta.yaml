@@ -18,7 +18,7 @@ requirements:
   - conda-forge::cmake
   - conda-forge::ninja
   - conda-forge::scikit-build
-  - {{ compiler('cxx') }}
+ # - {{ compiler('cxx') }}
 
   # NVIDIA components to build CUDA code (no full runtime)
   - nvidia::cuda-nvcc
@@ -26,17 +26,17 @@ requirements:
   - nvidia::cuda-cudart-static
   host:
   - python
+  - pip
   - libboost-python-devel
   - nvidia::cuda-cudart-dev
   - nvidia::cuda-cudart-static
-  - pip                       # from defaults or conda-forge
+                  # from defaults or conda-forge
   - conda-forge::numpy
   - conda-forge::pybind11
   - conda-forge::cmake
   - conda-forge::ninja
   - conda-forge::scikit-build
-  - nvidia::cuda-nvcc
-  - {{ compiler('cxx') }}
+#  - {{ compiler('cxx') }}
 
   # NVIDIA components to build CUDA code (no full runtime)
   - nvidia::cuda-nvcc
