@@ -17,8 +17,8 @@ requirements:
   - conda-forge::pybind11
   - conda-forge::cmake
   - conda-forge::ninja
-#  - conda-forge::scikit-build
-  - {{ compiler('cxx') }}
+  - conda-forge::scikit-build
+#  - {{ compiler('cxx') }}
 
   # NVIDIA components to build CUDA code (no full runtime)
   - nvidia::cuda-nvcc
@@ -34,7 +34,7 @@ requirements:
   - conda-forge::cmake
   - conda-forge::ninja
 #  - conda-forge::scikit-build
-  - {{ compiler('cxx') }}
+#  - {{ compiler('cxx') }}
 
   # NVIDIA components to build CUDA code (no full runtime)
   - nvidia::cuda-nvcc
