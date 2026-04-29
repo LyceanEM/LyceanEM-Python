@@ -11,7 +11,7 @@ dynamic="version"         # update from your setup.py
 cmake.minimum-version = "3.26"
 ninja.minimum-version = "1.10"
 build-dir = "build/{wheel_tag}"
-install-strip = true
+install.strip = true
 
 # Optional: tell CMake where to find your extension (if you use add_subdirectory or similar)
 cmake.args = ["-DCMAKE_BUILD_TYPE=Release"]
