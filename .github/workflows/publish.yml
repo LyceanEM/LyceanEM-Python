@@ -46,7 +46,7 @@ jobs:
       # === CUDA setup (Windows only) ===
       - name: Install CUDA Toolkit (Windows)
         if: runner.os == 'Windows'
-        uses: Jimver/cuda-toolkit@v0.2.22
+        uses: Jimver/cuda-toolkit@master
         with:
           cuda: '12.4'   # match your LyceanEM CUDA requirement
 
