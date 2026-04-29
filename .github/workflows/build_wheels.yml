@@ -24,9 +24,10 @@ jobs:
       # === CUDA setup (Windows only) ===
       - name: Install CUDA Toolkit (Windows)
         if: runner.os == 'Windows'
-        uses: Jimver/cuda-toolkit@v0.2.22
+        uses: Jimver/cuda-toolkit@v0.2.35
         with:
-          cuda: '12.8'   # match Linux image for consistency
+          cuda: '12.8.0'   # match Linux image for consistency
+
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
@@ -36,7 +37,7 @@ jobs:
             set "CUDAToolkit_ROOT=%CUDA_PATH%"
             set "CMAKE_CUDA_COMPILER=%CUDA_PATH%\bin\nvcc.exe"
           # === Use pre-built manylinux-cuda image (from ameli/manylinux-cuda repo) ===
-          # CUDA 12.3 on manylinux_2_28 is the closest stable match to your 12.4 requirement
+          # CUDA 12.3 on manylinux_2_28 is the closest stable match to your 12.8 requirement
           CIBW_MANYLINUX_X86_64_IMAGE: sameli/manylinux_2_34_x86_64_cuda_12.8
 
           CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
