@@ -54,7 +54,11 @@ jobs:
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
           # Tell CMake where CUDA lives (your existing CMakeLists.txt will pick this up)
-          CIBW_ENVIRONMENT_LINUX: "CUDA_HOME=/usr/local/cuda PATH=/usr/local/cuda/bin:$PATH LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH"
+          CIBW_ENVIRONMENT_LINUX: |
+            CUDA_HOME=/usr/local/cuda
+            PATH=/usr/local/cuda/bin:$PATH
+            LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+            CMAKE_ARGS="-DPython3_EXECUTABLE=$(which python) -DPython3_ROOT_DIR=$(python -c 'import sys; print(sys.prefix)')"
           CIBW_ENVIRONMENT_WINDOWS: "CUDA_PATH=$CUDA_PATH"
           # Optional: limit Python versions or architectures for faster testing
           # CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
