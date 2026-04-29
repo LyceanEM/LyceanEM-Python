@@ -30,19 +30,6 @@ jobs:
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel
 
-      # === CUDA setup (Linux only) ===
-      - name: Install CUDA Toolkit (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          # Use NVIDIA's official repo for current CUDA (adjust version if needed)
-          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-          sudo dpkg -i cuda-keyring_1.1-1_all.deb
-          sudo apt-get update
-          sudo apt-get install -y cuda-toolkit-12-4
-        env:
-          DEBIAN_FRONTEND: noninteractive
-
       # === CUDA setup (Windows only) ===
       - name: Install CUDA Toolkit (Windows)
         if: runner.os == 'Windows'
@@ -54,17 +41,23 @@ jobs:
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
           # Tell CMake where CUDA lives (your existing CMakeLists.txt will pick this up)
+          CIBW_BEFORE_ALL_LINUX: |
+            yum install -y yum-utils
+            yum-config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo
+            yum install -y cuda-toolkit-12-4
+            # ensure standard symlink that CMake expects
+            ln -sf /usr/local/cuda-12.4 /usr/local/cuda || true
+          CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
           CIBW_ENVIRONMENT_LINUX: |
             CUDA_HOME=/usr/local/cuda
+            CUDAToolkit_ROOT=/usr/local/cuda
             PATH=/usr/local/cuda/bin:$PATH
             LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
-            CMAKE_ARGS="-DPython3_EXECUTABLE=$(which python) -DPython3_ROOT_DIR=$(python -c 'import sys; print(sys.prefix)')"
+            CMAKE_ARGS="-DCUDAToolkit_ROOT=/usr/local/cuda -DPython3_EXECUTABLE=$(which python) -DPython3_ROOT_DIR=$(python -c 'import sys; print(sys.prefix)') -DPython3_FIND_STRATEGY=LOCATION"
           CIBW_ENVIRONMENT_WINDOWS: "CUDA_PATH=$CUDA_PATH"
-          # Optional: limit Python versions or architectures for faster testing
-          # CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ARCHS_MACOS: "x86_64 arm64"
-          CIBW_SKIP: "*musllinux*"   # skip musl if you don't need it
+          CIBW_SKIP: "*musllinux*"
 
       - name: Upload wheels as artifacts (for Build-Testing or manual download)
         uses: actions/upload-artifact@v4
