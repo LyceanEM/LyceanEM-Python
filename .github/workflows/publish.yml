@@ -48,7 +48,7 @@ jobs:
         if: runner.os == 'Windows'
         uses: Jimver/cuda-toolkit@master
         with:
-          cuda: '12.4'   # match your LyceanEM CUDA requirement
+          cuda: '12.4.0'   # match your LyceanEM CUDA requirement
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
