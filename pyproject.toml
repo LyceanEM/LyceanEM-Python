@@ -1,15 +1,15 @@
 [build-system]
-requires = ["scikit-build-core>=0.10", "cmake>=3.26", "ninja"]
+requires = ["scikit-build-core>=0.10"]
 build-backend = "scikit_build_core.build"
 
 [project]
 name = "lyceanem"          # keep your existing name
-dynamic="version"         # update from your setup.py
+dynamic = ["version"]      # update from your setup.py
 # ... add other metadata (description, license, etc.) if you want
 
 [tool.scikit-build]
-cmake.minimum-version = "3.26"
-ninja.minimum-version = "1.10"
+cmake.version = "3.26"
+ninja.version = "1.10"
 build-dir = "build/{wheel_tag}"
 install.strip = true
 
