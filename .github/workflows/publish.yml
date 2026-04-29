@@ -51,9 +51,10 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: |
             CUDA_HOME=/usr/local/cuda
             CUDAToolkit_ROOT=/usr/local/cuda
+            CUDACXX=/usr/local/cuda/bin/nvcc
             PATH=/usr/local/cuda/bin:$PATH
             LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
-            CMAKE_ARGS="-DCUDAToolkit_ROOT=/usr/local/cuda -DPython3_EXECUTABLE=$(which python) -DPython3_ROOT_DIR=$(python -c 'import sys; print(sys.prefix)') -DPython3_FIND_STRATEGY=LOCATION"
+            CMAKE_ARGS="-DCUDAToolkit_ROOT=/usr/local/cuda -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DPython3_EXECUTABLE=$(which python) -DPython3_ROOT_DIR=$(python -c 'import sys; print(sys.prefix)') -DPython3_FIND_STRATEGY=LOCATION"
           CIBW_ENVIRONMENT_WINDOWS: "CUDA_PATH=$CUDA_PATH"
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ARCHS_MACOS: "x86_64 arm64"
