@@ -35,23 +35,22 @@ jobs:
         if: runner.os == 'Windows'
         uses: Jimver/cuda-toolkit@master
         with:
-          cuda: '12.4.0'   # match your LyceanEM CUDA requirement
+          cuda: '12.8.0'   # match your LyceanEM CUDA requirement
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          # Tell CMake where CUDA lives (your existing CMakeLists.txt will pick this up)
-          CIBW_BEFORE_ALL_LINUX: |
-            yum install -y yum-utils
-            yum-config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo
-            yum install -y cuda-toolkit-12-4
-            # ensure standard symlink that CMake expects
-            ln -sf /usr/local/cuda-12.4 /usr/local/cuda || true
           CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
           CIBW_ENVIRONMENT_LINUX: |
+            yum install -y yum-utils
+            yum-config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo
+            yum install -y cuda-toolkit-12-8
+            # ensure standard symlink that CMake expects
+            ln -sf /usr/local/cuda-12.4 /usr/local/cuda || true
             CUDA_HOME=/usr/local/cuda
             CUDAToolkit_ROOT=/usr/local/cuda
             CUDACXX=/usr/local/cuda/bin/nvcc
+            
             PATH=/usr/local/cuda/bin:$PATH
             LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
             CMAKE_ARGS="-DCUDAToolkit_ROOT=/usr/local/cuda -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DPython3_EXECUTABLE=$(which python) -DPython3_ROOT_DIR=$(python -c 'import sys; print(sys.prefix)') -DPython3_FIND_STRATEGY=LOCATION"
