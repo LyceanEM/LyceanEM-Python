@@ -43,7 +43,7 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: |
             python -m pip install pybind11   # ← Fixed: installs pybind11Config.cmake
 
-          CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
+          CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-* cp313-* cp314-*"
           CIBW_ENVIRONMENT_LINUX: |
             CUDA_HOME=/usr/local/cuda
             CUDAToolkit_ROOT=/usr/local/cuda
