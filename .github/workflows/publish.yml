@@ -47,13 +47,6 @@ jobs:
             yum install -y cuda-toolkit-12-4
             # ensure standard symlink that CMake expects
             ln -sf /usr/local/cuda-12.4 /usr/local/cuda || true
-          # ← NEW: explicit exports RIGHT BEFORE each wheel build (fixes early project(LANGUAGES CUDA))
-          CIBW_BEFORE_BUILD_LINUX: |
-            export PATH=/usr/local/cuda/bin:$PATH
-            export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
-            export CUDACXX=/usr/local/cuda/bin/nvcc
-            export CMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc
-            export CUDAToolkit_ROOT=/usr/local/cuda
           CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
           CIBW_ENVIRONMENT_LINUX: |
             CUDA_HOME=/usr/local/cuda
