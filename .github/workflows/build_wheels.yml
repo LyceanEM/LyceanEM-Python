@@ -27,7 +27,7 @@ jobs:
         env:
           # === Use pre-built manylinux-cuda image (from ameli/manylinux-cuda repo) ===
           # CUDA 12.3 on manylinux_2_28 is the closest stable match to your 12.4 requirement
-          CIBW_MANYLINUX_X86_64_IMAGE: sameli/manylinux_2_28_x86_64_cuda_12.3
+          CIBW_MANYLINUX_X86_64_IMAGE: sameli/manylinux_2_34_x86_64_cuda_12.8
           CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
           CIBW_ENVIRONMENT_LINUX: |
             CUDA_HOME=/usr/local/cuda
