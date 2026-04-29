@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.23)
 project(lyceanem LANGUAGES C CXX CUDA)
 find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+find_package(pybind11 REQUIRED)
 message(STATUS "Python_version: ${Python_VERSION}")
 message(STATUS "Python_EXECUTABLE: ${Python_EXECUTABLE}")
 message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
 message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
-find_package(pybind11 CONFIG REQUIRED)
+
 
 
 # Attempt to locate the specified Python library file
