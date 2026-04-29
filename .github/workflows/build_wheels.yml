@@ -21,7 +21,12 @@ jobs:
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel
-
+      # === CUDA setup (Windows only) ===
+      - name: Install CUDA Toolkit (Windows)
+        if: runner.os == 'Windows'
+        uses: Jimver/cuda-toolkit@v0.2.22
+        with:
+          cuda: '12.8'   # match Linux image for consistency
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
