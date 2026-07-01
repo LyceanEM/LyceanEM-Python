@@ -35,24 +35,28 @@ dependencies = [
     "scipy",
 ]
 
+# ==================== SETUPTOOLS-SCM ====================
 [tool.setuptools_scm]
 write_to = "lyceanem/_version.py"
 version_scheme = "post-release"
 local_scheme = "node-and-date"
 
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+lyceanem = ["tests/data/*"]
+
+# ==================== SCIKIT-BUILD ====================
 [tool.scikit-build]
 build-dir = "build/{wheel_tag}"
 install.strip = true
 cmake.args = ["-DCMAKE_BUILD_TYPE=Release"]
 
-# Enable setuptools-scm version provider for scikit-build-core
 [tool.scikit-build.metadata]
 version = {provider = "scikit_build_core.metadata.setuptools_scm"}
 
-[tool.setuptools.package-data]
-lyceanem = ["tests/data/*"]
-
-# === cibuildwheel configuration ===
+# ==================== CIBUILDWHEEL ====================
 [tool.cibuildwheel]
 build-frontend = "build"
 test-command = "python -c \"import lyceanem; print(lyceanem.__version__)\""
@@ -63,3 +67,5 @@ before-all = "yum install -y cmake ninja-build || apt-get update && apt-get inst
 
 [tool.cibuildwheel.macos]
 before-all = "brew install cmake ninja"
+
+"
