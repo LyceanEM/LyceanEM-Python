@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+  release:
+    branches:
+      - master
 
 permissions:
   contents: read
