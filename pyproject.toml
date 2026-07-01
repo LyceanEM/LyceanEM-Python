@@ -6,6 +6,7 @@ requires = ["scikit-build-core>=0.10",
 "ninja"]
 build-backend = "scikit_build_core.build"
 
+[project]
 description = "LyceanEM is a Python library for modelling electromagnetic propagation for sensors and communications."
 readme = "README.md"
 license = {text = "GNU Affero General Public License v3"}
