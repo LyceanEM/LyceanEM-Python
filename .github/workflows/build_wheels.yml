@@ -21,12 +21,25 @@ jobs:
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel
+
       # === CUDA setup (Windows only) ===
       - name: Install CUDA Toolkit (Windows)
         if: runner.os == 'Windows'
         uses: Jimver/cuda-toolkit@v0.2.35
         with:
           cuda: '12.8.0'   # match Linux image for consistency
+          method: 'network'                 # Much lighter, far less prone to VS conflicts
+          sub-packages: '["nvcc", "cudart", "visual_studio_integration"]'
+          log-file-suffix: 'windows-cuda.txt'
+
+      - name: Verify CUDA compiler is visible
+        if: matrix.platform == 'windows'
+        run: |
+          echo "CUDA_PATH=$env:CUDA_PATH"
+          echo "PATH contains CUDA bin: $($env:PATH -split ';' | Select-String 'CUDA')"
+          nvcc --version
+          where.exe nvcc
+        shell: pwsh
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
