@@ -2,7 +2,7 @@
 requires = ["scikit-build-core>=0.10",
     "setuptools-scm>=8",
     "pybind11",
-    "smake>=3.22",
+    "cmake>=3.22",
 "ninja"]
 build-backend = "scikit_build_core.build"
 
