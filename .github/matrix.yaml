@@ -1,0 +1,21 @@
+# .github/matrix.yaml
+# Build matrix for Build-Testing branch (CPU + CUDA Linux)
+matrix:
+  include:
+    # Linux (x86_64 + aarch64)
+    - os: ubuntu-22.04
+      platform: linux
+      python-versions: ["cp39", "cp310", "cp311", "cp312"]
+      archs: "x86_64 aarch64"
+
+    # macOS (Intel + Apple Silicon)
+    - os: macos-13
+      platform: macos
+      python-versions: ["cp39", "cp310", "cp311", "cp312"]
+      archs: "x86_64 arm64"
+
+    # Windows (AMD64)
+    - os: windows-2022
+      platform: windows
+      python-versions: ["cp39", "cp310", "cp311", "cp312"]
+      archs: "AMD64"

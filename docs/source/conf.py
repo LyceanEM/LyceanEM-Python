@@ -41,13 +41,16 @@ except ImportError:  # for Python<3.8
 # __version__ = metadata.version("jsonschema")
 # from importlib.metadata import version, PackageNotFoundError
 
-try:
-    __version__ = metadata.version("lyceanem")
-except metadata.PackageNotFoundError:
-    # package is not installed
-    pass
-# for example take major/minor
-version = ".".join(__version__.split(".")[:2])
+import tomllib
+from pathlib import Path
+
+pyproject = Path(__file__).parent.parent / "pyproject.toml"
+if pyproject.exists():
+    with open(pyproject, "rb") as f:
+        data = tomllib.load(f)
+    release = data["project"]["version"]
+else:
+    release = "unknown"
 
 # class PNGScraper(object):
 #    def __init__(self):
@@ -112,10 +115,14 @@ templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # autodoc options
-# autodoc_mock_imports = ['numba',
-#                        'cupy',
-#                        'open3d',
-#                        'solidpython']
+autodoc_mock_imports = [
+    "lyceanem",
+    "lyceanem._core",  # your compiled extension
+    "torch",
+    "cupy",
+    "numba",
+    # add any other heavy/optional deps here
+]
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/{.major}".format(sys.version_info), None),

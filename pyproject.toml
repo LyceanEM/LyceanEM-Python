@@ -1,8 +1,71 @@
 [build-system]
-requires = ["setuptools>=61", "wheel", "scikit-build", "cmake>=3.22", "ninja", "typing_extensions","nvidia-cuda-runtime-cu11"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core>=0.10",
+    "setuptools-scm>=8",
+    "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+description = "LyceanEM is a Python library for modelling electromagnetic propagation for sensors and communications."
+readme = "README.md"
+license = {text = "GNU Affero General Public License v3"}
+authors = [
+    {name = "Timothy Pelham", email = "t.g.pelham@bristol.ac.uk"}
+]
+name="lyceanem"
+dynamic = ["version"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: GPU :: NVIDIA CUDA",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+requires-python = ">=3.8"
+
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "numba",
+    "meshio",
+    "pygmsh",
+    "scipy",
+]
+
+# ==================== SETUPTOOLS-SCM ====================
 [tool.setuptools_scm]
 write_to = "lyceanem/_version.py"
+version_scheme = "post-release"
+local_scheme = "node-and-date"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+lyceanem = ["tests/data/*"]
+
+# ==================== SCIKIT-BUILD ====================
 [tool.scikit-build]
-build-dir = "build"
-cmake.minimum-version = "3.22"
+build-dir = "build/{wheel_tag}"
+install.strip = true
+cmake.args = ["-DCMAKE_BUILD_TYPE=Release"]
+[tool.scikit-build.metadata.version]
+provider = "scikit_build_core.metadata.setuptools_scm"
+# ==================== CIBUILDWHEEL ====================
+[tool.cibuildwheel]
+build-frontend = "build"
+test-command = "python -c \"import lyceanem; print(lyceanem.__version__)\""
+skip = "pp* *-musllinux*"
+environment = { SETUPTOOLS_SCM_PRETEND_VERSION = "0.0.0" }   # fallback for shallow clones
+
+[tool.cibuildwheel.linux]
+before-all = "yum install -y cmake ninja-build || apt-get update && apt-get install -y cmake ninja-build"
+before-build = "git fetch --unshallow || true"
+
+[tool.cibuildwheel.macos]
+before-all = "brew install cmake ninja"
+before-build = "git fetch --unshallow || true"
