@@ -27,10 +27,7 @@ jobs:
         if: runner.os == 'Windows'
         uses: Jimver/cuda-toolkit@v0.2.35
         with:
-          cuda: '12.8.0'   # match Linux image for consistency
-          method: 'network'                 # Much lighter, far less prone to VS conflicts
-          sub-packages: '["nvcc", "cudart", "visual_studio_integration"]'
-          log-file-suffix: 'windows-cuda.txt'
+          cuda: '13.2.0'
 
       - name: Verify CUDA compiler is visible
         if: runner.os == 'Windows'
