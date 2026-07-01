@@ -89,27 +89,27 @@ jobs:
           with:
             name: lyceanem-wheels-${{ matrix.os }}-${{ strategy.job-index }}
             path: ./wheelhouse/*.whl
-  # === Publish to PyPI ONLY on master branch (trusted publishing) ===
-  publish:
-    name: Publish to PyPI
-    needs: build-wheels
-    if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-    environment: pypi   # recommended: create this environment in GitHub repo settings
-    permissions:
-      id-token: write   # mandatory for trusted publishing
+    # === Publish to PyPI ONLY on master branch (trusted publishing) ===
+    publish:
+      name: Publish to PyPI
+      needs: build-wheels
+      if: github.ref == 'refs/heads/master'
+      runs-on: ubuntu-latest
+      environment: pypi   # recommended: create this environment in GitHub repo settings
+      permissions:
+        id-token: write   # mandatory for trusted publishing
 
-    steps:
-      - uses: actions/checkout@v4
+      steps:
+        - uses: actions/checkout@v4
 
-      - name: Download all built wheels
-        uses: actions/download-artifact@v4
-        with:
-          path: wheelhouse
-          pattern: lyceanem-wheels-*
-          merge-multiple: true
+        - name: Download all built wheels
+          uses: actions/download-artifact@v4
+          with:
+            path: wheelhouse
+            pattern: lyceanem-wheels-*
+            merge-multiple: true
 
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: wheelhouse
+        - name: Publish to PyPI
+          uses: pypa/gh-action-pypi-publish@release/v1
+          with:
+            packages-dir: wheelhouse
