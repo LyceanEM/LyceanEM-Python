@@ -11,6 +11,8 @@ license = {text = "GNU Affero General Public License v3"}
 authors = [
     {name = "Timothy Pelham", email = "t.g.pelham@bristol.ac.uk"}
 ]
+name="lyceanem"
+dynamic = ["version"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: GPU :: NVIDIA CUDA",
