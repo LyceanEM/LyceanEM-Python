@@ -58,11 +58,12 @@ jobs:
           run: |
             if [ "${{ github.event_name }}" = "release" ]; then
               VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
-              echo "version=$VERSION" >> $GITHUB_OUTPUT
             else
-              # For manual triggers, we can leave it empty or use the current commit
-              echo "version=" >> $GITHUB_OUTPUT
+              LATEST_TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
+              VERSION=$(echo "$LATEST_TAG" | sed 's/^v//')
             fi
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "Detected version: $VERSION"
 
         - name: Build wheels
           run: python -m cibuildwheel --output-dir wheelhouse
