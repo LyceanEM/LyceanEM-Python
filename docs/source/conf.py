@@ -41,15 +41,16 @@ except ImportError:  # for Python<3.8
 # __version__ = metadata.version("jsonschema")
 # from importlib.metadata import version, PackageNotFoundError
 
-try:
-    import lyceanem
+import tomllib
+from pathlib import Path
 
-    __version__ = lyceanem.__version__
-except Exception:
-    __version__ = "0.0.0+unknown"
-
-# Use major.minor for Sphinx
-version = ".".join(str(__version__).split(".")[:2]) if __version__ else "0.0"
+pyproject = Path(__file__).parent.parent / "pyproject.toml"
+if pyproject.exists():
+    with open(pyproject, "rb") as f:
+        data = tomllib.load(f)
+    release = data["project"]["version"]
+else:
+    release = "unknown"
 
 # class PNGScraper(object):
 #    def __init__(self):
