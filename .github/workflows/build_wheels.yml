@@ -1,7 +1,9 @@
 name: Build
 
-on: [push, pull_request]
-
+on:
+    push:
+      branches:
+        - Development
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
