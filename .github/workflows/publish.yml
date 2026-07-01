@@ -57,14 +57,28 @@ jobs:
           id: version
           shell: bash
           run: |
-            if ( ${{ github.event_name }} = "release" ); then
+            echo "=== Version Detection ==="
+            echo "Event name: ${{ github.event_name }}"
+  
+            if [ "${{ github.event_name }}" = "release" ]; then
               VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
+              echo "Source: GitHub Release event"
             else
+              # Try to get latest release tag for manual triggers
               LATEST_TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
-              VERSION=$(echo "$LATEST_TAG" | sed 's/^v//')
+              if [ -n "$LATEST_TAG" ]; then
+                VERSION=$(echo "$LATEST_TAG" | sed 's/^v//')
+                echo "Source: Latest release tag from GitHub"
+              else
+                VERSION=""
+                echo "Source: No version detected"
+              fi
             fi
+  
+            echo "Detected VERSION: $VERSION"
+            echo "=== End Version Detection ==="
+  
             echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "Detected version: $VERSION"
 
         - name: Build wheels
           run: python -m cibuildwheel --output-dir wheelhouse
