@@ -64,15 +64,15 @@ jobs:
               VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
               echo "Source: GitHub Release event"
             else
-              # Try to get latest release tag for manual triggers
-              LATEST_TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
-              if [ -n "$LATEST_TAG" ]; then
-                VERSION=$(echo "$LATEST_TAG" | sed 's/^v//')
-                echo "Source: Latest release tag from GitHub"
-              else
-                VERSION=""
-                echo "Source: No version detected"
-              fi
+            # Manual trigger or other events → get latest tag from git
+            VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "")
+            
+            if [ -n "$VERSION" ]; then
+              echo "Source: Latest git tag"
+            else
+              echo "Source: No tags found in repository"
+              VERSION=""
+            fi
             fi
   
             echo "Detected VERSION: $VERSION"
