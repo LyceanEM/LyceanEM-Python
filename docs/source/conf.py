@@ -114,10 +114,14 @@ templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # autodoc options
-# autodoc_mock_imports = ['numba',
-#                        'cupy',
-#                        'open3d',
-#                        'solidpython']
+autodoc_mock_imports = [
+    "lyceanem",
+    "lyceanem._core",  # your compiled extension
+    "torch",
+    "cupy",
+    "numba",
+    # add any other heavy/optional deps here
+]
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/{.major}".format(sys.version_info), None),
