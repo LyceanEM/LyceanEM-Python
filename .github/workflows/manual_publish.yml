@@ -5,6 +5,10 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
+jobs:
     publish:
       name: Publish to PyPI
       runs-on: ubuntu-latest
