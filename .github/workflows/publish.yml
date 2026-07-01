@@ -1,12 +1,13 @@
 name: PyPI - Build & Publish
 
 on:
-  push:
-    branches:
-      - master
   release:
+    types: [published]
+  workflow_dispatch:     # Only manual trigger + releases
     branches:
       - master
+
+
 
 permissions:
   contents: read
