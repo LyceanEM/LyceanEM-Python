@@ -42,7 +42,7 @@ jobs:
         shell: pwsh
 
       - name: Activate MSVC x64 developer command prompt
-        if: matrix.platform == 'windows'
+        if: runner.os == 'windows'
         uses: ilammy/msvc-dev-cmd@v1
         with:
             arch: x64
