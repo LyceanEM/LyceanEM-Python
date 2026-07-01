@@ -41,6 +41,12 @@ jobs:
           where.exe nvcc
         shell: pwsh
 
+      - name: Activate MSVC x64 developer command prompt
+        if: matrix.platform == 'windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+            arch: x64
+
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
@@ -64,8 +70,8 @@ jobs:
             LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
             CMAKE_ARGS="-DCUDAToolkit_ROOT=/usr/local/cuda -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_FLAGS=--allow-unsupported-compiler -DPython3_EXECUTABLE=$(which python) -DPython3_ROOT_DIR=$(python -c 'import sys; print(sys.prefix)') -DPython3_FIND_STRATEGY=LOCATION"
           CIBW_ENVIRONMENT_WINDOWS: |
-            CUDA_PATH=$CUDA_PATH
-            PATH=$CUDA_PATH/bin;$PATH
+            CUDA_PATH=${{ steps.cuda-toolkit.outputs.CUDA_PATH }}
+            PATH=${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\bin;${{ env.PATH }}
             CUDAToolkit_ROOT=$CUDA_PATH
             CMAKE_ARGS="-DCUDAToolkit_ROOT=$CUDA_PATH -DCMAKE_CUDA_COMPILER=$CUDA_PATH/bin/nvcc.exe -DPython3_EXECUTABLE=$(which python) -DPython3_ROOT_DIR=$(python -c 'import sys; print(sys.prefix)') -DPython3_FIND_STRATEGY=LOCATION"
           CIBW_ARCHS_LINUX: "x86_64"
