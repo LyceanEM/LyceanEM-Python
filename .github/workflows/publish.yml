@@ -53,11 +53,23 @@ jobs:
           uses: ilammy/msvc-dev-cmd@v1
           with:
             arch: x64
+        - name: Determine version
+          id: version
+          run: |
+            if [ "${{ github.event_name }}" = "release" ]; then
+              VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+            else
+              # For manual triggers, we can leave it empty or use the current commit
+              echo "version=" >> $GITHUB_OUTPUT
+            fi
 
         - name: Build wheels
           run: python -m cibuildwheel --output-dir wheelhouse
           env:
-
+            CIBW_ENVIRONMENT: >-
+                ${{ steps.version.outputs.version != '' && 
+                   format('SETUPTOOLS_SCM_PRETEND_VERSION={0}', steps.version.outputs.version) || '' }}
             # === Windows: explicit nvcc path right before each wheel build ===
             CIBW_ARCHS_WINDOWS: "AMD64"
             CIBW_BEFORE_BUILD_WINDOWS: |
