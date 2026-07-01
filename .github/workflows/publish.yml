@@ -56,9 +56,9 @@ jobs:
         - name: Determine version
           id: version
           run: |
-            if ( "${{ github.event_name }}" = "release" ); then
+            if [ ${{ github.event_name }} = "release" ]; then
               VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
-            else
+            elif [ !${{ github.event_name }} = "release" ];
               LATEST_TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
               VERSION=$(echo "$LATEST_TAG" | sed 's/^v//')
             fi
