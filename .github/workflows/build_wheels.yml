@@ -33,7 +33,7 @@ jobs:
           log-file-suffix: 'windows-cuda.txt'
 
       - name: Verify CUDA compiler is visible
-        if: matrix.platform == 'windows'
+        if: runner.os == 'Windows'
         run: |
           echo "CUDA_PATH=$env:CUDA_PATH"
           echo "PATH contains CUDA bin: $($env:PATH -split ';' | Select-String 'CUDA')"
