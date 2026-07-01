@@ -42,12 +42,14 @@ except ImportError:  # for Python<3.8
 # from importlib.metadata import version, PackageNotFoundError
 
 try:
-    __version__ = metadata.version("lyceanem")
-except metadata.PackageNotFoundError:
-    # package is not installed
-    pass
-# for example take major/minor
-version = ".".join(__version__.split(".")[:2])
+    import lyceanem
+
+    __version__ = lyceanem.__version__
+except Exception:
+    __version__ = "0.0.0+unknown"
+
+# Use major.minor for Sphinx
+version = ".".join(str(__version__).split(".")[:2]) if __version__ else "0.0"
 
 # class PNGScraper(object):
 #    def __init__(self):

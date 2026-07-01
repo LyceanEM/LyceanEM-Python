@@ -1,17 +1,13 @@
 """LyceanEM : Electromagnetics Modelling for Antenna and Antenna Array Development on Complex Platforms"""
 
-try:
-    from importlib import metadata
-except ImportError:  # for Python<3.8
-    import importlib_metadata as metadata
-# __version__ = metadata.version("jsonschema")
-# from importlib.metadata import version, PackageNotFoundError
+from __future__ import annotations
 
+# Version handling using setuptools-scm
+# The _version.py file is automatically generated during build from Git tags
 try:
-    __version__ = metadata.version("lyceanem")
-except metadata.PackageNotFoundError:
-    # package is not installed
-    pass
+    from ._version import version as __version__
+except ImportError:
+    __version__ = "0.0.0+unknown"
 
 
 __copyright__ = """\
