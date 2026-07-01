@@ -67,5 +67,3 @@ before-all = "yum install -y cmake ninja-build || apt-get update && apt-get inst
 
 [tool.cibuildwheel.macos]
 before-all = "brew install cmake ninja"
-
-"
