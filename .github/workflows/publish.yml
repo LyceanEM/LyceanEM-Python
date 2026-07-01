@@ -55,6 +55,7 @@ jobs:
             arch: x64
         - name: Determine version
           id: version
+          shell: bash
           run: |
             if ( ${{ github.event_name }} = "release" ); then
               VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
