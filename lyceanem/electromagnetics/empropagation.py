@@ -3713,11 +3713,16 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     global_vector
 
     """
-    point_vector = np.matmul(point_normal.astype(local_E_vector.dtype), rotation_matrix)
+    # The face u, v, n basis is purely geometric, so keep it real (float64). Only the
+    # local E vector may carry complex amplitude/phase (e.g. circular polarisation).
+    # Building the basis in a complex dtype and storing it into a real array raised
+    # numpy ComplexWarning (the discarded imaginary parts were always exactly zero).
+    point_vector = np.matmul(
+        np.asarray(point_normal).astype(np.float64), np.real(rotation_matrix)
+    )
     local_axes = np.eye(3)
-    uvn_axes = np.zeros((3, 3), dtype=local_E_vector.dtype)
+    uvn_axes = np.zeros((3, 3), dtype=np.float64)
     uvn_axes[2, :] = point_vector
-    global_vector = np.zeros((3), dtype=local_E_vector.dtype)
     # # make sure point vectors are locked on appropriate antenna axes
     x_orth = np.linalg.norm(np.cross(local_axes[:, 0], point_vector))
     y_orth = np.linalg.norm(np.cross(local_axes[:, 1], point_vector))
@@ -3756,12 +3761,16 @@ def vector_mapping(local_E_vector, point_normal, rotation_matrix):
     #      )
 
     uvn_axes[1, :] = np.cross(point_vector, uvn_axes[0, :]) / np.linalg.norm(
-        np.cross(uvn_axes[0, :], point_vector)
+        np.cross(point_vector, uvn_axes[0, :])
     )
     # print('uvn',uvn_axes)
 
     # convert uvn vector to local axes, and then rotate into global axes if required
-    global_vector = np.matmul(local_E_vector, uvn_axes)
+    # complex if the local E vector is complex; the output dtype follows the input
+    # E vector (as before), promoted to at least float32.
+    global_vector = np.matmul(local_E_vector, uvn_axes).astype(
+        np.result_type(local_E_vector.dtype, np.float32), copy=False
+    )
     return global_vector
 
 
@@ -3816,7 +3825,7 @@ def calculate_conformalVectors(desired_E_vector, source_normals, antenna_axes):
             conformal_E_vectors[normal_inc, :] = vector_mapping(
                 desired_E_vector[normal_inc, :],
                 source_normals[normal_inc, :],
-                antenna_axes.astype(np.complex64),
+                antenna_axes,
             )
     else:
         for normal_inc in range(len(source_normals)):
@@ -3824,7 +3833,7 @@ def calculate_conformalVectors(desired_E_vector, source_normals, antenna_axes):
             conformal_E_vectors[normal_inc, :] = vector_mapping(
                 desired_E_vector.ravel(),
                 source_normals[normal_inc, :],
-                antenna_axes.astype(np.complex64),
+                antenna_axes,
             )
         # if (
         #     np.linalg.norm(np.cross(desired_E_vector, source_normals[normal_inc, :]))
